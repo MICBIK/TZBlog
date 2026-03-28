@@ -9,6 +9,7 @@
 - 项目目录：`/Users/baihaibin/Documents/WorkSpares/TZBlog`
 - 当前仓库状态：只有文档，尚未开始代码实现
 - 已锁定目标：完整前后端博客，不再回退到纯静态前台方案
+- 已接入：`OpenSpec` 作为默认变更管理机制
 
 ## 已锁定的关键决策
 
@@ -30,9 +31,22 @@
 
 1. `README.md`
 2. `docs/PROJECT_INDEX.md`
-3. `docs/TZBlog 技术选型决策.md`
-4. `/Users/baihaibin/Documents/ODWorkerSpace/博客/站点规划/TZBlog - 宇宙主题个人网站实现计划.md`
-5. `docs/TZBlog 全新设计方案.md`
+3. `openspec/project.md`
+4. `docs/TZBlog OpenSpec 变更管理规范.md`
+5. `docs/TZBlog 技术选型决策.md`
+6. `/Users/baihaibin/Documents/ODWorkerSpace/博客/站点规划/TZBlog - 宇宙主题个人网站实现计划.md`
+7. `docs/TZBlog 全新设计方案.md`
+
+## OpenSpec 接手动作
+
+正式开始前先执行：
+
+1. `npx -y @fission-ai/openspec@1.2.0 list`
+2. 查看当前是否已有 active changes
+3. 如果有 active change，优先继续它，不要并行新开同目标 change
+4. 如果没有 active change，再创建新的 change proposal 后进入实现
+
+只有纯错别字、纯路径修正、纯排版整理这类无行为影响的小改动，才允许跳过 OpenSpec。
 
 ## 当前实现基线
 
@@ -189,4 +203,4 @@ UMAMI_WEBSITE_ID=
 
 ## 最后结论
 
-如果上下文现在丢失，新的 AI 只要按这份文档和相关主文档阅读顺序接手，已经可以正确启动项目，不需要重新讨论项目方向。
+如果上下文现在丢失，新的 AI 只要按这份文档、`openspec/project.md` 和相关主文档阅读顺序接手，已经可以正确启动项目，不需要重新讨论项目方向。

@@ -17,6 +17,7 @@
 - 适合 `Astro + Payload CMS + PostgreSQL + Umami` 的完整前后端项目
 - 适合人类开发者和 AI 协作者共同执行
 - 适合后续使用 OpenClaw 持续参与开发
+- 适合使用 `OpenSpec` 对每次正式变更做可追溯治理
 
 ## 参考来源
 
@@ -37,6 +38,9 @@
 - Umami README
   https://github.com/umami-software/umami/blob/master/README.md
   借鉴点：Docker 化部署、更新与重建流程
+- OpenSpec
+  https://github.com/Fission-AI/OpenSpec
+  借鉴点：spec-driven change proposal、tasks 跟踪、archive 归档、长期可追溯
 
 ## 总原则
 
@@ -70,6 +74,12 @@
 - 架构级、流程级、数据模型级改动必须同步更新文档
 - 不允许代码和文档长期分叉
 
+### 6. 正式变更必须先有 OpenSpec 记录
+
+- 所有非琐碎改动默认先创建或继续一个 OpenSpec change
+- 只有纯错别字、纯排版、纯路径修正这类无行为影响的小改动允许跳过
+- 任何涉及功能、Bug、数据模型、部署、流程、依赖、文档契约的改动都应进入 OpenSpec
+
 ## 仓库工作流
 
 ### 任务来源
@@ -82,6 +92,35 @@
 - 部署 / 运维事项
 
 不允许直接以“先写了再说”的方式进入实现。
+
+### OpenSpec 变更治理
+
+TZBlog 默认采用 `OpenSpec` 管理正式变更。
+
+仓库内固定位置：
+
+- `openspec/project.md`
+  项目长期上下文和锁定方向
+- `openspec/specs/`
+  当前主线 capability specs
+- `openspec/changes/<change-name>/`
+  正在进行中的变更
+- `openspec/changes/archive/`
+  已完成并归档的变更记录
+
+默认命令使用固定版本：
+
+- `npx -y @fission-ai/openspec@1.2.0 list`
+- `npx -y @fission-ai/openspec@1.2.0 new change <change-name>`
+- `npx -y @fission-ai/openspec@1.2.0 validate <change-name> --type change --strict`
+- `npx -y @fission-ai/openspec@1.2.0 archive <change-name> -y`
+
+Change 名称统一使用 kebab-case，例如：
+
+- `bootstrap-monorepo-foundation`
+- `add-payload-post-collection`
+- `fix-homepage-hero-layout`
+- `deploy-staging-stack`
 
 ### 分支策略
 
@@ -126,19 +165,24 @@
 - 相关文件自检完成
 - 验证命令已运行或验证方式已记录
 - 如有文档影响，文档同步更新
+- 如属正式变更，已存在对应 OpenSpec change 且 tasks 已同步
 
 ### 单任务执行闭环
 
 每个任务默认按下面顺序推进：
 
 1. 明确任务来源
-2. 判断是否需要先更新设计或技术文档
-3. 建立分支或确认当前分支用途单一
-4. 实现改动
-5. 执行最小必要验证
-6. 更新相关文档
-7. 提交原子 commit
-8. 合并前补齐 PR / 变更说明
+2. 运行 `openspec list`，确认是否已有相关 active change
+3. 没有则先创建 proposal / specs / design / tasks
+4. 判断是否需要先更新设计或技术文档
+5. 建立分支或确认当前分支用途单一
+6. 实现改动并持续勾选 tasks
+7. 执行最小必要验证
+8. 更新相关文档
+9. 验证 OpenSpec artifacts
+10. 归档变更或明确保留为 active
+11. 提交原子 commit
+12. 合并前补齐 PR / 变更说明
 
 ## 设计流程
 
@@ -159,11 +203,14 @@
 1. 先阅读：
    - `README.md`
    - `docs/PROJECT_INDEX.md`
+   - `openspec/project.md`
+   - `docs/TZBlog OpenSpec 变更管理规范.md`
    - `docs/TZBlog 技术选型决策.md`
    - `docs/TZBlog 接管与启动指南.md`
-2. 修改或补充设计文档
-3. 明确影响范围
-4. 再进入代码实现
+2. 在对应 change 下先补 proposal / specs / design
+3. 修改或补充设计文档
+4. 明确影响范围
+5. 再进入代码实现
 
 ### 设计产物
 
@@ -253,6 +300,11 @@
 
 不能只写“理论上可行”。
 
+同时必须补做以下流程级验证：
+
+- `npx -y @fission-ai/openspec@1.2.0 validate --specs --strict`
+- 如果本次存在 active change，再执行 `npx -y @fission-ai/openspec@1.2.0 validate <change-name> --type change --strict`
+
 ### 完成定义（Definition of Done）
 
 一个任务只有同时满足以下条件，才算完成：
@@ -270,9 +322,11 @@ Bug 修复必须按以下顺序：
 1. 复现问题
 2. 确认触发条件
 3. 明确根因
-4. 用最小改动修复
-5. 做回归验证
-6. 提交修复并记录影响范围
+4. 建立或继续对应 `fix-...` OpenSpec change
+5. 用最小改动修复
+6. 做回归验证
+7. 更新 tasks / specs / proposal
+8. 提交修复并记录影响范围
 
 ### Bug 提交建议
 
@@ -337,12 +391,16 @@ Bug 修复必须按以下顺序：
 - 修改部署流程
 - 修改环境变量
 - 修改项目开发规范本身
+- 修改 `openspec/project.md`
+- 修改 `openspec/specs/`
+- 新增或归档重要 change
 
 优先更新：
 
 - `README.md`
 - `docs/PROJECT_INDEX.md`
 - `docs/TZBlog 接管与启动指南.md`
+- `docs/TZBlog OpenSpec 变更管理规范.md`
 
 ## AI / OpenClaw 执行规则
 
@@ -352,9 +410,11 @@ OpenClaw 或任意新的 AI 协作者接手前必须先读：
 
 1. `README.md`
 2. `docs/PROJECT_INDEX.md`
-3. `docs/TZBlog 技术选型决策.md`
-4. `docs/TZBlog 接管与启动指南.md`
-5. `docs/TZBlog 项目开发流程规范.md`
+3. `openspec/project.md`
+4. `docs/TZBlog OpenSpec 变更管理规范.md`
+5. `docs/TZBlog 技术选型决策.md`
+6. `docs/TZBlog 接管与启动指南.md`
+7. `docs/TZBlog 项目开发流程规范.md`
 
 ### 执行要求
 
@@ -363,18 +423,22 @@ OpenClaw 或任意新的 AI 协作者接手前必须先读：
 - 不得跳过验证直接宣称完成
 - 不得修改大方向而不更新文档
 - 每次改动后必须形成原子提交
+- 未创建或未接手 OpenSpec change 时，不得直接进入正式实现
 
 ### OpenClaw 默认执行顺序
 
 OpenClaw 接手单个任务时，默认按以下顺序执行：
 
-1. 读取接管文档和流程规范
-2. 明确本轮任务边界
-3. 判断是否需要先更新设计文档
-4. 只修改与当前任务直接相关的文件
-5. 完成后执行最小必要验证
-6. 生成原子提交
-7. 在提交说明或 PR 描述中记录验证与风险
+1. 读取接管文档、`openspec/project.md` 和流程规范
+2. 运行 `openspec list`
+3. 明确本轮任务边界
+4. 判断是继续现有 change 还是新建 change
+5. 判断是否需要先更新 proposal / specs / design
+6. 只修改与当前任务直接相关的文件
+7. 完成后执行最小必要验证和 `openspec validate`
+8. 同步 tasks，必要时 archive
+9. 生成原子提交
+10. 在提交说明或 PR 描述中记录验证与风险
 
 ### 对 AI 最重要的约束
 

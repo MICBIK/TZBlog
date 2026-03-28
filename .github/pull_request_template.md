@@ -14,6 +14,7 @@
 
 - Related issue / task:
 - Related design / decision doc:
+- OpenSpec change:
 
 ## Verification
 
@@ -29,6 +30,7 @@
 ## Checklist
 
 - [ ] I followed `docs/TZBlog 项目开发流程规范.md`
+- [ ] I linked this PR to the correct OpenSpec change, or marked it as trivial/no-change-needed
 - [ ] I updated docs if architecture / model / workflow changed
 - [ ] I verified the change before submitting
 - [ ] My commit / PR title follows Conventional Commits

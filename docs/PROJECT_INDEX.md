@@ -14,6 +14,10 @@
   接手文档，确保在上下文丢失后仍可直接开始项目。
 - `TZBlog 项目开发流程规范.md`
   项目级执行规范，后续所有开发默认遵循它。
+- `TZBlog OpenSpec 变更管理规范.md`
+  OpenSpec 的执行手册，后续所有非琐碎变更默认先从这里进入。
+- `../openspec/project.md`
+  OpenSpec 项目基线，上下文恢复和创建新 change 前先读。
 
 ## 参考输入
 
@@ -37,6 +41,8 @@
   `https://github.com/directus/directus`
 - 统计系统
   `https://github.com/umami-software/umami`
+- OpenSpec
+  `https://github.com/Fission-AI/OpenSpec`
 
 ## Firefly 关键观察点
 
@@ -82,5 +88,6 @@
 - 如果技术路线变化，优先修改 `TZBlog 技术选型决策.md`
 - 如果需要给新的 AI 或协作者接手，优先看 `TZBlog 接管与启动指南.md`
 - 如果需要执行具体开发工作，优先遵守 `TZBlog 项目开发流程规范.md`
+- 如果需要发起、执行、归档一次正式变更，优先遵守 `TZBlog OpenSpec 变更管理规范.md`
 - 如果只是开发进度推进，可在本文件下新增“开发记录”章节
 - 新增参考资料时，只在本文件登记一次，避免多处重复维护
