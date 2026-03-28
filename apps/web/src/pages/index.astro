@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout title="TZBlog | Deep Space Observatory">
+  <main class="shell" style="padding: 3rem 0 4rem;">
+    <section class="panel" style="padding: 2rem;">
+      <p class="section-label">TZBlog Bootstrap</p>
+      <h1 style="margin: 0.4rem 0 1rem; font-size: clamp(2.6rem, 6vw, 4.8rem);">
+        Deep Space Observatory
+      </h1>
+      <p style="max-width: 60ch; color: var(--muted); line-height: 1.8;">
+        第一阶段先打通内容基础设施，不在这里提前堆叠重型视觉效果。当前页面作为
+        Astro 前台骨架，占位后续 Hero、文章流、项目流和观测站导航系统。
+      </p>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+        <a class="panel" href="/posts/hello-world" style="padding: 0.9rem 1.1rem; text-decoration: none;">
+          查看文章页骨架
+        </a>
+        <a class="panel" href="http://localhost:3000/admin" style="padding: 0.9rem 1.1rem; text-decoration: none;">
+          未来接入 CMS Admin
+        </a>
+      </div>
+    </section>
+
+    <section style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 1.5rem;">
+      <article class="panel" style="padding: 1.25rem;">
+        <p class="section-label">Phase 1</p>
+        <h2 style="margin-top: 0.5rem;">Monorepo Foundation</h2>
+        <p style="color: var(--muted); line-height: 1.7;">
+          建立 `apps/web`、`apps/cms`、`infra` 三段式结构，统一根级脚本与依赖管理。
+        </p>
+      </article>
+      <article class="panel" style="padding: 1.25rem;">
+        <p class="section-label">Phase 2</p>
+        <h2 style="margin-top: 0.5rem;">Payload Models</h2>
+        <p style="color: var(--muted); line-height: 1.7;">
+          下一轮将补 `posts / projects / docs / notes / pages` 与 site globals。
+        </p>
+      </article>
+      <article class="panel" style="padding: 1.25rem;">
+        <p class="section-label">Phase 3</p>
+        <h2 style="margin-top: 0.5rem;">Content Delivery</h2>
+        <p style="color: var(--muted); line-height: 1.7;">
+          在 Astro 中接入 Payload 内容拉取，再进入搜索、统计和宇宙主题视觉增强。
+        </p>
+      </article>
+    </section>
+  </main>
+</BaseLayout>

@@ -4,6 +4,14 @@
 
 将原本偏单页交互展示的宇宙主题个人站思路，升级为一套可持续扩展的内容型博客方案，用于后续在 `TZBlog` 项目中直接落地开发。
 
+## 当前开发基线
+
+- 已建立 `pnpm workspace + turbo` monorepo
+- 已建立 `apps/web` Astro 前台最小骨架
+- 已建立 `apps/cms` Payload CMS 最小骨架
+- 已建立 `infra/docker-compose.yml` PostgreSQL 本地开发环境
+- 当前第一阶段已不再是“纯文档状态”
+
 ## 当前主文档
 
 - `TZBlog 全新设计方案.md`
@@ -75,12 +83,11 @@
 
 ## 后续开发建议顺序
 
-1. 初始化 `Astro + Payload + PostgreSQL` 基础结构
-2. 建立 Payload 内容模型与后台
-3. 建立 Astro 前台模板与数据拉取链路
-4. 接入构建 Webhook 与 `Pagefind`
-5. 接入 `Umami`
-6. 最后补 Hero 3D、动效层和运营细节
+1. 建立 Payload 内容模型与后台
+2. 建立 Astro 前台数据拉取链路
+3. 接入构建 Webhook 与 `Pagefind`
+4. 接入 `Umami`
+5. 最后补 Hero 3D、动效层和运营细节
 
 ## 后续更新约定
 

@@ -7,7 +7,7 @@
 ## 当前状态
 
 - 项目目录：`/Users/baihaibin/Documents/WorkSpares/TZBlog`
-- 当前仓库状态：只有文档，尚未开始代码实现
+- 当前仓库状态：已完成第一阶段工程骨架，具备最小可运行开发环境
 - 已锁定目标：完整前后端博客，不再回退到纯静态前台方案
 - 已接入：`OpenSpec` 作为默认变更管理机制
 
@@ -63,6 +63,14 @@
 - `PostgreSQL` 负责主数据
 - `Umami` 负责站点统计
 - `Pagefind` 负责前台全文搜索
+- Monorepo 使用 `pnpm workspace + turbo`
+
+### 工程层
+
+- 根目录已存在 `package.json`、`pnpm-workspace.yaml`、`turbo.json`
+- `apps/web` 已可构建首页和文章详情页占位骨架
+- `apps/cms` 已可启动 Payload Admin，占位前台已改为 TZBlog CMS bootstrap
+- `infra/docker-compose.yml` 已可启动本地 PostgreSQL
 
 ### 设计层
 
@@ -72,7 +80,7 @@
 
 ## 推荐仓库结构
 
-默认按以下结构启动：
+当前仓库基线如下：
 
 ```text
 TZBlog/
@@ -80,27 +88,31 @@ TZBlog/
 │   ├── web/                  # Astro 前端
 │   └── cms/                  # Payload CMS 后台
 ├── packages/
-│   ├── shared-types/
-│   └── design-tokens/
+│   └── .gitkeep
 ├── infra/
 │   ├── docker-compose.yml
-│   ├── env/
-│   └── scripts/
+│   └── ...
+├── openspec/
 └── docs/
 ```
 
 ## 第一阶段必须完成的内容
 
-接手后第一阶段不要直接做视觉特效，先完成以下基础设施：
+接手后第一阶段不要直接做视觉特效，先完成以下基础设施。
 
-1. 建立 `pnpm workspace` 或等价 monorepo 结构
+当前已完成：
+
+1. 建立 `pnpm workspace + turbo` monorepo 结构
 2. 初始化 `apps/web` 的 Astro 项目
 3. 初始化 `apps/cms` 的 Payload 项目
 4. 建立 `PostgreSQL` 本地开发环境
-5. 建立最小 `media` 存储方案
-6. 建立 Payload 的基础 collections
-7. 建立 Astro 的基础 layout 和首页骨架
-8. 打通 `Payload -> Astro` 的内容拉取链路
+5. 建立 Astro 的基础 layout、首页和文章详情页骨架
+
+当前未完成：
+
+1. 建立最小 `media` 存储方案
+2. 建立 Payload 的基础业务 collections / globals
+3. 打通 `Payload -> Astro` 的内容拉取链路
 
 ## Payload 最小模型
 
@@ -128,13 +140,13 @@ TZBlog/
 ### `apps/cms/.env`
 
 ```bash
-DATABASE_URL=
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/tzblog
 PAYLOAD_SECRET=
 S3_ENDPOINT=
 S3_BUCKET=
 S3_ACCESS_KEY=
 S3_SECRET_KEY=
-PUBLIC_SERVER_URL=
+NEXT_PUBLIC_SERVER_URL=http://localhost:3000
 WEB_REBUILD_WEBHOOK=
 ```
 
@@ -159,15 +171,12 @@ UMAMI_WEBSITE_ID=
 
 推荐接手后的实际执行顺序：
 
-1. 初始化 workspace
-2. 启动 Astro
-3. 启动 Payload
-4. 建模 collections / globals
-5. 在 Astro 中拉取 `posts` 和 `homepage`
-6. 做出无特效首页
-7. 做出文章详情页
-8. 再加项目页和文档页
-9. 最后再接 Hero 3D、Pagefind、Umami
+1. 基于现有 workspace 启动 Astro 和 Payload
+2. 建模 collections / globals
+3. 在 Astro 中拉取 `posts` 和 `homepage`
+4. 做出真正的无特效首页和文章详情页
+5. 再加项目页和文档页
+6. 最后再接 Hero 3D、Pagefind、Umami
 
 ## 暂时不要做的事
 
@@ -196,7 +205,6 @@ UMAMI_WEBSITE_ID=
 
 以下属于实现细节，可在开发时根据实际情况调整，不视为方向变更：
 
-- Monorepo 用 `pnpm workspace` 还是加 `turbo`
 - 对象存储最终是 `R2` 还是 `S3`
 - 本地反向代理用 `Caddy` 还是 `Nginx`
 - Astro 数据拉取使用构建阶段 API 拉取还是专门同步脚本

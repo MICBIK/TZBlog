@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+export function getStaticPaths() {
+  return [
+    {
+      params: { slug: 'hello-world' },
+      props: {
+        title: 'Placeholder Post',
+        excerpt: '这是 Astro 文章详情页的最小占位版本，后续会切到 Payload 数据源。',
+      },
+    },
+  ]
+}
+
+const { title, excerpt } = Astro.props
+const slug = Astro.params.slug
+---
+
+<BaseLayout title={`${title} | TZBlog`}>
+  <main class="shell" style="padding: 3rem 0 4rem;">
+    <article class="panel" style="padding: 2rem; max-width: 780px; margin: 0 auto;">
+      <p class="section-label">Article Placeholder</p>
+      <h1 style="margin: 0.5rem 0 1rem;">{title}</h1>
+      <p style="color: var(--muted); line-height: 1.8;">{excerpt}</p>
+      <div class="panel" style="padding: 1rem; margin-top: 1.5rem;">
+        <strong>Current slug:</strong> {slug}
+      </div>
+      <p style="color: var(--muted); line-height: 1.8; margin-top: 1.5rem;">
+        本页只证明 Astro 文章详情路由骨架已经建立。下一轮会替换成真实的 Payload 内容数据与文章布局系统。
+      </p>
+      <p style="margin-top: 1.5rem;">
+        <a href="/">返回首页</a>
+      </p>
+    </article>
+  </main>
+</BaseLayout>
