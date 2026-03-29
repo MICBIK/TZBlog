@@ -25,7 +25,11 @@ const isActive = (href: string) => {
 
   <nav class="site-nav panel" aria-label="Primary navigation">
     {navItems.map((item) => (
-      <a href={item.href} class={`nav-link ${isActive(item.href) ? 'is-active' : ''}`}>
+      <a
+        href={item.href}
+        class={`nav-link ${isActive(item.href) ? 'is-active' : ''}`}
+        aria-current={isActive(item.href) ? 'page' : undefined}
+      >
         <span>{item.label}</span>
         {item.badge && <small>{item.badge}</small>}
       </a>

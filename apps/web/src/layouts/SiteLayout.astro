@@ -21,7 +21,7 @@ const currentPath = Astro.url.pathname
       <div class="space-glow space-glow-b"></div>
     </div>
     <SiteHeader currentPath={currentPath} navItems={navItems} />
-    <main class="page-shell shell">
+    <main id="main-content" class="page-shell shell">
       <slot />
     </main>
     <SiteFooter />

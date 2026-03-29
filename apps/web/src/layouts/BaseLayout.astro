@@ -10,6 +10,9 @@ const {
   title,
   description = 'TZBlog deep space observatory interface',
 } = Astro.props
+
+const siteUrl = import.meta.env.SITE_URL
+const canonicalUrl = siteUrl ? new URL(Astro.url.pathname, siteUrl).toString() : undefined
 ---
 
 <!doctype html>
@@ -20,8 +23,17 @@ const {
     <meta name="theme-color" content="#08111f" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
   </head>
   <body>
+    <a class="skip-link" href="#main-content">跳到正文</a>
     <slot />
   </body>
 </html>

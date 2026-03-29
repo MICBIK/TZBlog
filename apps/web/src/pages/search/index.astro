@@ -12,21 +12,29 @@ const initialResults = searchIndex.slice(0, 6)
         <p class="eyebrow">Search</p>
         <h1>Signal Search Relay</h1>
         <p class="section-copy">搜索不是隐藏功能。当前页面先提供演示检索壳层，后续会切换到 Pagefind 实索引。</p>
-        <input class="search-input" type="search" placeholder="试着搜：布局、Payload、搜索、动效" data-search-input />
+        <label class="search-label" for="search-input">输入关键词</label>
+        <input
+          id="search-input"
+          class="search-input"
+          type="search"
+          placeholder="试着搜：布局、Payload、搜索、动效"
+          autocomplete="off"
+          data-search-input
+        />
       </div>
       <aside class="side-panel flow-sm">
         <p class="eyebrow">Suggested Queries</p>
         <div class="tag-list">
-          <button class="button button-ghost" data-suggest="布局">布局</button>
-          <button class="button button-ghost" data-suggest="Payload">Payload</button>
-          <button class="button button-ghost" data-suggest="搜索">搜索</button>
+          <button type="button" class="button button-ghost" data-suggest="布局">布局</button>
+          <button type="button" class="button button-ghost" data-suggest="Payload">Payload</button>
+          <button type="button" class="button button-ghost" data-suggest="搜索">搜索</button>
         </div>
       </aside>
     </div>
   </section>
 
   <section class="page-section">
-    <div class="search-results" data-search-results>
+    <div class="search-results" aria-live="polite" data-search-results>
       {initialResults.map((item) => (
         <article class="search-card panel flow-sm">
           <p class="eyebrow">{item.type}</p>
