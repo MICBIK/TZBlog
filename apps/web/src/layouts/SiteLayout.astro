@@ -91,7 +91,7 @@ const currentPath = Astro.url.pathname
           canvas.width = 128; canvas.height = 1024;
           const ctx = canvas.getContext('2d');
           if (!ctx) return null;
-          const drawBand = (start, end, color, opacity) => {
+          const drawBand = (start: number, end: number, color: string, opacity: number) => {
             const grad = ctx.createLinearGradient(0, start, 0, end);
             grad.addColorStop(0, 'rgba(0,0,0,0)');
             grad.addColorStop(0.2, color.replace('1)', opacity + ')'));
@@ -146,8 +146,8 @@ const currentPath = Astro.url.pathname
         const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ size: 0.8, color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending }));
         scene.add(stars);
 
-        const asteroids = [];
-        const createAst = (r, speed, dist, ang) => {
+        const asteroids: Array<{ mesh: THREE.Mesh, speed: number, dist: number, angle: number }> = [];
+        const createAst = (r: number, speed: number, dist: number, ang: number) => {
           const ast = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 8), new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 1 }));
           scene.add(ast); return { mesh: ast, speed, dist, angle: ang };
         };
