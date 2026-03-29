@@ -37,6 +37,10 @@
 6. `/Users/baihaibin/Documents/ODWorkerSpace/博客/站点规划/TZBlog - 宇宙主题个人网站实现计划.md`
 7. `docs/TZBlog 全新设计方案.md`
 
+如果只是要自己把本地环境重新拉起来，优先看：
+
+- `docs/TZBlog 本地启动与停止指南.md`
+
 ## OpenSpec 接手动作
 
 正式开始前先执行：
@@ -167,6 +171,7 @@ UMAMI_WEBSITE_ID=
 - 前台和后台分开运行
 - 统计系统可以先不在第一天跑通，但预留环境变量
 - 如果是在 OpenClaw 所在的受限 / 共享机器上协作，默认不要拉 Docker 镜像、启动数据库或长时间运行本地服务；优先只做 lint、types、build 等轻量验证，再由用户在自己的机器上做运行时验收
+- 具体命令顺序、停止方式和常见故障排查见 `docs/TZBlog 本地启动与停止指南.md`
 
 ## 第一轮开发顺序
 
