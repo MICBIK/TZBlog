@@ -1,0 +1,41 @@
+---
+import ContentCard from '../../components/ContentCard.astro'
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { collectionStats, docsCollection } from '../../data/content'
+---
+
+<SiteLayout title="文档 | TZBlog" description="结构化文档与长期维护说明的入口。">
+  <section class="page-intro panel">
+    <div class="page-intro-grid">
+      <div class="flow-md">
+        <p class="eyebrow">Docs</p>
+        <h1>文档中枢</h1>
+        <p class="section-copy">这里更强调结构、版本和章节组织，和文章页比，它更像一个可长期维护的知识平面。</p>
+        <div class="hero-status">
+          <span class="status-chip">{collectionStats.docs} 份结构文档</span>
+          <span class="status-chip">Version-aware</span>
+        </div>
+      </div>
+      <aside class="side-panel flow-sm">
+        <p class="eyebrow">Doc Notes</p>
+        <p class="muted">后续接 Payload 后，文档页会继续保留目录感、版本号和相关文档入口。</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="page-section index-layout">
+    <div class="flow-md">
+      {docsCollection.map((doc) => (
+        <ContentCard href={`/docs/${doc.slug}`} eyebrow={doc.version} title={doc.title} summary={doc.summary} meta={`${doc.updatedAt} · ${doc.orbit}`} tags={doc.tags} />
+      ))}
+    </div>
+
+    <aside class="flow-md">
+      <div class="side-panel flow-sm">
+        <p class="eyebrow">Current Priority</p>
+        <h3>{docsCollection[0].title}</h3>
+        <p class="muted">{docsCollection[0].summary}</p>
+      </div>
+    </aside>
+  </section>
+</SiteLayout>

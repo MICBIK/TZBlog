@@ -1,0 +1,37 @@
+---
+import ContentCard from '../../components/ContentCard.astro'
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { collectionStats, projects } from '../../data/content'
+---
+
+<SiteLayout title="项目 | TZBlog" description="项目档案页，采用网格优先的扫描式布局。">
+  <section class="page-intro panel">
+    <div class="page-intro-grid">
+      <div class="flow-md">
+        <p class="eyebrow">Projects</p>
+        <h1>项目档案</h1>
+        <p class="section-copy">项目页不只是另一篇文章，它要能同时承载状态、技术栈、架构说明、链接和里程碑。</p>
+        <div class="hero-status">
+          <span class="status-chip">{collectionStats.projects} 个项目轨道</span>
+          <span class="status-chip">Grid-first</span>
+        </div>
+      </div>
+      <aside class="side-panel flow-sm">
+        <p class="eyebrow">Project Filter</p>
+        <div class="tag-list">
+          <span class="tag">In Progress</span>
+          <span class="tag">Planned</span>
+          <span class="tag">Concept</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="page-section">
+    <div class="mission-grid">
+      {projects.map((project) => (
+        <ContentCard href={`/projects/${project.slug}`} eyebrow={project.stage} title={project.title} summary={project.summary} meta={`${project.updatedAt} · ${project.orbit}`} tags={project.tags} variant="grid" />
+      ))}
+    </div>
+  </section>
+</SiteLayout>

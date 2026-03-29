@@ -1,0 +1,36 @@
+---
+import type { NavItem } from '../data/content'
+
+interface Props {
+  currentPath: string
+  navItems: NavItem[]
+}
+
+const { currentPath, navItems } = Astro.props
+
+const isActive = (href: string) => {
+  if (href === '/') return currentPath === '/'
+  return currentPath.startsWith(href)
+}
+---
+
+<header class="site-header shell">
+  <a href="/" class="brand panel">
+    <span class="brand-mark">TZ</span>
+    <span>
+      <strong>TZBlog</strong>
+      <small>Orbital Observatory</small>
+    </span>
+  </a>
+
+  <nav class="site-nav panel" aria-label="Primary navigation">
+    {navItems.map((item) => (
+      <a href={item.href} class={`nav-link ${isActive(item.href) ? 'is-active' : ''}`}>
+        <span>{item.label}</span>
+        {item.badge && <small>{item.badge}</small>}
+      </a>
+    ))}
+  </nav>
+
+  <a href="/search" class="button button-ghost header-cta">Search Relay</a>
+</header>

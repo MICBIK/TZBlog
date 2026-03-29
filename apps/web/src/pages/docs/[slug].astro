@@ -1,0 +1,65 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { docsCollection } from '../../data/content'
+
+export function getStaticPaths() {
+  return docsCollection.map((doc) => ({ params: { slug: doc.slug }, props: { doc } }))
+}
+
+const { doc } = Astro.props
+---
+
+<SiteLayout title={`${doc.title} | TZBlog`} description={doc.summary}>
+  <section class="detail-hero panel">
+    <div class="page-intro-grid">
+      <div class="flow-md">
+        <p class="eyebrow">{doc.version}</p>
+        <h1>{doc.title}</h1>
+        <p class="section-copy">{doc.summary}</p>
+        <div class="hero-status">
+          <span class="status-chip">{doc.updatedAt}</span>
+          <span class="status-chip">{doc.orbit}</span>
+        </div>
+      </div>
+      <aside class="side-panel flow-sm">
+        <p class="eyebrow">Doc Directory</p>
+        <div class="toc-list">
+          {doc.sections.map((section) => (
+            <a href={`#${section.id}`}>{section.title}</a>
+          ))}
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="page-section article-layout">
+    <article class="panel article-content flow-lg">
+      {doc.sections.map((section) => (
+        <section id={section.id} class="article-section flow-sm">
+          <h2>{section.title}</h2>
+          {section.paragraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+          {section.bullets && (
+            <ul>
+              {section.bullets.map((bullet) => (
+                <li>{bullet}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </article>
+
+    <aside class="flow-md">
+      <div class="side-panel flow-sm">
+        <p class="eyebrow">Tags</p>
+        <div class="tag-list">
+          {doc.tags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      </div>
+    </aside>
+  </section>
+</SiteLayout>

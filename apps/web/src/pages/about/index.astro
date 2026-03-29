@@ -1,0 +1,52 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { aboutProfile, siteMeta, timeline } from '../../data/content'
+---
+
+<SiteLayout title="关于 | TZBlog" description="TZBlog 的身份说明与站点方向。">
+  <section class="page-intro panel">
+    <div class="profile-grid">
+      <article class="about-card panel flow-md">
+        <p class="eyebrow">About</p>
+        <h1>{aboutProfile.name}</h1>
+        <p class="meta-line">{aboutProfile.role}</p>
+        <p class="section-copy">{aboutProfile.summary}</p>
+        <div class="tag-list">
+          {aboutProfile.focuses.map((item) => (
+            <span class="tag">{item}</span>
+          ))}
+        </div>
+      </article>
+
+      <aside class="side-panel flow-sm">
+        <p class="eyebrow">Station Status</p>
+        <div class="side-list">
+          <div>
+            <strong>当前阶段</strong>
+            <p class="muted">{siteMeta.currentStatus}</p>
+          </div>
+          <div>
+            <strong>地点</strong>
+            <p class="muted">{siteMeta.location}</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="page-section">
+    <div class="page-intro panel footer-dock">
+      <p class="eyebrow">Timeline</p>
+      <h2>站点演进轨迹</h2>
+      <div class="timeline-list">
+        {timeline.map((item) => (
+          <article class="timeline-item panel flow-sm">
+            <p class="eyebrow">{item.date}</p>
+            <h3>{item.title}</h3>
+            <p>{item.summary}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</SiteLayout>

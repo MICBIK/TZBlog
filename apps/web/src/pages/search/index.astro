@@ -1,0 +1,92 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { searchIndex } from '../../data/content'
+
+const initialResults = searchIndex.slice(0, 6)
+---
+
+<SiteLayout title="搜索 | TZBlog" description="搜索作为一级导航存在，帮助用户快速定位内容。">
+  <section class="page-intro panel search-shell">
+    <div class="search-layout">
+      <div class="flow-md">
+        <p class="eyebrow">Search</p>
+        <h1>Signal Search Relay</h1>
+        <p class="section-copy">搜索不是隐藏功能。当前页面先提供演示检索壳层，后续会切换到 Pagefind 实索引。</p>
+        <input class="search-input" type="search" placeholder="试着搜：布局、Payload、搜索、动效" data-search-input />
+      </div>
+      <aside class="side-panel flow-sm">
+        <p class="eyebrow">Suggested Queries</p>
+        <div class="tag-list">
+          <button class="button button-ghost" data-suggest="布局">布局</button>
+          <button class="button button-ghost" data-suggest="Payload">Payload</button>
+          <button class="button button-ghost" data-suggest="搜索">搜索</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="page-section">
+    <div class="search-results" data-search-results>
+      {initialResults.map((item) => (
+        <article class="search-card panel flow-sm">
+          <p class="eyebrow">{item.type}</p>
+          <h3><a href={item.href}>{item.title}</a></h3>
+          <p class="muted">{item.summary}</p>
+          <p class="meta-line">{item.meta}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ searchIndex }}>
+    const input = document.querySelector('[data-search-input]')
+    const resultRoot = document.querySelector('[data-search-results]')
+    const suggestButtons = document.querySelectorAll('[data-suggest]')
+
+    const render = (items) => {
+      if (!resultRoot) return
+      if (!items.length) {
+        resultRoot.innerHTML = '<div class="empty-state panel">没搜到匹配信号，换个关键词试试。</div>'
+        return
+      }
+
+      resultRoot.innerHTML = items
+        .map(
+          (item) => `
+            <article class="search-card panel flow-sm">
+              <p class="eyebrow">${item.type}</p>
+              <h3><a href="${item.href}">${item.title}</a></h3>
+              <p class="muted">${item.summary}</p>
+              <p class="meta-line">${item.meta}</p>
+            </article>
+          `,
+        )
+        .join('')
+    }
+
+    const runSearch = (query) => {
+      const normalized = query.trim().toLowerCase()
+      if (!normalized) {
+        render(searchIndex.slice(0, 6))
+        return
+      }
+
+      const matches = searchIndex.filter((item) => {
+        return [item.title, item.summary, item.type, item.meta].some((field) => field.toLowerCase().includes(normalized))
+      })
+      render(matches)
+    }
+
+    input?.addEventListener('input', (event) => {
+      runSearch(event.currentTarget.value)
+    })
+
+    suggestButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const value = button.getAttribute('data-suggest') || ''
+        if (input) input.value = value
+        runSearch(value)
+      })
+    })
+  </script>
+</SiteLayout>

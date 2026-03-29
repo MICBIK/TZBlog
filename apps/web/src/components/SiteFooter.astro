@@ -1,0 +1,32 @@
+---
+import { socialLinks, siteMeta } from '../data/content'
+---
+
+<footer class="site-footer shell">
+  <div class="panel dock-grid">
+    <div class="flow-sm">
+      <p class="eyebrow">Footer Dock</p>
+      <h2>{siteMeta.title}</h2>
+      <p class="muted">{siteMeta.description}</p>
+    </div>
+
+    <div class="flow-sm">
+      <p class="eyebrow">Navigation Relay</p>
+      <div class="footer-links">
+        <a href="/posts">文章</a>
+        <a href="/projects">项目</a>
+        <a href="/docs">文档</a>
+        <a href="/lab">实验室</a>
+      </div>
+    </div>
+
+    <div class="flow-sm">
+      <p class="eyebrow">External Signals</p>
+      <div class="footer-links">
+        {socialLinks.map((item) => (
+          <a href={item.href}>{item.label}</a>
+        ))}
+      </div>
+    </div>
+  </div>
+</footer>

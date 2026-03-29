@@ -1,0 +1,44 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { notes } from '../../data/content'
+
+export function getStaticPaths() {
+  return notes.map((note) => ({ params: { slug: note.slug }, props: { note } }))
+}
+
+const { note } = Astro.props
+---
+
+<SiteLayout title={`${note.title} | TZBlog`} description={note.summary}>
+  <section class="detail-hero panel flow-md">
+    <p class="eyebrow">{note.mood}</p>
+    <h1>{note.title}</h1>
+    <p class="section-copy">{note.summary}</p>
+    <div class="hero-status">
+      <span class="status-chip">{note.publishedAt}</span>
+      {note.tags.map((tag) => (
+        <span class="status-chip">{tag}</span>
+      ))}
+    </div>
+  </section>
+
+  <section class="page-section article-layout">
+    <article class="panel article-content flow-lg">
+      {note.sections.map((section) => (
+        <section class="article-section flow-sm">
+          <h2>{section.title}</h2>
+          {section.paragraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+        </section>
+      ))}
+    </article>
+
+    <aside class="flow-md">
+      <div class="side-panel flow-sm">
+        <p class="eyebrow">Entry Type</p>
+        <p class="muted">这类页面用于记录开发过程中值得保留但不需要拉成完整长文的判断。</p>
+      </div>
+    </aside>
+  </section>
+</SiteLayout>

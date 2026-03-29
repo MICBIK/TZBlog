@@ -1,0 +1,44 @@
+---
+interface Props {
+  href: string
+  eyebrow?: string
+  title: string
+  summary: string
+  meta?: string
+  tags?: string[]
+  variant?: 'list' | 'grid' | 'compact'
+}
+
+const {
+  href,
+  eyebrow,
+  title,
+  summary,
+  meta,
+  tags = [],
+  variant = 'list',
+} = Astro.props
+---
+
+<article class={`content-card panel content-card-${variant}`}>
+  <a href={href} class="card-link">
+    <div class="flow-sm">
+      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+      <h3>{title}</h3>
+      <p class="muted">{summary}</p>
+    </div>
+
+    {(meta || tags.length > 0) && (
+      <div class="card-meta flow-sm">
+        {meta && <p class="meta-line">{meta}</p>}
+        {tags.length > 0 && (
+          <div class="tag-list">
+            {tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </a>
+</article>

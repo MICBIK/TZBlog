@@ -7,7 +7,7 @@
 ## 当前开发基线
 
 - 已建立 `pnpm workspace + turbo` monorepo
-- 已建立 `apps/web` Astro 前台最小骨架
+- 已建立 `apps/web` Astro 前台完整界面骨架与核心页面系统
 - 已建立 `apps/cms` Payload CMS 最小骨架
 - 已建立 `infra/docker-compose.yml` PostgreSQL 本地开发环境
 - 当前第一阶段已不再是“纯文档状态”
@@ -88,6 +88,16 @@
 3. 接入构建 Webhook 与 `Pagefind`
 4. 接入 `Umami`
 5. 最后补 Hero 3D、动效层和运营细节
+
+## 开发记录
+
+### 2026-03-29
+
+- 已将 `apps/web` 从最小占位页升级为完整前台界面骨架
+- 已落地首页 6 区块结构：Hero、Focus Stream、Mission Panels、Selected Works、Timeline、Footer Dock
+- 已建立一级导航与核心路由：`/posts`、`/projects`、`/docs`、`/notes`、`/lab`、`/about`、`/search`
+- 已建立 posts/projects/docs/notes 的列表页与详情页模板
+- 已补充配置驱动的示例内容层，为后续 Payload 数据接入预留契约
 
 ## 后续更新约定
 

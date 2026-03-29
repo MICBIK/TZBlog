@@ -68,7 +68,7 @@
 ### 工程层
 
 - 根目录已存在 `package.json`、`pnpm-workspace.yaml`、`turbo.json`
-- `apps/web` 已可构建首页和文章详情页占位骨架
+- `apps/web` 已可构建完整前台界面骨架，覆盖首页、列表页、详情页、搜索、实验室、关于等核心路由
 - `apps/cms` 已可启动 Payload Admin，占位前台已改为 TZBlog CMS bootstrap
 - `infra/docker-compose.yml` 已可启动本地 PostgreSQL
 

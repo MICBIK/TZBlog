@@ -1,50 +1,148 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro'
+import ContentCard from '../components/ContentCard.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import SiteLayout from '../layouts/SiteLayout.astro'
+import {
+  docsCollection,
+  heroMetrics,
+  homeSections,
+  missionPanels,
+  posts,
+  projects,
+  siteMeta,
+  timeline,
+} from '../data/content'
+
+const selectedWorks = [projects[0], projects[1], docsCollection[1]]
 ---
 
-<BaseLayout title="TZBlog | Deep Space Observatory">
-  <main class="shell" style="padding: 3rem 0 4rem;">
-    <section class="panel" style="padding: 2rem;">
-      <p class="section-label">TZBlog Bootstrap</p>
-      <h1 style="margin: 0.4rem 0 1rem; font-size: clamp(2.6rem, 6vw, 4.8rem);">
-        Deep Space Observatory
-      </h1>
-      <p style="max-width: 60ch; color: var(--muted); line-height: 1.8;">
-        第一阶段先打通内容基础设施，不在这里提前堆叠重型视觉效果。当前页面作为
-        Astro 前台骨架，占位后续 Hero、文章流、项目流和观测站导航系统。
-      </p>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
-        <a class="panel" href="/posts/hello-world" style="padding: 0.9rem 1.1rem; text-decoration: none;">
-          查看文章页骨架
-        </a>
-        <a class="panel" href="http://localhost:3000/admin" style="padding: 0.9rem 1.1rem; text-decoration: none;">
-          未来接入 CMS Admin
-        </a>
-      </div>
-    </section>
+<SiteLayout title="TZBlog | Deep Space Observatory" description={siteMeta.description}>
+  <section class="hero panel">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="flow-lg">
+          <p class="eyebrow">{homeSections.hero.eyebrow}</p>
+          <h1>{homeSections.hero.title}</h1>
+          <p class="section-copy">{homeSections.hero.intro}</p>
+          <div class="hero-status">
+            <span class="status-chip">{siteMeta.currentStatus}</span>
+            <span class="status-chip">Search as Primary Navigation</span>
+            <span class="status-chip">Reading before Spectacle</span>
+          </div>
+          <div class="hero-actions">
+            <a href="/posts" class="button button-primary">进入文章航线</a>
+            <a href="/projects" class="button button-secondary">查看项目档案</a>
+          </div>
+        </div>
 
-    <section style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 1.5rem;">
-      <article class="panel" style="padding: 1.25rem;">
-        <p class="section-label">Phase 1</p>
-        <h2 style="margin-top: 0.5rem;">Monorepo Foundation</h2>
-        <p style="color: var(--muted); line-height: 1.7;">
-          建立 `apps/web`、`apps/cms`、`infra` 三段式结构，统一根级脚本与依赖管理。
-        </p>
-      </article>
-      <article class="panel" style="padding: 1.25rem;">
-        <p class="section-label">Phase 2</p>
-        <h2 style="margin-top: 0.5rem;">Payload Models</h2>
-        <p style="color: var(--muted); line-height: 1.7;">
-          下一轮将补 `posts / projects / docs / notes / pages` 与 site globals。
-        </p>
-      </article>
-      <article class="panel" style="padding: 1.25rem;">
-        <p class="section-label">Phase 3</p>
-        <h2 style="margin-top: 0.5rem;">Content Delivery</h2>
-        <p style="color: var(--muted); line-height: 1.7;">
-          在 Astro 中接入 Payload 内容拉取，再进入搜索、统计和宇宙主题视觉增强。
-        </p>
-      </article>
-    </section>
-  </main>
-</BaseLayout>
+        <div class="stat-grid">
+          {heroMetrics.map((metric) => (
+            <article class="stat-card panel flow-sm">
+              <p class="eyebrow">{metric.label}</p>
+              <strong>{metric.value}</strong>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div class="hero-card panel">
+        <div class="flow-sm">
+          <p class="eyebrow">Main Planet Hero</p>
+          <h3>主星体只负责身份与氛围，内容面板负责真正分发。</h3>
+        </div>
+
+        <div class="planet-stage" aria-hidden="true">
+          <div class="planet"></div>
+          <div class="orbit-ring"></div>
+        </div>
+
+        <div class="side-panel flow-sm">
+          <p class="eyebrow">Mission Brief</p>
+          <p class="muted">首页不是宇宙特效游乐场，而是一个能把文章、项目、文档和实验入口整齐送出去的观测站中枢。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-section">
+    <SectionHeading
+      eyebrow="Focus Stream"
+      title="最新轨道信号"
+      description="最新文章、重点项目和持续更新文档集中出现在这一层，首页用户不用翻很久就知道哪里最值得点。"
+    />
+    <div class="focus-grid">
+      <ContentCard href={`/posts/${posts[0].slug}`} eyebrow={posts[0].category} title={posts[0].title} summary={posts[0].summary} meta={`${posts[0].publishedAt} · ${posts[0].readTime}`} tags={posts[0].tags} variant="grid" />
+      <ContentCard href={`/projects/${projects[0].slug}`} eyebrow={projects[0].stage} title={projects[0].title} summary={projects[0].summary} meta={`${projects[0].orbit} · ${projects[0].updatedAt}`} tags={projects[0].tags} variant="grid" />
+      <ContentCard href={`/docs/${docsCollection[0].slug}`} eyebrow={docsCollection[0].version} title={docsCollection[0].title} summary={docsCollection[0].summary} meta={`${docsCollection[0].orbit} · ${docsCollection[0].updatedAt}`} tags={docsCollection[0].tags} variant="grid" />
+    </div>
+  </section>
+
+  <section class="page-section">
+    <SectionHeading
+      eyebrow="Mission Panels"
+      title="四条主入口轨道"
+      description="文章、项目、文档、实验室是首页最重要的四个入口，不藏在菜单里，不让用户自己猜。"
+    />
+    <div class="mission-grid">
+      {missionPanels.map((panel) => (
+        <article class="lab-card panel flow-sm">
+          <p class="eyebrow">{panel.eyebrow}</p>
+          <h3>{panel.title}</h3>
+          <p class="muted">{panel.description}</p>
+          <p class="meta-line">{panel.meta}</p>
+          <a href={panel.href} class="button button-ghost">进入 {panel.title}</a>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="page-section">
+    <SectionHeading
+      eyebrow="Selected Works"
+      title="精选项目与专题"
+      description="这一段承担“值得优先看的东西”，不管是项目档案还是重要文档，都用同一套卡片语言承载。"
+    />
+    <div class="selected-grid">
+      {selectedWorks.map((item) => (
+        <ContentCard
+          href={item.slug ? (`stack` in item ? `/projects/${item.slug}` : `/docs/${item.slug}`) : '/'}
+          eyebrow={'stage' in item ? item.stage : item.version}
+          title={item.title}
+          summary={item.summary}
+          meta={`${item.orbit} · ${'updatedAt' in item ? item.updatedAt : ''}`}
+          tags={item.tags}
+          variant="grid"
+        />
+      ))}
+    </div>
+  </section>
+
+  <section class="page-section">
+    <div class="page-intro panel footer-dock">
+      <SectionHeading eyebrow="Timeline / Changelog" title="最近更新轨迹" description="项目进度、设计决定和前台演进都会沉淀成一条清晰的变更轨迹。" />
+      <div class="timeline-list">
+        {timeline.map((item) => (
+          <article class="timeline-item panel flow-sm">
+            <p class="eyebrow">{item.date}</p>
+            <h3>{item.title}</h3>
+            <p>{item.summary}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="page-section">
+    <div class="footer-dock panel">
+      <SectionHeading eyebrow="Footer Dock" title="站点底舱" description="把未来会接进来的后台、搜索和统计系统都提前留出位置，但不抢正文。" />
+      <div class="footer-dock-grid">
+        {homeSections.dock.map((item) => (
+          <article class="stat-card panel flow-sm">
+            <p class="eyebrow">{item.title}</p>
+            <p class="muted">{item.detail}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</SiteLayout>
