@@ -7,37 +7,44 @@ import {
   heroMetrics,
   homeSections,
   missionPanels,
+  notes,
   posts,
   projects,
   siteMeta,
   timeline,
 } from '../data/content'
 
-const selectedWorks = [projects[0], projects[1], docsCollection[1]]
+const leadPost = posts[0]
+const supportPosts = posts.slice(1, 3)
+const featuredProjects = projects.slice(0, 2)
+const docUpdates = docsCollection.slice(0, 2)
+const recentNotes = notes.slice(0, 2)
 ---
 
 <SiteLayout title="TZBlog | Deep Space Observatory" description={siteMeta.description}>
-  <section class="hero panel">
-    <div class="hero-grid">
-      <div class="hero-copy">
-        <div class="flow-lg">
+  <section class="hero-shell panel">
+    <div class="hero-shell-grid">
+      <div class="hero-main flow-lg">
+        <div class="flow-md">
           <p class="eyebrow">{homeSections.hero.eyebrow}</p>
           <h1>{homeSections.hero.title}</h1>
-          <p class="section-copy">{homeSections.hero.intro}</p>
-          <div class="hero-status">
-            <span class="status-chip">{siteMeta.currentStatus}</span>
-            <span class="status-chip">Search as Primary Navigation</span>
-            <span class="status-chip">Reading before Spectacle</span>
-          </div>
-          <div class="hero-actions">
-            <a href="/posts" class="button button-primary">进入文章航线</a>
-            <a href="/projects" class="button button-secondary">查看项目档案</a>
-          </div>
+          <p class="hero-summary">{homeSections.hero.intro}</p>
         </div>
 
-        <div class="stat-grid">
+        <div class="hero-actions">
+          <a href="/posts" class="button button-primary">进入文章航线</a>
+          <a href="/projects" class="button button-secondary">查看项目档案</a>
+        </div>
+
+        <div class="hero-status-bar">
+          <span class="status-chip">{siteMeta.currentStatus}</span>
+          <span class="status-chip">Content before spectacle</span>
+          <span class="status-chip">Deep-space observatory</span>
+        </div>
+
+        <div class="hero-inline-panels">
           {heroMetrics.map((metric) => (
-            <article class="stat-card panel flow-sm">
+            <article class="hero-metric panel flow-sm">
               <p class="eyebrow">{metric.label}</p>
               <strong>{metric.value}</strong>
             </article>
@@ -45,47 +52,123 @@ const selectedWorks = [projects[0], projects[1], docsCollection[1]]
         </div>
       </div>
 
-      <div class="hero-card panel">
-        <div class="flow-sm">
+      <aside class="hero-orbit-card panel">
+        <div class="orbit-copy flow-sm">
           <p class="eyebrow">Main Planet Hero</p>
-          <h3>主星体只负责身份与氛围，内容面板负责真正分发。</h3>
+          <h3>把宇宙感锁在首页首屏，把内容分发权交给后续模块。</h3>
+          <p class="muted">主星体负责辨识度和气质，不负责替代文章、项目与文档入口。</p>
         </div>
 
         <div class="planet-stage" aria-hidden="true">
           <div class="planet"></div>
-          <div class="orbit-ring"></div>
+          <div class="orbit-ring orbit-ring-main"></div>
+          <div class="orbit-ring orbit-ring-secondary"></div>
         </div>
 
-        <div class="side-panel flow-sm">
-          <p class="eyebrow">Mission Brief</p>
-          <p class="muted">首页不是宇宙特效游乐场，而是一个能把文章、项目、文档和实验入口整齐送出去的观测站中枢。</p>
+        <div class="signal-stack flow-sm">
+          <div>
+            <strong>观测站状态</strong>
+            <p class="muted">首页从概念展示切回内容分发中枢。</p>
+          </div>
+          <div>
+            <strong>当前重点</strong>
+            <p class="muted">先让文章、项目、文档形成真实的站点流动感。</p>
+          </div>
         </div>
-      </div>
+      </aside>
     </div>
   </section>
 
   <section class="page-section">
-    <SectionHeading
-      eyebrow="Focus Stream"
-      title="最新轨道信号"
-      description="最新文章、重点项目和持续更新文档集中出现在这一层，首页用户不用翻很久就知道哪里最值得点。"
-    />
-    <div class="focus-grid">
-      <ContentCard href={`/posts/${posts[0].slug}`} eyebrow={posts[0].category} title={posts[0].title} summary={posts[0].summary} meta={`${posts[0].publishedAt} · ${posts[0].readTime}`} tags={posts[0].tags} variant="grid" />
-      <ContentCard href={`/projects/${projects[0].slug}`} eyebrow={projects[0].stage} title={projects[0].title} summary={projects[0].summary} meta={`${projects[0].orbit} · ${projects[0].updatedAt}`} tags={projects[0].tags} variant="grid" />
-      <ContentCard href={`/docs/${docsCollection[0].slug}`} eyebrow={docsCollection[0].version} title={docsCollection[0].title} summary={docsCollection[0].summary} meta={`${docsCollection[0].orbit} · ${docsCollection[0].updatedAt}`} tags={docsCollection[0].tags} variant="grid" />
+    <div class="signal-deck">
+      <article class="signal-lead panel flow-md">
+        <div class="flow-sm">
+          <p class="eyebrow">Latest Dispatch</p>
+          <h2>{leadPost.title}</h2>
+          <p class="section-copy">{leadPost.summary}</p>
+        </div>
+        <div class="inline-actions">
+          <span class="status-chip">{leadPost.publishedAt}</span>
+          <span class="status-chip">{leadPost.readTime}</span>
+          <span class="status-chip">{leadPost.category}</span>
+        </div>
+        <a href={`/posts/${leadPost.slug}`} class="button button-ghost">打开最新文章</a>
+      </article>
+
+      <article class="signal-side panel flow-sm">
+        <p class="eyebrow">Current Mission</p>
+        <h3>{featuredProjects[0].title}</h3>
+        <p class="muted">{featuredProjects[0].summary}</p>
+        <p class="meta-line">{featuredProjects[0].stage} · {featuredProjects[0].updatedAt}</p>
+        <a href={`/projects/${featuredProjects[0].slug}`} class="button button-ghost">查看项目详情</a>
+      </article>
+
+      <article class="signal-side panel flow-sm">
+        <p class="eyebrow">Doc Update</p>
+        <h3>{docUpdates[0].title}</h3>
+        <p class="muted">{docUpdates[0].summary}</p>
+        <p class="meta-line">{docUpdates[0].version} · {docUpdates[0].updatedAt}</p>
+        <a href={`/docs/${docUpdates[0].slug}`} class="button button-ghost">进入文档中枢</a>
+      </article>
     </div>
+  </section>
+
+  <section class="page-section home-river-grid">
+    <div class="flow-md">
+      <SectionHeading
+        eyebrow="Recent Writing"
+        title="最新文章与持续写作"
+        description="让首页更像一个真的博客入口：用户先看到有什么内容在更新，而不是只看到一个很好看的首屏。"
+      />
+      <div class="content-stack">
+        {posts.map((post) => (
+          <ContentCard href={`/posts/${post.slug}`} eyebrow={post.category} title={post.title} summary={post.summary} meta={`${post.publishedAt} · ${post.readTime} · ${post.orbit}`} tags={post.tags} />
+        ))}
+      </div>
+    </div>
+
+    <aside class="home-side-rail flow-md">
+      <div class="side-panel flow-sm rail-panel">
+        <p class="eyebrow">Orbit Index</p>
+        <div class="rail-list">
+          <a href="/posts">文章航线</a>
+          <a href="/projects">项目档案</a>
+          <a href="/docs">文档中枢</a>
+          <a href="/notes">更新日志</a>
+        </div>
+      </div>
+
+      <div class="side-panel flow-sm rail-panel">
+        <p class="eyebrow">Recent Notes</p>
+        {recentNotes.map((note) => (
+          <a href={`/notes/${note.slug}`} class="rail-entry">
+            <strong>{note.title}</strong>
+            <span class="meta-line">{note.mood} · {note.publishedAt}</span>
+          </a>
+        ))}
+      </div>
+
+      <div class="side-panel flow-sm rail-panel">
+        <p class="eyebrow">Timeline / Changelog</p>
+        {timeline.slice(0, 3).map((item) => (
+          <div class="rail-entry">
+            <strong>{item.title}</strong>
+            <span class="meta-line">{item.date}</span>
+          </div>
+        ))}
+      </div>
+    </aside>
   </section>
 
   <section class="page-section">
     <SectionHeading
       eyebrow="Mission Panels"
       title="四条主入口轨道"
-      description="文章、项目、文档、实验室是首页最重要的四个入口，不藏在菜单里，不让用户自己猜。"
+      description="这一层不做概念板块，而是做真正能被长期使用的主导航分发区。"
     />
-    <div class="mission-grid">
+    <div class="mission-grid mission-grid-upgraded">
       {missionPanels.map((panel) => (
-        <article class="lab-card panel flow-sm">
+        <article class="mission-card panel flow-sm">
           <p class="eyebrow">{panel.eyebrow}</p>
           <h3>{panel.title}</h3>
           <p class="muted">{panel.description}</p>
@@ -96,53 +179,42 @@ const selectedWorks = [projects[0], projects[1], docsCollection[1]]
     </div>
   </section>
 
-  <section class="page-section">
-    <SectionHeading
-      eyebrow="Selected Works"
-      title="精选项目与专题"
-      description="这一段承担“值得优先看的东西”，不管是项目档案还是重要文档，都用同一套卡片语言承载。"
-    />
-    <div class="selected-grid">
-      {selectedWorks.map((item) => (
-        <ContentCard
-          href={item.slug ? (`stack` in item ? `/projects/${item.slug}` : `/docs/${item.slug}`) : '/'}
-          eyebrow={'stage' in item ? item.stage : item.version}
-          title={item.title}
-          summary={item.summary}
-          meta={`${item.orbit} · ${'updatedAt' in item ? item.updatedAt : ''}`}
-          tags={item.tags}
-          variant="grid"
-        />
-      ))}
-    </div>
-  </section>
-
-  <section class="page-section">
-    <div class="page-intro panel footer-dock">
-      <SectionHeading eyebrow="Timeline / Changelog" title="最近更新轨迹" description="项目进度、设计决定和前台演进都会沉淀成一条清晰的变更轨迹。" />
-      <div class="timeline-list">
-        {timeline.map((item) => (
-          <article class="timeline-item panel flow-sm">
-            <p class="eyebrow">{item.date}</p>
-            <h3>{item.title}</h3>
-            <p>{item.summary}</p>
-          </article>
+  <section class="page-section home-river-grid home-river-grid-reverse">
+    <div class="flow-md">
+      <SectionHeading
+        eyebrow="Selected Works"
+        title="重点项目与文档更新"
+        description="项目和文档用更成熟的卡片密度承载，减少“示例区块”的感觉。"
+      />
+      <div class="feature-split-grid">
+        {featuredProjects.map((project) => (
+          <ContentCard href={`/projects/${project.slug}`} eyebrow={project.stage} title={project.title} summary={project.summary} meta={`${project.updatedAt} · ${project.orbit}`} tags={project.tags} variant="grid" />
+        ))}
+        {docUpdates.map((doc) => (
+          <ContentCard href={`/docs/${doc.slug}`} eyebrow={doc.version} title={doc.title} summary={doc.summary} meta={`${doc.updatedAt} · ${doc.orbit}`} tags={doc.tags} variant="grid" />
         ))}
       </div>
     </div>
-  </section>
 
-  <section class="page-section">
-    <div class="footer-dock panel">
-      <SectionHeading eyebrow="Footer Dock" title="站点底舱" description="把未来会接进来的后台、搜索和统计系统都提前留出位置，但不抢正文。" />
-      <div class="footer-dock-grid">
+    <aside class="home-side-rail flow-md">
+      <div class="side-panel flow-sm rail-panel">
+        <p class="eyebrow">Support Signals</p>
+        {supportPosts.map((post) => (
+          <a href={`/posts/${post.slug}`} class="rail-entry">
+            <strong>{post.title}</strong>
+            <span class="meta-line">{post.publishedAt} · {post.readTime}</span>
+          </a>
+        ))}
+      </div>
+      <div class="side-panel flow-sm rail-panel">
+        <p class="eyebrow">Station Dock</p>
         {homeSections.dock.map((item) => (
-          <article class="stat-card panel flow-sm">
-            <p class="eyebrow">{item.title}</p>
-            <p class="muted">{item.detail}</p>
-          </article>
+          <div class="rail-entry">
+            <strong>{item.title}</strong>
+            <span class="meta-line">{item.detail}</span>
+          </div>
         ))}
       </div>
-    </div>
+    </aside>
   </section>
 </SiteLayout>
