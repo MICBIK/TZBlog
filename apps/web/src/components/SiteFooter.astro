@@ -1,5 +1,5 @@
 ---
-import { socialLinks, siteMeta } from '../data/content'
+import { footerNavItems, socialLinks, siteMeta } from '../data/content'
 ---
 
 <footer class="site-footer shell">
@@ -13,10 +13,9 @@ import { socialLinks, siteMeta } from '../data/content'
     <div class="flow-sm">
       <p class="eyebrow">Navigation Relay</p>
       <div class="footer-links">
-        <a href="/posts">文章</a>
-        <a href="/projects">项目</a>
-        <a href="/docs">文档</a>
-        <a href="/lab">实验室</a>
+        {footerNavItems.map((item) => (
+          <a href={item.href}>{item.label}</a>
+        ))}
       </div>
     </div>
 

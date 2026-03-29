@@ -1,74 +1,50 @@
 ---
+import ArticleBody from '../../components/ArticleBody.astro'
+import DetailSidebar from '../../components/DetailSidebar.astro'
+import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
 import { projects } from '../../data/content'
-
 export function getStaticPaths() {
   return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }))
 }
 
 const { project } = Astro.props
 ---
-
 <SiteLayout title={`${project.title} · 项目档案 | TZBlog`} description={project.summary}>
-  <section class="detail-hero panel">
-    <div class="page-intro-grid">
-      <div class="flow-md">
-        <p class="eyebrow">{project.stage}</p>
-        <h1>{project.title}</h1>
-        <p class="section-copy">{project.summary}</p>
-        <div class="hero-status">
-          <span class="status-chip">{project.updatedAt}</span>
-          <span class="status-chip">{project.orbit}</span>
-          <span class="status-chip">{project.stack.join(' · ')}</span>
-        </div>
-      </div>
-      <aside class="side-panel flow-sm">
+  <ThreeColumnLayout>
+  <Fragment slot="left">
+   <DetailSidebar eyebrow={project.stage} title={project.title} summary={project.summary} chips={[project.updatedAt, project.orbit]}>
+   <div class="side-panel flow-sm panel">
         <p class="eyebrow">Quick Links</p>
-        <div class="side-list">
-          {project.links.map((link) => (
-            <a href={link.href}>{link.label}</a>
-          ))}
-        </div>
-      </aside>
+      <div class="side-list rail-list-col">
+       {project.links.map((link) => (
+     <a href={link.href} class="text-sm" style="opacity: 0.8">{link.label} ↗</a>
+        ))}
+     </div>
+   </div>
+    </DetailSidebar>
+  </Fragment>
+  <Fragment slot="main">
+   <ArticleBody sections={project.sections} />
+  </Fragment>
+
+    <Fragment slot="right">
+   <div class="side-panel flow-sm panel">
+    <p class="eyebrow">Highlights</p>
+    <ul style="padding-left: 1.2rem; display: grid; gap: 0.5rem;" class="text-sm">
+    {project.highlights.map((item) => (
+     <li style="opacity: 0.8">{item}</li>
+    ))}
+    </ul>
     </div>
-  </section>
-
-  <section class="page-section article-layout">
-    <article class="panel article-content flow-lg">
-      {project.sections.map((section) => (
-        <section id={section.id} class="article-section flow-sm">
-          <h2>{section.title}</h2>
-          {section.paragraphs.map((paragraph) => (
-            <p>{paragraph}</p>
-          ))}
-          {section.bullets && (
-            <ul>
-              {section.bullets.map((bullet) => (
-                <li>{bullet}</li>
-              ))}
-            </ul>
-          )}
-        </section>
-      ))}
-    </article>
-
-    <aside class="flow-md">
-      <div class="side-panel flow-sm">
-        <p class="eyebrow">Highlights</p>
-        <ul>
-          {project.highlights.map((item) => (
-            <li>{item}</li>
-          ))}
-        </ul>
-      </div>
-      <div class="side-panel flow-sm">
-        <p class="eyebrow">Tech Stack</p>
-        <div class="tag-list">
-          {project.stack.map((item) => (
-            <span class="tag">{item}</span>
-          ))}
-        </div>
-      </div>
-    </aside>
-  </section>
+   <div class="side-panel flow-sm panel">
+    <p class="eyebrow">Tech Stack</p>
+   <div class="tag-list-flex">
+    {project.stack.map((item) => (
+    <span class="tag">{item}</span>
+   ))}
+   </div>
+    </div>
+    </Fragment>
+  </ThreeColumnLayout>
 </SiteLayout>

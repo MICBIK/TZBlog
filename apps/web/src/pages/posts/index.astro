@@ -1,60 +1,44 @@
 ---
 import ContentCard from '../../components/ContentCard.astro'
+import CollectionHeader from '../../components/CollectionHeader.astro'
+import HighlightCard from '../../components/HighlightCard.astro'
+import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { collectionStats, posts } from '../../data/content'
+import { posts } from '../../data/content'
 ---
-
 <SiteLayout title="文章 | TZBlog" description="TZBlog 的文章主列表页，默认采用阅读优先的列表布局。">
-  <section class="page-intro panel">
-    <div class="page-intro-grid">
-      <div class="flow-md">
-        <p class="eyebrow">Posts</p>
-        <h1>文章航线</h1>
-        <p class="section-copy">技术拆解、工程复盘、设计判断和长期写作统一放在这里。默认列表视图，优先照顾阅读而不是密度炫耀。</p>
-        <div class="hero-status">
-          <span class="status-chip">{collectionStats.posts} 篇示例文章</span>
-          <span class="status-chip">List-first</span>
-        </div>
-      </div>
-      <aside class="side-panel flow-sm">
+  <ThreeColumnLayout>
+    <Fragment slot="left">
+      <CollectionHeader eyebrow="Orbit Index" title="文章航线" description="技术拆解、工程复盘、设计判断和长期写作统一放在这里。" />
+      <div class="side-panel flow-sm panel">
         <p class="eyebrow">Reading Radar</p>
         <div class="side-list">
           <div>
             <strong>推荐先看</strong>
             <p class="muted">观测站布局系统、内容契约、动效边界。</p>
           </div>
-          <div>
-            <strong>页面策略</strong>
-            <p class="muted">中轴正文 + 右侧辅助信息，保持阅读稳定。</p>
-          </div>
         </div>
-      </aside>
-    </div>
-  </section>
+      </div>
+    </Fragment>
 
-  <section class="page-section index-layout">
-    <div class="flow-md">
-      {posts.map((post) => (
-        <ContentCard href={`/posts/${post.slug}`} eyebrow={post.category} title={post.title} summary={post.summary} meta={`${post.publishedAt} · ${post.readTime} · ${post.orbit}`} tags={post.tags} />
-      ))}
-    </div>
+    <Fragment slot="main">
+      <div class="content-stack">
+        {posts.map((post) => (
+          <ContentCard href={`/posts/${post.slug}`} eyebrow={post.category} title={post.title} summary={post.summary} meta={`${post.publishedAt} · ${post.readTime}`} tags={post.tags} />
+        ))}
+      </div>
+    </Fragment>
 
-    <aside class="flow-md">
-      <div class="side-panel flow-sm">
-        <p class="eyebrow">Orbit Filters</p>
+    <Fragment slot="right">
+      <div class="side-panel flow-sm panel">
+        <p class="eyebrow">Filters</p>
         <div class="tag-list">
           <span class="tag">Astro</span>
           <span class="tag">Payload</span>
-          <span class="tag">Layout</span>
           <span class="tag">UX</span>
         </div>
       </div>
-      <div class="side-panel flow-sm">
-        <p class="eyebrow">Featured Signal</p>
-        <h3>{posts[0].title}</h3>
-        <p class="muted">{posts[0].summary}</p>
-        <a href={`/posts/${posts[0].slug}`} class="button button-ghost">打开精选文章</a>
-      </div>
-    </aside>
-  </section>
+      <HighlightCard eyebrow="Featured Signal" title={posts[0].title} summary={posts[0].summary} href={`/posts/${posts[0].slug}`} />
+    </Fragment>
+  </ThreeColumnLayout>
 </SiteLayout>

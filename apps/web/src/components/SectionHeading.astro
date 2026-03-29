@@ -9,7 +9,41 @@ const { eyebrow, title, description } = Astro.props
 ---
 
 <div class="section-heading flow-sm">
-  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  {eyebrow && (
+    <div class="heading-eyebrow-wrapper">
+      <span class="heading-orbit-dot"></span>
+      <p class="eyebrow">{eyebrow}</p>
+      <div class="heading-orbit-line"></div>
+    </div>
+  )}
   <h2>{title}</h2>
   {description && <p class="section-copy">{description}</p>}
 </div>
+
+<style>
+  .section-heading {
+    margin-bottom: 2rem;
+  }
+  
+  .heading-eyebrow-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .heading-orbit-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .heading-orbit-line {
+    flex-grow: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border-strong), transparent);
+    max-width: 120px;
+  }
+</style>

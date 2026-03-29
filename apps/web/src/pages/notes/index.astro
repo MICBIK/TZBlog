@@ -1,31 +1,29 @@
 ---
 import ContentCard from '../../components/ContentCard.astro'
+import CollectionHeader from '../../components/CollectionHeader.astro'
+import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
 import { collectionStats, notes } from '../../data/content'
 ---
-
 <SiteLayout title="笔记 | TZBlog" description="短笔记、开发碎片与变更记录。">
-  <section class="page-intro panel">
-    <div class="page-intro-grid">
-      <div class="flow-md">
-        <p class="eyebrow">Notes</p>
-        <h1>更新日志与现场笔记</h1>
-        <p class="section-copy">Notes 更像短波信号：轻量、直接、适合记录过程中的判断与发现。</p>
-        <div class="hero-status">
-          <span class="status-chip">{collectionStats.notes} 条记录</span>
-          <span class="status-chip">Short-form</span>
-        </div>
-      </div>
-      <aside class="side-panel flow-sm">
-        <p class="eyebrow">Mood</p>
-        <p class="muted">Ship Log / Short Note / Field Memo</p>
-      </aside>
-    </div>
-  </section>
+  <ThreeColumnLayout>
+    <Fragment slot="left">
+      <CollectionHeader eyebrow="Notes" title="更新日志与现场笔记" description="轻量、直接、适合记录过程中的判断与发现。" count={collectionStats.notes} unit="条记录" />
+    </Fragment>
 
-  <section class="page-section note-grid">
-    {notes.map((note) => (
-      <ContentCard href={`/notes/${note.slug}`} eyebrow={note.mood} title={note.title} summary={note.summary} meta={note.publishedAt} tags={note.tags} variant="grid" />
-    ))}
-  </section>
+    <Fragment slot="main">
+      <div class="content-stack">
+        {notes.map((note) => (
+          <ContentCard href={`/notes/${note.slug}`} eyebrow={note.mood} title={note.title} summary={note.summary} meta={note.publishedAt} tags={note.tags} />
+        ))}
+      </div>
+    </Fragment>
+
+    <Fragment slot="right">
+      <div class="side-panel flow-sm panel">
+        <p class="eyebrow">Mood</p>
+        <p class="muted text-sm">Ship Log / Short Note / Field Memo</p>
+      </div>
+    </Fragment>
+  </ThreeColumnLayout>
 </SiteLayout>

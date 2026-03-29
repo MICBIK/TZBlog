@@ -1,0 +1,38 @@
+---
+interface Props {
+  eyebrow: string
+  title: string
+  summary: string
+  chips?: string[]
+  tags?: string[]
+}
+
+const { eyebrow, title, summary, chips = [], tags = [] } = Astro.props
+---
+
+<div class="side-panel flow-sm panel">
+  <p class="eyebrow">{eyebrow}</p>
+  <h1 class="detail-title">{title}</h1>
+  <p class="section-copy muted text-sm">{summary}</p>
+
+  {chips.length > 0 && (
+    <div class="hero-status mt-1">
+      {chips.map((chip) => (
+        <span class="status-chip">{chip}</span>
+      ))}
+    </div>
+  )}
+</div>
+
+{tags.length > 0 && (
+  <div class="side-panel flow-sm panel">
+    <p class="eyebrow">Tags</p>
+    <div class="tag-list-flex">
+      {tags.map((tag) => (
+        <span class="tag">{tag}</span>
+      ))}
+    </div>
+  </div>
+)}
+
+<slot />

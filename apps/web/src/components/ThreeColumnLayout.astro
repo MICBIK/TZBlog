@@ -1,0 +1,21 @@
+---
+interface Props {
+  leftDelay?: number
+  mainDelay?: number
+  rightDelay?: number
+}
+
+const { leftDelay = 100, mainDelay = 200, rightDelay = 300 } = Astro.props
+---
+
+<section class="page-section layout-firefly">
+  <aside class="left-rail flow-md animate-fade-up" style={`animation-delay: ${leftDelay}ms;`}>
+    <slot name="left" />
+  </aside>
+  <div class="main-river animate-fade-up" style={`animation-delay: ${mainDelay}ms;`}>
+    <slot name="main" />
+  </div>
+  <aside class="right-rail flow-md animate-fade-up" style={`animation-delay: ${rightDelay}ms;`}>
+    <slot name="right" />
+  </aside>
+</section>

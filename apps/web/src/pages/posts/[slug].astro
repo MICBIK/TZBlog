@@ -1,12 +1,16 @@
 ---
+import ArticleBody from '../../components/ArticleBody.astro'
+import DetailSidebar from '../../components/DetailSidebar.astro'
+import TableOfContents from '../../components/TableOfContents.astro'
+import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
 import { posts } from '../../data/content'
 
 export function getStaticPaths() {
   return posts.map((post, index) => ({
-    params: { slug: post.slug },
+   params: { slug: post.slug },
     props: {
-      post,
+    post,
       previous: posts[index + 1] ?? null,
       next: posts[index - 1] ?? null,
     },
@@ -17,74 +21,27 @@ const { post, previous, next } = Astro.props
 ---
 
 <SiteLayout title={`${post.title} | TZBlog`} description={post.summary}>
-  <section class="detail-hero panel">
-    <div class="page-intro-grid">
-      <div class="flow-md">
-        <p class="eyebrow">{post.category}</p>
-        <h1>{post.title}</h1>
-        <p class="section-copy">{post.summary}</p>
-        <div class="hero-status">
-          <span class="status-chip">{post.publishedAt}</span>
-          <span class="status-chip">{post.readTime}</span>
-          <span class="status-chip">{post.orbit}</span>
-        </div>
-      </div>
-      <aside class="side-panel flow-sm">
-        <p class="eyebrow">Article Signal</p>
-        <p class="muted">文章详情页采用阅读主轴 + 辅助信息结构，右侧目录只做引导，不压正文。</p>
-      </aside>
-    </div>
-  </section>
+  <ThreeColumnLayout>
+   <Fragment slot="left">
+    <DetailSidebar eyebrow={post.category} title={post.title} summary={post.summary} chips={[post.publishedAt, post.readTime]} tags={post.tags} />
+   </Fragment>
+    <Fragment slot="main">
+      <ArticleBody sections={post.sections} />
 
-  <section class="page-section article-layout">
-    <article class="panel article-content flow-lg">
-      {post.sections.map((section) => (
-        <section id={section.id} class="article-section flow-sm">
-          <h2>{section.title}</h2>
-          <div class="article-prose flow-sm">
-            {section.paragraphs.map((paragraph) => (
-              <p>{paragraph}</p>
-            ))}
-            {section.bullets && (
-              <ul>
-                {section.bullets.map((bullet) => (
-                  <li>{bullet}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
-      ))}
-    </article>
+      <section class="page-section article-footer-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+    <div class="panel flow-sm" style="padding: 1.5rem">
+       <p class="eyebrow">上一篇</p>
+      {previous ? <a href={`/posts/${previous.slug}`} style="font-weight: 600">{previous.title}</a> : <p class="muted">没有了</p>}
+     </div>
+        <div class="panel flow-sm" style="padding: 1.5rem; text-align: right">
+     <p class="eyebrow">下一篇</p>
+      {next ? <a href={`/posts/${next.slug}`} style="font-weight: 600">{next.title}</a> : <p class="muted">没有了</p>}
+   </div>
+    </section>
+    </Fragment>
 
-    <aside class="flow-md">
-      <div class="side-panel flow-sm">
-        <p class="eyebrow">目录</p>
-        <div class="toc-list">
-          {post.sections.map((section) => (
-            <a href={`#${section.id}`}>{section.title}</a>
-          ))}
-        </div>
-      </div>
-      <div class="side-panel flow-sm">
-        <p class="eyebrow">Tags</p>
-        <div class="tag-list">
-          {post.tags.map((tag) => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      </div>
-    </aside>
-  </section>
-
-  <section class="page-section article-footer-nav">
-    <div class="panel flow-sm">
-      <p class="eyebrow">上一篇</p>
-      {previous ? <a href={`/posts/${previous.slug}`}>{previous.title}</a> : <p class="muted">已经到最旧的一篇了。</p>}
-    </div>
-    <div class="panel flow-sm">
-      <p class="eyebrow">下一篇</p>
-      {next ? <a href={`/posts/${next.slug}`}>{next.title}</a> : <p class="muted">这是当前最新的一篇。</p>}
-    </div>
-  </section>
+    <Fragment slot="right">
+   <TableOfContents sections={post.sections} />
+    </Fragment>
+  </ThreeColumnLayout>
 </SiteLayout>

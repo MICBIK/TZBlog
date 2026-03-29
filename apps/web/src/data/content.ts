@@ -482,18 +482,10 @@ export const searchIndex = [
   ...notes.map((item) => ({ type: '笔记', title: item.title, summary: item.summary, href: `/notes/${item.slug}`, meta: `${item.mood} · ${item.publishedAt}` })),
 ]
 
-export function getPost(slug: string) {
-  return posts.find((item) => item.slug === slug)
-}
+export const mainContentNavItems = navItems.filter(
+  (item) => ['/posts', '/projects', '/docs', '/notes'].includes(item.href),
+)
 
-export function getProject(slug: string) {
-  return projects.find((item) => item.slug === slug)
-}
-
-export function getDoc(slug: string) {
-  return docsCollection.find((item) => item.slug === slug)
-}
-
-export function getNote(slug: string) {
-  return notes.find((item) => item.slug === slug)
-}
+export const footerNavItems = navItems.filter(
+  (item) => item.href !== '/' && item.href !== '/search',
+)

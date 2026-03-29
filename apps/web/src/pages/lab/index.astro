@@ -1,34 +1,40 @@
 ---
+import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
 import { labExperiments } from '../../data/content'
 ---
 
 <SiteLayout title="实验室 | TZBlog" description="概念验证、小工具与渐进增强试验区。">
-  <section class="page-intro panel">
-    <div class="page-intro-grid">
-      <div class="flow-md">
+  <ThreeColumnLayout>
+    <Fragment slot="left">
+    <div class="side-panel flow-sm panel">
         <p class="eyebrow">Lab</p>
         <h1>实验室舱段</h1>
-        <p class="section-copy">这里放试验性内容，但它们不会反过来干扰文章、项目和文档的主节奏。</p>
-      </div>
-      <aside class="side-panel flow-sm">
-        <p class="eyebrow">Rule</p>
-        <p class="muted">能做实验，但别拿主站当试验田。</p>
-      </aside>
-    </div>
-  </section>
+        <p class="muted text-sm">部分概念验证、小工具与渐进增强试验区。</p>
+   </div>
+    </Fragment>
 
-  <section class="page-section lab-grid">
-    {labExperiments.map((item) => (
-      <article class="lab-card panel flow-sm">
-        <p class="eyebrow">{item.tag}</p>
-        <h3>{item.title}</h3>
-        <p class="muted">{item.summary}</p>
-        <div class="hero-status">
-          <span class="status-chip">{item.status}</span>
-        </div>
-        <a href={item.href} class="button button-ghost">打开实验入口</a>
+    <Fragment slot="main">
+   <div class="lab-grid" style="display: grid; gap: 1.5rem">
+     {labExperiments.map((item) => (
+   <article class="lab-card panel flow-sm" style="padding: 1.5rem">
+         <p class="eyebrow">{item.tag}</p>
+           <h3>{item.title}</h3>
+          <p class="muted" style="font-size: 0.95em">{item.summary}</p>
+    <div class="hero-status" style="margin-top: 0.5rem">
+        <span class="status-chip">{item.status}</span>
+          </div>
+       <a href={item.href} class="button button-ghost" style="margin-top: 1rem">进入</a>
       </article>
-    ))}
-  </section>
+        ))}
+     </div>
+   </Fragment>
+
+    <Fragment slot="right">
+    <div class="side-panel flow-sm panel">
+        <p class="eyebrow">Rule</p>
+        <p class="muted text-sm">能做实验，但别拿主站当试验田。</p>
+      </div>
+   </Fragment>
+  </ThreeColumnLayout>
 </SiteLayout>

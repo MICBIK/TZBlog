@@ -1,0 +1,19 @@
+---
+import type { SectionBlock } from '../data/content'
+
+interface Props {
+  sections: SectionBlock[]
+  label?: string
+}
+
+const { sections, label = '目录' } = Astro.props
+---
+
+<div class="side-panel flow-sm panel sticky-toc">
+  <p class="eyebrow">{label}</p>
+  <div class="toc-list rail-list-col">
+    {sections.map((section) => (
+      <a href={`#${section.id}`} class="text-sm" style="opacity: 0.8">{section.title}</a>
+    ))}
+  </div>
+</div>

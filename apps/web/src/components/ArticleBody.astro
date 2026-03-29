@@ -1,0 +1,29 @@
+---
+import type { SectionBlock } from '../data/content'
+
+interface Props {
+  sections: SectionBlock[]
+}
+
+const { sections } = Astro.props
+---
+
+<article class="panel article-content flow-lg article-panel">
+  {sections.map((section) => (
+    <section id={section.id} class="article-section flow-sm">
+      <h2 class="section-title">{section.title}</h2>
+      <div class="article-prose flow-sm">
+        {section.paragraphs.map((paragraph) => (
+          <p class="prose-body">{paragraph}</p>
+        ))}
+        {section.bullets && section.bullets.length > 0 && (
+          <ul class="prose-body" style="padding-left: 1.5rem; display: grid; gap: 0.5rem;">
+            {section.bullets.map((bullet) => (
+              <li>{bullet}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  ))}
+</article>

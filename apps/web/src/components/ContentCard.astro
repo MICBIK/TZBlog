@@ -21,9 +21,15 @@ const {
 ---
 
 <article class={`content-card panel content-card-${variant}`}>
+  <div class="card-glow-effect"></div>
   <a href={href} class="card-link">
     <div class="flow-sm">
-      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+      {eyebrow && (
+        <div class="card-eyebrow-wrapper">
+          <span class="card-orbit-dot"></span>
+          <p class="eyebrow">{eyebrow}</p>
+        </div>
+      )}
       <h3>{title}</h3>
       <p class="muted">{summary}</p>
     </div>
@@ -42,3 +48,57 @@ const {
     )}
   </a>
 </article>
+
+<style>
+  .content-card {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .card-glow-effect {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.06), transparent 70%);
+    opacity: 0;
+    transition: opacity 300ms ease;
+    pointer-events: none;
+  }
+  
+  .content-card:hover .card-glow-effect {
+    opacity: 1;
+  }
+  
+  .card-eyebrow-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .card-orbit-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 8px #fff;
+  }
+
+  /* Left accent bar for Firefly feel */
+  .content-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 3px;
+    background: #fff;
+    border-radius: 0 4px 4px 0;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  .content-card:hover::before {
+    opacity: 1;
+  }
+</style>
