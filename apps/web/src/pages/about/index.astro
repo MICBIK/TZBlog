@@ -20,9 +20,12 @@ import { aboutProfile, siteMeta, timeline } from '../../data/content'
      <p class="meta-line">{aboutProfile.role}</p>
      <p class="section-copy">{aboutProfile.summary}</p>
      <div class="tag-list mt-1">
-      {aboutProfile.focuses.map((item) => (
-       <span class="tag" style="background: rgba(255,255,255,0.02)">{item}</span>
-     ))}
+       {aboutProfile.techStack.frontend.map((tech: string) => (
+         <span class="tag" style="background: rgba(255,255,255,0.02)">{tech}</span>
+       ))}
+       {aboutProfile.techStack.backend.map((tech: string) => (
+         <span class="tag" style="background: rgba(255,255,255,0.02)">{tech}</span>
+       ))}
       </div>
    </article>
 
