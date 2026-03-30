@@ -890,5 +890,4 @@ npx -y @fission-ai/openspec@1.2.0 archive build-payload-content-collections -y
 
 ---
 
-*本文档由 OpenCode 生成，作为 TZBlog CMS 数据链路实现的完整参考方案。*
 *执行前请确认 PostgreSQL 已启动，Payload CMS 环境变量已正确配置。*
