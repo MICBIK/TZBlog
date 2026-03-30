@@ -106,7 +106,6 @@ export const navItems: NavItem[] = [
   { label: '文档', href: '/docs' },
   { label: '实验室', href: '/lab', badge: 'Beta' },
   { label: '关于', href: '/about' },
-  { label: '搜索', href: '/search' },
 ]
 
 export const socialLinks: SocialLink[] = [
