@@ -144,10 +144,14 @@ pnpm local:cms
 
 ### 日志位置
 
-脚本会把后台运行日志写到临时目录：
+脚本会把后台运行日志写到系统临时目录 `${TMPDIR:-/tmp}/tzblog-local-dev/`。
 
-- Web: `/tmp/tzblog-local-dev/web.log`
-- CMS: `/tmp/tzblog-local-dev/cms.log`
+在 macOS 上，这个目录通常会实际展开成 `/var/folders/.../T/tzblog-local-dev/`。
+
+常见日志文件是：
+
+- Web: `${TMPDIR:-/tmp}/tzblog-local-dev/web.log`
+- CMS: `${TMPDIR:-/tmp}/tzblog-local-dev/cms.log`
 
 如果你启动失败，优先看这两个日志。
 
