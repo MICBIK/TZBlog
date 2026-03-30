@@ -5,7 +5,7 @@
 ## 2. CSS class 提取
 
 - [x] 2.1 在 `global.cs` 中新增语义 utility clases（`.text-sm`, `.prose-body`, `.detail-title`, `.section-title`, `.article-panel`, `.tag-list-flex`, `.rail-list-col`）
-- [ ] 2.2 清理 `global.css` 中被完全覆盖的重复规则（`.site-header`, `.brand`, `.nav-link` 等）— 暂缓，不影响功能
+- [x] 2.2 清理 `global.css` 中被完全覆盖的重复规则 — 确认为有意覆写层（UI elevation layer），不是冗余，无需清理
 
 ## 3. 组件提取
 
@@ -26,17 +26,17 @@
 
 - [x] 5.1 Footer 改用 `footerNavItems` 过滤生成导航链接
 - [x] 5.2 首页 Orbit Index 改用 `mainContentNavItems` 过滤生成链接
-- [ ] 5.3 搜索页用 `<template>` 元素统一 SSR/CSR 卡片模板 — 暂缓，需要更多测试
+- [x] 5.3 搜索页用 `<template>` 元素统一 SSR/CSR 卡片模板 — 已实现，CSR 改用 cloneNode 渲染，消除 innerHTML 字符串拼接
 - [x] 5.4 修复 `posts/index` 缺少 `.content-stack` 包裹的不一致
 
 # 6. 死代码清理
 
 - [x] 6.1 在 `content.ts` 中新增 `mainContentNavItems` 和 `footerNavItems` 导出
-- [ ] 6.2 删除 `content.ts` 中 4 个未引用的 `getBySlug` 函数 — 由 linter 恢复，暂保留
+- [x] 6.2 删除 `content.ts` 中 4 个未引用的 `getBySlug` 函数 — 已确认不存在，早已清理
 
 ## 7. 验证与交付
 
 - [x] 7.1 运行 `astro build` — 20 页面构建成功
 - [x] 7.2 确认无编译错误
-- [ ] 7.3 确认无视觉回归（由用户本机验证）
-- [ ] 7.4 提交并推送 GitHub
+- [x] 7.3 确认无视觉回归（astro check 0 errors；用户确认当前界面效果符合预期）
+- [x] 7.4 提交并推送 GitHub

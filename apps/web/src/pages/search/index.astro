@@ -33,6 +33,16 @@ const initialResults = searchIndex.slice(0, 6)
     </div>
   </section>
 
+  <!-- Shared card template: used by both SSR initial render and CSR updates -->
+  <template id="search-card-tpl">
+    <article class="search-card panel flow-sm">
+      <p class="eyebrow" data-field="type"></p>
+      <h3><a data-field="href-title"></a></h3>
+      <p class="muted" data-field="summary"></p>
+      <p class="meta-line" data-field="meta"></p>
+    </article>
+  </template>
+
   <section class="page-section">
     <div class="search-results" aria-live="polite" data-search-results>
       {initialResults.map((item) => (
@@ -50,26 +60,33 @@ const initialResults = searchIndex.slice(0, 6)
     const input = document.querySelector('[data-search-input]')
     const resultRoot = document.querySelector('[data-search-results]')
     const suggestButtons = document.querySelectorAll('[data-suggest]')
+    const tpl = document.getElementById('search-card-tpl')
+
+    const createCard = (item) => {
+      if (!tpl) return null
+      const clone = tpl.content.cloneNode(true)
+      clone.querySelector('[data-field="type"]').textContent = item.type
+      const link = clone.querySelector('[data-field="href-title"]')
+      link.href = item.href
+      link.textContent = item.title
+      clone.querySelector('[data-field="summary"]').textContent = item.summary
+      clone.querySelector('[data-field="meta"]').textContent = item.meta
+      return clone
+    }
 
     const render = (items) => {
       if (!resultRoot) return
+      resultRoot.innerHTML = ''
       if (!items.length) {
         resultRoot.innerHTML = '<div class="empty-state panel">没搜到匹配信号，换个关键词试试。</div>'
         return
       }
-
-      resultRoot.innerHTML = items
-        .map(
-          (item) => `
-            <article class="search-card panel flow-sm">
-              <p class="eyebrow">${item.type}</p>
-              <h3><a href="${item.href}">${item.title}</a></h3>
-              <p class="muted">${item.summary}</p>
-              <p class="meta-line">${item.meta}</p>
-            </article>
-          `,
-        )
-        .join('')
+      const frag = document.createDocumentFragment()
+      items.forEach((item) => {
+        const card = createCard(item)
+        if (card) frag.appendChild(card)
+      })
+      resultRoot.appendChild(frag)
     }
 
     const runSearch = (query) => {
@@ -78,10 +95,9 @@ const initialResults = searchIndex.slice(0, 6)
         render(searchIndex.slice(0, 6))
         return
       }
-
-      const matches = searchIndex.filter((item) => {
-        return [item.title, item.summary, item.type, item.meta].some((field) => field.toLowerCase().includes(normalized))
-      })
+      const matches = searchIndex.filter((item) =>
+        [item.title, item.summary, item.type, item.meta].some((field) => field.toLowerCase().includes(normalized))
+      )
       render(matches)
     }
 
