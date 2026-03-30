@@ -129,3 +129,90 @@ Detail page templates for posts, projects, docs, and notes SHALL render section 
 - **WHEN** a note entry's section data contains a `bullets` array
 - **THEN** the note detail page renders those bullets in the same format as posts, projects, and docs detail pages
 
+### Requirement: TZBlog homepage SHALL prioritize content distribution over pure hero spectacle
+The homepage SHALL use the observatory hero as an identity layer, but its primary job SHALL be distributing posts, projects, docs, and updates in a way that feels like a mature long-running blog product.
+
+#### Scenario: User lands on homepage
+- **WHEN** the homepage is rendered
+- **THEN** the hero provides identity and atmosphere while the surrounding modules clearly expose live content entry points and updates
+
+### Requirement: TZBlog frontend SHALL present a mature observatory interaction language
+The frontend SHALL combine low-noise motion, stable navigation, coherent card language, and deep-space visual identity so it feels productized rather than like a sample interface.
+
+#### Scenario: User navigates primary routes
+- **WHEN** a user moves between homepage, list pages, and detail pages
+- **THEN** the interface shows consistent hierarchy, restrained interaction feedback, and a cohesive observatory visual system
+
+### Requirement: Primary Navigation Structure
+
+The site primary navigation MUST NOT contain a redundant search entry when a dedicated Search Relay CTA already exists in the header.
+
+#### Scenario: Search entry is removed from navItems
+
+- Given the site header is rendered
+- When `navItems` is iterated to build the `<nav>` element
+- Then no nav link with href `/search` appears inside the `<nav>` element
+- And the Search Relay CTA button remains present in the header outside the `<nav>`
+- And navigating to `/search` continues to work via the Search Relay button
+
+#### Scenario: Downstream nav filters are unaffected
+
+- Given `footerNavItems` filters out `/search` from `navItems`
+- And `mainContentNavItems` filters out `/search` from `navItems`
+- When the search entry is removed from `navItems`
+- Then `footerNavItems` and `mainContentNavItems` produce identical output as before
+- And no footer or content nav link is lost
+
+### Requirement: Hero 3D Planet Surface Quality
+
+The hero planet sphere MUST display procedural crater bump mapping to convey a textured, moon-like surface consistent with the cosmic observatory theme.
+
+#### Scenario: Crater bump map is applied
+
+- Given the SiteLayout Three.js scene is initialized
+- When the planet mesh is created
+- Then a `bumpMap` generated via Canvas 2D (180 random radial-gradient craters on 1024×512 canvas) is assigned to `MeshStandardMaterial`
+- And `bumpScale` is set between 2.0 and 5.0
+- And the diffuse color remains in the warm brown-yellow Saturn palette
+
+### Requirement: Hero 3D Planet Ring System
+
+The hero planet ring system MUST be rendered exclusively with particles (no RingGeometry mesh), and MUST have visible volumetric thickness.
+
+#### Scenario: RingGeometry is removed
+
+- Given the SiteLayout Three.js scene is initialized
+- When the ring system is built
+- Then no `THREE.RingGeometry` mesh exists in the scene
+- And no `generateRingTexture` function is called
+
+#### Scenario: Thick particle ring is rendered
+
+- Given the ring particle system is constructed
+- When particles are distributed
+- Then total particle count is ≥ 60000
+- And particles span radial range r = 24 to 52
+- And y-axis spread ranges from ±0.6 (inner) to ±2.0 (mid ring), giving visible thickness
+- And particle sizes vary randomly between 0.04 and 0.18
+- And particle colors use warm sand tones matching the planet palette
+
+### Requirement: Hero 3D Planet Drag Rotation
+
+The hero planet MUST support smooth 360° drag rotation in any direction without gimbal lock or axis flip artifacts.
+
+#### Scenario: Quaternion-based drag accumulation
+
+- Given the user clicks and drags on the viewport
+- When horizontal or vertical drag delta is applied
+- Then rotation is accumulated via `THREE.Quaternion` multiplication (not Euler angle assignment)
+- And horizontal drag rotates around the world Y axis
+- And vertical drag rotates around the local X axis
+- And rotating past ±90° on any axis produces no direction reversal or lock
+
+#### Scenario: Auto-rotation and mouse parallax coexist with drag quaternion
+
+- Given the planet has a drag quaternion state
+- When the animation loop runs
+- Then auto Y-rotation is composed with the drag quaternion each frame
+- And mouse parallax camera offset continues to function independently
+

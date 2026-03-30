@@ -18,4 +18,4 @@
 
 - [x] 4.1 运行 `astro check` / `astro build`
 - [x] 4.2 整理给用户的本机验证重点
-- [ ] 4.3 提交并推送 GitHub
+- [x] 4.3 提交并推送 GitHub

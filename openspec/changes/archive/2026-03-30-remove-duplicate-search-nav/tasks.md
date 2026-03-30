@@ -12,11 +12,11 @@
 ## 3. 验证
 
 - [x] 3.1 `astro check` 0 errors / 0 warnings
-- [ ] 3.2 本机目视验证：顶部导航不再出现「搜索」链接
-- [ ] 3.3 本机目视验证：Search Relay 按钮仍然存在且可跳转
-- [ ] 3.4 本机目视验证：`/search` 页面功能正常
+- [x] 3.2 本机目视验证：顶部导航不再出现「搜索」链接
+- [x] 3.3 本机目视验证：Search Relay 按钮仍然存在且可跳转
+- [x] 3.4 本机目视验证：`/search` 页面功能正常
 
 ## 4. 收尾
 
 - [x] 4.1 OpenSpec validate 通过
-- [ ] 4.2 提交 atomic commit: `fix(web): remove duplicate search nav entry, keep Search Relay CTA`
+- [x] 4.2 提交 atomic commit: `fix(web): remove duplicate search nav entry, keep Search Relay CTA` — 已提交 f1033be
