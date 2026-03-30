@@ -92,6 +92,65 @@ cp apps/web/.env.example apps/web/.env
 pnpm install
 ```
 
+## 推荐的一键方式
+
+如果你后续只是想尽快把本地环境拉起来看效果，优先用根级脚本入口，不用再手动开三条命令。
+
+### 一键启动完整栈
+
+```bash
+pnpm local:start
+```
+
+这个命令会自动做下面这些事：
+
+- 检查 `node`、`pnpm`、`docker`
+- 自动补齐缺失的 `.env`、`apps/cms/.env`、`apps/web/.env`
+- 在依赖缺失时执行 `pnpm install`
+- 启动 PostgreSQL
+- 启动 Payload CMS
+- 启动 Astro Web
+- 输出访问地址和当前服务状态
+
+### 一键查看状态
+
+```bash
+pnpm local:status
+```
+
+### 一键停止
+
+```bash
+pnpm local:stop
+```
+
+### 一键重启
+
+```bash
+pnpm local:restart
+```
+
+### 只启动前台
+
+```bash
+pnpm local:web
+```
+
+### 只启动数据库和 CMS
+
+```bash
+pnpm local:cms
+```
+
+### 日志位置
+
+脚本会把后台运行日志写到临时目录：
+
+- Web: `/tmp/tzblog-local-dev/web.log`
+- CMS: `/tmp/tzblog-local-dev/cms.log`
+
+如果你启动失败，优先看这两个日志。
+
 ## 最常用的启动方式
 
 如果你只是想把完整本地环境跑起来看效果，按下面顺序做。
