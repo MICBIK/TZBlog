@@ -58,9 +58,39 @@ const currentPath = Astro.url.pathname
           return new THREE.CanvasTexture(canvas);
         };
 
+        const generateCraterBumpMap = () => {
+          const bc = document.createElement('canvas');
+          bc.width = 1024; bc.height = 512;
+          const bx = bc.getContext('2d');
+          if (!bx) return null;
+          bx.fillStyle = '#888888';
+          bx.fillRect(0, 0, 1024, 512);
+          for (let i = 0; i < 180; i++) {
+            const cx = Math.random() * 1024;
+            const cy = Math.random() * 512;
+            const r = 8 + Math.random() * 52;
+            const g = bx.createRadialGradient(cx, cy, 0, cx, cy, r);
+            g.addColorStop(0,    'rgba(50,50,50,0.9)');
+            g.addColorStop(0.55, 'rgba(185,185,185,0.7)');
+            g.addColorStop(0.85, 'rgba(128,128,128,0.3)');
+            g.addColorStop(1,    'rgba(128,128,128,0)');
+            bx.fillStyle = g;
+            bx.beginPath(); bx.arc(cx, cy, r, 0, Math.PI * 2); bx.fill();
+          }
+          const id = bx.getImageData(0, 0, 1024, 512);
+          for (let p = 0; p < id.data.length; p += 4) {
+            const n = (Math.random() - 0.5) * 24;
+            id.data[p] = Math.min(255, Math.max(0, id.data[p] + n));
+            id.data[p+1] = id.data[p]; id.data[p+2] = id.data[p];
+          }
+          bx.putImageData(id, 0, 0);
+          return new THREE.CanvasTexture(bc);
+        };
+
         const geometry = new THREE.SphereGeometry(20, 128, 128);
         const material = new THREE.MeshStandardMaterial({
-          map: generateTexture(), roughness: 0.4, metalness: 0.05
+          map: generateTexture(), roughness: 0.55, metalness: 0.05,
+          bumpMap: generateCraterBumpMap(), bumpScale: 3.5
         });
         const planet = new THREE.Mesh(geometry, material);
         planetGroup.add(planet);
@@ -86,52 +116,44 @@ const currentPath = Astro.url.pathname
         });
         planetGroup.add(new THREE.Mesh(glowGeo, glowMat));
 
-        const generateRingTexture = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = 128; canvas.height = 1024;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return null;
-          const drawBand = (start: number, end: number, color: string, opacity: number) => {
-            const grad = ctx.createLinearGradient(0, start, 0, end);
-            grad.addColorStop(0, 'rgba(0,0,0,0)');
-            grad.addColorStop(0.2, color.replace('1)', opacity + ')'));
-            grad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = grad; ctx.fillRect(0, start, 128, end - start);
-          };
-          drawBand(300, 450, 'rgba(160,150,130,1)', 0.15);
-          drawBand(460, 750, 'rgba(215,200,170,1)', 0.45);
-          drawBand(780, 950, 'rgba(195,185,165,1)', 0.4);
-          const tex = new THREE.CanvasTexture(canvas);
-          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-          return tex;
+        // Thick particle ring — three layers, no RingGeometry
+        const buildRingParticles = () => {
+          const layers = [
+            { count: 8000,  rMin: 24, rMax: 30, ySpreadMin: 0.6,  ySpreadMax: 0.6  },
+            { count: 52000, rMin: 30, rMax: 44, ySpreadMin: 1.2,  ySpreadMax: 2.2  },
+            { count: 10000, rMin: 44, rMax: 52, ySpreadMin: 0.8,  ySpreadMax: 1.6  },
+          ];
+          const totalCount = layers.reduce((s, l) => s + l.count, 0);
+          const pPos = new Float32Array(totalCount * 3);
+          const pCol = new Float32Array(totalCount * 3);
+          const pSz  = new Float32Array(totalCount);
+          let idx = 0;
+          for (const layer of layers) {
+            for (let i = 0; i < layer.count; i++) {
+              const r  = layer.rMin + Math.random() * (layer.rMax - layer.rMin);
+              const t  = (r - layer.rMin) / (layer.rMax - layer.rMin);
+              const ys = layer.ySpreadMin + t * (layer.ySpreadMax - layer.ySpreadMin);
+              const th = Math.random() * Math.PI * 2;
+              pPos[idx*3]   = Math.cos(th) * r;
+              pPos[idx*3+1] = (Math.random() - 0.5) * 2 * ys;
+              pPos[idx*3+2] = Math.sin(th) * r;
+              const s = 0.45 + Math.random() * 0.35;
+              pCol[idx*3]   = s * (0.95 + Math.random() * 0.1);
+              pCol[idx*3+1] = s * (0.82 + Math.random() * 0.1);
+              pCol[idx*3+2] = s * (0.60 + Math.random() * 0.1);
+              pSz[idx] = 0.04 + Math.random() * 0.14;
+              idx++;
+            }
+          }
+          const pGeo = new THREE.BufferGeometry();
+          pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+          pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+          planetGroup.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+            size: 0.10, vertexColors: true, transparent: true,
+            opacity: 0.78, blending: THREE.AdditiveBlending, sizeAttenuation: true
+          })));
         };
-
-        const ringGeo = new THREE.RingGeometry(24, 52, 128);
-        const pos = ringGeo.attributes.position;
-        const uvs = ringGeo.attributes.uv;
-        for (let i = 0; i < pos.count; i++) {
-          const d = Math.sqrt(pos.getX(i)**2 + pos.getY(i)**2);
-          uvs.setXY(i, 0.5, (d - 24) / 28);
-        }
-        planetGroup.add(new THREE.Mesh(ringGeo, new THREE.MeshStandardMaterial({
-          map: generateRingTexture(), side: THREE.DoubleSide, transparent: true, opacity: 0.8, roughness: 1
-        })));
-
-        const particleCount = 20000;
-        const pPos = new Float32Array(particleCount * 3);
-        const pCol = new Float32Array(particleCount * 3);
-        for(let i=0; i<particleCount; i++) {
-          const r = 24 + Math.random() * 21; const th = Math.random() * Math.PI * 2;
-          pPos[i*3] = Math.cos(th) * r; pPos[i*3+1] = (Math.random()-0.5)*0.5; pPos[i*3+2] = Math.sin(th)*r;
-          const s = 0.4 + Math.random() * 0.4;
-          pCol[i*3] = s; pCol[i*3+1] = s*0.9; pCol[i*3+2] = s*0.8;
-        }
-        const pGeo = new THREE.BufferGeometry();
-        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-        pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
-        planetGroup.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
-          size: 0.08, vertexColors: true, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending
-        })));
+        buildRingParticles();
 
         const starCount = 5000;
         const sPos = new Float32Array(starCount * 3);
@@ -165,19 +187,35 @@ const currentPath = Astro.url.pathname
         // Offset persists across all pages for consistency
         planetGroup.position.set(width > 1200 ? 35 : 15, 0, 0);
 
-        let isDragging = false, lastX = 0, lastY = 0, tRotX = 0, tRotY = 0, cRotX = 0, cRotY = 0, mX = 0, mY = 0;
+        // Quaternion-based drag — no gimbal lock
+        let isDragging = false, lastX = 0, lastY = 0, mX = 0, mY = 0;
+        const dragQuat = new THREE.Quaternion();
+        const _yAxis   = new THREE.Vector3(0, 1, 0);
+        const _xAxis   = new THREE.Vector3(1, 0, 0);
+        let autoRotY   = 0;
+
         window.addEventListener('mousedown', (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; });
-        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mouseup',   () => isDragging = false);
         window.addEventListener('mousemove', (e) => {
-          mX = (e.clientX / window.innerWidth - 0.5) * 2; mY = (e.clientY / window.innerHeight - 0.5) * 2;
-          if (isDragging) { tRotY += (e.clientX-lastX)*0.01; tRotX += (e.clientY-lastY)*0.01; lastX=e.clientX; lastY=e.clientY; }
+          mX = (e.clientX / window.innerWidth  - 0.5) * 2;
+          mY = (e.clientY / window.innerHeight - 0.5) * 2;
+          if (isDragging) {
+            const dx = (e.clientX - lastX) * 0.012;
+            const dy = (e.clientY - lastY) * 0.012;
+            lastX = e.clientX; lastY = e.clientY;
+            const qY = new THREE.Quaternion().setFromAxisAngle(_yAxis, dx);
+            const qX = new THREE.Quaternion().setFromAxisAngle(_xAxis, dy);
+            dragQuat.premultiply(qY).multiply(qX);
+          }
         });
 
         const animate = () => {
           const time = Date.now() * 0.001;
-          if (!isDragging) { tRotY += (mX * 0.8 - tRotY) * 0.05; tRotX += (mY * 0.4 - tRotX) * 0.05; }
-          cRotX += (tRotX - cRotX) * 0.08; cRotY += (tRotY - cRotY) * 0.08;
-          planetGroup.rotation.x = cRotX; planetGroup.rotation.y = cRotY + time * 0.04;
+          autoRotY = time * 0.04;
+          // Compose: dragQuat * autoRotation
+          const autoQ = new THREE.Quaternion().setFromAxisAngle(_yAxis, autoRotY);
+          planetGroup.quaternion.copy(dragQuat).multiply(autoQ);
+          // Float up/down independent of rotation
           planetGroup.position.y = Math.sin(time * 0.6) * 1.5;
           camera.position.x += (mX * 12 - camera.position.x) * 0.015;
           camera.position.y += (mY * -8 - camera.position.y) * 0.015;
