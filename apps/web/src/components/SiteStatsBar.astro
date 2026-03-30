@@ -1,0 +1,28 @@
+---
+export interface SiteMetricSnapshot {
+  pageviews: number
+  visitors: number
+}
+
+interface Props {
+  allTime: SiteMetricSnapshot
+  today: SiteMetricSnapshot
+}
+
+const { allTime, today } = Astro.props
+const items = [
+  { label: '总访问', value: allTime.pageviews },
+  { label: '总访客', value: allTime.visitors },
+  { label: '今日访问', value: today.pageviews },
+  { label: '今日访客', value: today.visitors },
+]
+---
+
+<div class="site-stats-bar" aria-label="站点统计概览">
+  {items.map((item) => (
+    <div class="site-stat-item panel flow-sm">
+      <span class="site-stat-value">{item.value.toLocaleString()}</span>
+      <span class="site-stat-label text-sm">{item.label}</span>
+    </div>
+  ))}
+</div>

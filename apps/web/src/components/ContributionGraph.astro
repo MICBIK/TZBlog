@@ -1,0 +1,109 @@
+---
+import 'cal-heatmap/cal-heatmap.css'
+import type { ContributionDay } from '../lib/github'
+
+interface Props {
+  username: string
+  data: ContributionDay[]
+}
+
+const { username, data } = Astro.props
+const heatmapId = `contribution-graph-${username.toLowerCase()}`
+const serializedData = JSON.stringify(
+  data.map((day) => ({
+    date: new Date(day.date).getTime(),
+    count: day.count,
+  })),
+)
+---
+
+<div class="contribution-graph panel flow-sm">
+  <p class="eyebrow">Contribution Calendar</p>
+  <div class="contribution-graph-frame">
+    {data.length > 0 ? (
+      <div
+        id={heatmapId}
+        class="contribution-graph-canvas"
+        data-heatmap-root
+        data-contribution-data={serializedData}
+        aria-label={`${username} GitHub contribution heatmap`}
+      ></div>
+    ) : (
+      <p class="contribution-graph-empty text-sm">贡献数据暂不可用，当前展示为空状态。</p>
+    )}
+  </div>
+</div>
+
+{data.length > 0 && (
+  <script>
+    import CalHeatmap from 'cal-heatmap'
+
+    const heatmapRoots = document.querySelectorAll('[data-heatmap-root]')
+
+    heatmapRoots.forEach((rootElement) => {
+      if (!(rootElement instanceof HTMLElement) || rootElement.dataset.heatmapReady === 'true') {
+        return
+      }
+
+      const source = JSON.parse(rootElement.dataset.contributionData || '[]') as Array<{
+        date: number
+        count: number
+      }>
+      const maxCount = source.reduce(
+        (currentMax: number, item: { date: number; count: number }) => Math.max(currentMax, Number(item.count) || 0),
+        0,
+      )
+      const styles = getComputedStyle(document.documentElement)
+      const emptyColor = styles.getPropertyValue('--heatmap-empty').trim() || 'rgba(255, 255, 255, 0.08)'
+      const activeColor = styles.getPropertyValue('--heatmap-active').trim() || '#fafafa'
+      const start = new Date()
+
+      start.setMonth(start.getMonth() - 11, 1)
+      start.setHours(0, 0, 0, 0)
+
+      rootElement.dataset.heatmapReady = 'true'
+
+      const calendar = new CalHeatmap()
+
+      calendar.paint({
+        itemSelector: `#${rootElement.id}`,
+        range: 12,
+        domain: {
+          type: 'month',
+          gutter: 8,
+          label: {
+            text: 'MMM',
+            position: 'top',
+            textAlign: 'start',
+          },
+        },
+        subDomain: {
+          type: 'ghDay',
+          width: 12,
+          height: 12,
+          gutter: 4,
+          radius: 2,
+        },
+        date: {
+          start,
+        },
+        data: {
+          source,
+          x: 'date',
+          y: 'count',
+          defaultValue: 0,
+        },
+        scale: {
+          color: {
+            type: 'linear',
+            domain: [0, Math.max(maxCount, 1)],
+            range: [emptyColor, activeColor],
+          },
+        },
+        theme: 'dark',
+      }).catch((error: unknown) => {
+        console.warn('Failed to render contribution graph:', error)
+      })
+    })
+  </script>
+)}

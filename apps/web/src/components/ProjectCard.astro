@@ -1,0 +1,28 @@
+---
+interface Props {
+  name: string
+  description: string
+  stars: number
+  language?: string | null
+  url: string
+}
+
+const { name, description, stars, language, url } = Astro.props
+---
+
+<article class="project-card panel flow-sm">
+  <div class="project-card-header">
+    <h3>
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        {name}
+      </a>
+    </h3>
+    <span class="project-star-badge">{stars.toLocaleString()} ★</span>
+  </div>
+  <p class="muted text-sm">{description}</p>
+  {language && (
+    <div class="project-card-meta">
+      <span class="project-language-tag">{language}</span>
+    </div>
+  )}
+</article>

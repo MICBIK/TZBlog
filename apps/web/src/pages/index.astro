@@ -1,181 +1,215 @@
 ---
 import ContentCard from '../components/ContentCard.astro'
+import ContributionGraph from '../components/ContributionGraph.astro'
+import ProjectCard from '../components/ProjectCard.astro'
 import SectionHeading from '../components/SectionHeading.astro'
+import SiteStatsBar from '../components/SiteStatsBar.astro'
 import SiteLayout from '../layouts/SiteLayout.astro'
-import {
-  docsCollection,
-  homeSections,
-  mainContentNavItems,
-  missionPanels,
-  notes,
-  posts,
-  projects,
-  siteMeta,
-  timeline,
-} from '../data/content'
+import { aboutProfile, pinnedRepos, posts, siteMeta, socialLinks } from '../data/content'
+import { getContributionCalendar, getReposStats, type RepoStats } from '../lib/github'
+import { EMPTY_UMAMI_STATS, getAllTimeRange, getTodayRange, getUmamiStats } from '../lib/umami'
 
-const leadPost = posts[0]
-const supportPosts = posts.slice(1, 3)
-const featuredProjects = projects.slice(0, 2)
-const docUpdates = docsCollection.slice(0, 2)
-const recentNotes = notes.slice(0, 2)
+const username = 'MICBIK'
+const contributionCalendar = await getContributionCalendar(username)
+const repoStats = await getReposStats(pinnedRepos)
+
+const todayRange = getTodayRange()
+const allTimeRange = getAllTimeRange()
+const [todayStats, allTimeStats] = await Promise.all([
+  getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', todayRange.start, todayRange.end),
+  getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', allTimeRange.start, allTimeRange.end),
+])
+
+const contributionDays = contributionCalendar.weeks.flatMap((week) => week.contributionDays)
+const totalContributions = contributionCalendar.totalContributions
+
+const oneWeekAgo = new Date()
+oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+
+const thisWeek = contributionDays.reduce((sum, day) => {
+  const currentDate = new Date(day.date)
+  return currentDate >= oneWeekAgo ? sum + day.count : sum
+}, 0)
+
+let longestStreak = 0
+let currentStreak = 0
+
+for (const day of contributionDays) {
+  if (day.count > 0) {
+    currentStreak += 1
+    longestStreak = Math.max(longestStreak, currentStreak)
+  } else {
+    currentStreak = 0
+  }
+}
+
+const latestPosts = posts.slice(0, 3)
+const siteStats = {
+  today: todayStats || EMPTY_UMAMI_STATS,
+  allTime: allTimeStats || EMPTY_UMAMI_STATS,
+}
+
+const socialIconPaths = {
+  github: 'M12 1.75A10.25 10.25 0 0 0 8.76 21.73c.52.09.71-.22.71-.5v-1.76c-2.89.63-3.5-1.22-3.5-1.22-.47-1.18-1.15-1.49-1.15-1.49-.94-.64.07-.63.07-.63 1.03.08 1.58 1.06 1.58 1.06.92 1.57 2.41 1.12 3 .86.09-.67.36-1.13.65-1.39-2.31-.26-4.73-1.16-4.73-5.15 0-1.14.41-2.08 1.07-2.81-.1-.26-.46-1.31.11-2.73 0 0 .88-.28 2.88 1.07a10 10 0 0 1 5.24 0c2-1.35 2.88-1.07 2.88-1.07.57 1.42.21 2.47.1 2.73.67.73 1.08 1.67 1.08 2.81 0 4-2.43 4.88-4.75 5.13.38.32.7.94.7 1.91v2.83c0 .28.19.6.72.5A10.25 10.25 0 0 0 12 1.75Z',
+  mail: 'M3.75 6.75h16.5v10.5H3.75V6.75Zm.78-.75 7.47 5.56L19.47 6h-14.94Zm15.72 1.31-8.25 6.14L3.75 7.31v10.69h16.5V7.31Z',
+  rss: 'M5 4.75a14.25 14.25 0 0 1 14.25 14.25h-2a12.25 12.25 0 0 0-12.25-12.25v-2Zm0 5a9.25 9.25 0 0 1 9.25 9.25h-2A7.25 7.25 0 0 0 5 11.75v-2Zm1.25 7.5a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5Z',
+} as const
 ---
 
-<SiteLayout title="TZBlog | Deep Space Observatory" description={siteMeta.description}>
-  <section class="hero-cinematic">
-    <div class="hero-main flow-lg">
-     <div class="flow-md hero-title-group animate-fade-up" style="animation-delay: 100ms;">
-        <p class="eyebrow">{homeSections.hero.eyebrow}</p>
-     <h1>{homeSections.hero.title}</h1>
-      <p class="hero-summary">{homeSections.hero.intro}</p>
+<SiteLayout title={siteMeta.title} description={siteMeta.description}>
+  <section class="page-section home-hero-section">
+    <div class="hero-identity flow-lg">
+      <div class="flow-md animate-fade-up animate-delay-1">
+        <p class="eyebrow">你好，我是</p>
+        <h1>{aboutProfile.name}</h1>
+        <p class="hero-summary">{aboutProfile.role}</p>
       </div>
 
-   <div class="hero-actions animate-fade-up" style="animation-delay: 200ms;">
-     <a href="/posts" class="button button-primary panel">进入文章航线</a>
-    <a href="/projects" class="button button-secondary panel">查看项目档案</a>
-    </div>
-
-      <div class="hero-status-bar animate-fade-up" style="animation-delay: 300ms;">
-      <span class="status-chip">{siteMeta.currentStatus}</span>
-       <span class="status-chip">Content before spectacle</span>
-     </div>
+      <div class="social-links animate-fade-up animate-delay-2">
+        {socialLinks.map((link) => (
+          <a
+            href={link.href}
+            class="social-link"
+            target={link.href.startsWith('http') ? '_blank' : undefined}
+            rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+          >
+            <span class="social-link-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d={socialIconPaths[link.icon]}></path>
+              </svg>
+            </span>
+            <span>{link.label}</span>
+          </a>
+        ))}
+      </div>
     </div>
   </section>
 
-  <section class="page-section animate-fade-up" style="animation-delay: 400ms;">
-  <div class="stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-      <article class="signal-lead panel flow-md p-6">
-       <div class="flow-sm">
-        <p class="eyebrow">Latest Dispatch</p>
-        <h2 style="font-size: 1.6rem">{leadPost.title}</h2>
-     <p class="section-copy" style="font-size: 0.95rem">{leadPost.summary}</p>
-    </div>
-     <a href={`/posts/${leadPost.slug}`} class="button button-ghost">打开最新文章</a>
-      </article>
-    <article class="signal-side panel flow-sm p-6">
-     <p class="eyebrow">Current Mission</p>
-    <h3>{featuredProjects[0].title}</h3>
-     <p class="muted" style="font-size: 0.9rem">{featuredProjects[0].summary}</p>
-    <p class="meta-line">{featuredProjects[0].stage} · {featuredProjects[0].updatedAt}</p>
-        <a href={`/projects/${featuredProjects[0].slug}`} class="button button-ghost">查看项目详情</a>
-    </article>
-
-      <article class="signal-side panel flow-sm p-6">
-       <p class="eyebrow">Doc Update</p>
-    <h3>{docUpdates[0].title}</h3>
-      <p class="muted" style="font-size: 0.9rem">{docUpdates[0].summary}</p>
-        <p class="meta-line">{docUpdates[0].version} · {docUpdates[0].updatedAt}</p>
-     <a href={`/docs/${docUpdates[0].slug}`} class="button button-ghost">进入文档中枢</a>
-    </article>
-  </div>
- </section>
-
-  <section class="page-section layout-firefly">
-   <aside class="left-rail flow-md animate-fade-up" style="animation-delay: 500ms;">
-      <div class="side-panel flow-sm panel">
-       <p class="eyebrow">Orbit Index</p>
-        <div class="rail-list rail-list-col" style="margin-top: 1rem;">
-       {mainContentNavItems.map((item) => (
-         <a href={item.href} style="opacity: 0.8">{item.label} ↗</a>
-      ))}
-       </div>
-    </div>
-    </aside>
-   <div class="main-river flow-md animate-fade-up" style="animation-delay: 600ms;">
-      <SectionHeading
-      eyebrow="Recent Writing"
-       title="最新文章与持续写作"
-      description="让首页更像一个真的博客入口：用户先看到有什么内容在更新，而不是只看到一个很好看的首屏。"
-    />
-      <div class="content-stack" style="display: grid; gap: 1.5rem">
-       {posts.map((post) => (
-    <ContentCard href={`/posts/${post.slug}`} eyebrow={post.category} title={post.title} summary={post.summary} meta={`${post.publishedAt} · ${post.readTime} · ${post.orbit}`} tags={post.tags} />
-        ))}
-    </div>
-    </div>
-
-   <aside class="right-rail flow-md animate-fade-up" style="animation-delay: 700ms;">
-    <div class="side-panel flow-sm panel">
-      <p class="eyebrow">Recent Notes</p>
-       <div class="rail-list-col" style="margin-top: 1rem;">
-       {recentNotes.map((note) => (
-        <a href={`/notes/${note.slug}`} class="rail-entry">
-         <strong style="display: block; margin-bottom: 0.2rem">{note.title}</strong>
-           <span class="meta-line" style="font-size: 0.85em">{note.mood} · {note.publishedAt}</span>
-        </a>
-        ))}
-    </div>
-     </div>
-
-     <div class="side-panel flow-sm panel">
-     <p class="eyebrow">Timeline / Changelog</p>
-       <div class="rail-list-col" style="margin-top: 1rem;">
-      {timeline.slice(0, 3).map((item) => (
-    <div class="rail-entry">
-        <strong style="display: block; margin-bottom: 0.2rem">{item.title}</strong>
-       <span class="meta-line" style="font-size: 0.85em">{item.date}</span>
-         </div>
-     ))}
-    </div>
-      </div>
-    </aside>
-  </section>
-
- <section class="page-section">
+  <section class="page-section">
     <SectionHeading
-      eyebrow="Mission Panels"
-      title="四条主入口轨道"
-     description="这一层不做概念板块，而是做真正能被长期使用的主导航分发区。"
-  />
-    <div class="mission-grid mission-grid-upgraded">
-      {missionPanels.map((panel) => (
-      <article class="mission-card panel flow-sm">
-        <p class="eyebrow">{panel.eyebrow}</p>
-       <h3>{panel.title}</h3>
-    <p class="muted">{panel.description}</p>
-          <p class="meta-line">{panel.meta}</p>
-     <a href={panel.href} class="button button-ghost">进入 {panel.title}</a>
-      </article>
-      ))}
+      eyebrow="GitHub Activity"
+      title="开源贡献与活跃度"
+      description="过去 12 个月的贡献热力图、总贡献数和当前在研的精选项目。"
+    />
+
+    <div class="github-activity-container">
+      <div class="stats-summary panel">
+        <div class="stat-row">
+          <span class="stat-label">总贡献</span>
+          <span class="stat-value">{totalContributions.toLocaleString()}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">本周</span>
+          <span class="stat-value">{thisWeek.toLocaleString()}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">最长连续</span>
+          <span class="stat-value">{longestStreak} 天</span>
+        </div>
+      </div>
+
+      <ContributionGraph username={username} data={contributionDays} />
+
+      <div class="projects-grid">
+        {repoStats.map((repo: RepoStats) => (
+          <ProjectCard
+            name={repo.name}
+            description={repo.description}
+            stars={repo.stargazers_count}
+            language={repo.language}
+            url={repo.html_url}
+          />
+        ))}
+      </div>
     </div>
   </section>
 
-  <section class="page-section home-river-grid home-river-grid-reverse">
-   <div class="flow-md">
-     <SectionHeading
-      eyebrow="Selected Works"
-     title="重点项目与文档更新"
-  description="项目和文档用更成熟的卡片密度承载，减少「示例区块」的感觉。"
+  <section class="page-section">
+    <SectionHeading
+      eyebrow="Recent Posts"
+      title="最新文章"
+      description="最近发布的 3 篇技术文章与写作记录。"
     />
-     <div class="feature-split-grid">
-      {featuredProjects.map((project) => (
-      <ContentCard href={`/projects/${project.slug}`} eyebrow={project.stage} title={project.title} summary={project.summary} meta={`${project.updatedAt} · ${project.orbit}`} tags={project.tags} variant="grid" />
-        ))}
-        {docUpdates.map((doc) => (
-         <ContentCard href={`/docs/${doc.slug}`} eyebrow={doc.version} title={doc.title} summary={doc.summary} meta={`${doc.updatedAt} · ${doc.orbit}`} tags={doc.tags} variant="grid" />
-       ))}
-      </div>
-  </div>
+    <div class="content-stack">
+      {latestPosts.map((post) => (
+        <ContentCard
+          href={`/posts/${post.slug}`}
+          eyebrow={post.category}
+          title={post.title}
+          summary={post.summary}
+          meta={`${post.publishedAt} · ${post.readTime}`}
+          tags={post.tags}
+        />
+      ))}
+    </div>
+    <div class="view-more">
+      <a href="/posts" class="button button-ghost">查看全部文章 →</a>
+    </div>
+  </section>
 
-    <aside class="home-side-rail flow-md">
-      <div class="side-panel flow-sm rail-panel">
-      <p class="eyebrow">Support Signals</p>
-        {supportPosts.map((post) => (
-         <a href={`/posts/${post.slug}`} class="rail-entry">
-        <strong>{post.title}</strong>
-       <span class="meta-line">{post.publishedAt} · {post.readTime}</span>
-     </a>
-     ))}
+  <section class="page-section">
+    <SectionHeading
+      eyebrow="About"
+      title="关于我"
+      description="技术栈、工程实践和一点点欠劲儿。"
+    />
+    <div class="about-section">
+      <div class="about-left panel flow-md">
+        {aboutProfile.avatar && (
+          <div class="about-avatar-wrap">
+            <img src={aboutProfile.avatar} alt={`${aboutProfile.name} avatar`} class="about-avatar" loading="lazy" />
+          </div>
+        )}
+        <div class="flow-sm">
+          <h2>{aboutProfile.name}</h2>
+          <p class="muted">{aboutProfile.role}</p>
+        </div>
+        <p class="about-bio">{aboutProfile.summary}</p>
       </div>
-      <div class="side-panel flow-sm rail-panel">
-    <p class="eyebrow">Station Dock</p>
-    {homeSections.dock.map((item) => (
-       <div class="rail-entry">
-        <strong>{item.title}</strong>
-    <span class="meta-line">{item.detail}</span>
-     </div>
-     ))}
+
+      <div class="about-right panel flow-md">
+        <div class="tech-category flow-sm">
+          <p class="eyebrow">Frontend</p>
+          <div class="tag-list">
+            {aboutProfile.techStack.frontend.map((tech) => (
+              <span class="tag">{tech}</span>
+            ))}
+          </div>
+        </div>
+        <div class="tech-category flow-sm">
+          <p class="eyebrow">Backend</p>
+          <div class="tag-list">
+            {aboutProfile.techStack.backend.map((tech) => (
+              <span class="tag">{tech}</span>
+            ))}
+          </div>
+        </div>
+        <div class="tech-category flow-sm">
+          <p class="eyebrow">DevOps</p>
+          <div class="tag-list">
+            {aboutProfile.techStack.devops.map((tech) => (
+              <span class="tag">{tech}</span>
+            ))}
+          </div>
+        </div>
+        <div class="tech-category flow-sm">
+          <p class="eyebrow">Tools</p>
+          <div class="tag-list">
+            {aboutProfile.techStack.tools.map((tech) => (
+              <span class="tag">{tech}</span>
+            ))}
+          </div>
+        </div>
       </div>
-    </aside>
+    </div>
+  </section>
+
+  <section class="page-section">
+    <SectionHeading
+      eyebrow="Site Stats"
+      title="站点统计"
+      description="访问量、访客数和今日流量概览。"
+    />
+    <SiteStatsBar allTime={siteStats.allTime} today={siteStats.today} />
   </section>
 </SiteLayout>
