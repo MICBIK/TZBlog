@@ -39,4 +39,4 @@
 - [x] 7.1 运行 `astro check` - 0 errors, 0 warnings
 - [x] 7.2 运行 `astro build` - 20 pages built successfully
 - [ ] 7.3 由用户本机验证视觉效果
-- [ ] 7.4 提交并推送 GitHub
+- [x] 7.4 提交并推送 GitHub
