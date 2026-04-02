@@ -161,12 +161,5 @@ async function getRepoStats(owner: string, repo: string): Promise<RepoStats> {
  * 批量获取仓库统计信息（带速率限制处理）
  */
 export async function getReposStats(repos: PinnedRepo[]): Promise<RepoStats[]> {
-  const results: RepoStats[] = []
-
-  for (const repoEntry of repos) {
-    results.push(await getRepoStats(repoEntry.owner, repoEntry.repo))
-    await new Promise((resolve) => setTimeout(resolve, 100))
-  }
-
-  return results
+  return Promise.all(repos.map((r) => getRepoStats(r.owner, r.repo)))
 }

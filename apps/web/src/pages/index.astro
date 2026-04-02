@@ -11,16 +11,19 @@ import { getPosts } from '../lib/payload'
 import { EMPTY_UMAMI_STATS, getAllTimeRange, getTodayRange, getUmamiStats } from '../lib/umami'
 
 const username = 'MICBIK'
-const contributionCalendar = await getContributionCalendar(username)
-const repoStats = await getReposStats(pinnedRepos)
-const allPosts = await getPosts()
-
 const todayRange = getTodayRange()
 const allTimeRange = getAllTimeRange()
-const [todayStats, allTimeStats] = await Promise.all([
-  getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', todayRange.start, todayRange.end),
-  getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', allTimeRange.start, allTimeRange.end),
-])
+
+const [contributionCalendar, repoStats, allPosts, [todayStats, allTimeStats]] =
+  await Promise.all([
+    getContributionCalendar(username),
+    getReposStats(pinnedRepos),
+    getPosts(),
+    Promise.all([
+      getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', todayRange.start, todayRange.end),
+      getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', allTimeRange.start, allTimeRange.end),
+    ]),
+  ])
 
 const contributionDays = contributionCalendar.weeks.flatMap((week) => week.contributionDays)
 const totalContributions = contributionCalendar.totalContributions
