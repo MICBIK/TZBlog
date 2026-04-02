@@ -8,6 +8,9 @@ import { getPosts } from '../../lib/payload'
 
 const posts = await getPosts()
 const featuredPost = posts.find((post) => post.featured) ?? posts[0]
+const tagCounts = new Map<string, number>()
+posts.flatMap((p) => p.tags).forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1))
+const topTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag]) => tag)
 ---
 <SiteLayout title="文章 | TZBlog" description="TZBlog 的文章主列表页，默认采用阅读优先的列表布局。">
   <ThreeColumnLayout>
@@ -40,9 +43,9 @@ const featuredPost = posts.find((post) => post.featured) ?? posts[0]
       <div class="side-panel flow-sm panel">
         <p class="eyebrow">Filters</p>
         <div class="tag-list">
-          <span class="tag">Astro</span>
-          <span class="tag">Payload</span>
-          <span class="tag">UX</span>
+          {topTags.map((tag) => (
+            <span class="tag">{tag}</span>
+          ))}
         </div>
       </div>
       {featuredPost ? (

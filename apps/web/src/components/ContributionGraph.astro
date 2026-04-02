@@ -44,6 +44,7 @@ const serializedData = JSON.stringify(
         return
       }
 
+      try {
       const source = JSON.parse(rootElement.dataset.contributionData || '[]') as Array<{
         date: number
         count: number
@@ -103,6 +104,9 @@ const serializedData = JSON.stringify(
       }).catch((error: unknown) => {
         console.warn('Failed to render contribution graph:', error)
       })
+      } catch (error) {
+        console.warn('Failed to initialize contribution graph:', error)
+      }
     })
   </script>
 )}

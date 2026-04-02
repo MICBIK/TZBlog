@@ -17,6 +17,17 @@ const searchIndex = [
 ]
 
 const initialResults = searchIndex.slice(0, 6)
+
+const wordCounts = new Map<string, number>()
+searchIndex.forEach((item) => {
+  item.title.split(/[\s·/：，、]+/).filter((w) => w.length >= 2).forEach((w) => {
+    wordCounts.set(w, (wordCounts.get(w) || 0) + 1)
+  })
+})
+const suggestedQueries = [...wordCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 4)
+  .map(([word]) => word)
 ---
 
 <SiteLayout title="搜索 | TZBlog" description="搜索作为一级导航存在，帮助用户快速定位内容。">
@@ -39,9 +50,9 @@ const initialResults = searchIndex.slice(0, 6)
       <aside class="side-panel flow-sm">
         <p class="eyebrow">Suggested Queries</p>
         <div class="tag-list">
-          <button type="button" class="button button-ghost" data-suggest="布局">布局</button>
-          <button type="button" class="button button-ghost" data-suggest="Payload">Payload</button>
-          <button type="button" class="button button-ghost" data-suggest="搜索">搜索</button>
+          {suggestedQueries.map((word) => (
+            <button type="button" class="button button-ghost" data-suggest={word}>{word}</button>
+          ))}
         </div>
       </aside>
     </div>

@@ -17,7 +17,7 @@ const { sections } = Astro.props
           <p class="prose-body">{paragraph}</p>
         ))}
         {section.bullets && section.bullets.length > 0 && (
-          <ul class="prose-body" style="padding-left: 1.5rem; display: grid; gap: 0.5rem;">
+          <ul class="prose-body prose-list">
             {section.bullets.map((bullet) => (
               <li>{bullet}</li>
             ))}

@@ -20,7 +20,7 @@ const { project: currentProject } = Astro.props
         <p class="eyebrow">Quick Links</p>
       <div class="side-list rail-list-col">
        {currentProject.links.map((link) => (
-     <a href={link.href} class="text-sm" style="opacity: 0.8">{link.label} ↗</a>
+     <a href={link.href} class="text-sm link-muted">{link.label} ↗</a>
         ))}
      </div>
    </div>
@@ -33,9 +33,9 @@ const { project: currentProject } = Astro.props
     <Fragment slot="right">
    <div class="side-panel flow-sm panel">
     <p class="eyebrow">Highlights</p>
-    <ul style="padding-left: 1.2rem; display: grid; gap: 0.5rem;" class="text-sm">
+    <ul class="text-sm highlights-list">
     {currentProject.highlights.map((item) => (
-     <li style="opacity: 0.8">{item}</li>
+     <li class="link-muted">{item}</li>
     ))}
     </ul>
     </div>
