@@ -11,6 +11,8 @@ import { Posts } from './collections/Posts'
 import { Projects } from './collections/Projects'
 import { Docs } from './collections/Docs'
 import { Notes } from './collections/Notes'
+import { LabExperiments } from './collections/LabExperiments'
+import { SiteProfile } from './globals/SiteProfile'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -30,7 +32,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Posts, Projects, Docs, Notes],
+  collections: [Users, Media, Posts, Projects, Docs, Notes, LabExperiments],
+  globals: [SiteProfile],
   cors: corsOrigins,
   csrf: corsOrigins,
   editor: lexicalEditor(),

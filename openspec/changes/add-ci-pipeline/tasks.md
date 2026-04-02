@@ -1,0 +1,2 @@
+- [x] 1.1 创建 .github/workflows/ci.yml
+- [x] 1.2 提交

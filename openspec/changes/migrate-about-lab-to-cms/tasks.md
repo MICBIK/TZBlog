@@ -1,0 +1,8 @@
+- [x] 1.1 创建 SiteProfile Global
+- [x] 1.2 创建 LabExperiments Collection
+- [x] 1.3 注册到 payload.config.ts
+- [x] 2.1 payload.ts 新增 getSiteProfile / getTimeline / getLabExperiments
+- [x] 3.1 about/index.astro 改用 Payload API
+- [x] 3.2 lab/index.astro 改用 Payload API
+- [x] 4.1 seed 脚本补充 SiteProfile 和 LabExperiments 数据
+- [x] 5.1 构建通过

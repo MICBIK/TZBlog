@@ -1,0 +1,22 @@
+import type { CollectionConfig } from 'payload'
+
+export const LabExperiments: CollectionConfig = {
+  slug: 'lab-experiments',
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'tag', 'status'],
+  },
+  access: {
+    read: () => true,
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => Boolean(user),
+  },
+  fields: [
+    { name: 'title', type: 'text', required: true },
+    { name: 'summary', type: 'textarea', required: true },
+    { name: 'status', type: 'text', required: true, admin: { description: '如：Running / Ready for Review / Stable' } },
+    { name: 'href', type: 'text', required: true },
+    { name: 'tag', type: 'text', required: true },
+  ],
+}

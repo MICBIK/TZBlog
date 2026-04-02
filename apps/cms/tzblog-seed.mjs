@@ -50,4 +50,44 @@ for (const [collection, docs] of Object.entries(data)) {
   }
 }
 
+// Seed site profile global
+await payload.updateGlobal({
+  slug: 'site-profile',
+  data: {
+    name: 'Haiden',
+    role: '开发者 / 技术写作者',
+    avatar: 'https://github.com/MICBIK.png',
+    summary: '以深空观测站为视觉母题，构建内容优先的技术博客系统。专注于工程实践、界面信息架构和长期写作。',
+    techStack: {
+      frontend: [{ item: 'Astro' }, { item: 'TypeScript' }, { item: 'Vue' }, { item: 'TailwindCSS' }],
+      backend: [{ item: 'Node.js' }, { item: 'Payload CMS' }, { item: 'PostgreSQL' }],
+      devops: [{ item: 'Docker' }, { item: 'GitHub Actions' }, { item: 'Cloudflare R2' }],
+      tools: [{ item: 'VS Code' }, { item: 'Figma' }, { item: 'Linear' }],
+    },
+    timeline: [
+      { date: '2026-03-29', title: '完成前台完整界面系统', summary: '首页、列表页、详情页、搜索、关于、实验室全部落地为可浏览界面。' },
+      { date: '2026-03-28', title: '引入 OpenSpec 作为默认治理流程', summary: '正式变更需要 proposal、tasks、validate 和 archive。' },
+      { date: '2026-03-28', title: '搭起 monorepo 与 Astro / Payload 基础骨架', summary: '仓库从纯文档阶段进入可运行开发阶段。' },
+    ],
+  },
+})
+console.log('seeded site-profile global')
+
+// Seed lab experiments
+const labExps = [
+  { title: 'Orbit Hover Prototype', summary: '验证 mission panel hover 时的扫描动画与可访问性边界。', status: 'Ready for Review', href: '/projects/observatory-motion-kit', tag: 'UI Motion' },
+  { title: 'Search Relay Mock', summary: '在接 Pagefind 前先提供可用的站内检索壳层与关键词推荐。', status: 'Running', href: '/search', tag: 'Search' },
+  { title: 'Content Contract Dry Run', summary: '用示例数据模拟 Payload 输出,验证列表页与详情页的字段稳定性。', status: 'Stable', href: '/docs/content-delivery-blueprint', tag: 'Content Model' },
+]
+for (const exp of labExps) {
+  const existing = await payload.find({ collection: 'lab-experiments', where: { title: { equals: exp.title } }, limit: 1, pagination: false })
+  if (existing.docs[0]) {
+    await payload.update({ collection: 'lab-experiments', id: existing.docs[0].id, data: exp })
+    console.log(`updated lab-experiments:${exp.title}`)
+  } else {
+    await payload.create({ collection: 'lab-experiments', data: exp })
+    console.log(`created lab-experiments:${exp.title}`)
+  }
+}
+
 console.log('seed completed')

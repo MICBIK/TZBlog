@@ -27,7 +27,7 @@ export const EMPTY_UMAMI_STATS: UmamiStats = {
   totaltime: 0,
 }
 
-function readMetricValue(value: unknown): number {
+export function readMetricValue(value: unknown): number {
   if (typeof value === 'number') {
     return value
   }
@@ -44,7 +44,7 @@ function readMetricValue(value: unknown): number {
   return 0
 }
 
-function normalizeUmamiStats(payload: unknown): UmamiStats {
+export function normalizeUmamiStats(payload: unknown): UmamiStats {
   if (typeof payload !== 'object' || payload === null) {
     return EMPTY_UMAMI_STATS
   }

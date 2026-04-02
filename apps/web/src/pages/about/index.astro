@@ -1,7 +1,11 @@
 ---
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { aboutProfile, siteMeta, timeline } from '../../data/content'
+import { siteMeta } from '../../data/content'
+import { getSiteProfile, getTimeline } from '../../lib/payload'
+
+const aboutProfile = await getSiteProfile()
+const timeline = await getTimeline()
 ---
 
 <SiteLayout title="关于 | TZBlog" description="TZBlog 的身份说明与站点方向。">

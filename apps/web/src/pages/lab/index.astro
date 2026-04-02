@@ -1,7 +1,9 @@
 ---
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { labExperiments } from '../../data/content'
+import { getLabExperiments } from '../../lib/payload'
+
+const labExperiments = await getLabExperiments()
 ---
 
 <SiteLayout title="实验室 | TZBlog" description="概念验证、小工具与渐进增强试验区。">

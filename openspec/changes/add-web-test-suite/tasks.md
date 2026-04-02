@@ -1,0 +1,7 @@
+- [x] 1.1 添加 vitest 依赖和 test 脚本
+- [x] 1.2 创建 vitest.config.ts
+- [x] 1.3 导出 payload.ts 纯函数
+- [x] 1.4 导出 umami.ts 纯函数
+- [x] 1.5 编写 payload.test.ts
+- [x] 1.6 编写 umami.test.ts
+- [x] 1.7 20 个测试全部通过
