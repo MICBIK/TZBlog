@@ -17,7 +17,7 @@ const currentPath = Astro.url.pathname
   <div class="app-shell">
     <!-- High-Fidelity Celestial Backdrop (Three.js Engine) -->
     <div class="planet-background-container" aria-hidden="true">
-      <canvas id="celestial-canvas"></canvas>
+      <canvas id="celestial-canvas">您的浏览器不支持 canvas 渲染</canvas>
     </div>
 
     <script>
@@ -25,6 +25,9 @@ const currentPath = Astro.url.pathname
 
       const canvas = document.getElementById('celestial-canvas');
       if (canvas instanceof HTMLCanvasElement) {
+        try {
+        const controller = new AbortController();
+        const { signal } = controller;
         let width = window.innerWidth;
         let height = window.innerHeight;
 
@@ -194,8 +197,8 @@ const currentPath = Astro.url.pathname
         const _xAxis   = new THREE.Vector3(1, 0, 0);
         let autoRotY   = 0;
 
-        window.addEventListener('mousedown', (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; });
-        window.addEventListener('mouseup',   () => isDragging = false);
+        window.addEventListener('mousedown', (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; }, { signal });
+        window.addEventListener('mouseup',   () => isDragging = false, { signal });
         window.addEventListener('mousemove', (e) => {
           mX = (e.clientX / window.innerWidth  - 0.5) * 2;
           mY = (e.clientY / window.innerHeight - 0.5) * 2;
@@ -207,7 +210,7 @@ const currentPath = Astro.url.pathname
             const qX = new THREE.Quaternion().setFromAxisAngle(_xAxis, dy);
             dragQuat.premultiply(qY).multiply(qX);
           }
-        });
+        }, { signal });
 
         const animate = () => {
           const time = Date.now() * 0.001;
@@ -237,7 +240,13 @@ const currentPath = Astro.url.pathname
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           planetGroup.position.x = window.innerWidth > 1200 ? 35 : 15;
-        });
+        }, { signal });
+
+        window.addEventListener('beforeunload', () => controller.abort(), { once: true });
+        } catch (error) {
+          console.warn('WebGL initialization failed, falling back to plain background:', error);
+          canvas.style.display = 'none';
+        }
       }
     </script>
     <SiteHeader currentPath={currentPath} navItems={navItems} />

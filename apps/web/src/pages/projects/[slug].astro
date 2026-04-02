@@ -15,7 +15,7 @@ const { project: currentProject } = Astro.props
 <SiteLayout title={`${currentProject.title} · 项目档案 | TZBlog`} description={currentProject.summary}>
   <ThreeColumnLayout>
   <Fragment slot="left">
-   <DetailSidebar eyebrow={currentProject.stage} title={currentProject.title} summary={currentProject.summary} chips={[currentProject.updatedAt, currentProject.orbit]}>
+   <DetailSidebar eyebrow={currentProject.stage} title={currentProject.title} summary={currentProject.summary} chips={[currentProject.updatedAt, currentProject.orbit]} tags={currentProject.tags}>
    <div class="side-panel flow-sm panel">
         <p class="eyebrow">Quick Links</p>
       <div class="side-list rail-list-col">

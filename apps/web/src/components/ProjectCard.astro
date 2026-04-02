@@ -7,13 +7,13 @@ interface Props {
   url: string
 }
 
-const { name, description, stars, language, url } = Astro.props
+const { name, description, stars = 0, language, url } = Astro.props
 ---
 
 <article class="project-card panel flow-sm">
   <div class="project-card-header">
     <h3>
-      <a href={url} target="_blank" rel="noopener noreferrer">
+      <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${name} (在新窗口中打开)`}>
         {name}
       </a>
     </h3>

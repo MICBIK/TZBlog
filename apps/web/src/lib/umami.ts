@@ -112,7 +112,7 @@ export function getTodayRange(): DateRange {
  */
 export function getAllTimeRange(): DateRange {
   return {
-    start: 1672531200000,
+    start: 1672531200000, // 2023-01-01T00:00:00Z — 建站时间
     end: Date.now(),
   }
 }

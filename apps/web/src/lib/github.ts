@@ -3,7 +3,11 @@
  * 用于获取贡献日历和仓库统计
  */
 
+import type { PinnedRepo } from '../data/content'
+
 const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN || ''
+
+export type { PinnedRepo }
 
 export interface ContributionDay {
   date: string
@@ -25,11 +29,6 @@ export interface RepoStats {
   language: string | null
   html_url: string
   updated_at: string
-}
-
-export interface PinnedRepo {
-  owner: string
-  repo: string
 }
 
 export const EMPTY_CONTRIBUTION_CALENDAR: ContributionCalendar = {
@@ -161,5 +160,8 @@ async function getRepoStats(owner: string, repo: string): Promise<RepoStats> {
  * 批量获取仓库统计信息（带速率限制处理）
  */
 export async function getReposStats(repos: PinnedRepo[]): Promise<RepoStats[]> {
-  return Promise.all(repos.map((r) => getRepoStats(r.owner, r.repo)))
+  const results = await Promise.allSettled(repos.map((r) => getRepoStats(r.owner, r.repo)))
+  return results.map((result, i) =>
+    result.status === 'fulfilled' ? result.value : createRepoFallback(repos[i].owner, repos[i].repo)
+  )
 }

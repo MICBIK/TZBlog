@@ -176,10 +176,6 @@ export const aboutProfile: AboutProfile = {
   },
 }
 
-export const mainContentNavItems = navItems.filter(
-  (item) => ['/posts', '/projects', '/docs', '/notes'].includes(item.href),
-)
-
 export const footerNavItems = navItems.filter(
   (item) => item.href !== '/' && item.href !== '/search',
 )

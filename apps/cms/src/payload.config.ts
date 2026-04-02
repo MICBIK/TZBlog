@@ -15,6 +15,14 @@ import { Notes } from './collections/Notes'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const payloadSecret = process.env.PAYLOAD_SECRET
+if (!payloadSecret) {
+  throw new Error('PAYLOAD_SECRET environment variable is required')
+}
+
+const corsOrigins = (process.env.PAYLOAD_CORS_ORIGINS || 'http://localhost:4321')
+  .split(',').map((s) => s.trim()).filter(Boolean)
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -23,10 +31,10 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Posts, Projects, Docs, Notes],
-  cors: ['http://localhost:4321'],
-  csrf: ['http://localhost:4321'],
+  cors: corsOrigins,
+  csrf: corsOrigins,
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

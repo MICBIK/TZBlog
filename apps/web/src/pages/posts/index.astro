@@ -12,7 +12,7 @@ const featuredPost = posts.find((post) => post.featured) ?? posts[0]
 <SiteLayout title="文章 | TZBlog" description="TZBlog 的文章主列表页，默认采用阅读优先的列表布局。">
   <ThreeColumnLayout>
     <Fragment slot="left">
-      <CollectionHeader eyebrow="Orbit Index" title="文章航线" description="技术拆解、工程复盘、设计判断和长期写作统一放在这里。" />
+      <CollectionHeader eyebrow="Orbit Index" title="文章航线" description="技术拆解、工程复盘、设计判断和长期写作统一放在这里。" count={posts.length} unit="篇文章" />
       <div class="side-panel flow-sm panel">
         <p class="eyebrow">Reading Radar</p>
         <div class="side-list">

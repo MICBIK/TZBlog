@@ -17,6 +17,55 @@ type PayloadSection = {
   bullets?: PayloadTextItem[]
 }
 
+interface PayloadPostDoc {
+  slug: string
+  title: string
+  summary: string
+  category: string
+  orbit: string
+  publishedAt: string
+  readTime: string
+  featured?: boolean
+  tags?: PayloadTextItem[]
+  sections?: PayloadSection[]
+}
+
+interface PayloadProjectDoc {
+  slug: string
+  title: string
+  summary: string
+  stage: string
+  orbit: string
+  updatedAt: string
+  featured?: boolean
+  stack?: PayloadTextItem[]
+  tags?: PayloadTextItem[]
+  links?: Array<{ label: string; href: string }>
+  highlights?: PayloadTextItem[]
+  sections?: PayloadSection[]
+}
+
+interface PayloadDocDoc {
+  slug: string
+  title: string
+  summary: string
+  version: string
+  orbit: string
+  updatedAt: string
+  tags?: PayloadTextItem[]
+  sections?: PayloadSection[]
+}
+
+interface PayloadNoteDoc {
+  slug: string
+  title: string
+  summary: string
+  publishedAt: string
+  mood: string
+  tags?: PayloadTextItem[]
+  sections?: PayloadSection[]
+}
+
 async function fetchPayload<T>(path: string): Promise<T> {
   try {
     const res = await fetch(`${API_URL}${path}`)
@@ -43,7 +92,7 @@ const flattenSections = (sections: PayloadSection[] | undefined): SectionBlock[]
     bullets: section.bullets && section.bullets.length > 0 ? flattenArray(section.bullets, 'text') : undefined,
   }))
 
-const normalizePost = (doc: Record<string, any>): PostEntry => ({
+const normalizePost = (doc: PayloadPostDoc): PostEntry => ({
   slug: doc.slug,
   title: doc.title,
   summary: doc.summary,
@@ -56,7 +105,7 @@ const normalizePost = (doc: Record<string, any>): PostEntry => ({
   sections: flattenSections(doc.sections),
 })
 
-const normalizeProject = (doc: Record<string, any>): ProjectEntry => ({
+const normalizeProject = (doc: PayloadProjectDoc): ProjectEntry => ({
   slug: doc.slug,
   title: doc.title,
   summary: doc.summary,
@@ -66,7 +115,7 @@ const normalizeProject = (doc: Record<string, any>): ProjectEntry => ({
   stack: flattenArray(doc.stack, 'item'),
   tags: flattenArray(doc.tags, 'tag'),
   featured: doc.featured ?? false,
-  links: (doc.links || []).map((link: Record<string, string>) => ({
+  links: (doc.links || []).map((link) => ({
     label: link.label,
     href: link.href,
   })),
@@ -74,7 +123,7 @@ const normalizeProject = (doc: Record<string, any>): ProjectEntry => ({
   sections: flattenSections(doc.sections),
 })
 
-const normalizeDoc = (doc: Record<string, any>): DocEntry => ({
+const normalizeDoc = (doc: PayloadDocDoc): DocEntry => ({
   slug: doc.slug,
   title: doc.title,
   summary: doc.summary,
@@ -85,7 +134,7 @@ const normalizeDoc = (doc: Record<string, any>): DocEntry => ({
   sections: flattenSections(doc.sections),
 })
 
-const normalizeNote = (doc: Record<string, any>): NoteEntry => ({
+const normalizeNote = (doc: PayloadNoteDoc): NoteEntry => ({
   slug: doc.slug,
   title: doc.title,
   summary: doc.summary,
@@ -96,41 +145,41 @@ const normalizeNote = (doc: Record<string, any>): NoteEntry => ({
 })
 
 export async function getPosts(): Promise<PostEntry[]> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>('/posts?limit=100&sort=-publishedAt&where[_status][equals]=published')
+  const data = await fetchPayload<PayloadListResponse<PayloadPostDoc>>('/posts?limit=100&sort=-publishedAt&where[_status][equals]=published')
   return data.docs.map(normalizePost)
 }
 
 export async function getPostBySlug(slug: string): Promise<PostEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>(`/posts?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
+  const data = await fetchPayload<PayloadListResponse<PayloadPostDoc>>(`/posts?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
   return data.docs[0] ? normalizePost(data.docs[0]) : null
 }
 
 export async function getProjects(): Promise<ProjectEntry[]> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>('/projects?limit=100&sort=-updatedAt&where[_status][equals]=published')
+  const data = await fetchPayload<PayloadListResponse<PayloadProjectDoc>>('/projects?limit=100&sort=-updatedAt&where[_status][equals]=published')
   return data.docs.map(normalizeProject)
 }
 
 export async function getProjectBySlug(slug: string): Promise<ProjectEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>(`/projects?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
+  const data = await fetchPayload<PayloadListResponse<PayloadProjectDoc>>(`/projects?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
   return data.docs[0] ? normalizeProject(data.docs[0]) : null
 }
 
 export async function getDocs(): Promise<DocEntry[]> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>('/docs?limit=100&sort=-updatedAt&where[_status][equals]=published')
+  const data = await fetchPayload<PayloadListResponse<PayloadDocDoc>>('/docs?limit=100&sort=-updatedAt&where[_status][equals]=published')
   return data.docs.map(normalizeDoc)
 }
 
 export async function getDocBySlug(slug: string): Promise<DocEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>(`/docs?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
+  const data = await fetchPayload<PayloadListResponse<PayloadDocDoc>>(`/docs?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
   return data.docs[0] ? normalizeDoc(data.docs[0]) : null
 }
 
 export async function getNotes(): Promise<NoteEntry[]> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>('/notes?limit=100&sort=-publishedAt&where[_status][equals]=published')
+  const data = await fetchPayload<PayloadListResponse<PayloadNoteDoc>>('/notes?limit=100&sort=-publishedAt&where[_status][equals]=published')
   return data.docs.map(normalizeNote)
 }
 
 export async function getNoteBySlug(slug: string): Promise<NoteEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>(`/notes?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
+  const data = await fetchPayload<PayloadListResponse<PayloadNoteDoc>>(`/notes?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
   return data.docs[0] ? normalizeNote(data.docs[0]) : null
 }

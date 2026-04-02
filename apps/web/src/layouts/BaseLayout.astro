@@ -4,15 +4,18 @@ import '../styles/global.css'
 interface Props {
   title: string
   description?: string
+  ogImage?: string
 }
 
 const {
   title,
   description = 'TZBlog deep space observatory interface',
+  ogImage,
 } = Astro.props
 
 const siteUrl = import.meta.env.SITE_URL
 const canonicalUrl = siteUrl ? new URL(Astro.url.pathname, siteUrl).toString() : undefined
+const ogImageUrl = ogImage || (siteUrl ? `${siteUrl}/og-default.png` : '/og-default.png')
 ---
 
 <!doctype html>
@@ -21,15 +24,18 @@ const canonicalUrl = siteUrl ? new URL(Astro.url.pathname, siteUrl).toString() :
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#08111f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content={ogImageUrl} />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
   </head>
   <body>

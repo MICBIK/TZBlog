@@ -699,6 +699,15 @@ ul {
 }
 
 @media (max-width: 980px) {
+  .layout-firefly {
+    grid-template-columns: 1fr;
+  }
+
+  .layout-firefly .left-rail,
+  .layout-firefly .right-rail {
+    display: none;
+  }
+
   .site-header,
   .hero-grid,
   .page-intro-grid,
