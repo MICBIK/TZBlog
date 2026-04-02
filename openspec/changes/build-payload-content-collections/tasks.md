@@ -1,17 +1,18 @@
 ## 1. 前置检查
 
 - [ ] 1.1 确认 PostgreSQL 已启动（`docker compose up -d` 或本地 PG 实例）
-- [ ] 1.2 确认 `apps/cms/.env` 中 `DATABASE_URL` 指向正确的数据库
-- [ ] 1.3 将 `PAYLOAD_SECRET` 替换为真实随机字符串：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-- [ ] 1.4 确认 `apps/cms` 依赖已安装（`pnpm install`）
+- [x] 1.2 确认 `apps/cms/.env` 中 `DATABASE_URL` 指向正确的数据库
+- [x] 1.3 将 `PAYLOAD_SECRET` 替换为真实随机字符串：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+- [x] 1.4 确认 `apps/cms` 依赖已安装（`pnpm install`）
 
 ## 2. 实现 Collections
 
-- [ ] 2.1 新建 `apps/cms/src/collections/Posts.ts`（字段见 design.md 第3节 + 方案文档第三章3.2节）
-- [ ] 2.2 新建 `apps/cms/src/collections/Projects.ts`（字段见 design.md 第3节 + 方案文档第三章3.3节）
-- [ ] 2.3 新建 `apps/cms/src/collections/Docs.ts`（字段见 design.md 第3节 + 方案文档第三章3.4节）
-- [ ] 2.4 新建 `apps/cms/src/collections/Notes.ts`（字段见 design.md 第3节 + 方案文档第三章3.5节）
-- [ ] 2.5 修改 `apps/cms/src/payload.config.ts`：import 并注册四个新 collection（见 design.md 第5节）
+- [x] 2.1 新建 `apps/cms/src/collections/Posts.ts`（字段见 design.md 第3节 + 方案文档第三章3.2节）
+- [x] 2.2 新建 `apps/cms/src/collections/Projects.ts`（字段见 design.md 第3节 + 方案文档第三章3.3节）
+- [x] 2.3 新建 `apps/cms/src/collections/Docs.ts`（字段见 design.md 第3节 + 方案文档第三章3.4节）
+- [x] 2.4 新建 `apps/cms/src/collections/Notes.ts`（字段见 design.md 第3节 + 方案文档第三章3.5节）
+- [x] 2.5 修改 `apps/cms/src/payload.config.ts`：import 并注册四个新 collection（见 design.md 第5节）
+- [x] 2.6 显式补齐四个内容 collection 的写权限约束：create/update/delete 需要登录用户
 
 ## 3. 启动验证
 
@@ -30,6 +31,7 @@
 
 ## 5. 收尾
 
-- [ ] 5.1 运行 `cd apps/cms && pnpm lint` 或 `tsc --noEmit`，确认无类型错误
-- [ ] 5.2 更新本 tasks.md 勾选完成项
-- [ ] 5.3 提交 atomic commit：`feat(cms): add posts, projects, docs, notes collections to Payload CMS`
+- [x] 5.1 已完成静态代码与文档对账，当前实现与 access / drafts 设计一致
+- [ ] 5.2 在允许的环境中运行 `cd apps/cms && pnpm lint` 或 `tsc --noEmit`，确认无类型错误
+- [x] 5.3 更新本 tasks.md 勾选完成项
+- [ ] 5.4 提交 atomic commit：`feat(cms): add posts, projects, docs, notes collections to Payload CMS`

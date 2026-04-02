@@ -69,6 +69,10 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    posts: Post;
+    projects: Project;
+    docs: Doc;
+    notes: Note;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +82,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    docs: DocsSelect<false> | DocsSelect<true>;
+    notes: NotesSelect<false> | NotesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -163,6 +171,184 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * URL 标识符，只能包含小写字母、数字和连字符
+   */
+  slug: string;
+  summary: string;
+  category: string;
+  /**
+   * 副标题/轨道标签，如 Deep Space Observatory
+   */
+  orbit: string;
+  publishedAt: string;
+  /**
+   * 如：8 min
+   */
+  readTime: string;
+  featured?: boolean | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  sections: {
+    id: string;
+    title: string;
+    paragraphs: {
+      text: string;
+      id?: string | null;
+    }[];
+    bullets?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  title: string;
+  slug: string;
+  summary: string;
+  stage: 'In Progress' | 'Planned' | 'Concept' | 'Stable' | 'Archived';
+  orbit: string;
+  updatedAt: string;
+  featured?: boolean | null;
+  stack?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  links?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  highlights?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  sections: {
+    id: string;
+    title: string;
+    paragraphs: {
+      text: string;
+      id?: string | null;
+    }[];
+    bullets?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  }[];
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "docs".
+ */
+export interface Doc {
+  id: number;
+  title: string;
+  slug: string;
+  summary: string;
+  /**
+   * 如：v0.2 / draft
+   */
+  version: string;
+  orbit: string;
+  updatedAt: string;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  sections: {
+    id: string;
+    title: string;
+    paragraphs: {
+      text: string;
+      id?: string | null;
+    }[];
+    bullets?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  }[];
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notes".
+ */
+export interface Note {
+  id: number;
+  title: string;
+  slug: string;
+  summary: string;
+  publishedAt: string;
+  /**
+   * 如：Ship Log / Short Note / Field Memo
+   */
+  mood: string;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  sections: {
+    id: string;
+    title: string;
+    paragraphs: {
+      text: string;
+      id?: string | null;
+    }[];
+    bullets?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -192,6 +378,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'docs';
+        value: number | Doc;
+      } | null)
+    | ({
+        relationTo: 'notes';
+        value: number | Note;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -274,6 +476,181 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  category?: T;
+  orbit?: T;
+  publishedAt?: T;
+  readTime?: T;
+  featured?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  sections?:
+    | T
+    | {
+        id?: T;
+        title?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        bullets?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  stage?: T;
+  orbit?: T;
+  updatedAt?: T;
+  featured?: T;
+  stack?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  links?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  highlights?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  sections?:
+    | T
+    | {
+        id?: T;
+        title?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        bullets?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "docs_select".
+ */
+export interface DocsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  version?: T;
+  orbit?: T;
+  updatedAt?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  sections?:
+    | T
+    | {
+        id?: T;
+        title?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        bullets?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notes_select".
+ */
+export interface NotesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  publishedAt?: T;
+  mood?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  sections?:
+    | T
+    | {
+        id?: T;
+        title?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        bullets?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

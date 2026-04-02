@@ -10,7 +10,9 @@
 - 已建立 `apps/web` Astro 前台完整界面骨架与核心页面系统
 - 已建立 `apps/cms` Payload CMS 最小骨架
 - 已建立 `infra/docker-compose.yml` PostgreSQL 本地开发环境
-- 当前第一阶段已不再是“纯文档状态”
+- 已完成 `posts / projects / docs / notes` collections 注册
+- 已完成 Astro 前台主内容页面到 Payload REST API 的主数据链路接入
+- 当前阶段已不再是“纯文档状态”，也不再是“仅示例内容占位”状态
 
 ## 当前主文档
 
@@ -26,6 +28,8 @@
   项目级执行规范，后续所有开发默认遵循它。
 - `TZBlog OpenSpec 变更管理规范.md`
   OpenSpec 的执行手册，后续所有非琐碎变更默认先从这里进入。
+- `TZBlog CMS数据链路实现方案.md`
+  当前 CMS collections 与 Astro 内容交付链路的主说明文档。
 - `../openspec/project.md`
   OpenSpec 项目基线，上下文恢复和创建新 change 前先读。
 
@@ -85,8 +89,8 @@
 
 ## 后续开发建议顺序
 
-1. 建立 Payload 内容模型与后台
-2. 建立 Astro 前台数据拉取链路
+1. 完成运行时验收与真实内容录入验证
+2. 建立 Payload globals 与更完整后台能力
 3. 接入构建 Webhook 与 `Pagefind`
 4. 接入 `Umami`
 5. 最后补 Hero 3D、动效层和运营细节
@@ -96,10 +100,16 @@
 ### 2026-03-29
 
 - 已将 `apps/web` 从最小占位页升级为完整前台界面骨架
-- 已落地首页 6 区块结构：Hero、Focus Stream、Mission Panels、Selected Works、Timeline、Footer Dock
+- 已落地首页与核心列表/详情页模板
 - 已建立一级导航与核心路由：`/posts`、`/projects`、`/docs`、`/notes`、`/lab`、`/about`、`/search`
-- 已建立 posts/projects/docs/notes 的列表页与详情页模板
-- 已补充配置驱动的示例内容层，为后续 Payload 数据接入预留契约
+- 已补充配置驱动的站点元信息层与类型定义
+
+### 2026-04-02
+
+- 已完成 Payload 内容 collections：`posts / projects / docs / notes`
+- 已完成 Astro 前台主内容页面到 Payload REST API 的主数据链路接入
+- 已移除前台主链路对示例内容 fallback 的依赖，API 不可用时改为 empty state
+- 已完成一轮静态代码、OpenSpec 与项目主文档对账
 
 ## 后续更新约定
 

@@ -3,22 +3,23 @@ import ArticleBody from '../../components/ArticleBody.astro'
 import DetailSidebar from '../../components/DetailSidebar.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { notes } from '../../data/content'
+import { getNotes } from '../../lib/payload'
 
-export function getStaticPaths() {
- return notes.map((note) => ({ params: { slug: note.slug }, props: { note } }))
+export async function getStaticPaths() {
+  const notes = await getNotes()
+  return notes.map((note) => ({ params: { slug: note.slug }, props: { note } }))
 }
 
-const { note } = Astro.props
+const { note: currentNote } = Astro.props
 ---
 
-<SiteLayout title={`${note.title} | TZBlog`} description={note.summary}>
+<SiteLayout title={`${currentNote.title} | TZBlog`} description={currentNote.summary}>
   <ThreeColumnLayout>
     <Fragment slot="left">
-    <DetailSidebar eyebrow={note.mood} title={note.title} summary={note.summary} chips={[note.publishedAt]} tags={note.tags} />
+    <DetailSidebar eyebrow={currentNote.mood} title={currentNote.title} summary={currentNote.summary} chips={[currentNote.publishedAt]} tags={currentNote.tags} />
    </Fragment>
    <Fragment slot="main">
-   <ArticleBody sections={note.sections} />
+   <ArticleBody sections={currentNote.sections} />
     </Fragment>
 
     <Fragment slot="right">

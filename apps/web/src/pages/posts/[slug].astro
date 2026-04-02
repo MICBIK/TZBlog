@@ -4,29 +4,31 @@ import DetailSidebar from '../../components/DetailSidebar.astro'
 import TableOfContents from '../../components/TableOfContents.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { posts } from '../../data/content'
+import { getPosts } from '../../lib/payload'
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
+  const posts = await getPosts()
+
   return posts.map((post, index) => ({
-   params: { slug: post.slug },
+    params: { slug: post.slug },
     props: {
-    post,
+      post,
       previous: posts[index + 1] ?? null,
       next: posts[index - 1] ?? null,
     },
   }))
 }
 
-const { post, previous, next } = Astro.props
+const { post: currentPost, previous, next } = Astro.props
 ---
 
-<SiteLayout title={`${post.title} | TZBlog`} description={post.summary}>
+<SiteLayout title={`${currentPost.title} | TZBlog`} description={currentPost.summary}>
   <ThreeColumnLayout>
    <Fragment slot="left">
-    <DetailSidebar eyebrow={post.category} title={post.title} summary={post.summary} chips={[post.publishedAt, post.readTime]} tags={post.tags} />
+    <DetailSidebar eyebrow={currentPost.category} title={currentPost.title} summary={currentPost.summary} chips={[currentPost.publishedAt, currentPost.readTime]} tags={currentPost.tags} />
    </Fragment>
     <Fragment slot="main">
-      <ArticleBody sections={post.sections} />
+      <ArticleBody sections={currentPost.sections} />
 
       <section class="page-section article-footer-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
     <div class="panel flow-sm" style="padding: 1.5rem">
@@ -41,7 +43,7 @@ const { post, previous, next } = Astro.props
     </Fragment>
 
     <Fragment slot="right">
-   <TableOfContents sections={post.sections} />
+   <TableOfContents sections={currentPost.sections} />
     </Fragment>
   </ThreeColumnLayout>
 </SiteLayout>

@@ -3,19 +3,25 @@ import ContentCard from '../../components/ContentCard.astro'
 import CollectionHeader from '../../components/CollectionHeader.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { collectionStats, projects } from '../../data/content'
+import { getProjects } from '../../lib/payload'
+
+const projects = await getProjects()
 ---
 <SiteLayout title="项目 | TZBlog" description="项目档案页，采用网格优先的扫描式布局。">
   <ThreeColumnLayout>
     <Fragment slot="left">
-      <CollectionHeader eyebrow="Projects" title="项目档案" description="项目状态、架构说明与里程碑" count={collectionStats.projects} unit="个项目轨道" />
+      <CollectionHeader eyebrow="Projects" title="项目档案" description="项目状态、架构说明与里程碑" count={projects.length} unit="个项目轨道" />
     </Fragment>
 
     <Fragment slot="main">
       <div class="content-stack">
-        {projects.map((project) => (
-          <ContentCard href={`/projects/${project.slug}`} eyebrow={project.stage} title={project.title} summary={project.summary} meta={`${project.updatedAt} · ${project.orbit}`} tags={project.tags} />
-        ))}
+        {projects.length > 0 ? (
+          projects.map((project) => (
+            <ContentCard href={`/projects/${project.slug}`} eyebrow={project.stage} title={project.title} summary={project.summary} meta={`${project.updatedAt} · ${project.orbit}`} tags={project.tags} />
+          ))
+        ) : (
+          <div class="empty-state panel">当前还没有已发布项目，或者 Payload API 暂时不可用。</div>
+        )}
       </div>
     </Fragment>
 

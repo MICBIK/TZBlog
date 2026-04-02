@@ -5,13 +5,15 @@ import ProjectCard from '../components/ProjectCard.astro'
 import SectionHeading from '../components/SectionHeading.astro'
 import SiteStatsBar from '../components/SiteStatsBar.astro'
 import SiteLayout from '../layouts/SiteLayout.astro'
-import { aboutProfile, pinnedRepos, posts, siteMeta, socialLinks } from '../data/content'
+import { aboutProfile, pinnedRepos, siteMeta, socialLinks } from '../data/content'
 import { getContributionCalendar, getReposStats, type RepoStats } from '../lib/github'
+import { getPosts } from '../lib/payload'
 import { EMPTY_UMAMI_STATS, getAllTimeRange, getTodayRange, getUmamiStats } from '../lib/umami'
 
 const username = 'MICBIK'
 const contributionCalendar = await getContributionCalendar(username)
 const repoStats = await getReposStats(pinnedRepos)
+const allPosts = await getPosts()
 
 const todayRange = getTodayRange()
 const allTimeRange = getAllTimeRange()
@@ -43,7 +45,7 @@ for (const day of contributionDays) {
   }
 }
 
-const latestPosts = posts.slice(0, 3)
+const latestPosts = allPosts.slice(0, 3)
 const siteStats = {
   today: todayStats || EMPTY_UMAMI_STATS,
   allTime: allTimeStats || EMPTY_UMAMI_STATS,
@@ -131,16 +133,20 @@ const socialIconPaths = {
       description="最近发布的 3 篇技术文章与写作记录。"
     />
     <div class="content-stack">
-      {latestPosts.map((post) => (
-        <ContentCard
-          href={`/posts/${post.slug}`}
-          eyebrow={post.category}
-          title={post.title}
-          summary={post.summary}
-          meta={`${post.publishedAt} · ${post.readTime}`}
-          tags={post.tags}
-        />
-      ))}
+      {latestPosts.length > 0 ? (
+        latestPosts.map((post) => (
+          <ContentCard
+            href={`/posts/${post.slug}`}
+            eyebrow={post.category}
+            title={post.title}
+            summary={post.summary}
+            meta={`${post.publishedAt} · ${post.readTime}`}
+            tags={post.tags}
+          />
+        ))
+      ) : (
+        <div class="empty-state panel">首页文章区当前没有已发布内容，或者 Payload API 暂时不可用。</div>
+      )}
     </div>
     <div class="view-more">
       <a href="/posts" class="button button-ghost">查看全部文章 →</a>

@@ -3,21 +3,23 @@ import ArticleBody from '../../components/ArticleBody.astro'
 import DetailSidebar from '../../components/DetailSidebar.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { projects } from '../../data/content'
-export function getStaticPaths() {
+import { getProjects } from '../../lib/payload'
+
+export async function getStaticPaths() {
+  const projects = await getProjects()
   return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }))
 }
 
-const { project } = Astro.props
+const { project: currentProject } = Astro.props
 ---
-<SiteLayout title={`${project.title} · 项目档案 | TZBlog`} description={project.summary}>
+<SiteLayout title={`${currentProject.title} · 项目档案 | TZBlog`} description={currentProject.summary}>
   <ThreeColumnLayout>
   <Fragment slot="left">
-   <DetailSidebar eyebrow={project.stage} title={project.title} summary={project.summary} chips={[project.updatedAt, project.orbit]}>
+   <DetailSidebar eyebrow={currentProject.stage} title={currentProject.title} summary={currentProject.summary} chips={[currentProject.updatedAt, currentProject.orbit]}>
    <div class="side-panel flow-sm panel">
         <p class="eyebrow">Quick Links</p>
       <div class="side-list rail-list-col">
-       {project.links.map((link) => (
+       {currentProject.links.map((link) => (
      <a href={link.href} class="text-sm" style="opacity: 0.8">{link.label} ↗</a>
         ))}
      </div>
@@ -25,14 +27,14 @@ const { project } = Astro.props
     </DetailSidebar>
   </Fragment>
   <Fragment slot="main">
-   <ArticleBody sections={project.sections} />
+   <ArticleBody sections={currentProject.sections} />
   </Fragment>
 
     <Fragment slot="right">
    <div class="side-panel flow-sm panel">
     <p class="eyebrow">Highlights</p>
     <ul style="padding-left: 1.2rem; display: grid; gap: 0.5rem;" class="text-sm">
-    {project.highlights.map((item) => (
+    {currentProject.highlights.map((item) => (
      <li style="opacity: 0.8">{item}</li>
     ))}
     </ul>
@@ -40,7 +42,7 @@ const { project } = Astro.props
    <div class="side-panel flow-sm panel">
     <p class="eyebrow">Tech Stack</p>
    <div class="tag-list-flex">
-    {project.stack.map((item) => (
+    {currentProject.stack.map((item) => (
     <span class="tag">{item}</span>
    ))}
    </div>

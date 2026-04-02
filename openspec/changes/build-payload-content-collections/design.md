@@ -43,6 +43,7 @@ sections (array)
 ### Projects 特有
 - `stage` (select) — In Progress / Planned / Concept / Stable / Archived
 - `orbit` (text)
+- `updatedAt` (date) — 当前实现中由编辑端显式维护的项目更新时间
 - `featured` (checkbox)
 - `stack` (array of text) — 技术栈
 - `tags` (array of text)
@@ -52,6 +53,7 @@ sections (array)
 ### Docs 特有
 - `version` (text) — 如 "v0.2" / "draft"
 - `orbit` (text)
+- `updatedAt` (date) — 当前实现中由编辑端显式维护的文档更新时间
 - `tags` (array of text)
 
 ### Notes 特有
@@ -62,7 +64,12 @@ sections (array)
 ## 4. 通用配置（所有 collection）
 
 ```ts
-access: { read: () => true }   // 公开读取
+access: {
+  read: () => true,
+  create: ({ req: { user } }) => Boolean(user),
+  update: ({ req: { user } }) => Boolean(user),
+  delete: ({ req: { user } }) => Boolean(user),
+}
 versions: { drafts: true }      // 草稿支持
 admin: { useAsTitle: 'title' }  // 后台列表显示 title
 ```

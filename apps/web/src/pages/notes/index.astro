@@ -3,19 +3,25 @@ import ContentCard from '../../components/ContentCard.astro'
 import CollectionHeader from '../../components/CollectionHeader.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { collectionStats, notes } from '../../data/content'
+import { getNotes } from '../../lib/payload'
+
+const notes = await getNotes()
 ---
 <SiteLayout title="笔记 | TZBlog" description="短笔记、开发碎片与变更记录。">
   <ThreeColumnLayout>
     <Fragment slot="left">
-      <CollectionHeader eyebrow="Notes" title="更新日志与现场笔记" description="轻量、直接、适合记录过程中的判断与发现。" count={collectionStats.notes} unit="条记录" />
+      <CollectionHeader eyebrow="Notes" title="更新日志与现场笔记" description="轻量、直接、适合记录过程中的判断与发现。" count={notes.length} unit="条记录" />
     </Fragment>
 
     <Fragment slot="main">
       <div class="content-stack">
-        {notes.map((note) => (
-          <ContentCard href={`/notes/${note.slug}`} eyebrow={note.mood} title={note.title} summary={note.summary} meta={note.publishedAt} tags={note.tags} />
-        ))}
+        {notes.length > 0 ? (
+          notes.map((note) => (
+            <ContentCard href={`/notes/${note.slug}`} eyebrow={note.mood} title={note.title} summary={note.summary} meta={note.publishedAt} tags={note.tags} />
+          ))
+        ) : (
+          <div class="empty-state panel">当前还没有已发布笔记，或者 Payload API 暂时不可用。</div>
+        )}
       </div>
     </Fragment>
 

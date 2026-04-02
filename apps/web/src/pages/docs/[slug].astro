@@ -4,25 +4,26 @@ import DetailSidebar from '../../components/DetailSidebar.astro'
 import TableOfContents from '../../components/TableOfContents.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { docsCollection } from '../../data/content'
+import { getDocs } from '../../lib/payload'
 
-export function getStaticPaths() {
- return docsCollection.map((doc) => ({ params: { slug: doc.slug }, props: { doc } }))
+export async function getStaticPaths() {
+  const docsCollection = await getDocs()
+  return docsCollection.map((doc) => ({ params: { slug: doc.slug }, props: { doc } }))
 }
 
-const { doc } = Astro.props
+const { doc: currentDoc } = Astro.props
 ---
-<SiteLayout title={`${doc.title} | TZBlog`} description={doc.summary}>
+<SiteLayout title={`${currentDoc.title} | TZBlog`} description={currentDoc.summary}>
   <ThreeColumnLayout>
     <Fragment slot="left">
-      <DetailSidebar eyebrow={doc.version} title={doc.title} summary={doc.summary} chips={[doc.updatedAt, doc.orbit]} tags={doc.tags} />
+      <DetailSidebar eyebrow={currentDoc.version} title={currentDoc.title} summary={currentDoc.summary} chips={[currentDoc.updatedAt, currentDoc.orbit]} tags={currentDoc.tags} />
     </Fragment>
 
     <Fragment slot="main">
-      <ArticleBody sections={doc.sections} />
+      <ArticleBody sections={currentDoc.sections} />
   </Fragment>
     <Fragment slot="right">
-     <TableOfContents sections={doc.sections} label="Doc Directory" />
+     <TableOfContents sections={currentDoc.sections} label="Doc Directory" />
     </Fragment>
   </ThreeColumnLayout>
 </SiteLayout>

@@ -23,18 +23,18 @@ The CMS SHALL include a `posts` collection with fields: slug (unique), title, su
 
 ### Requirement: Payload CMS SHALL provide a Projects collection for project content management
 
-The CMS SHALL include a `projects` collection with fields: slug (unique), title, summary, stage (select: In Progress/Planned/Concept/Stable/Archived), orbit, featured (checkbox), stack (array), tags (array), links (array of label/href), highlights (array), sections (array). The collection SHALL support draft/publish workflow.
+The CMS SHALL include a `projects` collection with fields: slug (unique), title, summary, stage (select: In Progress/Planned/Concept/Stable/Archived), orbit, updatedAt (date), featured (checkbox), stack (array), tags (array), links (array of label/href), highlights (array), sections (array). The collection SHALL support draft/publish workflow.
 
 #### Scenario: Editor creates and publishes a project
 
 - Given the Payload Admin is accessible
-- When an editor fills in all required fields including stage and publishes
+- When an editor fills in all required fields including stage and updatedAt and publishes
 - Then the project is accessible via `GET /api/projects?where[_status][equals]=published`
 - And the stage field value matches one of the defined select options
 
 ### Requirement: Payload CMS SHALL provide a Docs collection for documentation content management
 
-The CMS SHALL include a `docs` collection with fields: slug (unique), title, summary, version, orbit, tags (array), sections (array). The collection SHALL support draft/publish workflow.
+The CMS SHALL include a `docs` collection with fields: slug (unique), title, summary, version, orbit, updatedAt (date), tags (array), sections (array). The collection SHALL support draft/publish workflow.
 
 #### Scenario: Editor creates and publishes a doc
 
@@ -62,3 +62,14 @@ The `payload.config.ts` SHALL import and register Posts, Projects, Docs, and Not
 - When the admin interface loads
 - Then the sidebar shows: Users, Media, Posts, Projects, Docs, Notes
 - And PostgreSQL contains the corresponding tables after migration
+
+### Requirement: Content collection write operations SHALL require an authenticated CMS user
+
+All content collections introduced by this change SHALL keep public read access, but create/update/delete operations MUST require an authenticated CMS user.
+
+#### Scenario: Anonymous user attempts write access
+
+- Given a request targets create, update, or delete on `posts`, `projects`, `docs`, or `notes`
+- When the request does not carry an authenticated CMS user
+- Then the write operation is denied
+- And public read access remains unaffected

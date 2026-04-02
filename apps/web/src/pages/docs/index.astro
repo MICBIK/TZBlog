@@ -4,24 +4,35 @@ import CollectionHeader from '../../components/CollectionHeader.astro'
 import HighlightCard from '../../components/HighlightCard.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { collectionStats, docsCollection } from '../../data/content'
+import { getDocs } from '../../lib/payload'
+
+const docsCollection = await getDocs()
+const featuredDoc = docsCollection[0]
 ---
 <SiteLayout title="文档 | TZBlog" description="结构化文档与长期维护说明的入口。">
   <ThreeColumnLayout>
     <Fragment slot="left">
-      <CollectionHeader eyebrow="Docs" title="文档中枢" description="结构、版本和章节组织的长期知识平面。" count={collectionStats.docs} unit="份结构文档" />
+      <CollectionHeader eyebrow="Docs" title="文档中枢" description="结构、版本和章节组织的长期知识平面。" count={docsCollection.length} unit="份结构文档" />
     </Fragment>
 
     <Fragment slot="main">
       <div class="content-stack">
-        {docsCollection.map((doc) => (
-          <ContentCard href={`/docs/${doc.slug}`} eyebrow={doc.version} title={doc.title} summary={doc.summary} meta={`${doc.updatedAt} · ${doc.orbit}`} tags={doc.tags} />
-        ))}
+        {docsCollection.length > 0 ? (
+          docsCollection.map((doc) => (
+            <ContentCard href={`/docs/${doc.slug}`} eyebrow={doc.version} title={doc.title} summary={doc.summary} meta={`${doc.updatedAt} · ${doc.orbit}`} tags={doc.tags} />
+          ))
+        ) : (
+          <div class="empty-state panel">当前还没有已发布文档，或者 Payload API 暂时不可用。</div>
+        )}
       </div>
     </Fragment>
 
     <Fragment slot="right">
-      <HighlightCard eyebrow="Current Priority" title={docsCollection[0].title} summary={docsCollection[0].summary} href={`/docs/${docsCollection[0].slug}`} />
+      {featuredDoc ? (
+        <HighlightCard eyebrow="Current Priority" title={featuredDoc.title} summary={featuredDoc.summary} href={`/docs/${featuredDoc.slug}`} />
+      ) : (
+        <div class="empty-state panel">暂无优先文档可显示。</div>
+      )}
       <div class="side-panel flow-sm panel">
         <p class="eyebrow">Doc Notes</p>
         <p class="muted text-sm">后续接 Payload 后，文档页会继续保留目录感、版本号和相关文档入口。</p>

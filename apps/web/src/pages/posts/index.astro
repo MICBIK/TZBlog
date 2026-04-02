@@ -4,7 +4,10 @@ import CollectionHeader from '../../components/CollectionHeader.astro'
 import HighlightCard from '../../components/HighlightCard.astro'
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { posts } from '../../data/content'
+import { getPosts } from '../../lib/payload'
+
+const posts = await getPosts()
+const featuredPost = posts.find((post) => post.featured) ?? posts[0]
 ---
 <SiteLayout title="文章 | TZBlog" description="TZBlog 的文章主列表页，默认采用阅读优先的列表布局。">
   <ThreeColumnLayout>
@@ -23,9 +26,13 @@ import { posts } from '../../data/content'
 
     <Fragment slot="main">
       <div class="content-stack">
-        {posts.map((post) => (
-          <ContentCard href={`/posts/${post.slug}`} eyebrow={post.category} title={post.title} summary={post.summary} meta={`${post.publishedAt} · ${post.readTime}`} tags={post.tags} />
-        ))}
+        {posts.length > 0 ? (
+          posts.map((post) => (
+            <ContentCard href={`/posts/${post.slug}`} eyebrow={post.category} title={post.title} summary={post.summary} meta={`${post.publishedAt} · ${post.readTime}`} tags={post.tags} />
+          ))
+        ) : (
+          <div class="empty-state panel">当前还没有已发布文章，或者 Payload API 暂时不可用。</div>
+        )}
       </div>
     </Fragment>
 
@@ -38,7 +45,11 @@ import { posts } from '../../data/content'
           <span class="tag">UX</span>
         </div>
       </div>
-      <HighlightCard eyebrow="Featured Signal" title={posts[0].title} summary={posts[0].summary} href={`/posts/${posts[0].slug}`} />
+      {featuredPost ? (
+        <HighlightCard eyebrow="Featured Signal" title={featuredPost.title} summary={featuredPost.summary} href={`/posts/${featuredPost.slug}`} />
+      ) : (
+        <div class="empty-state panel">暂无精选文章可显示。</div>
+      )}
     </Fragment>
   </ThreeColumnLayout>
 </SiteLayout>

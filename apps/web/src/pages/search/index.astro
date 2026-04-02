@@ -1,6 +1,20 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { searchIndex } from '../../data/content'
+import { getDocs, getNotes, getPosts, getProjects } from '../../lib/payload'
+
+const [posts, projects, docsCollection, notes] = await Promise.all([
+  getPosts(),
+  getProjects(),
+  getDocs(),
+  getNotes(),
+])
+
+const searchIndex = [
+  ...posts.map((item) => ({ type: '文章', title: item.title, summary: item.summary, href: `/posts/${item.slug}`, meta: `${item.publishedAt} · ${item.readTime}` })),
+  ...projects.map((item) => ({ type: '项目', title: item.title, summary: item.summary, href: `/projects/${item.slug}`, meta: `${item.stage} · ${item.updatedAt}` })),
+  ...docsCollection.map((item) => ({ type: '文档', title: item.title, summary: item.summary, href: `/docs/${item.slug}`, meta: `${item.version} · ${item.updatedAt}` })),
+  ...notes.map((item) => ({ type: '笔记', title: item.title, summary: item.summary, href: `/notes/${item.slug}`, meta: `${item.mood} · ${item.publishedAt}` })),
+]
 
 const initialResults = searchIndex.slice(0, 6)
 ---
@@ -33,7 +47,6 @@ const initialResults = searchIndex.slice(0, 6)
     </div>
   </section>
 
-  <!-- Shared card template: used by both SSR initial render and CSR updates -->
   <template id="search-card-tpl">
     <article class="search-card panel flow-sm">
       <p class="eyebrow" data-field="type"></p>
@@ -45,14 +58,18 @@ const initialResults = searchIndex.slice(0, 6)
 
   <section class="page-section">
     <div class="search-results" aria-live="polite" data-search-results>
-      {initialResults.map((item) => (
-        <article class="search-card panel flow-sm">
-          <p class="eyebrow">{item.type}</p>
-          <h3><a href={item.href}>{item.title}</a></h3>
-          <p class="muted">{item.summary}</p>
-          <p class="meta-line">{item.meta}</p>
-        </article>
-      ))}
+      {initialResults.length > 0 ? (
+        initialResults.map((item) => (
+          <article class="search-card panel flow-sm">
+            <p class="eyebrow">{item.type}</p>
+            <h3><a href={item.href}>{item.title}</a></h3>
+            <p class="muted">{item.summary}</p>
+            <p class="meta-line">{item.meta}</p>
+          </article>
+        ))
+      ) : (
+        <div class="empty-state panel">当前还没有可搜索的已发布内容，或者 Payload API 暂时不可用。</div>
+      )}
     </div>
   </section>
 

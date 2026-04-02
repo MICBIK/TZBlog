@@ -7,7 +7,7 @@
 ## 当前状态
 
 - 项目目录：`/Users/baihaibin/Documents/WorkSpares/TZBlog`
-- 当前仓库状态：已完成第一阶段工程骨架，具备最小可运行开发环境
+- 当前仓库状态：已完成工程骨架、Payload 内容 collections，以及 Astro 前台主内容数据链路接入
 - 已锁定目标：完整前后端博客，不再回退到纯静态前台方案
 - 已接入：`OpenSpec` 作为默认变更管理机制
 
@@ -34,8 +34,8 @@
 3. `openspec/project.md`
 4. `docs/TZBlog OpenSpec 变更管理规范.md`
 5. `docs/TZBlog 技术选型决策.md`
-6. `/Users/baihaibin/Documents/ODWorkerSpace/博客/站点规划/TZBlog - 宇宙主题个人网站实现计划.md`
-7. `docs/TZBlog 全新设计方案.md`
+6. `docs/TZBlog 全新设计方案.md`
+7. `docs/TZBlog CMS数据链路实现方案.md`
 
 如果只是要自己把本地环境重新拉起来，优先看：
 
@@ -57,7 +57,7 @@
 ### 产品层
 
 - 首页承担内容分发，不是纯视觉首屏
-- 文章、项目、文档、实验室是并列一级内容入口
+- 文章、项目、文档、笔记、实验室是并列一级内容入口
 - 关于页存在，但不是全站主叙事核心
 
 ### 技术层
@@ -72,9 +72,16 @@
 ### 工程层
 
 - 根目录已存在 `package.json`、`pnpm-workspace.yaml`、`turbo.json`
-- `apps/web` 已可构建完整前台界面骨架，覆盖首页、列表页、详情页、搜索、实验室、关于等核心路由
-- `apps/cms` 已可启动 Payload Admin，占位前台已改为 TZBlog CMS bootstrap
+- `apps/web` 已具备完整前台界面骨架，覆盖首页、列表页、详情页、搜索、实验室、关于等核心路由
+- `apps/cms` 已注册 `Posts / Projects / Docs / Notes` collections
 - `infra/docker-compose.yml` 已可启动本地 PostgreSQL
+- `apps/web/src/lib/payload.ts` 已作为统一 Payload API 请求层存在
+
+### 数据链路层
+
+- 前台主内容页面已从硬编码静态内容切换到 Payload REST API
+- API 不可用时前台不再回退示例内容，而是显示 empty state
+- 运行时验收、真实内容录入、草稿/发布验证仍需在允许环境中继续完成
 
 ### 设计层
 
@@ -83,8 +90,6 @@
 - 正文阅读区不挂重型背景和高频特效
 
 ## 推荐仓库结构
-
-当前仓库基线如下：
 
 ```text
 TZBlog/
@@ -100,23 +105,25 @@ TZBlog/
 └── docs/
 ```
 
-## 第一阶段必须完成的内容
+## 当前已完成 / 未完成
 
-接手后第一阶段不要直接做视觉特效，先完成以下基础设施。
-
-当前已完成：
+### 当前已完成
 
 1. 建立 `pnpm workspace + turbo` monorepo 结构
 2. 初始化 `apps/web` 的 Astro 项目
 3. 初始化 `apps/cms` 的 Payload 项目
 4. 建立 `PostgreSQL` 本地开发环境
 5. 建立 Astro 的基础 layout、首页和文章详情页骨架
+6. 建立 Payload 基础业务 collections：`posts / projects / docs / notes`
+7. 打通 Astro 前台主内容页面到 Payload REST API 的主数据链路
+8. 去除前台主链路对示例内容 fallback 的依赖
 
-当前未完成：
+### 当前未完成
 
-1. 建立最小 `media` 存储方案
-2. 建立 Payload 的基础业务 collections / globals
-3. 打通 `Payload -> Astro` 的内容拉取链路
+1. 建立更完整的 Payload globals（如 `siteSettings / navigation / homepage / socialLinks / seoDefaults`）
+2. 完成真实运行时验收（Admin 创建内容、API 验证、前台构建验证）
+3. 完成搜索实索引（Pagefind）与统计接入（Umami）闭环
+4. 完成对象存储 / media 方案的正式接入
 
 ## Payload 最小模型
 
@@ -139,8 +146,6 @@ TZBlog/
 
 ## 环境变量建议
 
-接手时默认准备这些环境变量，不必等实现到一半再补：
-
 ### `apps/cms/.env`
 
 ```bash
@@ -158,11 +163,14 @@ WEB_REBUILD_WEBHOOK=
 
 ```bash
 PAYLOAD_PUBLIC_URL=
+PAYLOAD_API_URL=
 PAYLOAD_API_TOKEN=
 SITE_URL=
 UMAMI_SCRIPT_URL=
 UMAMI_WEBSITE_ID=
 ```
+
+说明：当前前台正式入口应优先使用 `PAYLOAD_API_URL`；`PAYLOAD_PUBLIC_URL` 仅作为兼容兜底保留。
 
 ## 本地开发默认策略
 
@@ -170,19 +178,18 @@ UMAMI_WEBSITE_ID=
 - 本地对象存储如果没有 R2，可先用 MinIO 兼容方案
 - 前台和后台分开运行
 - 统计系统可以先不在第一天跑通，但预留环境变量
-- 如果是在 OpenClaw 所在的受限 / 共享机器上协作，默认不要拉 Docker 镜像、启动数据库或长时间运行本地服务；优先只做 lint、types、build 等轻量验证，再由用户在自己的机器上做运行时验收
+- 如果是在 OpenClaw 所在的受限 / 共享机器上协作，默认不要拉 Docker 镜像、启动数据库或长时间运行本地服务；优先只做静态代码、文档、OpenSpec、配置层审查，再由用户在自己的机器上做运行时验收
 - 具体命令顺序、停止方式和常见故障排查见 `docs/TZBlog 本地启动与停止指南.md`
 
 ## 第一轮开发顺序
 
 推荐接手后的实际执行顺序：
 
-1. 基于现有 workspace 启动 Astro 和 Payload
-2. 建模 collections / globals
-3. 在 Astro 中拉取 `posts` 和 `homepage`
-4. 做出真正的无特效首页和文章详情页
-5. 再加项目页和文档页
-6. 最后再接 Hero 3D、Pagefind、Umami
+1. 确认 active change 与 OpenSpec 基线
+2. 优先完成 CMS / Web 数据契约与主内容链路
+3. 在允许环境中完成运行时验收
+4. 再补 globals / search / analytics / media
+5. 最后再接 Hero 3D、Pagefind细节、Umami运营细节
 
 ## 暂时不要做的事
 
@@ -206,6 +213,7 @@ UMAMI_WEBSITE_ID=
 - 正确理解首页 Hero 只是视觉层，不是主业务层
 - 正确把 `posts / projects / docs / notes / pages` 作为核心内容模型
 - 知道 Umami 是统计层，不是 CMS
+- 知道前台主内容页面已经走 Payload API，而不是示例内容主链路
 
 ## 当前仍未锁死的实现细节
 
@@ -217,4 +225,4 @@ UMAMI_WEBSITE_ID=
 
 ## 最后结论
 
-如果上下文现在丢失，新的 AI 只要按这份文档、`openspec/project.md` 和相关主文档阅读顺序接手，已经可以正确启动项目，不需要重新讨论项目方向。
+如果上下文现在丢失，新的 AI 只要按这份文档、`openspec/project.md` 和相关主文档阅读顺序接手，已经可以正确进入当前主线，不需要重新讨论项目方向；但运行时验收仍应放到允许环境中完成。
