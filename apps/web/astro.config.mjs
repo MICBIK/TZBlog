@@ -5,11 +5,4 @@ export default defineConfig({
     host: true,
     port: 4321,
   },
-  vite: {
-    build: {
-      rollupOptions: {
-        external: ['/pagefind/pagefind.js'],
-      },
-    },
-  },
 })

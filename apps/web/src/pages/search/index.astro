@@ -38,34 +38,34 @@ const suggestedQueries = ['Payload', 'Astro', '搜索', '内容']
     </div>
   </section>
 
-  <script>
-    let pagefind: any = null
+  <script is:inline>
+    var pagefind = null
 
     async function initPagefind() {
       try {
-        pagefind = await import(/* @vite-ignore */ '/pagefind/pagefind.js')
+        pagefind = await import('/pagefind/pagefind.js')
         await pagefind.init()
-      } catch {
-        console.warn('Pagefind index not available (normal in dev mode)')
+      } catch (e) {
+        console.warn('Pagefind index not available (normal in dev mode)', e)
       }
     }
 
-    const input = document.querySelector('[data-search-input]') as HTMLInputElement | null
-    const resultRoot = document.querySelector('[data-search-results]')
-    const suggestButtons = document.querySelectorAll('[data-suggest]')
+    var input = document.querySelector('[data-search-input]')
+    var resultRoot = document.querySelector('[data-search-results]')
+    var suggestButtons = document.querySelectorAll('[data-suggest]')
 
-    function renderResults(items: Array<{ url: string; meta: { title: string }; excerpt: string }>) {
+    function renderResults(items) {
       if (!resultRoot) return
       if (!items.length) {
         resultRoot.innerHTML = '<div class="empty-state panel">没搜到匹配信号，换个关键词试试。</div>'
         return
       }
-      resultRoot.innerHTML = items.map((item) => `
-        <article class="search-card panel flow-sm">
-          <h3><a href="${item.url}">${item.meta?.title || '无标题'}</a></h3>
-          <p class="muted">${item.excerpt || ''}</p>
-        </article>
-      `).join('')
+      resultRoot.innerHTML = items.map(function(item) {
+        return '<article class="search-card panel flow-sm">' +
+          '<h3><a href="' + item.url + '">' + (item.meta && item.meta.title ? item.meta.title : '无标题') + '</a></h3>' +
+          '<p class="muted">' + (item.excerpt || '') + '</p>' +
+          '</article>'
+      }).join('')
     }
 
     function renderEmpty() {
@@ -73,27 +73,29 @@ const suggestedQueries = ['Payload', 'Astro', '搜索', '内容']
       resultRoot.innerHTML = '<div class="empty-state panel">输入关键词开始搜索。</div>'
     }
 
-    async function runSearch(query: string) {
-      const normalized = query.trim()
+    async function runSearch(query) {
+      var normalized = query.trim()
       if (!normalized) { renderEmpty(); return }
       if (!pagefind) {
         if (resultRoot) resultRoot.innerHTML = '<div class="empty-state panel">搜索索引加载中，请稍候…</div>'
         return
       }
-      const search = await pagefind.search(normalized)
-      const results = await Promise.all(search.results.slice(0, 10).map((r: any) => r.data()))
+      var search = await pagefind.search(normalized)
+      var results = await Promise.all(search.results.slice(0, 10).map(function(r) { return r.data() }))
       renderResults(results)
     }
 
-    let timer: ReturnType<typeof setTimeout>
-    input?.addEventListener('input', () => {
-      clearTimeout(timer)
-      timer = setTimeout(() => runSearch(input.value), 200)
-    })
+    var timer
+    if (input) {
+      input.addEventListener('input', function() {
+        clearTimeout(timer)
+        timer = setTimeout(function() { runSearch(input.value) }, 200)
+      })
+    }
 
-    suggestButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        const value = button.getAttribute('data-suggest') || ''
+    suggestButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        var value = button.getAttribute('data-suggest') || ''
         if (input) input.value = value
         runSearch(value)
       })
