@@ -40,12 +40,16 @@ const suggestedQueries = ['Payload', 'Astro', '搜索', '内容']
 
   <script is:inline>
     var pagefind = null
+    var pagefindReady = false
+    var pagefindFailed = false
 
     async function initPagefind() {
       try {
         pagefind = await import('/pagefind/pagefind.js')
         await pagefind.init()
+        pagefindReady = true
       } catch (e) {
+        pagefindFailed = true
         console.warn('Pagefind index not available (normal in dev mode)', e)
       }
     }
@@ -76,13 +80,29 @@ const suggestedQueries = ['Payload', 'Astro', '搜索', '内容']
     async function runSearch(query) {
       var normalized = query.trim()
       if (!normalized) { renderEmpty(); return }
-      if (!pagefind) {
-        if (resultRoot) resultRoot.innerHTML = '<div class="empty-state panel">搜索索引加载中，请稍候…</div>'
+      if (pagefindFailed) {
+        if (resultRoot) resultRoot.innerHTML = '<div class="empty-state panel">搜索索引不可用，请先执行构建（pnpm build）后使用 pnpm preview 访问。</div>'
         return
       }
-      var search = await pagefind.search(normalized)
-      var results = await Promise.all(search.results.slice(0, 10).map(function(r) { return r.data() }))
-      renderResults(results)
+      if (!pagefindReady) {
+        if (resultRoot) resultRoot.innerHTML = '<div class="empty-state panel">搜索索引加载中，请稍候…</div>'
+        // 等待初始化完成后重试
+        var waitTimer = setInterval(function() {
+          if (pagefindReady || pagefindFailed) {
+            clearInterval(waitTimer)
+            runSearch(query)
+          }
+        }, 100)
+        return
+      }
+      try {
+        var search = await pagefind.search(normalized)
+        var results = await Promise.all(search.results.slice(0, 10).map(function(r) { return r.data() }))
+        renderResults(results)
+      } catch (e) {
+        console.error('Search failed:', e)
+        if (resultRoot) resultRoot.innerHTML = '<div class="empty-state panel">搜索出错，请刷新页面重试。</div>'
+      }
     }
 
     var timer
