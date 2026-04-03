@@ -19,7 +19,9 @@ const { note: currentNote } = Astro.props
     <DetailSidebar eyebrow={currentNote.mood} title={currentNote.title} summary={currentNote.summary} chips={[currentNote.publishedAt]} tags={currentNote.tags} />
    </Fragment>
    <Fragment slot="main">
-   <ArticleBody sections={currentNote.sections} />
+   <div data-pagefind-body>
+     <ArticleBody sections={currentNote.sections} />
+   </div>
     </Fragment>
 
     <Fragment slot="right">

@@ -20,7 +20,9 @@ const { doc: currentDoc } = Astro.props
     </Fragment>
 
     <Fragment slot="main">
-      <ArticleBody sections={currentDoc.sections} />
+      <div data-pagefind-body>
+        <ArticleBody sections={currentDoc.sections} />
+      </div>
   </Fragment>
     <Fragment slot="right">
      <TableOfContents sections={currentDoc.sections} label="Doc Directory" />

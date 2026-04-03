@@ -673,6 +673,13 @@ ul {
   margin-top: 1rem;
 }
 
+.search-card mark {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  padding: 0.1em 0.2em;
+  border-radius: 2px;
+}
+
 .empty-state {
   padding: 1.2rem;
   text-align: center;

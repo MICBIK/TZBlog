@@ -27,7 +27,9 @@ const { project: currentProject } = Astro.props
     </DetailSidebar>
   </Fragment>
   <Fragment slot="main">
-   <ArticleBody sections={currentProject.sections} />
+   <div data-pagefind-body>
+     <ArticleBody sections={currentProject.sections} />
+   </div>
   </Fragment>
 
     <Fragment slot="right">

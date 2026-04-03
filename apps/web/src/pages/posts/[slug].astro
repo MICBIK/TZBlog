@@ -28,7 +28,9 @@ const { post: currentPost, previous, next } = Astro.props
     <DetailSidebar eyebrow={currentPost.category} title={currentPost.title} summary={currentPost.summary} chips={[currentPost.publishedAt, currentPost.readTime]} tags={currentPost.tags} />
    </Fragment>
     <Fragment slot="main">
-      <ArticleBody sections={currentPost.sections} />
+      <div data-pagefind-body>
+        <ArticleBody sections={currentPost.sections} />
+      </div>
 
       <section class="page-section article-footer-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
     <div class="panel flow-sm" style="padding: 1.5rem">
