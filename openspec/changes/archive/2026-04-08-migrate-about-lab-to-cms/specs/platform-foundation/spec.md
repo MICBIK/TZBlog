@@ -2,7 +2,7 @@
 
 ## Change: migrate-about-lab-to-cms
 
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: About and Lab pages SHALL source data from Payload CMS
 
