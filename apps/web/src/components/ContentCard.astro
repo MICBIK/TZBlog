@@ -34,27 +34,35 @@ const {
       <p class="muted">{summary}</p>
     </div>
 
-    {(meta || tags.length > 0) && (
+    {meta && (
       <div class="card-meta flow-sm">
-        {meta && <p class="meta-line">{meta}</p>}
-        {tags.length > 0 && (
-          <div class="tag-list">
-            {tags.map((tag) => (
-              <span class="tag">{tag}</span>
-            ))}
-          </div>
-        )}
+        <p class="meta-line">{meta}</p>
       </div>
     )}
   </a>
+
+  {tags.length > 0 && (
+    <div class="card-meta flow-sm">
+      <div class="tag-list">
+        {tags.map((tag) => (
+          <a href={`/tags/${encodeURIComponent(tag)}`} class="tag tag-link">{tag}</a>
+        ))}
+      </div>
+    </div>
+  )}
 </article>
 
 <style>
   .content-card {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-base);
   }
-  
+
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+  }
+
   .card-glow-effect {
     position: absolute;
     inset: 0;
@@ -64,24 +72,37 @@ const {
     transition: opacity 300ms ease;
     pointer-events: none;
   }
-  
+
   .content-card:hover .card-glow-effect {
     opacity: 1;
   }
-  
+
   .card-eyebrow-wrapper {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.25rem;
   }
-  
+
   .card-orbit-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: #fff;
     box-shadow: 0 0 8px #fff;
+  }
+
+  .tag-link {
+    position: relative;
+    z-index: var(--z-base, 1);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* Tags area outside card-link needs its own padding and spacing */
+  article > .card-meta {
+    padding: 0 1.2rem 1.2rem;
+    margin-top: 0.5rem;
   }
 
   /* Left accent bar for Firefly feel */

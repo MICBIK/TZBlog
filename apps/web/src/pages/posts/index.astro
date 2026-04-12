@@ -9,7 +9,7 @@ import { getPosts } from '../../lib/payload'
 const posts = await getPosts()
 const featuredPost = posts.find((post) => post.featured) ?? posts[0]
 const tagCounts = new Map<string, number>()
-posts.flatMap((p) => p.tags).forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1))
+posts.flatMap((p) => p.tags || []).forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1))
 const topTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag]) => tag)
 ---
 <SiteLayout title="文章 | TZBlog" description="TZBlog 的文章主列表页，默认采用阅读优先的列表布局。">
@@ -40,14 +40,17 @@ const topTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
     </Fragment>
 
     <Fragment slot="right">
-      <div class="side-panel flow-sm panel">
-        <p class="eyebrow">Filters</p>
-        <div class="tag-list">
-          {topTags.map((tag) => (
-            <span class="tag">{tag}</span>
-          ))}
+      {topTags.length > 0 && (
+        <div class="side-panel flow-sm panel">
+          <p class="eyebrow">Tags</p>
+          <div class="tag-list">
+            {topTags.map((tag) => (
+              <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+            ))}
+          </div>
+          <a href="/tags" class="muted text-sm">查看全部标签 →</a>
         </div>
-      </div>
+      )}
       {featuredPost ? (
         <HighlightCard eyebrow="Featured Signal" title={featuredPost.title} summary={featuredPost.summary} href={`/posts/${featuredPost.slug}`} />
       ) : (

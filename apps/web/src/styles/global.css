@@ -433,12 +433,12 @@ ul {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 4px;
-  background: transparent;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: var(--tag-bg, transparent);
   border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 0.78rem;
+  color: var(--accent-secondary, var(--muted));
+  font-size: 0.88rem;
   font-family: 'Inter', -apple-system, sans-serif;
 }
 .status-chip:hover, .tag:hover {
@@ -1091,15 +1091,25 @@ ul {
   gap: 0.5rem;
 }
 
-.tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--tag-bg);
-  color: var(--accent-secondary);
-  font-size: 0.88rem;
+/* Unified .section-label utility */
+.section-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Back link utility */
+.back-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.back-link:hover {
+  color: var(--text);
 }
 
 .site-stats-bar {
@@ -1150,4 +1160,38 @@ ul {
   .contribution-graph-canvas {
     min-width: 620px;
   }
+}
+
+/* ── Tag Pages ── */
+
+.tag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.tag-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.tag-card:hover {
+  border-color: var(--border-strong);
+  background: var(--glass-hover);
+}
+
+.tag-card-name {
+  font-weight: 500;
+}
+
+.tag-card-count {
+  color: var(--muted);
+  font-size: 0.85rem;
 }

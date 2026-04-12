@@ -1,0 +1,85 @@
+---
+import ContentCard from '../../components/ContentCard.astro'
+import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { getAllTags, getContentByTag } from '../../lib/payload'
+
+export async function getStaticPaths() {
+  const tags = await getAllTags()
+  return tags.map((tag) => ({
+    params: { tag: encodeURIComponent(tag.name) },
+    props: { tagName: tag.name },
+  }))
+}
+
+const { tagName } = Astro.props
+const content = await getContentByTag(tagName)
+const totalCount = content.posts.length + content.projects.length + content.docs.length + content.notes.length
+---
+
+<SiteLayout title={`${tagName} | 标签 | TZBlog`} description={`查看标签 "${tagName}" 下的所有内容。`}>
+  <ThreeColumnLayout>
+    <Fragment slot="left">
+      <div class="side-panel flow-sm panel">
+        <p class="eyebrow">Tag</p>
+        <h1>{tagName}</h1>
+        <span class="status-chip">{totalCount} 项内容</span>
+        <a href="/tags" class="back-link muted text-sm">← 返回标签列表</a>
+      </div>
+    </Fragment>
+
+    <Fragment slot="main">
+      <div class="content-stack">
+        {totalCount > 0 ? (
+          <Fragment>
+            {content.posts.length > 0 && (
+              <div class="flow-sm">
+                <h2 class="section-label">文章</h2>
+                {content.posts.map((post) => (
+                  <ContentCard href={`/posts/${post.slug}`} eyebrow={post.category} title={post.title} summary={post.summary} meta={`${post.publishedAt} · ${post.readTime}`} tags={post.tags} />
+                ))}
+              </div>
+            )}
+
+            {content.projects.length > 0 && (
+              <div class="flow-sm">
+                <h2 class="section-label">项目</h2>
+                {content.projects.map((project) => (
+                  <ContentCard href={`/projects/${project.slug}`} eyebrow={project.stage} title={project.title} summary={project.summary} meta={`${project.updatedAt} · ${project.orbit}`} tags={project.tags} />
+                ))}
+              </div>
+            )}
+
+            {content.docs.length > 0 && (
+              <div class="flow-sm">
+                <h2 class="section-label">文档</h2>
+                {content.docs.map((doc) => (
+                  <ContentCard href={`/docs/${doc.slug}`} eyebrow={doc.version} title={doc.title} summary={doc.summary} meta={`${doc.updatedAt} · ${doc.orbit}`} tags={doc.tags} />
+                ))}
+              </div>
+            )}
+
+            {content.notes.length > 0 && (
+              <div class="flow-sm">
+                <h2 class="section-label">笔记</h2>
+                {content.notes.map((note) => (
+                  <ContentCard href={`/notes/${note.slug}`} eyebrow={note.mood} title={note.title} summary={note.summary} meta={note.publishedAt} tags={note.tags} />
+                ))}
+              </div>
+            )}
+          </Fragment>
+        ) : (
+          <div class="empty-state panel">该标签下暂无内容。</div>
+        )}
+      </div>
+    </Fragment>
+
+    <Fragment slot="right">
+      <div class="side-panel flow-sm panel">
+        <p class="eyebrow">Collections</p>
+        <p class="muted text-sm">内容来自文章、项目、文档和笔记四个集合。</p>
+      </div>
+    </Fragment>
+  </ThreeColumnLayout>
+</SiteLayout>
+

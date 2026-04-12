@@ -6,6 +6,9 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
 import { getNotes } from '../../lib/payload'
 
 const notes = await getNotes()
+const noteTagCounts = new Map<string, number>()
+notes.flatMap((n) => n.tags || []).forEach((t) => noteTagCounts.set(t, (noteTagCounts.get(t) || 0) + 1))
+const noteTopTags = [...noteTagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag]) => tag)
 ---
 <SiteLayout title="笔记 | TZBlog" description="短笔记、开发碎片与变更记录。">
   <ThreeColumnLayout>
@@ -26,6 +29,17 @@ const notes = await getNotes()
     </Fragment>
 
     <Fragment slot="right">
+      {noteTopTags.length > 0 && (
+        <div class="side-panel flow-sm panel">
+          <p class="eyebrow">Tags</p>
+          <div class="tag-list">
+            {noteTopTags.map((tag) => (
+              <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+            ))}
+          </div>
+          <a href="/tags" class="muted text-sm">查看全部标签 →</a>
+        </div>
+      )}
       <div class="side-panel flow-sm panel">
         <p class="eyebrow">Mood</p>
         <p class="muted text-sm">Ship Log / Short Note / Field Memo</p>

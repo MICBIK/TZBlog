@@ -1,0 +1,37 @@
+---
+import CollectionHeader from '../../components/CollectionHeader.astro'
+import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { getAllTags } from '../../lib/payload'
+
+const tags = await getAllTags()
+---
+<SiteLayout title="标签 | TZBlog" description="按标签浏览所有文章、项目、文档和笔记。">
+  <ThreeColumnLayout>
+    <Fragment slot="left">
+      <CollectionHeader eyebrow="Tags" title="标签星图" description="跨集合内容按标签维度浏览。" count={tags.length} unit="个标签" />
+    </Fragment>
+
+    <Fragment slot="main">
+      {tags.length > 0 ? (
+        <div class="tag-grid">
+          {tags.map((tag) => (
+            <a href={`/tags/${encodeURIComponent(tag.name)}`} class="tag-card panel">
+              <span class="tag-card-name">{tag.name}</span>
+              <span class="tag-card-count">{tag.count}</span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state panel">暂无标签数据。</div>
+      )}
+    </Fragment>
+
+    <Fragment slot="right">
+      <div class="side-panel flow-sm panel">
+        <p class="eyebrow">About Tags</p>
+        <p class="muted text-sm">标签从所有已发布的文章、项目、文档和笔记中自动提取，按使用频率排列。</p>
+      </div>
+    </Fragment>
+  </ThreeColumnLayout>
+</SiteLayout>

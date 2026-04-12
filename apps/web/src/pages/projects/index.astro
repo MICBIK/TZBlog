@@ -6,6 +6,9 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
 import { getProjects } from '../../lib/payload'
 
 const projects = await getProjects()
+const projectTagCounts = new Map<string, number>()
+projects.flatMap((p) => p.tags || []).forEach((t) => projectTagCounts.set(t, (projectTagCounts.get(t) || 0) + 1))
+const projectTopTags = [...projectTagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag]) => tag)
 ---
 <SiteLayout title="项目 | TZBlog" description="项目档案页，采用网格优先的扫描式布局。">
   <ThreeColumnLayout>
@@ -26,14 +29,17 @@ const projects = await getProjects()
     </Fragment>
 
     <Fragment slot="right">
-      <div class="side-panel flow-sm panel">
-        <p class="eyebrow">Project Filter</p>
-        <div class="tag-list" style="display: flex; flex-direction: column; gap: 0.5rem">
-          <span class="tag" style="background: rgba(255,255,255,0.05)">In Progress</span>
-          <span class="tag">Planned</span>
-          <span class="tag">Concept</span>
+      {projectTopTags.length > 0 && (
+        <div class="side-panel flow-sm panel">
+          <p class="eyebrow">Tags</p>
+          <div class="tag-list">
+            {projectTopTags.map((tag) => (
+              <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+            ))}
+          </div>
+          <a href="/tags" class="muted text-sm">查看全部标签 →</a>
         </div>
-      </div>
+      )}
     </Fragment>
   </ThreeColumnLayout>
 </SiteLayout>

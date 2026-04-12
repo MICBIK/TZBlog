@@ -1,7 +1,17 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro'
+import { getPosts, getProjects, getDocs, getNotes } from '../../lib/payload'
 
-const suggestedQueries = ['Payload', 'Astro', '搜索', '内容']
+const [posts, projects, docs, notes] = await Promise.all([getPosts(), getProjects(), getDocs(), getNotes()])
+const tagCounts = new Map<string, number>()
+;[...posts, ...projects, ...docs, ...notes]
+  .flatMap((item) => item.tags || [])
+  .filter((t) => t.trim())
+  .forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1))
+const suggestedQueries = [...tagCounts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 4)
+  .map(([tag]) => tag)
 ---
 
 <SiteLayout title="搜索 | TZBlog" description="全文搜索所有文章、项目、文档和笔记。">

@@ -8,6 +8,9 @@ import { getDocs } from '../../lib/payload'
 
 const docsCollection = await getDocs()
 const featuredDoc = docsCollection[0]
+const docTagCounts = new Map<string, number>()
+docsCollection.flatMap((d) => d.tags || []).forEach((t) => docTagCounts.set(t, (docTagCounts.get(t) || 0) + 1))
+const docTopTags = [...docTagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag]) => tag)
 ---
 <SiteLayout title="文档 | TZBlog" description="结构化文档与长期维护说明的入口。">
   <ThreeColumnLayout>
@@ -28,6 +31,17 @@ const featuredDoc = docsCollection[0]
     </Fragment>
 
     <Fragment slot="right">
+      {docTopTags.length > 0 && (
+        <div class="side-panel flow-sm panel">
+          <p class="eyebrow">Tags</p>
+          <div class="tag-list">
+            {docTopTags.map((tag) => (
+              <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+            ))}
+          </div>
+          <a href="/tags" class="muted text-sm">查看全部标签 →</a>
+        </div>
+      )}
       {featuredDoc ? (
         <HighlightCard eyebrow="Current Priority" title={featuredDoc.title} summary={featuredDoc.summary} href={`/docs/${featuredDoc.slug}`} />
       ) : (

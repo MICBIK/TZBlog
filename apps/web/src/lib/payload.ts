@@ -67,6 +67,28 @@ interface PayloadNoteDoc {
   sections?: PayloadSection[]
 }
 
+interface PayloadSiteProfileDoc {
+  name?: string
+  role?: string
+  avatar?: string
+  summary?: string
+  techStack?: {
+    frontend?: PayloadTextItem[]
+    backend?: PayloadTextItem[]
+    devops?: PayloadTextItem[]
+    tools?: PayloadTextItem[]
+  }
+  timeline?: Array<{ date: string; title: string; summary: string }>
+}
+
+interface PayloadLabExperimentDoc {
+  title: string
+  summary: string
+  status: string
+  href: string
+  tag: string
+}
+
 async function fetchPayload<T>(path: string): Promise<T> {
   try {
     const res = await fetch(`${API_URL}${path}`)
@@ -187,7 +209,7 @@ export async function getNoteBySlug(slug: string): Promise<NoteEntry | null> {
 
 export async function getSiteProfile(): Promise<AboutProfile> {
   try {
-    const data = await fetchPayload<Record<string, any>>('/globals/site-profile')
+    const data = await fetchPayload<PayloadSiteProfileDoc>('/globals/site-profile')
     if (!data.name) return aboutProfileFallback
     return {
       name: data.name,
@@ -208,10 +230,10 @@ export async function getSiteProfile(): Promise<AboutProfile> {
 
 export async function getTimeline(): Promise<Array<{ date: string; title: string; summary: string }>> {
   try {
-    const data = await fetchPayload<Record<string, any>>('/globals/site-profile')
+    const data = await fetchPayload<PayloadSiteProfileDoc>('/globals/site-profile')
     const items = data.timeline
     if (!Array.isArray(items) || items.length === 0) return timelineFallback
-    return items.map((item: Record<string, string>) => ({
+    return items.map((item) => ({
       date: item.date,
       title: item.title,
       summary: item.summary,
@@ -221,8 +243,53 @@ export async function getTimeline(): Promise<Array<{ date: string; title: string
   }
 }
 
+export type TagInfo = {
+  name: string
+  count: number
+}
+
+export type TaggedContent = {
+  posts: PostEntry[]
+  projects: ProjectEntry[]
+  docs: DocEntry[]
+  notes: NoteEntry[]
+}
+
+export async function getAllTags(): Promise<TagInfo[]> {
+  const [posts, projects, docs, notes] = await Promise.all([
+    getPosts(), getProjects(), getDocs(), getNotes(),
+  ])
+
+  const tagCounts = new Map<string, number>()
+  ;[
+    ...posts.flatMap((p) => p.tags || []),
+    ...projects.flatMap((p) => p.tags || []),
+    ...docs.flatMap((d) => d.tags || []),
+    ...notes.flatMap((n) => n.tags || []),
+  ]
+    .filter((t) => t.trim())
+    .forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1))
+
+  return [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }))
+}
+
+export async function getContentByTag(tag: string): Promise<TaggedContent> {
+  const [posts, projects, docs, notes] = await Promise.all([
+    getPosts(), getProjects(), getDocs(), getNotes(),
+  ])
+
+  return {
+    posts: posts.filter((p) => (p.tags || []).includes(tag)),
+    projects: projects.filter((p) => (p.tags || []).includes(tag)),
+    docs: docs.filter((d) => (d.tags || []).includes(tag)),
+    notes: notes.filter((n) => (n.tags || []).includes(tag)),
+  }
+}
+
 export async function getLabExperiments(): Promise<LabEntry[]> {
-  const data = await fetchPayload<PayloadListResponse<Record<string, any>>>('/lab-experiments?limit=100')
+  const data = await fetchPayload<PayloadListResponse<PayloadLabExperimentDoc>>('/lab-experiments?limit=100')
   if (data.docs.length === 0) return labExperimentsFallback
   return data.docs.map((doc) => ({
     title: doc.title,
