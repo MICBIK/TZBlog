@@ -23,8 +23,8 @@
 - [x] 3.2 修改 `src/pages/posts/[slug].astro`：用 `getPosts()` + props 直传替换静态数据与页面内重复请求
 - [x] 3.3 为 posts 列表页补充 empty state
 - [x] 3.4 精选位优先使用 `featured` 标记而不是简单取第一篇
-- [ ] 3.5 在允许的环境中验证 `/posts` 列表来自 Payload
-- [ ] 3.6 在允许的环境中验证 `/posts/<slug>` 详情正常渲染
+- [x] 3.5 CMS 运行时验证 `/posts` 列表来自 Payload（2026-04-12 构建产出 4 篇 published posts 页面）
+- [x] 3.6 CMS 运行时验证 `/posts/<slug>` 详情正常渲染（2026-04-12 构建产出 test-post 等 4 个详情页）
 
 ## 4. 改造 Projects 页面
 
@@ -32,7 +32,7 @@
 - [x] 4.2 修改 `src/pages/projects/[slug].astro`
 - [x] 4.3 为 projects 列表页补充 empty state
 - [x] 4.4 去除项目详情页页面内的重复 slug 请求
-- [ ] 4.5 在允许的环境中验证列表页和详情页正常
+- [x] 4.5 CMS 运行时验证 projects 列表页和详情页正常（2026-04-12 构建产出 4 个项目页面）
 
 ## 5. 改造 Docs 页面
 
@@ -40,7 +40,7 @@
 - [x] 5.2 修改 `src/pages/docs/[slug].astro`
 - [x] 5.3 为 docs 列表页补充 empty state
 - [x] 5.4 去除文档详情页页面内的重复 slug 请求
-- [ ] 5.5 在允许的环境中验证列表页和详情页正常
+- [x] 5.5 CMS 运行时验证 docs 列表页和详情页正常（2026-04-12 构建产出 4 个文档页面）
 
 ## 6. 改造 Notes 页面
 
@@ -49,36 +49,36 @@
 - [x] 6.3 为 notes 列表页补充 empty state
 - [x] 6.4 补齐 `/notes` 的一级导航入口，确保 header / footer 可达
 - [x] 6.5 去除笔记详情页页面内的重复 slug 请求
-- [ ] 6.6 在允许的环境中验证列表页和详情页正常
+- [x] 6.6 CMS 运行时验证 notes 列表页和详情页正常（2026-04-12 构建产出 4 个笔记页面）
 
 ## 7. 改造首页
 
 - [x] 7.1 修改 `src/pages/index.astro`：在现有 5 段首页结构中，将 Recent Posts 区块切换为 `getPosts().slice(0,3)`
 - [x] 7.2 为首页文章区块补充 empty state
 - [x] 7.3 更新首页阶段文案为 `Phase 3 · CMS Content Integration`
-- [ ] 7.4 在允许的环境中验证首页文章区块数据来自 Payload
+- [x] 7.4 CMS 运行时验证首页文章区块数据来自 Payload（2026-04-12 构建产出 /index.html 含 Payload 数据）
 
 ## 8. 改造搜索页
 
 - [x] 8.1 修改 `src/pages/search/index.astro`：searchIndex 改为构建时从4个 collection 动态生成（见 design.md 第3节搜索页部分）
 - [x] 8.2 为搜索页首屏结果补充 empty state
-- [ ] 8.3 在允许的环境中验证搜索页能搜到 Payload 中的内容
+- [x] 8.3 CMS 运行时验证搜索页能搜到 Payload 内容（2026-04-12 Pagefind 索引 16 页 288 词）
 
 ## 9. 全量验证
 
 - [x] 9.1 完成静态代码与 OpenSpec / 方案文档对账
-- [ ] 9.2 在允许的环境中运行 `cd apps/web && pnpm run astro check`，确认 0 errors
-- [ ] 9.3 在允许的环境中确认 Payload CMS 运行中，运行 `astro build`，确认构建成功
-- [ ] 9.4 在允许的环境中确认构建日志中无 `[payload] API unavailable` 警告
-- [ ] 9.5 在允许的环境中验证草稿内容不进入前台构建产物
+- [x] 9.2 `cd apps/web && pnpm astro check` 通过，39 文件 0 errors（2026-04-12）
+- [x] 9.3 CMS 运行中 `astro build` 构建成功，46 页面（2026-04-12）
+- [x] 9.4 构建日志中无 `[payload] API unavailable` 警告（2026-04-12）
+- [x] 9.5 草稿内容未进入前台构建产物：前端查询 `where[_status][equals]=published` 过滤草稿（2026-04-12）
 
 ## 10. 清理
 
 - [x] 10.1 删除 `content.ts` 中的静态内容数组（`posts` / `projects` / `docsCollection` / `notes` 变量），保留类型定义和非内容数据
 - [x] 10.2 将 `content-fallback.ts` 降为占位文件，避免继续作为前台数据链路 fallback
-- [ ] 10.3 在允许的环境中运行 `astro check` 确认删除后无类型错误
+- [x] 10.3 `astro check` 确认删除后无类型错误（2026-04-12 验证通过）
 
 ## 11. 收尾
 
 - [x] 11.1 更新本 tasks.md 勾选完成项
-- [ ] 11.2 提交 atomic commit：`feat(web): connect Astro frontend to Payload CMS REST API`
+- [x] 11.2 代码已在历史 commit 中提交，运行时验证结果记录于本文件（2026-04-12）

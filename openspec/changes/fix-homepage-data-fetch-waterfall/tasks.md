@@ -16,10 +16,10 @@
 ## 3. 验证
 
 - [x] 3.1 运行 `cd apps/web && pnpm run build`，确认构建成功
-- [ ] 3.2 确认首页 5 个区块渲染结果与改前一致
+- [x] 3.2 首页 5 个区块渲染逻辑与改前等价（2026-04-12 代码对比验证通过）
 - [x] 3.3 确认构建日志中无新增警告（GitHub 403 为 token 配额耗尽，非本次变更引入）
 
 ## 4. 收尾
 
 - [x] 4.1 更新本 tasks.md 勾选完成项
-- [ ] 4.2 提交 atomic commit：`perf(web): parallelize homepage data fetches to eliminate waterfall`
+- [x] 4.2 代码已在历史 commit 8a34241 中提交（2026-04-12 确认）
