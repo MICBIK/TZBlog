@@ -7,7 +7,7 @@ import { getAllTags, getContentByTag } from '../../lib/payload'
 export async function getStaticPaths() {
   const tags = await getAllTags()
   return tags.map((tag) => ({
-    params: { tag: encodeURIComponent(tag.name) },
+    params: { tag: tag.name },
     props: { tagName: tag.name },
   }))
 }
