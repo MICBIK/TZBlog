@@ -73,6 +73,7 @@ export interface Config {
     projects: Project;
     docs: Doc;
     notes: Note;
+    'lab-experiments': LabExperiment;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     docs: DocsSelect<false> | DocsSelect<true>;
     notes: NotesSelect<false> | NotesSelect<true>;
+    'lab-experiments': LabExperimentsSelect<false> | LabExperimentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -95,8 +97,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'site-profile': SiteProfile;
+  };
+  globalsSelect: {
+    'site-profile': SiteProfileSelect<false> | SiteProfileSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -349,6 +355,23 @@ export interface Note {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-experiments".
+ */
+export interface LabExperiment {
+  id: number;
+  title: string;
+  summary: string;
+  /**
+   * 如：Running / Ready for Review / Stable
+   */
+  status: string;
+  href: string;
+  tag: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -394,6 +417,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'notes';
         value: number | Note;
+      } | null)
+    | ({
+        relationTo: 'lab-experiments';
+        value: number | LabExperiment;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -654,6 +681,19 @@ export interface NotesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-experiments_select".
+ */
+export interface LabExperimentsSelect<T extends boolean = true> {
+  title?: T;
+  summary?: T;
+  status?: T;
+  href?: T;
+  tag?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -691,6 +731,102 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-profile".
+ */
+export interface SiteProfile {
+  id: number;
+  name: string;
+  role: string;
+  avatar?: string | null;
+  summary: string;
+  techStack?: {
+    frontend?:
+      | {
+          item: string;
+          id?: string | null;
+        }[]
+      | null;
+    backend?:
+      | {
+          item: string;
+          id?: string | null;
+        }[]
+      | null;
+    devops?:
+      | {
+          item: string;
+          id?: string | null;
+        }[]
+      | null;
+    tools?:
+      | {
+          item: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  timeline?:
+    | {
+        date: string;
+        title: string;
+        summary: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-profile_select".
+ */
+export interface SiteProfileSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  avatar?: T;
+  summary?: T;
+  techStack?:
+    | T
+    | {
+        frontend?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+        backend?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+        devops?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+        tools?:
+          | T
+          | {
+              item?: T;
+              id?: T;
+            };
+      };
+  timeline?:
+    | T
+    | {
+        date?: T;
+        title?: T;
+        summary?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
