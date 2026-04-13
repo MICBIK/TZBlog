@@ -12,7 +12,14 @@
 - 已建立 `infra/docker-compose.yml` PostgreSQL 本地开发环境
 - 已完成 `posts / projects / docs / notes` collections 注册
 - 已完成 Astro 前台主内容页面到 Payload REST API 的主数据链路接入
-- 当前阶段已不再是“纯文档状态”，也不再是“仅示例内容占位”状态
+- 已完成 SEO 基础配置（sitemap / robots.txt / OG meta / RSS feed）
+- 已完成 Vercel 部署配置（web + cms vercel.json）
+- 已完成站点身份 CMS 化（siteMeta / socialLinks / pinnedRepos 可后台管理）
+- 已完成 S3/R2 媒体存储配置（代码就绪，待填写凭证）
+- 已完成 Umami Analytics 集成（代码就绪，待部署实例）
+- 已完成 Hero 3D 视觉增强（陨石坑 bump map / 土星环粒子系统 / Quaternion 拖拽）
+- 已完成 Payload 数据层清理（移除冗余代码，精确类型定义）
+- 当前阶段：Phase 4-5 完成，生产就绪，待运行时配置
 
 ## 当前主文档
 
@@ -87,13 +94,13 @@
 - 动效以导航反馈、页面过渡、层级显现为主，不再追求全局鼠标特效泛滥
 - 桌面端允许使用多栏信息布局，移动端必须折叠为单列主内容流
 
-## 后续开发建议顺序
+## 后续运行时配置
 
-1. 完成运行时验收与真实内容录入验证
-2. 建立 Payload globals 与更完整后台能力
-3. 接入构建 Webhook 与 `Pagefind`
-4. 接入 `Umami`
-5. 最后补 Hero 3D、动效层和运营细节
+1. 部署 Umami Analytics 实例（Docker self-hosted 或 Umami Cloud）
+2. 配置 S3/R2 存储凭证（可选，留空则使用本地存储）
+3. 配置 Vercel Deploy Hook（可选，用于 CMS 发布自动触发构建）
+4. 真实内容录入验证
+5. 生产环境部署与监控
 
 ## 开发记录
 
@@ -110,6 +117,20 @@
 - 已完成 Astro 前台主内容页面到 Payload REST API 的主数据链路接入
 - 已移除前台主链路对示例内容 fallback 的依赖，API 不可用时改为 empty state
 - 已完成一轮静态代码、OpenSpec 与项目主文档对账
+
+### 2026-04-13
+
+- 已完成 Phase 4-5 全部 7 个 OpenSpec changes：
+  - `cleanup-payload-data-layer`: 清理数据层冗余代码与类型
+  - `add-seo-optimization`: SEO 基础配置（sitemap/robots/OG/RSS）
+  - `add-vercel-deployment`: Vercel 部署配置
+  - `integrate-umami-analytics`: Umami Analytics 运行时集成
+  - `configure-s3-media-storage`: S3/R2 媒体存储配置
+  - `migrate-site-identity-to-cms`: 站点身份 CMS 化
+  - `enhance-hero-3d-visuals`: Hero 3D 视觉增强
+- 已通过 20 轮全量审计，发现并修复 1 个问题（Umami APP_SECRET）
+- 已归档所有已完成的 changes 到 `openspec/changes/archive/`
+- 当前状态：生产就绪，待运行时配置（Umami 部署 + S3 凭证）
 
 ## 后续更新约定
 
