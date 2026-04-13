@@ -5,12 +5,14 @@ interface Props {
   title: string
   description?: string
   ogImage?: string
+  ogType?: string
 }
 
 const {
   title,
   description = 'TZBlog deep space observatory interface',
   ogImage,
+  ogType = 'website',
 } = Astro.props
 
 const siteUrl = import.meta.env.SITE_URL
@@ -29,7 +31,7 @@ const ogImageUrl = ogImage || (siteUrl ? `${siteUrl}/og-default.png` : '/og-defa
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:image" content={ogImageUrl} />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
     <meta name="twitter:card" content="summary_large_image" />
@@ -37,6 +39,9 @@ const ogImageUrl = ogImage || (siteUrl ? `${siteUrl}/og-default.png` : '/og-defa
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {import.meta.env.UMAMI_TRACKING_URL && import.meta.env.UMAMI_WEBSITE_ID && (
+      <script defer src={import.meta.env.UMAMI_TRACKING_URL} data-website-id={import.meta.env.UMAMI_WEBSITE_ID} is:inline></script>
+    )}
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到正文</a>

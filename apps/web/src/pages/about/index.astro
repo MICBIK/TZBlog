@@ -1,11 +1,10 @@
 ---
 import ThreeColumnLayout from '../../components/ThreeColumnLayout.astro'
 import SiteLayout from '../../layouts/SiteLayout.astro'
-import { siteMeta } from '../../data/content'
-import { getSiteProfile, getTimeline } from '../../lib/payload'
+import { getSiteSettings } from '../../lib/payload'
 
-const aboutProfile = await getSiteProfile()
-const timeline = await getTimeline()
+const settings = await getSiteSettings()
+const { siteMeta, aboutProfile, timeline } = settings
 ---
 
 <SiteLayout title="关于 | TZBlog" description="TZBlog 的身份说明与站点方向。">
@@ -51,10 +50,6 @@ const timeline = await getTimeline()
     <div class="side-panel flow-sm panel">
        <p class="eyebrow">Station Status</p>
      <div class="side-list">
-          <div>
-       <strong>当前阶段</strong>
-    <p class="muted text-sm">{siteMeta.currentStatus}</p>
-        </div>
      <div>
           <strong>地点</strong>
      <p class="muted text-sm">{siteMeta.location}</p>

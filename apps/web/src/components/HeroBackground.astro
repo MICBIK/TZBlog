@@ -1,0 +1,231 @@
+---
+/**
+ * HeroBackground — Deep-space 3D atmosphere layer for the homepage Hero.
+ * Renders a starfield particle system and a slowly rotating low-poly planet.
+ * Degrades to a CSS gradient when WebGL is unavailable.
+ * Respects prefers-reduced-motion by rendering a single static frame.
+ */
+---
+
+<div class="hero-bg" aria-hidden="true">
+  <canvas class="hero-bg-canvas"></canvas>
+  <div class="hero-bg-fallback"></div>
+</div>
+
+<script>
+  import * as THREE from 'three';
+
+  function initHeroBackground() {
+    const container = document.querySelector('.hero-bg') as HTMLElement | null;
+    const canvas = document.querySelector('.hero-bg-canvas') as HTMLCanvasElement | null;
+    if (!container || !canvas) return;
+
+    // WebGL availability check
+    try {
+      const testCanvas = document.createElement('canvas');
+      const gl = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+      if (!gl) throw new Error('No WebGL');
+    } catch {
+      // Show CSS fallback
+      canvas.style.display = 'none';
+      container.classList.add('hero-bg--fallback');
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let width = container.offsetWidth;
+    let height = container.offsetHeight;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 500);
+    camera.position.z = 60;
+
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+        powerPreference: 'low-power',
+      });
+    } catch {
+      canvas.style.display = 'none';
+      container.classList.add('hero-bg--fallback');
+      return;
+    }
+
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(width, height);
+
+    // --- Starfield ---
+    const isMobile = width < 768;
+    const starCount = isMobile ? 800 : 2000;
+    const starPositions = new Float32Array(starCount * 3);
+    const starSizes = new Float32Array(starCount);
+
+    for (let i = 0; i < starCount; i++) {
+      starPositions[i * 3] = (Math.random() - 0.5) * 300;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      starPositions[i * 3 + 2] = (Math.random() - 0.5) * 200 - 50;
+      starSizes[i] = 0.3 + Math.random() * 1.2;
+    }
+
+    const starGeometry = new THREE.BufferGeometry();
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    starGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+
+    const starMaterial = new THREE.PointsMaterial({
+      size: 0.8,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true,
+    });
+
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    // --- Low-poly planet (IcosahedronGeometry) ---
+    const planetGeometry = new THREE.IcosahedronGeometry(8, 1).toNonIndexed();
+    planetGeometry.computeVertexNormals();
+
+    const planetMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        uLightDir: { value: new THREE.Vector3(1.0, 0.6, 0.8).normalize() },
+        uBaseColor: { value: new THREE.Color(0x1a1a2e) },
+        uHighColor: { value: new THREE.Color(0x3a3a5c) },
+        uRimColor: { value: new THREE.Color(0x4a4a6a) },
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uLightDir;
+        uniform vec3 uBaseColor;
+        uniform vec3 uHighColor;
+        uniform vec3 uRimColor;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        void main() {
+          float diffuse = max(dot(vNormal, uLightDir), 0.0);
+          vec3 color = mix(uBaseColor, uHighColor, diffuse);
+          // Rim lighting
+          vec3 viewDir = normalize(-vPosition);
+          float rim = 1.0 - max(dot(viewDir, vNormal), 0.0);
+          rim = pow(rim, 3.0) * 0.4;
+          color += uRimColor * rim;
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `,
+    });
+
+    const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+    planet.position.set(isMobile ? 12 : 22, -2, -10);
+    scene.add(planet);
+
+    // --- Ambient fill ---
+    scene.add(new THREE.AmbientLight(0x0a0a15, 0.3));
+
+    // --- Static render for reduced-motion ---
+    if (prefersReducedMotion) {
+      renderer.render(scene, camera);
+      return;
+    }
+
+    // --- Animation loop ---
+    let animationId: number;
+    const controller = new AbortController();
+
+    const animate = () => {
+      const time = performance.now() * 0.001;
+
+      // Slow planet rotation
+      planet.rotation.y = time * 0.08;
+      planet.rotation.x = Math.sin(time * 0.05) * 0.1;
+
+      // Gentle star drift
+      stars.rotation.y = time * 0.003;
+      stars.rotation.x = time * 0.001;
+
+      renderer.render(scene, camera);
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    // --- Resize handler ---
+    const onResize = () => {
+      width = container.offsetWidth;
+      height = container.offsetHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    };
+
+    window.addEventListener('resize', onResize, { signal: controller.signal });
+
+    // --- Cleanup on navigation ---
+    const cleanup = () => {
+      cancelAnimationFrame(animationId);
+      controller.abort();
+      renderer.dispose();
+      starGeometry.dispose();
+      starMaterial.dispose();
+      planetGeometry.dispose();
+      planetMaterial.dispose();
+    };
+
+    window.addEventListener('beforeunload', cleanup, { once: true });
+    // Astro view transitions cleanup
+    document.addEventListener('astro:before-swap', cleanup, { once: true });
+  }
+
+  // Run on initial load and on Astro page transitions
+  initHeroBackground();
+  document.addEventListener('astro:after-swap', initHeroBackground);
+</script>
+
+<style>
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .hero-bg-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-bg-fallback {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 70% 50%, rgba(30, 30, 60, 0.6) 0%, transparent 60%),
+      radial-gradient(circle at 20% 30%, rgba(20, 20, 50, 0.4) 0%, transparent 40%),
+      linear-gradient(to bottom, #020210 0%, #000000 100%);
+  }
+
+  .hero-bg--fallback .hero-bg-fallback {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-bg-canvas {
+      /* Canvas shows a single static frame, no animation */
+    }
+  }
+</style>

@@ -742,6 +742,26 @@ export interface SiteProfile {
   role: string;
   avatar?: string | null;
   summary: string;
+  siteMeta?: {
+    title?: string | null;
+    description?: string | null;
+    location?: string | null;
+  };
+  socialLinks?:
+    | {
+        label: string;
+        href: string;
+        icon: 'github' | 'mail' | 'rss';
+        id?: string | null;
+      }[]
+    | null;
+  pinnedRepos?:
+    | {
+        owner: string;
+        repo: string;
+        id?: string | null;
+      }[]
+    | null;
   techStack?: {
     frontend?:
       | {
@@ -788,6 +808,28 @@ export interface SiteProfileSelect<T extends boolean = true> {
   role?: T;
   avatar?: T;
   summary?: T;
+  siteMeta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        location?: T;
+      };
+  socialLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        icon?: T;
+        id?: T;
+      };
+  pinnedRepos?:
+    | T
+    | {
+        owner?: T;
+        repo?: T;
+        id?: T;
+      };
   techStack?:
     | T
     | {

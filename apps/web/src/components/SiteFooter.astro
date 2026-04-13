@@ -1,5 +1,9 @@
 ---
-import { footerNavItems, socialLinks, siteMeta } from '../data/content'
+import { footerNavItems } from '../data/content'
+import { getSiteSettings } from '../lib/payload'
+
+const settings = await getSiteSettings()
+const { siteMeta, socialLinks } = settings
 ---
 
 <footer class="site-footer shell">

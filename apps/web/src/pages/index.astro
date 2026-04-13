@@ -1,14 +1,17 @@
 ---
+import HeroBackground from '../components/HeroBackground.astro'
 import ContentCard from '../components/ContentCard.astro'
 import ContributionGraph from '../components/ContributionGraph.astro'
 import ProjectCard from '../components/ProjectCard.astro'
 import SectionHeading from '../components/SectionHeading.astro'
 import SiteStatsBar from '../components/SiteStatsBar.astro'
 import SiteLayout from '../layouts/SiteLayout.astro'
-import { aboutProfile, pinnedRepos, siteMeta, socialLinks } from '../data/content'
 import { getContributionCalendar, getReposStats, type RepoStats } from '../lib/github'
-import { getPosts } from '../lib/payload'
+import { getPosts, getSiteSettings } from '../lib/payload'
 import { EMPTY_UMAMI_STATS, getAllTimeRange, getTodayRange, getUmamiStats } from '../lib/umami'
+
+const settings = await getSiteSettings()
+const { siteMeta, aboutProfile, socialLinks, pinnedRepos } = settings
 
 const username = 'MICBIK'
 const todayRange = getTodayRange()
@@ -63,6 +66,7 @@ const socialIconPaths = {
 
 <SiteLayout title={siteMeta.title} description={siteMeta.description}>
   <section class="page-section home-hero-section">
+    <HeroBackground />
     <div class="hero-identity flow-lg">
       <div class="flow-md animate-fade-up animate-delay-1">
         <p class="eyebrow">你好，我是</p>

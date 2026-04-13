@@ -2,18 +2,23 @@
 import BaseLayout from './BaseLayout.astro'
 import SiteHeader from '../components/SiteHeader.astro'
 import SiteFooter from '../components/SiteFooter.astro'
-import { navItems, siteMeta } from '../data/content'
+import { navItems } from '../data/content'
+import { getSiteSettings } from '../lib/payload'
 
 interface Props {
   title: string
   description?: string
+  image?: string
+  type?: string
 }
 
-const { title, description = siteMeta.description } = Astro.props
+const settings = await getSiteSettings()
+const siteMeta = settings.siteMeta
+const { title, description = siteMeta.description, image, type } = Astro.props
 const currentPath = Astro.url.pathname
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} ogImage={image} ogType={type}>
   <div class="app-shell">
     <!-- High-Fidelity Celestial Backdrop (Three.js Engine) -->
     <div class="planet-background-container" aria-hidden="true">

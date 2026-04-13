@@ -96,7 +96,6 @@ export const siteMeta = {
   title: 'TZBlog',
   description: '以深空观测站为视觉母题、以内容检索和长期写作为核心的技术博客系统。',
   location: 'Orbital Observatory / Shanghai',
-  currentStatus: 'Phase 3 · CMS Content Integration',
 }
 
 export const navItems: NavItem[] = [

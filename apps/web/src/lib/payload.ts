@@ -1,21 +1,21 @@
-import type { AboutProfile, DocEntry, LabEntry, NoteEntry, PostEntry, ProjectEntry, SectionBlock } from '../data/content'
-import { aboutProfile as aboutProfileFallback, labExperiments as labExperimentsFallback, timeline as timelineFallback } from '../data/content'
+import type { AboutProfile, DocEntry, LabEntry, NoteEntry, PinnedRepo, PostEntry, ProjectEntry, SectionBlock, SocialLink } from '../data/content'
+import { aboutProfile as aboutProfileFallback, labExperiments as labExperimentsFallback, pinnedRepos as pinnedReposFallback, siteMeta as siteMetaFallback, socialLinks as socialLinksFallback, timeline as timelineFallback } from '../data/content'
 
-const API_URL = import.meta.env.PAYLOAD_API_URL || `${import.meta.env.PAYLOAD_PUBLIC_URL || 'http://localhost:3000'}/api`
+const API_URL = import.meta.env.PAYLOAD_API_URL || 'http://localhost:3000/api'
 
 type PayloadListResponse<T = Record<string, unknown>> = {
   docs: T[]
 }
 
-type PayloadTextItem = {
-  [key: string]: string | undefined
-}
+type TagItem = { tag: string }
+type TextItem = { text: string }
+type StackItem = { item: string }
 
 type PayloadSection = {
   id: string
   title: string
-  paragraphs?: PayloadTextItem[]
-  bullets?: PayloadTextItem[]
+  paragraphs?: TextItem[]
+  bullets?: TextItem[]
 }
 
 interface PayloadPostDoc {
@@ -27,7 +27,7 @@ interface PayloadPostDoc {
   publishedAt: string
   readTime: string
   featured?: boolean
-  tags?: PayloadTextItem[]
+  tags?: TagItem[]
   sections?: PayloadSection[]
 }
 
@@ -39,10 +39,10 @@ interface PayloadProjectDoc {
   orbit: string
   updatedAt: string
   featured?: boolean
-  stack?: PayloadTextItem[]
-  tags?: PayloadTextItem[]
+  stack?: StackItem[]
+  tags?: TagItem[]
   links?: Array<{ label: string; href: string }>
-  highlights?: PayloadTextItem[]
+  highlights?: TextItem[]
   sections?: PayloadSection[]
 }
 
@@ -53,7 +53,7 @@ interface PayloadDocDoc {
   version: string
   orbit: string
   updatedAt: string
-  tags?: PayloadTextItem[]
+  tags?: TagItem[]
   sections?: PayloadSection[]
 }
 
@@ -63,7 +63,7 @@ interface PayloadNoteDoc {
   summary: string
   publishedAt: string
   mood: string
-  tags?: PayloadTextItem[]
+  tags?: TagItem[]
   sections?: PayloadSection[]
 }
 
@@ -72,11 +72,18 @@ interface PayloadSiteProfileDoc {
   role?: string
   avatar?: string
   summary?: string
+  siteMeta?: {
+    title?: string
+    description?: string
+    location?: string
+  }
+  socialLinks?: Array<{ label: string; href: string; icon: 'github' | 'mail' | 'rss' }>
+  pinnedRepos?: Array<{ owner: string; repo: string }>
   techStack?: {
-    frontend?: PayloadTextItem[]
-    backend?: PayloadTextItem[]
-    devops?: PayloadTextItem[]
-    tools?: PayloadTextItem[]
+    frontend?: StackItem[]
+    backend?: StackItem[]
+    devops?: StackItem[]
+    tools?: StackItem[]
   }
   timeline?: Array<{ date: string; title: string; summary: string }>
 }
@@ -104,7 +111,7 @@ async function fetchPayload<T>(path: string): Promise<T> {
   }
 }
 
-export const flattenArray = (arr: PayloadTextItem[] | undefined, key: string): string[] =>
+export const flattenArray = (arr: Record<string, string | undefined>[] | undefined, key: string): string[] =>
   (arr || []).map((item) => item[key]).filter((item): item is string => Boolean(item))
 
 export const flattenSections = (sections: PayloadSection[] | undefined): SectionBlock[] =>
@@ -172,19 +179,9 @@ export async function getPosts(): Promise<PostEntry[]> {
   return data.docs.map(normalizePost)
 }
 
-export async function getPostBySlug(slug: string): Promise<PostEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<PayloadPostDoc>>(`/posts?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
-  return data.docs[0] ? normalizePost(data.docs[0]) : null
-}
-
 export async function getProjects(): Promise<ProjectEntry[]> {
   const data = await fetchPayload<PayloadListResponse<PayloadProjectDoc>>('/projects?limit=100&sort=-updatedAt&where[_status][equals]=published')
   return data.docs.map(normalizeProject)
-}
-
-export async function getProjectBySlug(slug: string): Promise<ProjectEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<PayloadProjectDoc>>(`/projects?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
-  return data.docs[0] ? normalizeProject(data.docs[0]) : null
 }
 
 export async function getDocs(): Promise<DocEntry[]> {
@@ -192,19 +189,9 @@ export async function getDocs(): Promise<DocEntry[]> {
   return data.docs.map(normalizeDoc)
 }
 
-export async function getDocBySlug(slug: string): Promise<DocEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<PayloadDocDoc>>(`/docs?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
-  return data.docs[0] ? normalizeDoc(data.docs[0]) : null
-}
-
 export async function getNotes(): Promise<NoteEntry[]> {
   const data = await fetchPayload<PayloadListResponse<PayloadNoteDoc>>('/notes?limit=100&sort=-publishedAt&where[_status][equals]=published')
   return data.docs.map(normalizeNote)
-}
-
-export async function getNoteBySlug(slug: string): Promise<NoteEntry | null> {
-  const data = await fetchPayload<PayloadListResponse<PayloadNoteDoc>>(`/notes?where[slug][equals]=${encodeURIComponent(slug)}&where[_status][equals]=published`)
-  return data.docs[0] ? normalizeNote(data.docs[0]) : null
 }
 
 export async function getSiteProfile(): Promise<AboutProfile> {
@@ -298,4 +285,64 @@ export async function getLabExperiments(): Promise<LabEntry[]> {
     href: doc.href,
     tag: doc.tag,
   }))
+}
+
+export type SiteSettings = {
+  siteMeta: { title: string; description: string; location: string }
+  aboutProfile: AboutProfile
+  socialLinks: SocialLink[]
+  pinnedRepos: PinnedRepo[]
+  timeline: Array<{ date: string; title: string; summary: string }>
+}
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  try {
+    const data = await fetchPayload<PayloadSiteProfileDoc>('/globals/site-profile')
+
+    const siteMeta = {
+      title: data.siteMeta?.title || siteMetaFallback.title,
+      description: data.siteMeta?.description || siteMetaFallback.description,
+      location: data.siteMeta?.location || siteMetaFallback.location,
+    }
+
+    const aboutProfile: AboutProfile = data.name
+      ? {
+          name: data.name,
+          role: data.role || aboutProfileFallback.role,
+          avatar: data.avatar || aboutProfileFallback.avatar,
+          summary: data.summary || aboutProfileFallback.summary,
+          techStack: {
+            frontend: flattenArray(data.techStack?.frontend, 'item'),
+            backend: flattenArray(data.techStack?.backend, 'item'),
+            devops: flattenArray(data.techStack?.devops, 'item'),
+            tools: flattenArray(data.techStack?.tools, 'item'),
+          },
+        }
+      : aboutProfileFallback
+
+    const socialLinks: SocialLink[] =
+      data.socialLinks && data.socialLinks.length > 0
+        ? data.socialLinks.map((link) => ({ label: link.label, href: link.href, icon: link.icon }))
+        : socialLinksFallback
+
+    const pinnedRepos: PinnedRepo[] =
+      data.pinnedRepos && data.pinnedRepos.length > 0
+        ? data.pinnedRepos.map((r) => ({ owner: r.owner, repo: r.repo }))
+        : pinnedReposFallback
+
+    const timeline =
+      Array.isArray(data.timeline) && data.timeline.length > 0
+        ? data.timeline.map((item) => ({ date: item.date, title: item.title, summary: item.summary }))
+        : timelineFallback
+
+    return { siteMeta, aboutProfile, socialLinks, pinnedRepos, timeline }
+  } catch {
+    return {
+      siteMeta: siteMetaFallback,
+      aboutProfile: aboutProfileFallback,
+      socialLinks: socialLinksFallback,
+      pinnedRepos: pinnedReposFallback,
+      timeline: timelineFallback,
+    }
+  }
 }

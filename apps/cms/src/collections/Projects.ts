@@ -1,10 +1,18 @@
 import type { CollectionConfig } from 'payload'
+import { triggerVercelDeploy } from '../hooks/triggerDeploy'
 
 export const Projects: CollectionConfig = {
   slug: 'projects',
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'stage', 'updatedAt', '_status'],
+  },
+  hooks: {
+    afterChange: [
+      async () => {
+        await triggerVercelDeploy()
+      },
+    ],
   },
   access: {
     read: () => true,
