@@ -22,8 +22,8 @@ const [contributionCalendar, repoStats, allPosts, [todayStats, allTimeStats]] =
     getReposStats(pinnedRepos),
     getPosts(),
     Promise.all([
-      getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', todayRange.start, todayRange.end),
-      getUmamiStats(import.meta.env.UMAMI_WEBSITE_ID || '', allTimeRange.start, allTimeRange.end),
+      getUmamiStats(import.meta.env.PUBLIC_UMAMI_WEBSITE_ID || '', todayRange.start, todayRange.end),
+      getUmamiStats(import.meta.env.PUBLIC_UMAMI_WEBSITE_ID || '', allTimeRange.start, allTimeRange.end),
     ]),
   ])
 

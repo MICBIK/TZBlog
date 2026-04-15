@@ -3,8 +3,8 @@
  * 用于获取站点统计
  */
 
-const UMAMI_BASE_URL = import.meta.env.UMAMI_BASE_URL || ''
-const UMAMI_API_KEY = import.meta.env.UMAMI_API_KEY || ''
+const UMAMI_BASE_URL = import.meta.env.PUBLIC_UMAMI_BASE_URL || ''
+const UMAMI_API_KEY = import.meta.env.PUBLIC_UMAMI_API_KEY || ''
 
 export interface UmamiStats {
   pageviews: number
