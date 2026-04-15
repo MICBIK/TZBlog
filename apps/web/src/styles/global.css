@@ -461,10 +461,15 @@ ul {
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: -1; 
+  z-index: -1;
   pointer-events: none;
   overflow: hidden;
   background: #020205; /* Pure Deep Space Base */
+}
+
+/* Hide global starfield on homepage to avoid overlap with HeroBackground */
+body:has(.home-hero-section) .planet-background-container {
+  display: none;
 }
 
 #celestial-canvas {
@@ -891,6 +896,7 @@ ul {
 .home-hero-section {
   position: relative;
   overflow: hidden;
+  z-index: 1; /* Ensure content is above global background */
 }
 
 .animate-delay-1 {

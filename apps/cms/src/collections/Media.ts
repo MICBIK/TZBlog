@@ -14,6 +14,7 @@ export const Media: CollectionConfig = {
       name: 'alt',
       type: 'text',
       required: true,
+      label: '替代文本',
     },
   ],
   upload: {

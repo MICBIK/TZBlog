@@ -17,10 +17,10 @@ export const LabExperiments: CollectionConfig = {
     delete: ({ req: { user } }) => Boolean(user),
   },
   fields: [
-    { name: 'title', type: 'text', required: true },
-    { name: 'summary', type: 'textarea', required: true },
-    { name: 'status', type: 'text', required: true, admin: { description: '如：Running / Ready for Review / Stable' } },
-    { name: 'href', type: 'text', required: true },
-    { name: 'tag', type: 'text', required: true },
+    { name: 'title', type: 'text', required: true, label: '标题' },
+    { name: 'summary', type: 'textarea', required: true, label: '摘要' },
+    { name: 'status', type: 'text', required: true, label: '状态', admin: { description: '如：Running / Ready for Review / Stable' } },
+    { name: 'href', type: 'text', required: true, label: '链接' },
+    { name: 'tag', type: 'text', required: true, label: '标签' },
   ],
 }

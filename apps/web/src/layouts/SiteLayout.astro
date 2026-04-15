@@ -195,12 +195,12 @@ const currentPath = Astro.url.pathname
         // Offset persists across all pages for consistency
         planetGroup.position.set(width > 1200 ? 35 : 15, 0, 0);
 
-        // Quaternion-based drag — no gimbal lock
+        // Euler-based drag with X-axis tilt limit
         let isDragging = false, lastX = 0, lastY = 0, mX = 0, mY = 0;
-        const dragQuat = new THREE.Quaternion();
-        const _yAxis   = new THREE.Vector3(0, 1, 0);
-        const _xAxis   = new THREE.Vector3(1, 0, 0);
-        let autoRotY   = 0;
+        let dragRotationY = 0; // 累积 Y 轴旋转
+        let tiltX = 0;         // X 轴倾斜角度
+        const MAX_TILT = Math.PI / 12; // ±15°
+        let autoRotY = 0;
 
         window.addEventListener('mousedown', (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; }, { signal });
         window.addEventListener('mouseup',   () => isDragging = false, { signal });
@@ -210,19 +210,22 @@ const currentPath = Astro.url.pathname
           if (isDragging) {
             const dx = (e.clientX - lastX) * 0.012;
             const dy = (e.clientY - lastY) * 0.012;
-            lastX = e.clientX; lastY = e.clientY;
-            const qY = new THREE.Quaternion().setFromAxisAngle(_yAxis, dx);
-            const qX = new THREE.Quaternion().setFromAxisAngle(_xAxis, dy);
-            dragQuat.premultiply(qY).multiply(qX);
+
+            dragRotationY = (dragRotationY + dx) % (Math.PI * 2); // Y 轴旋转，模运算防止溢出
+            tiltX = Math.max(-MAX_TILT, Math.min(MAX_TILT, tiltX + dy)); // X 轴限制
+
+            lastX = e.clientX;
+            lastY = e.clientY;
           }
         }, { signal });
 
         const animate = () => {
           const time = Date.now() * 0.001;
           autoRotY = time * 0.04;
-          // Compose: dragQuat * autoRotation
-          const autoQ = new THREE.Quaternion().setFromAxisAngle(_yAxis, autoRotY);
-          planetGroup.quaternion.copy(dragQuat).multiply(autoQ);
+          // Euler rotation with X-axis tilt limit
+          planetGroup.rotation.y = dragRotationY + autoRotY;
+          planetGroup.rotation.x = tiltX;
+          planetGroup.rotation.z = 0; // 禁止 Z 轴旋转
           // Float up/down independent of rotation
           planetGroup.position.y = Math.sin(time * 0.6) * 1.5;
           camera.position.x += (mX * 12 - camera.position.x) * 0.015;
@@ -247,7 +250,19 @@ const currentPath = Astro.url.pathname
           planetGroup.position.x = window.innerWidth > 1200 ? 35 : 15;
         }, { signal });
 
-        window.addEventListener('beforeunload', () => controller.abort(), { once: true });
+        window.addEventListener('beforeunload', () => {
+          // Cleanup Three.js resources
+          geometry.dispose();
+          material.dispose();
+          material.map?.dispose();
+          material.bumpMap?.dispose();
+          glowGeo.dispose();
+          glowMat.dispose();
+          pGeo.dispose();
+          sGeo.dispose();
+          renderer.dispose();
+          controller.abort();
+        }, { once: true });
         } catch (error) {
           console.warn('WebGL initialization failed, falling back to plain background:', error);
           canvas.style.display = 'none';
