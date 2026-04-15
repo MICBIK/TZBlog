@@ -3,6 +3,10 @@ import { triggerVercelDeploy } from '../hooks/triggerDeploy'
 
 export const Notes: CollectionConfig = {
   slug: 'notes',
+  labels: {
+    singular: '笔记',
+    plural: '笔记',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'mood', 'publishedAt', '_status'],

@@ -3,6 +3,10 @@ import { triggerVercelDeploy } from '../hooks/triggerDeploy'
 
 export const Docs: CollectionConfig = {
   slug: 'docs',
+  labels: {
+    singular: '文档',
+    plural: '文档',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'version', 'updatedAt', '_status'],

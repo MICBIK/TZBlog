@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 export const SiteProfile: GlobalConfig = {
   slug: 'site-profile',
+  label: '站点配置',
   access: {
     read: () => true,
     update: ({ req: { user } }) => Boolean(user),

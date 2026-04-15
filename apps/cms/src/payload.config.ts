@@ -5,6 +5,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { zh } from '@payloadcms/translations/languages/zh'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -32,6 +33,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+  },
+  i18n: {
+    supportedLanguages: { zh },
   },
   collections: [Users, Media, Posts, Projects, Docs, Notes, LabExperiments],
   globals: [SiteProfile],

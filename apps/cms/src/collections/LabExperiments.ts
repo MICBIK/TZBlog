@@ -2,6 +2,10 @@ import type { CollectionConfig } from 'payload'
 
 export const LabExperiments: CollectionConfig = {
   slug: 'lab-experiments',
+  labels: {
+    singular: '实验',
+    plural: '实验',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'tag', 'status'],
