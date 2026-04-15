@@ -467,10 +467,6 @@ ul {
   background: #020205; /* Pure Deep Space Base */
 }
 
-/* Hide global starfield on homepage to avoid overlap with HeroBackground */
-body:has(.home-hero-section) .planet-background-container {
-  display: none;
-}
 
 #celestial-canvas {
   width: 100%;
