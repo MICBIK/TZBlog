@@ -1,6 +1,6 @@
 {
   "framework": "astro",
-  "buildCommand": "npm run build",
+  "buildCommand": "cd ../.. && pnpm build --filter=web",
   "outputDirectory": "dist",
-  "installCommand": "npm install"
+  "installCommand": "pnpm install"
 }
