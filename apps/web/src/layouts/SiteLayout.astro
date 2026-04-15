@@ -125,6 +125,7 @@ const currentPath = Astro.url.pathname
         planetGroup.add(new THREE.Mesh(glowGeo, glowMat));
 
         // Thick particle ring — three layers, no RingGeometry
+        let pGeo: THREE.BufferGeometry | null = null;
         const buildRingParticles = () => {
           const layers = [
             { count: 8000,  rMin: 24, rMax: 30, ySpreadMin: 0.6,  ySpreadMax: 0.6  },
@@ -153,7 +154,7 @@ const currentPath = Astro.url.pathname
               idx++;
             }
           }
-          const pGeo = new THREE.BufferGeometry();
+          pGeo = new THREE.BufferGeometry();
           pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
           pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
           planetGroup.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
@@ -258,7 +259,7 @@ const currentPath = Astro.url.pathname
           material.bumpMap?.dispose();
           glowGeo.dispose();
           glowMat.dispose();
-          pGeo.dispose();
+          pGeo?.dispose();
           sGeo.dispose();
           renderer.dispose();
           controller.abort();
