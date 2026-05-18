@@ -43,12 +43,16 @@
 
 ### P1 后台 CMS（Week 2-3）
 
-- [ ] `/login` 页 + Auth.js 登录流
-- [ ] `/admin` 布局 + Sidebar
-- [ ] 专栏 CRUD（列表 + 新建/编辑 Dialog + 删除确认）
+- [x] **2026-05-18** 专栏 CRUD 完成（5 个 agent 并行）
+  - [x] zod schema + service + REST API（GET/POST list、GET/PATCH/DELETE [id]、POST reorder）
+  - [x] 后台列表页（shadcn Table + 上下移按钮 + 操作菜单）
+  - [x] 新建/编辑 Dialog（react-hook-form + zod，扁平表单组装为 translations 数组）
+  - [x] 公开列表 + 详情页（含 generateMetadata + notFound + 空状态）
+  - [x] 测试 60/61 通过（1 skipped — fallback 行为待定）
+  - [x] 端到端验证：DB 写入 → 公开页渲染 / 详情页 / 404 全通
 - [ ] 文章列表 + 筛选（专栏/状态/标签）
-- [ ] 文章编辑器页（Tiptap + 实时预览 + 元数据侧栏）
-- [ ] 媒体上传（本地优先，P3 接 MinIO）
+- [ ] 文章编辑器页（接入 MarkdownEditorWithPreview + 元数据侧栏）
+- [ ] 媒体上传（先本地，P3 接 MinIO）
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 
 ### P2 前台展示（Week 3-4）

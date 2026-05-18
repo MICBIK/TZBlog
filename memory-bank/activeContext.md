@@ -4,43 +4,28 @@
 
 ## 当前焦点
 
-**P0 脚手架已完成（2026-05-18）**：
-- Next.js 16.2.6 + React 19 + TypeScript 5 + Tailwind v4 + Turbopack 初始化完成
-- shadcn/ui 14 个组件就位（button/input/label/card/dialog/dropdown/form/table/select/separator/textarea/tabs/sonner/badge）
-- CSS 变量主题系统按 systemPatterns §8 落地（light + dark）
-- Prisma 7.8 schema 完整：17 张表（含 Auth.js v5 的 Account/Session/VerificationToken）
-- Postgres 16 + MinIO 通过 Docker Compose 跑通；migrate + seed 全打通
-- Auth.js v5 split-config 模式：`auth.config.ts`（Edge-safe）+ `auth.ts`（PrismaAdapter + Credentials + bcryptjs）
-- middleware 守 `/admin/*` 与 `/api/admin/*` — 实测 307 重定向 / 401 JSON 响应符合契约
-- Tiptap WYSIWYG + tiptap-markdown 编辑器组件 + 服务端 Shiki 渲染管道（remark/rehype）就位
-- 自研 lib：errors / api-response / visitor (sha256 指纹) / storage (MinIO) / i18n / rate-limit / env (zod 校验)
-
-**实测验证**：
-- `pnpm typecheck` ✓
-- `pnpm test` 26/26 ✓
-- `pnpm build` ✓ (9 routes, 1 dynamic /admin)
-- `pnpm dev` ✓ — `/`、`/login` 200；`/admin` 307→login；`/api/admin/*` 401 JSON
-- DB seed: admin@tzblog.local + SiteConfig singleton 已写入
-
-## 关键端口
-
-- Postgres：**5433**（5432 被本机其他容器占用，本项目用 5433）
-- MinIO API：9000，Console：9001
-- Next.js dev：3000
+**P1 - 专栏 CRUD 已完成（2026-05-18）**：
+- Domain：`schemas/column.ts` + `services/columns.ts` + 3 条 REST API（list/POST、[id] GET/PATCH/DELETE、reorder POST）
+- Admin UI：`/admin/columns` 列表页 + ColumnFormDialog（受控 open/onOpenChange）+ ColumnReorderControls（上下移）+ ColumnRowActions（编辑/删除）
+- Public UI：`/columns`（卡片列表）+ `/columns/[slug]`（详情含发布文章列表 + generateMetadata + notFound）
+- Tests：60/61 ✓（1 skipped — listColumnsForLocale fallback 行为待定）
+- 端到端验证：写入 2 条专栏 → /columns 列表渲染 ✓ / /columns/hello-world 详情 ✓ / /columns/non-existent 404 ✓
 
 ## 下一步计划
 
-**P1 后台 CMS（Week 2-3）** — 优先顺序：
-1. 后台 layout 美化（用上 shadcn 组件，去掉占位 token 直引）
-2. 专栏 CRUD（最简：列表 + 新建/编辑 Dialog）
-3. 文章列表（Table + 分页 + 状态筛选）
-4. 文章编辑器页（接入 MarkdownEditorWithPreview + 元数据侧栏）
-5. 媒体上传（先本地，P3 接 MinIO）
-6. 评论审核页（Tabs + 批量操作）
+**P1 续 — 文章管理（建议下一个 feature）**：
+按相同的 5-agent 切片模式，文章 CRUD 比专栏复杂在：
+- 加入 Tiptap 编辑器（已有 MarkdownEditorWithPreview）
+- 文章发布/草稿状态机
+- 标签 (Tag + TagsOnPosts) 关联
+- 文章列表的筛选（按专栏 / 状态 / 标签）+ 分页
 
-**建议从「专栏 CRUD」起步**，因为它的 schema 最简单，能跑通整套：
-zod schema → API route + withErrorHandler → server actions → form 表单 → service 层。
-跑通后文章 CRUD 照模式扩展即可。
+切片建议：
+- Agent A: schema + service + admin REST API
+- Agent B: 文章列表页（Table + 筛选 + 分页）
+- Agent C: 文章编辑器页（接入已有 MarkdownEditorWithPreview + 元数据侧栏）
+- Agent D: tests
+- Agent E: 公开页 `/posts/[slug]`（含 Shiki 渲染、TOC、浏览/点赞/评论占位）
 
 ## 关键决策（已锁定）
 
