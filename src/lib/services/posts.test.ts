@@ -170,6 +170,44 @@ describe("getPostById / getPostBySlug", () => {
     const bySlug = (await getPostBySlug("found")) as { id: string } | null
     expect(bySlug?.id).toBe(created.id)
   })
+
+  it("getPostBySlug returns the linked column with its translations expanded", async () => {
+    const col = await testDb.column.create({
+      data: {
+        slug: "tech",
+        translations: {
+          create: [
+            { locale: "zh", name: "技术" },
+            { locale: "en", name: "Tech" },
+          ],
+        },
+      },
+    })
+
+    await createPost(
+      {
+        slug: "in-tech",
+        translations: [zh("入专栏")],
+        tags: [],
+        columnId: col.id,
+      } as never,
+      authorId,
+    )
+
+    const found = await getPostBySlug("in-tech")
+    expect(found).not.toBeNull()
+    expect(found!.column).not.toBeNull()
+
+    // The include shape must surface column.translations so the public detail
+    // page can render the localised column label without a second query.
+    const column = found!.column as unknown as {
+      translations?: Array<{ locale: string; name: string }>
+    }
+    expect(Array.isArray(column.translations)).toBe(true)
+    expect(column.translations!.length).toBe(2)
+    const zhTr = column.translations!.find((t) => t.locale === "zh")
+    expect(zhTr?.name).toBe("技术")
+  })
 })
 
 describe("updatePost", () => {
