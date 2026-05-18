@@ -51,9 +51,19 @@ rules:
     - 涉及 UI 的提案要在 Approach 段说明参考设计（Claude/Apple/OpenAI 的哪个细节）
     - 列出 Non-goals 防止范围蔓延
   tasks:
-    - 按 ECC TDD 顺序：先写测试任务 (RED)，再写实现任务 (GREEN)，最后重构任务 (REFACTOR)
-    - 单个任务粒度 ≤ 2 小时，超过要拆
+    - 按 spec 中每条 GIVEN/WHEN/THEN 拆为「test → impl」微循环，1 spec = 1 微循环
+    - 微循环格式固定（标记不可省略）：
+        x.y.a [TEST-RED]  写 <spec-id> 的失败测试（Vitest / RTL），跑 pnpm test 粘 FAIL 输出
+        x.y.b [IMPL-GREEN] 最小实现使该测试通过，粘 PASS 输出
+    - 禁止纯实现任务（即不绑定 spec 的 impl 任务）
+    - 禁止把所有测试集中放最后
+    - 单微循环 ≤ 30 分钟工作量；每个任务可独立验证
+    - tasks.md 生成前必须已有 openspec/changes/<feature>/test-map.md
     - 任务前缀标注阶段：[P0] / [P1] / [P2] / [P3] / [P4]
+    - 涉及 Prisma 迁移的微循环必须有迁移后的 prisma migrate dev 通过证据
+    - 涉及 Server Action / API 的 spec 必须有 zod schema 校验测试
+    - 例外标签 [NO-TDD] 仅限：纯样式（Tailwind class / CSS 变量）、文档、OpenSpec 元文件
+    - 重构、依赖增减、shadcn 组件 add 不在 NO-TDD 范围内
   spec:
     - 涉及数据持久化时必须包含 Prisma schema 片段
     - 涉及 API 时必须包含 endpoint + 请求/响应 zod schema

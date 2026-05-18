@@ -78,6 +78,7 @@ describe("createColumnSchema", () => {
   })
 
   it("accepts cover when omitted", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { cover: _cover, ...rest } = { ...validInput(), cover: undefined }
     const r = createColumnSchema.safeParse(rest)
     expect(r.success).toBe(true)

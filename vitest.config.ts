@@ -11,5 +11,7 @@ export default defineConfig({
     globals: false,
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
+    // DB 测试共享同一个 Postgres，必须串行避免互相 truncate
+    fileParallelism: false,
   },
 });

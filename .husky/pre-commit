@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# 不跑 pnpm test：与 TDD 流程冲突（RED 阶段测试故意 FAIL）
+# 只跑 typecheck + lint，质量门不阻塞 RED commit
+
+pnpm typecheck && pnpm lint

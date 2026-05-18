@@ -42,3 +42,50 @@ export async function resetPostsAndUsers(): Promise<void> {
 export async function disconnectTestDb(): Promise<void> {
   await testDb.$disconnect()
 }
+
+/**
+ * Truncate everything that touches Post (children + Post itself), keeping
+ * Column, Tag, and User intact. CASCADE is set on the FKs but listing the
+ * children explicitly avoids surprise dependents.
+ */
+export async function resetPosts(): Promise<void> {
+  await testDb.$executeRawUnsafe(
+    `TRUNCATE TABLE "Comment", "PostLike", "PostView", "TagsOnPosts", "PostTranslation", "Post" RESTART IDENTITY CASCADE`,
+  )
+}
+
+/**
+ * Truncate Tag + the join table. Keeps Post intact (Post has no FK to Tag,
+ * only TagsOnPosts does, and it's truncated here too).
+ */
+export async function resetTags(): Promise<void> {
+  await testDb.$executeRawUnsafe(
+    `TRUNCATE TABLE "TagsOnPosts", "Tag" RESTART IDENTITY CASCADE`,
+  )
+}
+
+/**
+ * Wipe the whole content/identity surface used by post + tag + column tests.
+ * Ordering listed explicitly — children before parents — even though CASCADE
+ * would handle it. Keeps PageView (analytics) and SiteConfig untouched.
+ */
+export async function resetAll(): Promise<void> {
+  await testDb.$executeRawUnsafe(
+    `TRUNCATE TABLE "Comment", "PostLike", "PostView", "TagsOnPosts", "PostTranslation", "Post", "Tag", "ColumnTranslation", "Column", "User" RESTART IDENTITY CASCADE`,
+  )
+}
+
+/**
+ * Ensure a test author exists and return its id. Idempotent — repeated calls
+ * with the same email upsert the same user.
+ */
+export async function ensureTestUser(
+  email: string = "test-author@tzblog.local",
+): Promise<string> {
+  const u = await testDb.user.upsert({
+    where: { email },
+    update: { role: "ADMIN" },
+    create: { email, name: "Test Author", role: "ADMIN", password: "x" },
+  })
+  return u.id
+}

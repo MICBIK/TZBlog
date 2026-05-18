@@ -2,8 +2,6 @@
 
 > 本文件是 Claude Code 的项目级指令。每次会话开始时自动加载。
 
-@AGENTS.md
-
 ## 项目概述
 
 TZBlog 是一个自研的个人技术博客系统。单体 Next.js 15 应用，包含前台展示 + 后台 CMS + 自研 Analytics，部署在自有 VPS（Docker Compose + Caddy）。
@@ -96,22 +94,144 @@ pnpm docker:dev       # 启动本地 Postgres + MinIO 容器
 
 ## Git 规范
 
-- Conventional Commits：`feat:` / `fix:` / `chore:` / `docs:` / `refactor:` / `test:`
-- ECC TDD checkpoint：
-  - `test: add tests for <feature>` (RED)
-  - `feat: implement <feature>` (GREEN)
-  - `refactor: clean up <feature>` (REFACTOR)
+- Conventional Commits 带 scope：`feat(<scope>):` / `fix(<scope>):` / `test(<scope>):` / `refactor(<scope>):` / `chore:` / `docs:`
+- TDD 节奏（每个微循环两提交，scope 一致）：
+  - `test(<scope>): <spec-id>` ← 此时测试 RED
+  - `feat(<scope>): <spec-id>` ← 此时测试 GREEN
+  - `refactor(<scope>): <desc>` ← 可选，不改测试
 - 一个 OpenSpec change 一组 commit，不混 feature
+- **husky commit-msg hook** 自动检查：未带 `[no-tdd]` 的 feat: 必须在前 5 个 commit 找到同 scope 的 test:，否则拒绝提交
+
+<!-- WORKFLOW-START: scenario-0-explore v1.2.0 -->
+## 场景 0：模糊度优先判断（任何输入先经过这里）
+
+> 防止"模糊需求硬塞分析流程，AI 编造结论"。检测到模糊信号 → 主动提议进 explore，不直接进场景 1/2/3。
+
+**触发词**：想做、考虑、我在想、有点想、可能、也许、怎么搞、从哪开始、还没想好、思路、新模块、从零、未来怎么、X 还是 Y、哪个好、对比一下、选哪个；模糊 Bug 词（奇怪/莫名/找不到规律/偶尔/有时候）仅在场景 2 两轮假设不收敛后升级。
+
+**主动提议话术**：
+```
+这是个开放问题，建议先用 explore 发散：会读代码 / 画 ASCII 图 / 列方向 / 做 tradeoff，
+不写应用代码，只创建/修改 OpenSpec artifacts。继续吗？
+- [是] 进入 explore
+- [否] 强行进场景 1
+```
+
+**explore 过程铁律**：
+- 每轮回应开头打 `[EXPLORE]` 徽章
+- 禁应用代码、禁 `pnpm add`、禁改源码、禁 Prisma migrate
+- 允许：读任何文件、创建/修改 OpenSpec artifacts、画 ASCII 图
+
+**收敛产出（强制三件套）**：用户出现"那就这么干"/"OK 就这样"或连续 2 轮无新信息时，输出：
+```markdown
+## What We Figured Out
+**The problem**: <一句话>
+**The approach**: <方向 + 关键决策>
+**Open questions**: <未解决 / 需调研>
+**Risks**: <已识别风险>
+**Capture plan**: <即将写哪些 artifacts>
+
+**Next**:
+- [A] auto-capture → /opsx:new <feature>
+- [C] capture 到 design.md / specs/ 不立 change
+- [D] 不 capture 结束
+```
+
+> ⚠️ `/opsx:ff` 路径已废弃：会一次性生成所有 artifacts（含 tasks.md），跳过 test-map 强制环节。统一走 [A] /opsx:new。
+
+**Auto-capture**：[A] 跑 `/opsx:new` 并写 proposal/design 草稿（不写 specs，留给场景 1 阶段补 GIVEN/WHEN/THEN）；[C] 写到已有 specs 或 memory-bank/activeContext.md；[D] 仅记录 explore 结束。
+所有 auto-captured 文件末尾加水印 `<!-- explore 自动生成草稿 时间:<ISO> -->`
+<!-- WORKFLOW-END: scenario-0-explore -->
+
+<!-- WORKFLOW-START: analysis-handoff v1.2.0 -->
+## 分析→执行 衔接规则（任何分析/排查任务先走这里）
+
+> 防止"给完结论就停"或"分析完直接乱改"。分析任务结束必须主动衔接到下一步。
+
+### 场景 1：需求分析任务（"分析一下"/"看看这个功能怎么做"/"评估"）
+
+1. 输出固定四段：技术方案 + 影响范围（受影响 Prisma 模型 / 路由 / 组件）+ 风险点 + 工作量预估
+2. 末尾必附衔接询问：
+   ```
+   ─────────────────────────────────────
+   分析完成。如何继续？
+   - [A] 进入 OpenSpec 提案流程（推荐）→ 我来运行 /opsx:new <feature-name>
+   - [B] 跳过提案，直接进入调研 + TDD
+   - [C] 仅分析，到此为止
+   ─────────────────────────────────────
+   ```
+
+### 场景 2：Bug 排查任务（"有 bug"/"功能不对"/"报错"）
+
+1. 定位根因（假设表 → 复现路径 → 二分到最小失败点）
+2. 输出根因报告：根因（精确到文件:行号）+ 复现路径 + 影响面（涉及文件 / 是否涉及 Prisma schema / Server Action / middleware / 计数器逻辑）
+3. 按影响面分流：
+   - 轻量（单文件、纯样式、不动 schema / Action / middleware）：确认后直修 + code-audit
+   - 深度（跨文件、Prisma schema、计数器一致性、auth、middleware）：走 TDD 微循环 → 最小修复 → 回归
+4. 修复完成后：原路径红绿复验 → 更新 memory-bank/knownIssues.md + progress.md
+5. **两轮假设不收敛** → 主动建议升级到场景 0 explore 建假设地图
+
+### 场景 3：意图不明（"帮我看看"/"这块代码有问题吗"）
+
+先反问分类（仅分析 / 分析+修 / 直接修）再行动，禁猜测式动手。
+
+### 强制约束
+
+- 双产出：分析结论 + 衔接询问，缺一即未完成
+- 不跨越：没有用户明确选择前禁止从分析跳到代码修改
+- 例外：用户原话含明确执行意图（"修复 X"/"实现 Y"/"重构 Z"）直接进对应流程
+<!-- WORKFLOW-END: analysis-handoff -->
+
+<!-- WORKFLOW-START: tdd-ironrules v1.2.0 -->
+## TDD 执行铁律（违反即流程崩溃，停止重来）
+
+1. **tasks.md 必须是「test→impl」微循环结构，1 spec = 1 微循环**：
+   - `x.y.a [TEST-RED]` 写 <spec-id> 失败测试，跑 `pnpm test` 粘 FAIL 输出
+   - `x.y.b [IMPL-GREEN]` 最小实现使测试通过，粘 PASS 输出
+   - 不合格 → 重写 tasks，禁止跳过此步骤进入实现
+
+2. **tasks.md 生成前必须已有 `openspec/changes/<feature>/test-map.md`**
+   - 内容：每条 spec → 测试函数名 + 文件路径 + 层级（unit/integration/e2e）
+   - 涉及 Server Action / API 的 spec 必须有 zod schema 校验测试条目
+
+3. **每个 [IMPL-GREEN] 任务前**：必须先粘对应 [TEST-RED] 的真实 vitest 终端输出，
+   含 `FAIL` / `FAILED` 关键字。声明式 RED 视为违规
+
+4. **每个 [IMPL-GREEN] 任务后**：必须粘真实 PASS 输出
+
+5. **RED 阶段环境不可用**（如 Postgres 没启）：必须补 `[RED-补证]` 任务挂起当前微循环，
+   禁先实现回头补
+
+6. **git commit 节奏**：每微循环两提交
+   - `test(<scope>): <spec-id>`
+   - `feat(<scope>): <spec-id>`
+   - 未带 `[no-tdd]` 的 feat: 必须前 5 commit 内有同 scope test:，否则 husky commit-msg hook 拒绝
+
+7. **NO-TDD 例外仅限**：
+   - 纯样式（Tailwind class、CSS 变量调整、视觉细节）
+   - 文档与 OpenSpec 元文件（*.md/README/proposal/spec/tasks/test-map）
+   - commit message 必须显式加 `[no-tdd]` 标签
+   - **重构 / 依赖增减 / shadcn add / Prisma migration 不在 NO-TDD 范围**
+
+### TDD 阶段徽章（每条响应必带）
+
+```
+[TDD: RED 写测试中] / [TDD: RED 已 FAIL ✓] /
+[TDD: GREEN 写实现中] / [TDD: GREEN 已 PASS ✓] /
+[TDD: REFACTOR] / [TDD: NO-TDD 已加 [no-tdd]]
+```
+<!-- WORKFLOW-END: tdd-ironrules -->
 
 ## OpenSpec 开发流程
 
 本项目使用 OpenSpec 管理功能变更：
 
 1. `/opsx:new` — 创建新 change（生成 proposal.md）
-2. `/opsx:continue` — 生成下一个 artifact（tasks.md / spec）
-3. `/opsx:apply` — 按 tasks 实现代码
-4. `/opsx:verify` — 验证实现完整性
-5. `/opsx:archive` — 归档已完成的 change
+2. `/opsx:continue` — 生成下一个 artifact（spec / test-map / tasks）
+3. `/opsx:verify` — 验证实现完整性
+4. `/opsx:archive` — 归档已完成的 change
+
+> ⚠️ 禁用 `/opsx:apply` 和 `/opsx:ff`：前者会绕过守门员自动写代码，后者会一次性生成 tasks.md 跳过 test-map。
 
 ## 自定义命令
 

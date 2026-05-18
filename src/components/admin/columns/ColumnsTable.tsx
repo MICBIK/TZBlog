@@ -55,25 +55,25 @@ export function ColumnsTable({ initialColumns }: ColumnsTableProps) {
     setEditorOpen(true);
   }
 
-  function handleSuccess(saved: any) {
+  function handleSuccess(saved: unknown) {
     if (!saved || typeof saved !== "object") return;
+    const s = saved as Record<string, unknown>;
     const translations: Array<{
       locale: string;
       name: string;
       description: string | null;
-    }> = Array.isArray(saved.translations) ? saved.translations : [];
+    }> = Array.isArray(s.translations) ? (s.translations as Array<{ locale: string; name: string; description: string | null }>) : [];
     const zh =
       translations.find((t) => t.locale === "zh") ?? translations[0] ?? null;
     const row: ColumnRow = {
-      id: saved.id,
-      slug: saved.slug,
-      cover: saved.cover ?? null,
-      order: saved.order ?? 0,
-      name: zh?.name ?? saved.slug,
+      id: String(s.id ?? ""),
+      slug: String(s.slug ?? ""),
+      cover: s.cover != null ? String(s.cover) : null,
+      order: typeof s.order === "number" ? s.order : 0,
+      name: zh?.name ?? String(s.slug ?? ""),
       description: zh?.description ?? null,
-      postCount:
-        typeof saved.postCount === "number" ? saved.postCount : 0,
-      createdAt: saved.createdAt ?? new Date().toISOString(),
+      postCount: typeof s.postCount === "number" ? s.postCount : 0,
+      createdAt: s.createdAt != null ? (s.createdAt as string | Date) : new Date().toISOString(),
     };
     setColumns((prev) => {
       const idx = prev.findIndex((c) => c.id === row.id);

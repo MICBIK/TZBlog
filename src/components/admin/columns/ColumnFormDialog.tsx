@@ -77,7 +77,7 @@ export interface ColumnFormDialogProps {
   initial?: ColumnFormInitial;
   // Loose typing — Column shape lives in agent A's territory; the dialog
   // only forwards whatever the API hands back.
-  onSuccess: (column: any) => void;
+  onSuccess: (column: unknown) => void;
 }
 
 function pickZh(initial: ColumnFormInitial | undefined): {
