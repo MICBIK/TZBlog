@@ -1,5 +1,6 @@
 import type {
   Column,
+  ColumnTranslation,
   Post,
   PostStatus,
   PostTranslation,
@@ -29,7 +30,7 @@ import { upsertTagsBySlug } from "@/lib/services/tags"
 
 export type PostWithRelations = Post & {
   translations: PostTranslation[]
-  column: Column | null
+  column: (Column & { translations: ColumnTranslation[] }) | null
   tags: Array<{ tag: Tag }>
   author: { id: string; email: string; name: string | null }
 }
@@ -55,7 +56,7 @@ export type PostListItem = {
 
 const includeRelations = {
   translations: true,
-  column: true,
+  column: { include: { translations: true } },
   tags: { include: { tag: true } },
   author: { select: { id: true, email: true, name: true } },
 } satisfies Prisma.PostInclude

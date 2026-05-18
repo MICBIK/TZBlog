@@ -197,15 +197,9 @@ describe("getPostById / getPostBySlug", () => {
     const found = await getPostBySlug("in-tech")
     expect(found).not.toBeNull()
     expect(found!.column).not.toBeNull()
-
-    // The include shape must surface column.translations so the public detail
-    // page can render the localised column label without a second query.
-    const column = found!.column as unknown as {
-      translations?: Array<{ locale: string; name: string }>
-    }
-    expect(Array.isArray(column.translations)).toBe(true)
-    expect(column.translations!.length).toBe(2)
-    const zhTr = column.translations!.find((t) => t.locale === "zh")
+    expect(Array.isArray(found!.column!.translations)).toBe(true)
+    expect(found!.column!.translations.length).toBe(2)
+    const zhTr = found!.column!.translations.find((t) => t.locale === "zh")
     expect(zhTr?.name).toBe("技术")
   })
 })
