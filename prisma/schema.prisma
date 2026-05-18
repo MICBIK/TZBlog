@@ -1,0 +1,308 @@
+// TZBlog Prisma schema
+// 单作者博客 + 自研 CMS + 自研评论 + 自研 Analytics
+// 详见 memory-bank/systemPatterns.md §7 §9 §10 §11 §12
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// Enums
+// ============================================================
+
+enum Role {
+  ADMIN
+  AUTHOR
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  SPAM
+  REJECTED
+}
+
+// ============================================================
+// 用户 / 作者
+// ============================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  avatar    String?
+  role      Role     @default(AUTHOR)
+  password  String?  // bcrypt hash, Credentials provider 用；OAuth 时为空
+  createdAt DateTime @default(now())
+
+  posts    Post[]
+  accounts Account[]
+  sessions Session[]
+}
+
+// ============================================================
+// 专栏（Column）+ 翻译子表
+// ============================================================
+
+model Column {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  cover     String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  translations ColumnTranslation[]
+  posts        Post[]
+}
+
+model ColumnTranslation {
+  id          String  @id @default(cuid())
+  columnId    String
+  locale      String
+  name        String
+  description String?
+
+  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  @@unique([columnId, locale])
+}
+
+// ============================================================
+// 文章（Post）+ 翻译子表
+// 计数器（viewCount / likeCount / commentCount）内嵌主表，
+// 详见 systemPatterns.md §9。
+// ============================================================
+
+model Post {
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  cover         String?
+  status        PostStatus @default(DRAFT)
+  publishedAt   DateTime?
+  authorId      String
+  columnId      String?
+  viewCount     Int        @default(0)
+  likeCount     Int        @default(0)
+  commentCount  Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  author       User              @relation(fields: [authorId], references: [id])
+  column       Column?           @relation(fields: [columnId], references: [id])
+  translations PostTranslation[]
+  tags         TagsOnPosts[]
+  comments     Comment[]
+  views        PostView[]
+  likes        PostLike[]
+
+  @@index([status, publishedAt])
+  @@index([authorId])
+  @@index([columnId])
+}
+
+model PostTranslation {
+  id      String  @id @default(cuid())
+  postId  String
+  locale  String
+  title   String
+  excerpt String?
+  content String  @db.Text
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, locale])
+}
+
+// ============================================================
+// 标签 + 多对多
+// ============================================================
+
+model Tag {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String
+
+  posts TagsOnPosts[]
+}
+
+model TagsOnPosts {
+  postId String
+  tagId  String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+}
+
+// ============================================================
+// 评论（自研，匿名 + 后台审核）
+// 详见 systemPatterns.md §11
+// ============================================================
+
+model Comment {
+  id            String        @id @default(cuid())
+  postId        String
+  authorName    String
+  authorEmail   String
+  authorWebsite String?
+  content       String        @db.Text
+  status        CommentStatus @default(PENDING)
+  visitorHash   String
+  ipAddress     String
+  userAgent     String
+  parentId      String?
+  createdAt     DateTime      @default(now())
+
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([postId, status])
+  @@index([visitorHash, createdAt])
+}
+
+// ============================================================
+// 文章浏览原始记录（按 IP+UA+日 去重）
+// 详见 systemPatterns.md §10
+// ============================================================
+
+model PostView {
+  id          String   @id @default(cuid())
+  postId      String
+  visitorHash String
+  dayKey      String   // YYYY-MM-DD（UTC），与 visitorHash 联合唯一以日内去重
+  createdAt   DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, visitorHash, dayKey])
+  @@index([postId, createdAt])
+}
+
+// ============================================================
+// 文章点赞（同访客对同文章一次）
+// ============================================================
+
+model PostLike {
+  id          String   @id @default(cuid())
+  postId      String
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, visitorHash])
+  @@index([postId])
+}
+
+// ============================================================
+// 全局 PageView（自研 Analytics）
+// 详见 systemPatterns.md §12
+// ============================================================
+
+model PageView {
+  id          String   @id @default(cuid())
+  path        String
+  visitorHash String
+  referrer    String?
+  userAgent   String?
+  device      String?
+  browser     String?
+  os          String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@index([visitorHash, createdAt])
+}
+
+// ============================================================
+// 媒体（MinIO/S3 元数据索引）
+// ============================================================
+
+model Media {
+  id         String   @id @default(cuid())
+  key        String   @unique // S3 object key
+  url        String
+  filename   String
+  mimeType   String
+  size       Int
+  width      Int?
+  height     Int?
+  uploadedBy String
+  createdAt  DateTime @default(now())
+
+  @@index([uploadedBy, createdAt])
+}
+
+// ============================================================
+// 单例：站点配置（主题 + 元信息）
+// id 固定为 "singleton"，全表恒一行
+// ============================================================
+
+model SiteConfig {
+  id         String   @id @default("singleton")
+  themeName  String   @default("default")
+  themeVars  Json     @default("{}")
+  metadata   Json     @default("{}")
+  updatedAt  DateTime @updatedAt
+}
+
+// ============================================================
+// Auth.js v5 + @auth/prisma-adapter 标准 schema
+// 参考 https://authjs.dev/getting-started/adapters/prisma
+// ============================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+
+
+
+

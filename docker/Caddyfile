@@ -1,0 +1,14 @@
+# TZBlog Caddy 配置（生产）
+# - SITE_DOMAIN：站点主域名，反代到 Next.js app:3000
+# - CDN_DOMAIN：媒体域名，反代到 minio:9000（公开 bucket 读）
+# Let's Encrypt 自动 HTTPS 由 Caddy 内置，无需手工配置证书。
+
+{$SITE_DOMAIN:localhost} {
+	encode zstd gzip
+	reverse_proxy app:3000
+}
+
+{$CDN_DOMAIN:cdn.localhost} {
+	encode zstd gzip
+	reverse_proxy minio:9000
+}

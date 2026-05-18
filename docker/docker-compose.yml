@@ -1,0 +1,88 @@
+# TZBlog 生产编排（占位骨架，P3 完善）
+# 用法：pnpm docker:prod
+# 服务：app (Next.js) / postgres / minio / caddy（自动 HTTPS 反代）
+# 仅 caddy 暴露 80/443；postgres / minio / app 走 internal 网络
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: tzblog-app
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - tzblog-internal
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: tzblog-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tzblog}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tzblog}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - tzblog-internal
+
+  minio:
+    image: minio/minio:latest
+    container_name: tzblog-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - tzblog-internal
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: tzblog-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
+      CDN_DOMAIN: ${CDN_DOMAIN:-cdn.localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+      - minio
+    networks:
+      - tzblog-internal
+
+networks:
+  tzblog-internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:
+  caddy_data:
+  caddy_config:

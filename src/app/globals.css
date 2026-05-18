@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+ * Theme variables (HSL, no wrapping hsl())
+ * Reference: Claude / Apple / OpenAI minimalism — ~95% B/W/gray + 5% accent.
+ * --------------------------------------------------------------------------- */
+
+:root {
+  /* Surfaces */
+  --bg: 0 0% 100%;
+  --fg: 222 47% 11%;
+
+  --muted: 220 14% 96%;
+  --muted-fg: 220 9% 46%;
+
+  --card: 0 0% 100%;
+  --card-fg: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-fg: 222 47% 11%;
+
+  /* Brand / actions */
+  --primary: 222 47% 11%;
+  --primary-fg: 0 0% 100%;
+
+  --secondary: 220 14% 96%;
+  --secondary-fg: 222 47% 11%;
+
+  --accent: 220 70% 55%;
+  --accent-fg: 0 0% 100%;
+
+  --destructive: 0 72% 51%;
+  --destructive-fg: 0 0% 100%;
+
+  /* Lines / inputs / focus */
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 222 47% 11%;
+
+  /* Geometry */
+  --radius: 0.5rem;
+
+  /* Fonts (CJK fallback included) */
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+    "Source Han Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --font-mono:
+    var(--font-geist-mono), "JetBrains Mono", ui-monospace, SFMono-Regular,
+    "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.dark {
+  --bg: 240 10% 4%;
+  --fg: 210 20% 98%;
+
+  --muted: 240 4% 16%;
+  --muted-fg: 240 5% 65%;
+
+  --card: 240 10% 4%;
+  --card-fg: 210 20% 98%;
+
+  --popover: 240 10% 4%;
+  --popover-fg: 210 20% 98%;
+
+  --primary: 210 20% 98%;
+  --primary-fg: 240 6% 10%;
+
+  --secondary: 240 4% 16%;
+  --secondary-fg: 210 20% 98%;
+
+  --accent: 220 70% 60%;
+  --accent-fg: 0 0% 100%;
+
+  --destructive: 0 63% 45%;
+  --destructive-fg: 0 0% 98%;
+
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 210 20% 80%;
+}
+
+/* Map semantic tokens into Tailwind v4's @theme so utilities
+ * like bg-bg / text-fg / border-border / ring-ring work. */
+@theme inline {
+  --color-bg: hsl(var(--bg));
+  --color-fg: hsl(var(--fg));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-fg: hsl(var(--muted-fg));
+
+  --color-card: hsl(var(--card));
+  --color-card-fg: hsl(var(--card-fg));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-fg: hsl(var(--popover-fg));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-fg: hsl(var(--primary-fg));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-fg: hsl(var(--secondary-fg));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-fg: hsl(var(--accent-fg));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-fg: hsl(var(--destructive-fg));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+/* Tailwind v4 by default treats `border-*` without a token as
+ * currentColor; restore the v3-style default to our --border. */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: hsl(var(--bg));
+    color: hsl(var(--fg));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: hsl(var(--accent) / 0.2);
+    color: hsl(var(--fg));
+  }
+}

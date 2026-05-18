@@ -1,0 +1,60 @@
+schema: spec-driven
+
+context: |
+  Project: TZBlog — 个人技术博客，单作者公开访问。
+  目标：写东西被看见 / 简约大气 / 完全可控（自研 CMS + 自研 Analytics）。
+  参考设计语言：Claude / Apple / OpenAI 官网。
+
+  Tech stack:
+    - Next.js 15 (App Router, RSC, Server Actions)
+    - TypeScript 5 (strict)
+    - PostgreSQL 16 + Prisma 5
+    - Tailwind CSS v4 + shadcn/ui (CSS variable-driven theme)
+    - Tiptap v2 (WYSIWYG, serialize to Markdown via tiptap-markdown)
+    - remark + rehype + Shiki (render Markdown to HTML)
+    - Auth.js v5 (Credentials provider, single admin)
+    - MinIO (self-hosted S3) for media
+    - Docker Compose + Caddy on a self-managed VPS
+    - Self-built analytics (replaces Umami/Plausible/GA)
+
+  Architecture:
+    - 单体 Next.js 应用，不分 monorepo
+    - 路由组 (site) / (admin)；middleware 守 /admin/* 与 /api/admin/*
+    - i18n 通过 *Translation 子表，按 (parentId, locale) 唯一
+    - 主题通过 CSS 变量；MVP 不做切换，但所有色值必须用 var(--...) 引用
+    - 计数器（viewCount / likeCount / commentCount）内嵌 Post 表；详情表记录原始事件
+
+  Conventions:
+    - Conventional Commits（feat / fix / chore / docs / refactor / test）
+    - ECC TDD：红 (test:) → 绿 (feat:) → 重构 (refactor:) 三个 git checkpoint
+    - 一个 OpenSpec change 对应一组功能 commit，不混 feature
+    - API 响应：{ data, meta? } / { error: { code, message, details? } }
+    - 表单 schema 与 API schema 共用 zod，前后端各 validate 一次
+
+  MVP scope (5-7 weeks):
+    - P0 脚手架
+    - P1 后台 CMS（专栏 / 文章 / 媒体 / 评论审核）
+    - P2 前台（首页 / 文章详情 / 列表 / RSS / sitemap / Analytics 上报）
+    - P3 部署（Docker Compose + VPS + Caddy）
+    - P4 打磨（Analytics 仪表盘 / Lighthouse 调优 / 文档）
+
+  Out of MVP:
+    - 主题切换 GUI（V2）
+    - 多语言渲染（V3；schema 已预留）
+    - 评论邮件通知（V2）
+    - 数学公式 / 脚注（V2）
+
+rules:
+  proposal:
+    - 强制包含 Intent / Scope / Approach 三段
+    - Approach 段必须列出受影响的 Prisma 模型 / 路由 / 组件
+    - 涉及 UI 的提案要在 Approach 段说明参考设计（Claude/Apple/OpenAI 的哪个细节）
+    - 列出 Non-goals 防止范围蔓延
+  tasks:
+    - 按 ECC TDD 顺序：先写测试任务 (RED)，再写实现任务 (GREEN)，最后重构任务 (REFACTOR)
+    - 单个任务粒度 ≤ 2 小时，超过要拆
+    - 任务前缀标注阶段：[P0] / [P1] / [P2] / [P3] / [P4]
+  spec:
+    - 涉及数据持久化时必须包含 Prisma schema 片段
+    - 涉及 API 时必须包含 endpoint + 请求/响应 zod schema
+    - 涉及 UI 时必须包含 ASCII wireframe 或文字描述布局
