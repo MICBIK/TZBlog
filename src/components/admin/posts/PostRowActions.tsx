@@ -10,6 +10,7 @@ import {
   Undo2,
 } from "lucide-react";
 import type { ComponentProps } from "react";
+import type { PostStatus } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,12 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export type PostRowStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
-
 export interface PostRowActionsPost {
   id: string;
   slug: string;
-  status: PostRowStatus;
+  status: PostStatus;
 }
 
 export interface PostRowActionsProps {

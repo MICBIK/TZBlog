@@ -3,59 +3,43 @@ import Link from "next/link";
 import { format } from "date-fns";
 import type { Metadata } from "next";
 
-import { getPostBySlug } from "@/lib/services/posts";
+import { getPostBySlug, type PostWithRelations } from "@/lib/services/posts";
 import { renderMarkdown } from "@/lib/markdown";
-import { getCurrentLocale } from "@/lib/i18n";
+import { DEFAULT_LOCALE, getCurrentLocale, type Locale } from "@/lib/i18n";
 import { PostViewBeacon } from "@/components/site/PostViewBeacon";
 
 type Props = { params: Promise<{ slug: string }> };
 
-type Translation = {
-  locale: string;
-  title?: string;
-  name?: string;
-  excerpt?: string | null;
-  description?: string | null;
-  content?: string | null;
-};
-
-type PostShape = {
-  slug: string;
-  status?: string;
-  publishedAt?: Date | string | null;
-  viewCount?: number;
-  likeCount?: number;
-  commentCount?: number;
-  translations?: Translation[];
-  column?:
-    | {
-        slug: string;
-        translations?: Translation[];
-      }
-    | null;
-  tags?: Array<{ tag: { slug: string } } | { slug: string }>;
-};
-
-function pickTranslation<T extends Translation>(
-  translations: T[] | undefined,
-  locale: string,
-): T | undefined {
-  if (!translations || translations.length === 0) return undefined;
-  return translations.find((t) => t.locale === locale) ?? translations[0];
+function pickPostTranslation(
+  post: PostWithRelations,
+  locale: Locale,
+): PostWithRelations["translations"][number] | undefined {
+  return (
+    post.translations.find((t) => t.locale === locale) ??
+    post.translations.find((t) => t.locale === DEFAULT_LOCALE) ??
+    post.translations[0]
+  );
 }
 
-function tagSlug(t: { tag?: { slug?: string }; slug?: string }): string | null {
-  if (t.tag && typeof t.tag.slug === "string") return t.tag.slug;
-  if (typeof t.slug === "string") return t.slug;
-  return null;
+function pickColumnTranslation(
+  column: NonNullable<PostWithRelations["column"]>,
+  locale: Locale,
+):
+  | NonNullable<PostWithRelations["column"]>["translations"][number]
+  | undefined {
+  return (
+    column.translations.find((t) => t.locale === locale) ??
+    column.translations.find((t) => t.locale === DEFAULT_LOCALE) ??
+    column.translations[0]
+  );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = (await getPostBySlug(slug)) as PostShape | null;
+  const post = await getPostBySlug(slug);
   if (!post || post.status !== "PUBLISHED") return {};
   const locale = getCurrentLocale();
-  const tr = pickTranslation(post.translations, locale);
+  const tr = pickPostTranslation(post, locale);
   return {
     title: `${tr?.title ?? slug} — TZBlog`,
     description: tr?.excerpt ?? undefined,
@@ -64,24 +48,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostDetailPage({ params }: Props) {
   const { slug } = await params;
-  const post = (await getPostBySlug(slug)) as PostShape | null;
+  const post = await getPostBySlug(slug);
   if (!post || post.status !== "PUBLISHED") notFound();
 
   const locale = getCurrentLocale();
-  const tr = pickTranslation(post.translations, locale);
+  const tr = pickPostTranslation(post, locale);
   if (!tr) notFound();
 
-  const html = await renderMarkdown(tr.content ?? "");
+  const html = await renderMarkdown(tr.content);
 
   const columnTr = post.column
-    ? pickTranslation(post.column.translations, locale)
+    ? pickColumnTranslation(post.column, locale)
     : undefined;
-  const columnLabel =
-    columnTr?.name ?? columnTr?.title ?? post.column?.slug ?? null;
+  const columnLabel = columnTr?.name ?? post.column?.slug ?? null;
 
-  const tagSlugs = (post.tags ?? [])
-    .map((t) => tagSlug(t as { tag?: { slug?: string }; slug?: string }))
-    .filter((s): s is string => typeof s === "string" && s.length > 0);
+  const tagSlugs = post.tags.map((t) => t.tag.slug);
 
   return (
     <article className="space-y-10">
@@ -109,13 +90,13 @@ export default async function PostDetailPage({ params }: Props) {
           )}
         </div>
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-          {tr.title ?? slug}
+          {tr.title}
         </h1>
         {tr.excerpt && <p className="text-lg text-muted-fg">{tr.excerpt}</p>}
         <div className="flex items-center gap-4 pt-2 font-mono text-xs text-muted-fg">
-          <span>views {post.viewCount ?? 0}</span>
-          <span>likes {post.likeCount ?? 0}</span>
-          <span>comments {post.commentCount ?? 0}</span>
+          <span>views {post.viewCount}</span>
+          <span>likes {post.likeCount}</span>
+          <span>comments {post.commentCount}</span>
         </div>
       </header>
 

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { PostStatus } from "@prisma/client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,33 +16,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  PostRowActions,
-  type PostRowStatus,
-} from "@/components/admin/posts/PostRowActions";
+import { PostRowActions } from "@/components/admin/posts/PostRowActions";
 import {
   filterToSearchParams,
   type PostsFilter,
 } from "@/components/admin/posts/PostsFilters";
-
-export interface PostListItem {
-  id: string;
-  slug: string;
-  cover: string | null;
-  status: PostRowStatus;
-  publishedAt: Date | string | null;
-  columnId: string | null;
-  columnName: string | null;
-  authorName: string | null;
-  title: string;
-  excerpt: string | null;
-  tags: Array<{ slug: string; name: string }>;
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-}
+import type { PostListItem } from "@/lib/services/posts";
 
 export interface PostsTableProps {
   initialItems: PostListItem[];
@@ -51,14 +31,14 @@ export interface PostsTableProps {
   currentFilter: PostsFilter;
 }
 
-const STATUS_LABEL: Record<PostRowStatus, string> = {
+const STATUS_LABEL: Record<PostStatus, string> = {
   DRAFT: "草稿",
   PUBLISHED: "已发布",
   ARCHIVED: "已归档",
 };
 
 const STATUS_VARIANT: Record<
-  PostRowStatus,
+  PostStatus,
   "default" | "secondary" | "outline" | "destructive"
 > = {
   DRAFT: "secondary",
@@ -111,7 +91,7 @@ export function PostsTable({
   }
 
   async function handlePublishToggle(post: PostListItem) {
-    const nextStatus: PostRowStatus =
+    const nextStatus: PostStatus =
       post.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
     const previous = items;
     setPendingId(post.id);

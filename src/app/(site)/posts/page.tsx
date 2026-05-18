@@ -6,25 +6,6 @@ import { postFilterSchema } from "@/lib/schemas/post";
 import { getCurrentLocale } from "@/lib/i18n";
 import { PostCard } from "@/components/site/PostCard";
 
-// Local mirror of Agent A's PostListItem (re-exported once that lands).
-type PostListItem = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt?: string | null;
-  publishedAt?: Date | string | null;
-  columnName?: string | null;
-  tags: Array<{ slug: string }>;
-  viewCount?: number;
-};
-
-type ListPostsResult = {
-  items: PostListItem[];
-  total: number;
-  page: number;
-  pageSize: number;
-};
-
 export const metadata: Metadata = {
   title: "Blog — TZBlog",
   description: "All published writings",
@@ -40,8 +21,6 @@ export default async function PostsListPage({ searchParams }: Props) {
   const sp = await searchParams;
 
   // Public list always pins to PUBLISHED — admins use a separate route.
-  // Unknown keys (tag/q if not yet on the schema) are stripped by zod's
-  // default object behaviour, so passing them is forward-compatible.
   const filter = postFilterSchema.parse({
     page: sp.page,
     pageSize: sp.pageSize ?? 12,
@@ -51,10 +30,7 @@ export default async function PostsListPage({ searchParams }: Props) {
     q: sp.q,
   });
   const locale = getCurrentLocale();
-  const { items, total, page, pageSize } = (await listPosts(
-    filter,
-    locale,
-  )) as ListPostsResult;
+  const { items, total, page, pageSize } = await listPosts(filter, locale);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
