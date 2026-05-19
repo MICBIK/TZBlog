@@ -13,9 +13,15 @@ async function requireAdminSession() {
 }
 
 export const POST = withErrorHandler(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async (_req: Request): Promise<NextResponse> => {
-    await requireAdminSession()
-    return ok({})
+  async (req: Request): Promise<NextResponse> => {
+    const session = await requireAdminSession()
+
+    const fd = await req.formData()
+    const file = fd.get("file")
+    if (!(file instanceof File)) {
+      throw errors.validation("缺少 file 字段")
+    }
+
+    return ok({ uploadedBy: (session.user as { id: string }).id })
   },
 )
