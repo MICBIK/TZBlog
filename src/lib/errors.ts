@@ -7,6 +7,7 @@ export type AppErrorCode =
   | "CONFLICT"
   | "RATE_LIMITED"
   | "UPSTREAM_FAILURE"
+  | "MISSING_ENV"
   | "INTERNAL_ERROR"
 
 export class AppError extends Error {
@@ -35,6 +36,13 @@ export const errors = {
   rateLimited: (msg = "Too many requests") =>
     new AppError("RATE_LIMITED", msg, 429),
   upstream: (msg: string) => new AppError("UPSTREAM_FAILURE", msg, 502),
+  missingEnv: (vars: string[]) =>
+    new AppError(
+      "MISSING_ENV",
+      `Missing required env vars: ${vars.join(", ")}`,
+      500,
+      { vars },
+    ),
   internal: (msg = "Internal server error") =>
     new AppError("INTERNAL_ERROR", msg, 500),
 }

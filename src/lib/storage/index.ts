@@ -1,3 +1,4 @@
+import { errors } from "@/lib/errors"
 import { LocalDiskStorage } from "./local"
 import { S3Storage } from "./s3"
 import type { IStorage } from "./types"
@@ -19,12 +20,7 @@ function createStorage(): IStorage {
     ]
     const missing = required.filter((k) => !process.env[k])
     if (missing.length > 0) {
-      // Lazy import to avoid circular — errors module is app-level
-      const err = new Error(
-        `STORAGE_DRIVER=s3 but missing env: ${missing.join(", ")}`,
-      ) as Error & { code: string }
-      err.code = "MISSING_ENV"
-      throw err
+      throw errors.missingEnv(missing)
     }
 
     return new S3Storage({
