@@ -13,8 +13,9 @@ import {
   Code2,
   Quote,
   Link as LinkIcon,
-  Image as ImageIcon,
 } from "lucide-react";
+
+import { ImageUploadButton } from "./ImageUploadButton";
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -75,12 +76,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       .extendMarkRange("link")
       .setLink({ href: url, target: "_blank", rel: "noopener noreferrer" })
       .run();
-  };
-
-  const promptForImage = () => {
-    const url = window.prompt("Image URL", "https://");
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url }).run();
   };
 
   return (
@@ -175,9 +170,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       >
         <LinkIcon size={16} />
       </ToolButton>
-      <ToolButton label="Image" onClick={promptForImage}>
-        <ImageIcon size={16} />
-      </ToolButton>
+      <ImageUploadButton editor={editor} />
     </div>
   );
 }
