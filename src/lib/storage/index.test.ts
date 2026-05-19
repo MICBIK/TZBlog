@@ -41,6 +41,8 @@ describe("storage factory", () => {
     // 故意不设 S3_ENDPOINT 等
     await expect(import("./index")).rejects.toMatchObject({
       code: "MISSING_ENV",
+      httpStatus: 500,
+      name: "AppError",
     })
   })
 })
