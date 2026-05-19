@@ -48,4 +48,15 @@ describe("DELETE /api/admin/media/[id]", () => {
     const row = await testDb.media.findUnique({ where: { id: created.id } })
     expect(row).toBeNull()
   })
+
+  it("§5.10 returns 404 for missing id", async () => {
+    const ctx = { params: Promise.resolve({ id: "nonexistent" }) }
+    const req = new Request("http://localhost/api/admin/media/nonexistent", {
+      method: "DELETE",
+    })
+    const res = await DELETE(req, ctx)
+    expect(res.status).toBe(404)
+    const body = await res.json()
+    expect(body.error.code).toBe("NOT_FOUND")
+  })
 })
