@@ -5,14 +5,10 @@ import { S3Storage } from "./s3"
 const mockPutObject = vi.fn().mockResolvedValue(undefined)
 const mockRemoveObject = vi.fn().mockResolvedValue(undefined)
 
-vi.mock("minio", () => ({
-  Client: vi.fn().mockImplementation(() => ({
-    putObject: mockPutObject,
-    removeObject: mockRemoveObject,
-    bucketExists: vi.fn().mockResolvedValue(true),
-    makeBucket: vi.fn().mockResolvedValue(undefined),
-  })),
-}))
+const mockClient = {
+  putObject: mockPutObject,
+  removeObject: mockRemoveObject,
+}
 
 const BUCKET = "test-bucket"
 const PUBLIC_URL = "https://cdn.tzblog.dev"
@@ -21,35 +17,19 @@ let storage: S3Storage
 
 beforeEach(() => {
   vi.clearAllMocks()
-  storage = new S3Storage({
-    endpoint: "http://localhost:9000",
-    accessKey: "minioadmin",
-    secretKey: "minioadmin",
-    region: "auto",
-    bucket: BUCKET,
-    publicUrl: PUBLIC_URL,
-  })
+  storage = new S3Storage({ client: mockClient, bucket: BUCKET, publicUrl: PUBLIC_URL })
 })
 
 // 2.5 publicUrl
 
 describe("S3Storage.publicUrl", () => {
   it("normalises trailing slash on PUBLIC_URL", () => {
-    const s = new S3Storage({
-      endpoint: "http://localhost:9000",
-      accessKey: "a",
-      secretKey: "b",
-      region: "auto",
-      bucket: BUCKET,
-      publicUrl: "https://cdn.tzblog.dev/",
-    })
+    const s = new S3Storage({ client: mockClient, bucket: BUCKET, publicUrl: "https://cdn.tzblog.dev/" })
     expect(s.publicUrl("2026/05/abc.png")).toBe("https://cdn.tzblog.dev/2026/05/abc.png")
   })
 
   it("joins public url and key without double slash", () => {
-    expect(storage.publicUrl("2026/05/abc.png")).toBe(
-      "https://cdn.tzblog.dev/2026/05/abc.png",
-    )
+    expect(storage.publicUrl("2026/05/abc.png")).toBe("https://cdn.tzblog.dev/2026/05/abc.png")
   })
 })
 
