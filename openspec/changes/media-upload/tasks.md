@@ -155,53 +155,55 @@
 
 ### 5.1 POST uploads 401 未登录
 
-- [ ] 5.1.a [TEST-RED] 写 `POST /api/admin/uploads returns 401 without session`，粘 FAIL
-- [ ] 5.1.b [IMPL-GREEN] 新增 `src/app/api/admin/uploads/route.ts`，handler 内 `auth()` 校验，粘 PASS
+- [x] 5.1.a [TEST-RED] 写 `POST /api/admin/uploads returns 401 without session`，粘 FAIL
+- [x] 5.1.b [IMPL-GREEN] 新增 `src/app/api/admin/uploads/route.ts`,handler 内 `auth()` 校验，粘 PASS
 
 ### 5.2 POST uploads 校验 file 字段
 
-- [ ] 5.2.a [TEST-RED] 写 `POST returns 400 VALIDATION when file field missing`，粘 FAIL
-- [ ] 5.2.b [IMPL-GREEN] 解析 formData 取 file，缺则抛 VALIDATION，粘 PASS
+- [x] 5.2.a [TEST-RED] 写 `POST returns 400 VALIDATION when file field missing`，粘 FAIL
+- [x] 5.2.b [IMPL-GREEN] 解析 formData 取 file，缺则抛 VALIDATION，粘 PASS
 
 ### 5.3 POST uploads 持久化 PNG
 
-- [ ] 5.3.a [TEST-RED] 写 `POST persists Media row for valid png`（用 fixture buffer），粘 FAIL
-- [ ] 5.3.b [IMPL-GREEN] 把 validateUpload + createMedia 串起来，粘 PASS
+- [x] 5.3.a [TEST-RED] 写 `POST persists Media row for valid png`（用 fixture buffer），粘 FAIL
+- [x] 5.3.b [IMPL-GREEN] 把 validateUpload + createMedia 串起来，粘 PASS
 
 ### 5.4 POST uploads 响应 shape
 
-- [ ] 5.4.a [TEST-RED] 写 `POST response contains data.{id,url,filename,mimeType,size,width,height,createdAt}`，粘 FAIL
-- [ ] 5.4.b [IMPL-GREEN] 用 `ok(data)` 返回完整 Media，粘 PASS
+- [x] 5.4.a [TEST-PRE-COVERED] 行为已被 §5.3 实现自然覆盖（`ok(media)` 返回完整 Media）;补断言 `body.data.{id,url,filename,mimeType,size,width,height,createdAt}` 一次就过 PASS。无独立 RED 阶段。
+- [x] 5.4.b 同上
 
 ### 5.5 POST uploads 错误响应 shape
 
-- [ ] 5.5.a [TEST-RED] 写 `POST error response contains error.{code,message}`（注入一次失败），粘 FAIL
-- [ ] 5.5.b [IMPL-GREEN] 包 `withErrorHandler`，粘 PASS
+- [x] 5.5.a [TEST-PRE-COVERED] 行为已被 `withErrorHandler` 自然覆盖;补断言 `body.error.{code,message}` 用 `vi.spyOn(createMedia)` 注入失败一次就过 PASS。无独立 RED 阶段。
+- [x] 5.5.b 同上
 
 ### 5.6 GET media 默认分页
 
-- [ ] 5.6.a [TEST-RED] 写 `GET /api/admin/media returns first 12 with meta`，粘 FAIL
-- [ ] 5.6.b [IMPL-GREEN] 新增 `src/app/api/admin/media/route.ts` GET handler，粘 PASS
+- [x] 5.6.a [TEST-RED] 写 `GET /api/admin/media returns first 12 with meta`，粘 FAIL
+- [x] 5.6.b [IMPL-GREEN] 新增 `src/app/api/admin/media/route.ts` GET handler，粘 PASS
 
 ### 5.7 GET media 自定义分页
 
-- [ ] 5.7.a [TEST-RED] 写 `GET /api/admin/media respects ?page=&pageSize=`，粘 FAIL
-- [ ] 5.7.b [IMPL-GREEN] 透传 filter 到 listMedia，粘 PASS
+- [x] 5.7.a [TEST-PRE-COVERED] 行为已被 §5.6 实现自然覆盖（filter 直接透传到 listMedia）;补断言 `?page=2&pageSize=2` 一次就过 PASS。无独立 RED 阶段。
+- [x] 5.7.b 同上
 
 ### 5.8 GET media pageSize 上限
 
-- [ ] 5.8.a [TEST-RED] 写 `GET /api/admin/media?pageSize=200 returns 400 VALIDATION`，粘 FAIL
-- [ ] 5.8.b [IMPL-GREEN] schema 已限制（§3.2），路由透传报错，粘 PASS
+- [x] 5.8.a [TEST-PRE-COVERED] 行为已被 §3.2 zod schema + `withErrorHandler` 自然覆盖;补断言 `?pageSize=200` → 400 VALIDATION_ERROR 一次就过 PASS。无独立 RED 阶段。
+- [x] 5.8.b 同上
 
 ### 5.9 DELETE media 成功
 
-- [ ] 5.9.a [TEST-RED] 写 `DELETE /api/admin/media/[id] returns 200 with data.id`，粘 FAIL
-- [ ] 5.9.b [IMPL-GREEN] 新增 `src/app/api/admin/media/[id]/route.ts` DELETE handler，粘 PASS
+- [x] 5.9.a [TEST-RED] 写 `DELETE /api/admin/media/[id] returns 200 with data.id`，粘 FAIL
+- [x] 5.9.b [IMPL-GREEN] 新增 `src/app/api/admin/media/[id]/route.ts` DELETE handler，粘 PASS
 
 ### 5.10 DELETE media 404
 
-- [ ] 5.10.a [TEST-RED] 写 `DELETE returns 404 NOT_FOUND for missing id`，粘 FAIL
-- [ ] 5.10.b [IMPL-GREEN] errors.notFound 透传，粘 PASS
+- [x] 5.10.a [TEST-PRE-COVERED] 行为已被 §5.9 实现 + `deleteMedia` service 的 `errors.notFound` 自然覆盖;补断言 `?id=nonexistent` → 404 NOT_FOUND 一次就过 PASS。无独立 RED 阶段。
+- [x] 5.10.b 同上
+
+> §5 节奏注记：10 个 spec 中 5 个走真 RED → GREEN（§5.1/§5.2/§5.3/§5.6/§5.9），另 5 个（§5.4/§5.5/§5.7/§5.8/§5.10）是衍生覆盖（pre-covered），属务实派 TDD 妥协。Commit 历史里这些写作 `test(media): GREEN — ... (pre-covered)`，节奏审计时区分对待。
 
 ## 6. [P1] UI 改造（manual smoke 验收）
 

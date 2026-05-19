@@ -4,28 +4,30 @@
 
 ## 当前焦点
 
-**P1 - 专栏 CRUD 已完成（2026-05-18）**：
-- Domain：`schemas/column.ts` + `services/columns.ts` + 3 条 REST API（list/POST、[id] GET/PATCH/DELETE、reorder POST）
-- Admin UI：`/admin/columns` 列表页 + ColumnFormDialog（受控 open/onOpenChange）+ ColumnReorderControls（上下移）+ ColumnRowActions（编辑/删除）
-- Public UI：`/columns`（卡片列表）+ `/columns/[slug]`（详情含发布文章列表 + generateMetadata + notFound）
-- Tests：60/61 ✓（1 skipped — listColumnsForLocale fallback 行为待定）
-- 端到端验证：写入 2 条专栏 → /columns 列表渲染 ✓ / /columns/hello-world 详情 ✓ / /columns/non-existent 404 ✓
+**P1 - 媒体上传 §1-§5 已完成（2026-05-19）**：
+- Storage 抽象：`src/lib/storage/{types,local,s3,index}.ts` — IStorage 接口 + LocalDiskStorage / S3Storage 双 driver + env-driven factory（默认 local，s3 缺 env 抛 `errors.missingEnv` AppError）
+- Schemas：`src/lib/schemas/media.ts` — `mediaFilterSchema`（page/pageSize 默认 1/12，上限 100）+ `validateUpload`（手写 sniffMime + 5MB 限制 + 4 格式白名单）
+- Service：`src/lib/services/media.ts` — createMedia（key 拼 `yyyy/MM/<hex>.<ext>`、image-size best-effort 读尺寸、DB 失败回滚物理文件）/ listMedia 分页 / deleteMedia（NOT_FOUND + 真错误透传）
+- API routes：`src/app/api/admin/uploads/route.ts`（POST 上传）+ `media/route.ts`（GET 分页列表）+ `media/[id]/route.ts`（DELETE）。统一走 `requireAdminSession` + `withErrorHandler` + `ok(data, meta)`
+- Tests：159/160 ✓（+33 from §1-§5）
+- 提案：`openspec/changes/media-upload/` 含 proposal/design/specs 三件 + test-map + tasks（§1-§5 全勾，§6-§7 未做）
+
+**已修复的代码债（审计期间发现）**：
+- §4 deleteMedia 外层 silent catch → 真错误透传（保留 storage 内部 ENOENT/NoSuchKey 幂等）
+- §2 storage factory 裸 `Error + code` → `errors.missingEnv()` AppError 统一形态
+- §4 createMedia 接 image-size 写入 width/height（best-effort，失败留 null）
 
 ## 下一步计划
 
-**P1 续 — 文章管理（建议下一个 feature）**：
-按相同的 5-agent 切片模式，文章 CRUD 比专栏复杂在：
-- 加入 Tiptap 编辑器（已有 MarkdownEditorWithPreview）
-- 文章发布/草稿状态机
-- 标签 (Tag + TagsOnPosts) 关联
-- 文章列表的筛选（按专栏 / 状态 / 标签）+ 分页
+**P1 媒体上传 §6 UI 改造（manual smoke 验收）**：
+- `components/admin/posts/CoverUploader.tsx` — 替换 PostMetaSidebar 的 cover URL 手填 Input
+- `components/editor/ImageUploadButton.tsx` — Tiptap 工具栏图片上传，光标处插 `![](url)`
+- `components/admin/media/{MediaCard,MediaRowActions}.tsx` + `app/(admin)/admin/media/page.tsx` — 媒体库列表 + 删除（卡片网格 + 分页）
+- AdminSidebar "媒体" 链接已挂占位，§6 落地后自然解锁
 
-切片建议：
-- Agent A: schema + service + admin REST API
-- Agent B: 文章列表页（Table + 筛选 + 分页）
-- Agent C: 文章编辑器页（接入已有 MarkdownEditorWithPreview + 元数据侧栏）
-- Agent D: tests
-- Agent E: 公开页 `/posts/[slug]`（含 Shiki 渲染、TOC、浏览/点赞/评论占位）
+行为合同已由 §4/§5 测试覆盖；UI 组件本身走 manual smoke，不写 RTL。Commit 用 `feat(media):` 借助已有 `test(media):` 通过 husky hook。
+
+§7 集成验收（typecheck/lint/test/build 全绿 + manual smoke 上传四格式 + STORAGE_DRIVER=s3 切换验证 + `/opsx:verify` + `/opsx:archive`）。
 
 ## 关键决策（已锁定）
 
