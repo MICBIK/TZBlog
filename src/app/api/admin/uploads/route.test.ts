@@ -6,10 +6,18 @@ import { auth } from "@/lib/auth"
 import { resetAll, ensureTestUser, testDb, disconnectTestDb } from "../../../../../tests/helpers/db"
 import { POST } from "./route"
 
+let authorId: string
+
+// 1x1 real PNG (image-size readable)
+const REAL_PNG_1X1 = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+  "base64",
+)
+
 beforeEach(async () => {
   await resetAll()
   await testDb.$executeRawUnsafe(`TRUNCATE TABLE "Media" RESTART IDENTITY CASCADE`)
-  const authorId = await ensureTestUser()
+  authorId = await ensureTestUser()
   ;(auth as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
     user: { id: authorId, email: "test@x.com" },
     expires: new Date(Date.now() + 86400_000).toISOString(),
@@ -46,5 +54,23 @@ describe("POST /api/admin/uploads", () => {
     expect(res.status).toBe(400)
     const body = await res.json()
     expect(body.error.code).toBe("VALIDATION_ERROR")
+  })
+
+  it("§5.3 persists Media row for valid png", async () => {
+    const fd = new FormData()
+    fd.set("file", new File([REAL_PNG_1X1], "test.png", { type: "image/png" }))
+    const req = new Request("http://localhost/api/admin/uploads", {
+      method: "POST",
+      body: fd,
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data.id).toBeDefined()
+    expect(body.data.url).toMatch(/^\/uploads\//)
+
+    const row = await testDb.media.findUnique({ where: { id: body.data.id } })
+    expect(row).not.toBeNull()
+    expect(row!.uploadedBy).toBe(authorId)
   })
 })
