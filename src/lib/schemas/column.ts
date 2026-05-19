@@ -28,13 +28,24 @@ export type ColumnTranslationInput = z.infer<
   typeof columnTranslationInputSchema
 >
 
+// Cover accepts: empty string (clear), absolute http(s) URL, or "/"-rooted
+// path so the future CoverUploader can write local-driver `/uploads/...`.
+const coverFieldSchema = z
+  .string()
+  .refine(
+    (v) => v === "" || /^https?:\/\//.test(v) || v.startsWith("/"),
+    "封面必须是 URL 或以 / 开头的路径",
+  )
+  .optional()
+  .nullable()
+
 export const createColumnSchema = z.object({
   slug: z
     .string()
     .min(1)
     .max(80)
     .regex(/^[a-z0-9-]+$/, "slug 只能含小写字母、数字、连字符"),
-  cover: z.string().url().optional().nullable(),
+  cover: coverFieldSchema,
   order: z.number().int().min(0).optional(),
   translations: z.array(columnTranslationInputSchema).min(1),
 })

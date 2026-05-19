@@ -23,6 +23,17 @@ const localeEnum = z.enum(
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
+// Cover accepts: empty string (clear), absolute http(s) URL, or "/"-rooted
+// path (CoverUploader writes `/uploads/...` for local-driver storage).
+const coverFieldSchema = z
+  .string()
+  .refine(
+    (v) => v === "" || /^https?:\/\//.test(v) || v.startsWith("/"),
+    "封面必须是 URL 或以 / 开头的路径",
+  )
+  .optional()
+  .nullable()
+
 export const postStatusEnum = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"])
 export type PostStatus = z.infer<typeof postStatusEnum>
 
@@ -41,7 +52,7 @@ export const createPostSchema = z.object({
     .min(1)
     .max(120)
     .regex(slugRegex, "slug 只能含小写字母、数字、连字符"),
-  cover: z.string().url().optional().nullable(),
+  cover: coverFieldSchema,
   status: postStatusEnum.default("DRAFT"),
   publishedAt: z
     .union([z.string().datetime(), z.date()])
