@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { CoverUploader } from "./CoverUploader";
 import { TagsInput } from "./TagsInput";
 
 export type PostMeta = {
@@ -144,14 +145,10 @@ export function PostMetaSidebar({
       <Separator />
 
       <section className="space-y-2">
-        <Label htmlFor="post-cover">封面 URL</Label>
-        <Input
-          id="post-cover"
-          value={meta.cover}
-          autoComplete="off"
-          spellCheck={false}
-          onChange={(e) => update("cover", e.target.value)}
-          placeholder="https://..."
+        <Label>封面</Label>
+        <CoverUploader
+          value={meta.cover || null}
+          onChange={(url) => update("cover", url ?? "")}
         />
         <p className="text-xs text-[hsl(var(--muted))]">
           可选。出现在列表卡片和 OG 图。
