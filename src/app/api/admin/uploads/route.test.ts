@@ -1,9 +1,12 @@
 import { describe, it, expect, beforeEach, afterAll, vi } from "vitest"
+import "dotenv/config"
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }))
 
 import { auth } from "@/lib/auth"
 import { resetAll, ensureTestUser, testDb, disconnectTestDb } from "../../../../../tests/helpers/db"
+// after helpers/db (loads dotenv/config) so @/lib/db can resolve DATABASE_URL
+import * as mediaSvc from "@/lib/services/media"
 import { POST } from "./route"
 
 let authorId: string
@@ -98,5 +101,21 @@ describe("POST /api/admin/uploads", () => {
     expect(body.data).toHaveProperty("height")
     expect(body.data).toHaveProperty("createdAt")
     expect(typeof body.data.createdAt).toBe("string")
+  })
+
+  it("§5.5 error response contains error.{code,message} on failure", async () => {
+    vi.spyOn(mediaSvc, "createMedia").mockRejectedValueOnce(new Error("boom"))
+
+    const fd = new FormData()
+    fd.set("file", new File([REAL_PNG_1X1], "test.png", { type: "image/png" }))
+    const req = new Request("http://localhost/api/admin/uploads", {
+      method: "POST",
+      body: fd,
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(500)
+    const body = await res.json()
+    expect(body.error.code).toBe("INTERNAL_ERROR")
+    expect(typeof body.error.message).toBe("string")
   })
 })
