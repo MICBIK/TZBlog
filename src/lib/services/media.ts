@@ -82,7 +82,7 @@ export async function deleteMedia(
 
   await db.media.delete({ where: { id } })
 
-  await store.delete(row.key).catch((e) => {
-    console.warn(`[media] storage.delete(${row.key}) failed after DB delete:`, e)
-  })
+  // storage.delete 内部已对 ENOENT / NoSuchKey 幂等；真错误（EACCES、磁盘满、网络）
+  // 必须透传 —— 此时 DB 行已删，调用方拿到错误可去清理孤儿文件
+  await store.delete(row.key)
 }
