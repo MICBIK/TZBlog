@@ -76,14 +76,14 @@ describe("validateUpload", () => {
   it("rejects exe with image/png content-type via magic number", async () => {
     await expect(
       validateUpload({ body: EXE, contentType: "image/png", size: EXE.length }),
-    ).rejects.toMatchObject({ code: "VALIDATION" })
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" })
   })
 
   // 3.5 SVG rejected
   it("rejects image/svg+xml", async () => {
     await expect(
       validateUpload({ body: SVG, contentType: "image/svg+xml", size: SVG.length }),
-    ).rejects.toMatchObject({ code: "VALIDATION" })
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" })
   })
 
   // 3.6 4MB passes
@@ -98,5 +98,4 @@ describe("validateUpload", () => {
     await expect(
       validateUpload({ body: SIX_MB, contentType: "image/png", size: SIX_MB.length }),
     ).rejects.toMatchObject({ code: "PAYLOAD_TOO_LARGE" })
-  })
-})
+  })})

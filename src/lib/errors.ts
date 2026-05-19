@@ -1,5 +1,6 @@
 export type AppErrorCode =
   | "VALIDATION_ERROR"
+  | "PAYLOAD_TOO_LARGE"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
   | "NOT_FOUND"
@@ -29,6 +30,8 @@ export const errors = {
   notFound: (msg = "Resource not found") =>
     new AppError("NOT_FOUND", msg, 404),
   conflict: (msg: string) => new AppError("CONFLICT", msg, 409),
+  payloadTooLarge: (msg = "文件超过大小限制") =>
+    new AppError("PAYLOAD_TOO_LARGE", msg, 413),
   rateLimited: (msg = "Too many requests") =>
     new AppError("RATE_LIMITED", msg, 429),
   upstream: (msg: string) => new AppError("UPSTREAM_FAILURE", msg, 502),
