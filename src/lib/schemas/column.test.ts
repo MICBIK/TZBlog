@@ -69,7 +69,7 @@ describe("createColumnSchema", () => {
     expect(r.success).toBe(false)
   })
 
-  it("rejects cover when it is not a URL", () => {
+  it("rejects cover when it is neither a URL nor a / path", () => {
     const r = createColumnSchema.safeParse({
       ...validInput(),
       cover: "not-a-url",
@@ -91,6 +91,22 @@ describe("createColumnSchema", () => {
     })
     // Either schema treats null as nullable (preferred) or strips it; both
     // are acceptable so long as it doesn't reject.
+    expect(r.success).toBe(true)
+  })
+
+  it("accepts cover as a local /uploads path", () => {
+    const r = createColumnSchema.safeParse({
+      ...validInput(),
+      cover: "/uploads/2026/05/abcd1234.png",
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it("accepts cover as an empty string (clear)", () => {
+    const r = createColumnSchema.safeParse({
+      ...validInput(),
+      cover: "",
+    })
     expect(r.success).toBe(true)
   })
 })

@@ -85,7 +85,7 @@ describe("createPostSchema", () => {
     expect(r.success).toBe(false)
   })
 
-  it("rejects cover when it is not a URL", () => {
+  it("rejects cover when it is neither a URL nor a / path", () => {
     const r = createPostSchema.safeParse({
       ...validInput(),
       cover: "not-a-url",
@@ -105,6 +105,22 @@ describe("createPostSchema", () => {
     })
     // Either the schema treats null as nullable (preferred) or coerces it
     // away — both are acceptable so long as it doesn't reject.
+    expect(r.success).toBe(true)
+  })
+
+  it("accepts cover as a local /uploads path written by CoverUploader", () => {
+    const r = createPostSchema.safeParse({
+      ...validInput(),
+      cover: "/uploads/2026/05/abcd1234.png",
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it("accepts cover as an empty string (clear)", () => {
+    const r = createPostSchema.safeParse({
+      ...validInput(),
+      cover: "",
+    })
     expect(r.success).toBe(true)
   })
 
