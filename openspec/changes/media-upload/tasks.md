@@ -6,99 +6,101 @@
 
 ## 1. [P1] 准备工作
 
-- [ ] 1.1 加依赖 `file-type` (magic-number 嗅探) 与 `image-size` (读 width/height)：`pnpm add file-type image-size`
-- [ ] 1.2 改 `.gitignore` 排除 `public/uploads/*`，新增 `public/uploads/.gitkeep`
-- [ ] 1.3 `.env.example` 加 `STORAGE_DRIVER=local`、`LOCAL_UPLOAD_DIR=public/uploads`、`LOCAL_PUBLIC_URL_PREFIX=/uploads`
-- [ ] 1.4 admin 导航栏组件加"媒体"链接占位（路由暂时 404，§6.6 落地后自然解锁）
+- [x] 1.1 加依赖 `file-type` (magic-number 嗅探) 与 `image-size` (读 width/height)：`pnpm add file-type image-size`
+- [x] 1.2 改 `.gitignore` 排除 `public/uploads/*`，新增 `public/uploads/.gitkeep`
+- [x] 1.3 `.env.example` 加 `STORAGE_DRIVER=local`、`LOCAL_UPLOAD_DIR=public/uploads`、`LOCAL_PUBLIC_URL_PREFIX=/uploads`
+- [x] 1.4 admin 导航栏组件加"媒体"链接占位（路由暂时 404，§6.6 落地后自然解锁）
 
 ## 2. [P1] storage-driver
 
 ### 2.1 LocalDiskStorage.publicUrl
 
-- [ ] 2.1.a [TEST-RED] 写 `LocalDiskStorage.publicUrl joins prefix and key`，跑 `pnpm test src/lib/storage/local.test.ts` 粘 FAIL
-- [ ] 2.1.b [IMPL-GREEN] 实现 `LocalDiskStorage.publicUrl(key)` 拼字符串，跑测试粘 PASS
+- [x] 2.1.a [TEST-RED] 写 `LocalDiskStorage.publicUrl joins prefix and key`，跑 `pnpm test src/lib/storage/local.test.ts` 粘 FAIL
+- [x] 2.1.b [IMPL-GREEN] 实现 `LocalDiskStorage.publicUrl(key)` 拼字符串，跑测试粘 PASS
 
 ### 2.2 LocalDiskStorage.put 创建嵌套目录
 
-- [ ] 2.2.a [TEST-RED] 写 `put creates nested directories for dated keys`，粘 FAIL
-- [ ] 2.2.b [IMPL-GREEN] 实现 `LocalDiskStorage.put` 含 `mkdir -p` 与 `writeFile`，粘 PASS
+- [x] 2.2.a [TEST-RED] 写 `put creates nested directories for dated keys`，粘 FAIL
+- [x] 2.2.b [IMPL-GREEN] 实现 `LocalDiskStorage.put` 含 `mkdir -p` 与 `writeFile`，粘 PASS
 
 ### 2.3 LocalDiskStorage.put 返回完整 url
 
-- [ ] 2.3.a [TEST-RED] 写 `put returns full url with prefix`，粘 FAIL
-- [ ] 2.3.b [IMPL-GREEN] put 内部调 publicUrl 拼返回，粘 PASS
+- [x] 2.3.a [TEST-RED] 写 `put returns full url with prefix`，粘 FAIL
+- [x] 2.3.b [IMPL-GREEN] put 内部调 publicUrl 拼返回，粘 PASS
 
 ### 2.4 LocalDiskStorage.delete 幂等
 
-- [ ] 2.4.a [TEST-RED] 写 `delete on missing file is idempotent (no ENOENT)`，粘 FAIL
-- [ ] 2.4.b [IMPL-GREEN] delete 内 try/catch ENOENT 吞错，粘 PASS
+- [x] 2.4.a [TEST-RED] 写 `delete on missing file is idempotent (no ENOENT)`，粘 FAIL
+- [x] 2.4.b [IMPL-GREEN] delete 内 try/catch ENOENT 吞错，粘 PASS
 
 ### 2.5 S3Storage.publicUrl 处理 trailing slash
 
-- [ ] 2.5.a [TEST-RED] 写 `S3Storage.publicUrl normalises trailing slash`，粘 FAIL
-- [ ] 2.5.b [IMPL-GREEN] 实现 `S3Storage.publicUrl` 用 `replace(/\/$/, "")`，粘 PASS
+- [x] 2.5.a [TEST-RED] 写 `S3Storage.publicUrl normalises trailing slash`，粘 FAIL
+- [x] 2.5.b [IMPL-GREEN] 实现 `S3Storage.publicUrl` 用 `replace(/\/$/, "")`，粘 PASS
 
 ### 2.6 S3Storage.put
 
-- [ ] 2.6.a [TEST-RED] 写 `put calls minio putObject with bucket / key / contentType` (mock minio Client)，粘 FAIL
-- [ ] 2.6.b [IMPL-GREEN] 实现 `S3Storage.put` 调 minio putObject，粘 PASS
+- [x] 2.6.a [TEST-RED] 写 `put calls minio putObject with bucket / key / contentType` (mock minio Client)，粘 FAIL
+- [x] 2.6.b [IMPL-GREEN] 实现 `S3Storage.put` 调 minio putObject，粘 PASS
 
 ### 2.7 S3Storage.delete 吞 NoSuchKey
 
-- [ ] 2.7.a [TEST-RED] 写 `delete swallows minio NoSuchKey`，粘 FAIL
-- [ ] 2.7.b [IMPL-GREEN] delete 内 try/catch NoSuchKey，粘 PASS
+- [x] 2.7.a [TEST-RED] 写 `delete swallows minio NoSuchKey`，粘 FAIL
+- [x] 2.7.b [IMPL-GREEN] delete 内 try/catch NoSuchKey，粘 PASS
 
 ### 2.8 factory 默认 local
 
-- [ ] 2.8.a [TEST-RED] 写 `factory falls back to LocalDiskStorage when STORAGE_DRIVER unset`，粘 FAIL
-- [ ] 2.8.b [IMPL-GREEN] 重构 `src/lib/storage/index.ts` 暴露 storage 单例 + driver factory，粘 PASS
+- [x] 2.8.a [TEST-RED] 写 `factory falls back to LocalDiskStorage when STORAGE_DRIVER unset`，粘 FAIL
+- [x] 2.8.b [IMPL-GREEN] 重构 `src/lib/storage/index.ts` 暴露 storage 单例 + driver factory，粘 PASS
+  注：测试文件实际为 `src/lib/storage/index.test.ts`（与 storage/index.ts 同目录）。
 
 ### 2.9 factory 显式 s3
 
-- [ ] 2.9.a [TEST-RED] 写 `factory returns S3Storage when STORAGE_DRIVER=s3 with full env`，粘 FAIL
-- [ ] 2.9.b [IMPL-GREEN] factory 读 env 切到 S3Storage 实例，粘 PASS
+- [x] 2.9.a [TEST-RED] 写 `factory returns S3Storage when STORAGE_DRIVER=s3 with full env`，粘 FAIL
+- [x] 2.9.b [IMPL-GREEN] factory 读 env 切到 S3Storage 实例，粘 PASS
 
 ### 2.10 factory env 缺失 fail-fast
 
-- [ ] 2.10.a [TEST-RED] 写 `factory throws AppError listing missing env when s3 incomplete`，粘 FAIL
-- [ ] 2.10.b [IMPL-GREEN] factory env 缺失抛 AppError("MISSING_ENV", "缺少 S3_xxx"...)，粘 PASS
+- [x] 2.10.a [TEST-RED] 写 `factory throws AppError listing missing env when s3 incomplete`，粘 FAIL
+- [x] 2.10.b [IMPL-GREEN] factory env 缺失抛 `errors.missingEnv(missing)` → `AppError("MISSING_ENV", ..., 500)`，粘 PASS
 
 ## 3. [P1] media schemas (zod)
 
 ### 3.1 mediaFilterSchema 默认
 
-- [ ] 3.1.a [TEST-RED] 写 `mediaFilterSchema defaults page=1 pageSize=12`，粘 FAIL
-- [ ] 3.1.b [IMPL-GREEN] 新增 `src/lib/schemas/media.ts` 定义 mediaFilterSchema，粘 PASS
+- [x] 3.1.a [TEST-RED] 写 `mediaFilterSchema defaults page=1 pageSize=12`，粘 FAIL
+- [x] 3.1.b [IMPL-GREEN] 新增 `src/lib/schemas/media.ts` 定义 mediaFilterSchema，粘 PASS
 
 ### 3.2 mediaFilterSchema pageSize 上限
 
-- [ ] 3.2.a [TEST-RED] 写 `mediaFilterSchema rejects pageSize > 100`，粘 FAIL
-- [ ] 3.2.b [IMPL-GREEN] 加 `.max(100)`，粘 PASS
+- [x] 3.2.a [TEST-RED] 写 `mediaFilterSchema rejects pageSize > 100`，粘 FAIL
+- [x] 3.2.b [IMPL-GREEN] 加 `.max(100)`，粘 PASS
 
 ### 3.3 validateUpload 接受真实 PNG
 
-- [ ] 3.3.a [TEST-RED] 写 `validateUpload accepts real png`（用 fixture buffer），粘 FAIL
-- [ ] 3.3.b [IMPL-GREEN] 实现 `validateUpload(file: File)` 读前 12 字节 + Content-Type 白名单校验，粘 PASS
+- [x] 3.3.a [TEST-RED] 写 `validateUpload accepts real png`（用 fixture buffer），粘 FAIL
+- [x] 3.3.b [IMPL-GREEN] 实现 `validateUpload(file: File)` 读前 12 字节 + Content-Type 白名单校验，粘 PASS
 
 ### 3.4 validateUpload 拒改扩展名的 exe
 
-- [ ] 3.4.a [TEST-RED] 写 `validateUpload rejects exe with image/png content-type via magic number`，粘 FAIL
-- [ ] 3.4.b [IMPL-GREEN] 用 `file-type` 包嗅探，magic-number 与 content-type 任一不匹配则 fail，粘 PASS
+- [x] 3.4.a [TEST-RED] 写 `validateUpload rejects exe with image/png content-type via magic number`，粘 FAIL
+- [x] 3.4.b [IMPL-GREEN] 用手写 `sniffMime` magic-number 嗅探，与 content-type 任一不匹配则 fail，粘 PASS
+  注：未用 `file-type` 包（对 8 字节 fixture 不友好），手写 sniff 覆盖 PNG/JPEG/WEBP/GIF。
 
 ### 3.5 validateUpload 拒 SVG
 
-- [ ] 3.5.a [TEST-RED] 写 `validateUpload rejects image/svg+xml`，粘 FAIL
-- [ ] 3.5.b [IMPL-GREEN] 白名单仅 png/jpeg/webp/gif，SVG 自然落进 fail 分支，粘 PASS
+- [x] 3.5.a [TEST-RED] 写 `validateUpload rejects image/svg+xml`，粘 FAIL
+- [x] 3.5.b [IMPL-GREEN] 白名单仅 png/jpeg/webp/gif，SVG 自然落进 fail 分支，粘 PASS
 
 ### 3.6 validateUpload 接受 4MB
 
-- [ ] 3.6.a [TEST-RED] 写 `validateUpload accepts 4MB file`，粘 FAIL
-- [ ] 3.6.b [IMPL-GREEN] size guard ≤ 5 * 1024 * 1024，粘 PASS
+- [x] 3.6.a [TEST-RED] 写 `validateUpload accepts 4MB file`，粘 FAIL
+- [x] 3.6.b [IMPL-GREEN] size guard ≤ 5 * 1024 * 1024，粘 PASS
 
 ### 3.7 validateUpload 拒 6MB
 
-- [ ] 3.7.a [TEST-RED] 写 `validateUpload rejects 6MB file with PAYLOAD_TOO_LARGE`，粘 FAIL
-- [ ] 3.7.b [IMPL-GREEN] 超限抛 `AppError("PAYLOAD_TOO_LARGE", "文件超过 5MB 上限")`，粘 PASS
+- [x] 3.7.a [TEST-RED] 写 `validateUpload rejects 6MB file with PAYLOAD_TOO_LARGE`，粘 FAIL
+- [x] 3.7.b [IMPL-GREEN] 超限抛 `errors.payloadTooLarge(...)` → `AppError("PAYLOAD_TOO_LARGE", ..., 413)`，粘 PASS
 
 ## 4. [P1] media service (integration)
 
@@ -106,38 +108,48 @@
 
 ### 4.1 createMedia 端到端
 
-- [ ] 4.1.a [TEST-RED] 写 `createMedia writes file then DB row`（真实 DB + tmp upload dir），粘 FAIL
-- [ ] 4.1.b [IMPL-GREEN] 新增 `src/lib/services/media.ts` 的 `createMedia(input, uploadedBy)`，粘 PASS
+- [x] 4.1.a [TEST-RED] 写 `createMedia writes file then DB row`（真实 DB + tmp upload dir），粘 FAIL
+- [x] 4.1.b [IMPL-GREEN] 新增 `src/lib/services/media.ts` 的 `createMedia(input, uploadedBy)`，粘 PASS
 
 ### 4.2 createMedia 拼 key
 
-- [ ] 4.2.a [TEST-RED] 写 `createMedia assembles key as yyyy/MM/<cuid>.<ext>`，粘 FAIL
-- [ ] 4.2.b [IMPL-GREEN] 实现 key 拼接 + ext 推断（基于 MIME），粘 PASS
+- [x] 4.2.a [TEST-RED] 写 `createMedia assembles key as yyyy/MM/<cuid>.<ext>`，粘 FAIL
+- [x] 4.2.b [IMPL-GREEN] 实现 key 拼接 + ext 推断（基于 MIME），粘 PASS
 
 ### 4.3 createMedia 回滚物理文件
 
-- [ ] 4.3.a [TEST-RED] 写 `createMedia rolls back physical file when DB insert fails`（mock-prisma 强制 throw），粘 FAIL
-- [ ] 4.3.b [IMPL-GREEN] try/catch DB 写入失败时 storage.delete(key)，粘 PASS
+- [x] 4.3.a [TEST-RED] 写 `createMedia rolls back physical file when DB insert fails`（mock-prisma 强制 throw），粘 FAIL
+- [x] 4.3.b [IMPL-GREEN] try/catch DB 写入失败时 storage.delete(key)，粘 PASS
 
 ### 4.4 listMedia 分页
 
-- [ ] 4.4.a [TEST-RED] 写 `listMedia returns paginated rows sorted by createdAt desc`，粘 FAIL
-- [ ] 4.4.b [IMPL-GREEN] 实现 listMedia(filter)，粘 PASS
+- [x] 4.4.a [TEST-RED] 写 `listMedia returns paginated rows sorted by createdAt desc`，粘 FAIL
+- [x] 4.4.b [IMPL-GREEN] 实现 listMedia(filter)，粘 PASS
 
 ### 4.5 deleteMedia 删 DB + storage
 
-- [ ] 4.5.a [TEST-RED] 写 `deleteMedia removes row and calls storage.delete`，粘 FAIL
-- [ ] 4.5.b [IMPL-GREEN] 实现 deleteMedia(id) 先删 DB 再 storage.delete，粘 PASS
+- [x] 4.5.a [TEST-RED] 写 `deleteMedia removes row and calls storage.delete`，粘 FAIL
+- [x] 4.5.b [IMPL-GREEN] 实现 deleteMedia(id) 先删 DB 再 storage.delete，粘 PASS
 
 ### 4.6 deleteMedia NOT_FOUND
 
-- [ ] 4.6.a [TEST-RED] 写 `deleteMedia throws NOT_FOUND for missing id`，粘 FAIL
-- [ ] 4.6.b [IMPL-GREEN] 加 findUnique 前置检查，粘 PASS
+- [x] 4.6.a [TEST-RED] 写 `deleteMedia throws NOT_FOUND for missing id`，粘 FAIL
+- [x] 4.6.b [IMPL-GREEN] 加 findUnique 前置检查，粘 PASS
 
 ### 4.7 deleteMedia 文件已失踪
 
-- [ ] 4.7.a [TEST-RED] 写 `deleteMedia succeeds when file missing on disk`，粘 FAIL
-- [ ] 4.7.b [IMPL-GREEN] storage.delete 内部已幂等（§2.4 §2.7），deleteMedia 不额外处理，粘 PASS
+- [x] 4.7.a [TEST-RED] 写 `deleteMedia succeeds when file missing on disk`，粘 FAIL
+- [x] 4.7.b [IMPL-GREEN] storage.delete 内部已幂等（§2.4 §2.7），deleteMedia 不额外处理，粘 PASS
+
+### 4.8 createMedia 读 width/height（image-size 集成）
+
+- [x] 4.8.a [TEST-RED] 写 `createMedia stores width/height from real PNG` + `leaves null when buffer unreadable`，粘 FAIL
+- [x] 4.8.b [IMPL-GREEN] service 调 `imageSize(buffer)` best-effort 读尺寸（失败 → null，不阻断上传），粘 PASS
+
+### 4.9 deleteMedia 真错误透传（P0 silent-failure 修复）
+
+- [x] 4.9.a [TEST-RED] 写 `propagates non-idempotent storage errors (e.g. EACCES)`，粘 FAIL
+- [x] 4.9.b [IMPL-GREEN] 去除 deleteMedia 外层 `.catch(console.warn)` —— storage 内部已对 ENOENT/NoSuchKey 幂等，外层吞错违反 silent-failure 禁忌，粘 PASS
 
 ## 5. [P1] API routes
 
