@@ -52,13 +52,13 @@
   - [x] 端到端验证：DB 写入 → 公开页渲染 / 详情页 / 404 全通
 - [ ] 文章列表 + 筛选（专栏/状态/标签）
 - [ ] 文章编辑器页（接入 MarkdownEditorWithPreview + 元数据侧栏)
-- [/] **2026-05-19** 媒体上传（§1-§5 完成，§6 UI + §7 验收待做）
+- [/] **2026-05-19** 媒体上传（§1-§6 完成，§7 验收待做）
   - [x] §1 准备：依赖 `file-type` + `image-size`、`.gitignore` 排除 `/public/uploads/*`、env 加 STORAGE_DRIVER/LOCAL_UPLOAD_DIR/LOCAL_PUBLIC_URL_PREFIX、AdminSidebar 加占位
   - [x] §2 storage-driver：IStorage + LocalDiskStorage + S3Storage（DI 注入 Minio Client）+ env-driven factory + `errors.missingEnv()` fail-fast
   - [x] §3 schemas：mediaFilterSchema + validateUpload（手写 sniffMime 替代 file-type，覆盖 PNG/JPEG/WEBP/GIF）
   - [x] §4 service：createMedia / listMedia / deleteMedia（含 image-size best-effort + 真错误透传修复）
   - [x] §5 API routes：POST /api/admin/uploads + GET /api/admin/media + DELETE /api/admin/media/[id]，10 个微循环（5 个真 RED→GREEN、5 个 pre-covered 衍生）
-  - [ ] §6 UI 改造：CoverUploader / ImageUploadButton / 媒体库列表页
+  - [x] §6 UI 改造：CoverUploader / ImageUploadButton / MediaCard / MediaRowActions / 媒体库列表页 + §6.9 修复 cover schema 接受 `/uploads` 相对路径
   - [ ] §7 集成验收：build + manual smoke + STORAGE_DRIVER=s3 切换 + /opsx:verify + /opsx:archive
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 

@@ -218,6 +218,13 @@
 - [x] 6.7 实现 `src/app/(admin)/admin/media/page.tsx`（卡片网格 + 分页 + 空状态）→ smoke：seed 15 条 → 翻页 → hover 图标 → 复制 / 删除
 - [x] 6.8 admin 导航栏"媒体"链接由占位升级为实际路由
 
+### 6.9 审计后修复 — cover schema 接受本地 `/uploads` 路径
+
+> §6 落地后浏览器 smoke 暴露：保存文章时 `POST /api/admin/posts` 把刚上传的 `/uploads/...` 当 cover 时被 400，因为 `createPostSchema.cover = z.string().url()` 拒绝相对路径。同 schema 模式的 `createColumnSchema` 一并修复（兼容未来 column 也升级 CoverUploader）。
+
+- [x] 6.9.a [TEST-RED] 在 `src/lib/schemas/post.test.ts` + `column.test.ts` 加 4 个断言：cover 接受 `/uploads/...` 路径、接受空字符串清除；跑 `pnpm test src/lib/schemas/post.test.ts src/lib/schemas/column.test.ts` 粘 FAIL（`expected false to be true`，post 2 / column 2，commit `c219a86`）
+- [x] 6.9.b [IMPL-GREEN] 在两个 schema 文件抽 `coverFieldSchema = z.string().refine(v => v === "" || /^https?:\/\//.test(v) || v.startsWith("/"))`，替换原 `z.string().url()`；跑全量 PASS 163/164（commit `4f4545b`）
+
 ## 7. [P1] 集成验收
 
 - [ ] 7.1 跑 `pnpm typecheck && pnpm lint && pnpm test && pnpm build`，全绿

@@ -4,30 +4,31 @@
 
 ## 当前焦点
 
-**P1 - 媒体上传 §1-§5 已完成（2026-05-19）**：
+**P1 - 媒体上传 §1-§6 已完成（2026-05-19）**：
 - Storage 抽象：`src/lib/storage/{types,local,s3,index}.ts` — IStorage 接口 + LocalDiskStorage / S3Storage 双 driver + env-driven factory（默认 local，s3 缺 env 抛 `errors.missingEnv` AppError）
 - Schemas：`src/lib/schemas/media.ts` — `mediaFilterSchema`（page/pageSize 默认 1/12，上限 100）+ `validateUpload`（手写 sniffMime + 5MB 限制 + 4 格式白名单）
 - Service：`src/lib/services/media.ts` — createMedia（key 拼 `yyyy/MM/<hex>.<ext>`、image-size best-effort 读尺寸、DB 失败回滚物理文件）/ listMedia 分页 / deleteMedia（NOT_FOUND + 真错误透传）
 - API routes：`src/app/api/admin/uploads/route.ts`（POST 上传）+ `media/route.ts`（GET 分页列表）+ `media/[id]/route.ts`（DELETE）。统一走 `requireAdminSession` + `withErrorHandler` + `ok(data, meta)`
-- Tests：159/160 ✓（+33 from §1-§5）
-- 提案：`openspec/changes/media-upload/` 含 proposal/design/specs 三件 + test-map + tasks（§1-§5 全勾，§6-§7 未做）
+- UI 组件：`components/admin/posts/CoverUploader.tsx`（拖拽 + 点击 + 预览 + 清除，已替换 PostMetaSidebar 的 cover Input）/ `components/editor/ImageUploadButton.tsx`（Tiptap 工具栏，替换原 `window.prompt`）/ `components/admin/media/{MediaCard,MediaRowActions}.tsx` + `app/(admin)/admin/media/page.tsx`（卡片网格 + 分页 + Dialog 二次确认）
+- Client helper：`src/lib/media-client.ts` — `uploadMediaFile(file)` + `deleteMediaById(id)`，统一错误透传给 toast
+- Tests：163/164 ✓（+4 from §6.9 cover schema 修复）
+- 提案：`openspec/changes/media-upload/` 含 proposal/design/specs/test-map/tasks，§6.9 已补审计后修复条目
 
-**已修复的代码债（审计期间发现）**：
+**已修复的代码债（§6 审计期间）**：
+- `src/lib/schemas/post.ts:44` + `column.ts:37`：`cover: z.string().url()` 拒绝 `/uploads/...` 相对路径 → 抽 `coverFieldSchema` 用 refine 接受 空字符串 / 绝对 URL / `/`-rooted 路径。修复后浏览器 smoke 通过保存文章流程
+
+**§5 审计期遗留修复**：
 - §4 deleteMedia 外层 silent catch → 真错误透传（保留 storage 内部 ENOENT/NoSuchKey 幂等）
 - §2 storage factory 裸 `Error + code` → `errors.missingEnv()` AppError 统一形态
 - §4 createMedia 接 image-size 写入 width/height（best-effort，失败留 null）
 
 ## 下一步计划
 
-**P1 媒体上传 §6 UI 改造（manual smoke 验收）**：
-- `components/admin/posts/CoverUploader.tsx` — 替换 PostMetaSidebar 的 cover URL 手填 Input
-- `components/editor/ImageUploadButton.tsx` — Tiptap 工具栏图片上传，光标处插 `![](url)`
-- `components/admin/media/{MediaCard,MediaRowActions}.tsx` + `app/(admin)/admin/media/page.tsx` — 媒体库列表 + 删除（卡片网格 + 分页）
-- AdminSidebar "媒体" 链接已挂占位，§6 落地后自然解锁
-
-行为合同已由 §4/§5 测试覆盖；UI 组件本身走 manual smoke，不写 RTL。Commit 用 `feat(media):` 借助已有 `test(media):` 通过 husky hook。
-
-§7 集成验收（typecheck/lint/test/build 全绿 + manual smoke 上传四格式 + STORAGE_DRIVER=s3 切换验证 + `/opsx:verify` + `/opsx:archive`）。
+**P1 媒体上传 §7 集成验收**：
+- 7.1 `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 全绿（前三项已绿，pending build）
+- 7.2 manual smoke：png/jpg/webp/gif 各上传一张；svg / 6MB / exe-改 png 各被拒；删一张被 Post.cover 引用的图看破图
+- 7.3 切 `STORAGE_DRIVER=s3` 验 driver 切换零业务侧改动（验证 D1 决策）
+- 7.4-7.6 标记 P1-3 完成 + `/opsx:verify media-upload` + `/opsx:archive media-upload`
 
 ## 关键决策（已锁定）
 
