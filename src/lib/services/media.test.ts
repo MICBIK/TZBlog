@@ -112,4 +112,13 @@ describe("deleteMedia", () => {
     await expect(deleteMedia(created.id, testStorage)).resolves.toBeUndefined()
     expect(await testDb.media.findUnique({ where: { id: created.id } })).toBeNull()
   })
+
+  it("propagates non-idempotent storage errors (e.g. EACCES)", async () => {
+    const created = await createMedia(makeInput(), testStorage)
+    vi.spyOn(testStorage, "delete").mockRejectedValueOnce(
+      Object.assign(new Error("EACCES: permission denied"), { code: "EACCES" }),
+    )
+    await expect(deleteMedia(created.id, testStorage)).rejects.toThrow("EACCES")
+    vi.restoreAllMocks()
+  })
 })
