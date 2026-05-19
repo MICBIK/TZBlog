@@ -100,6 +100,8 @@ interface IStorage {
 
 **未来：** 如果做媒体复用统计，加 `MediaUsage` 关联表，不动 Post.cover。
 
+**审计补丁（2026-05-19，§6.9）：** D7 原先漏算了一个细节 — `createPostSchema.cover` 和 `createColumnSchema.cover` 都用了 `z.string().url()`，而 Zod 的 `.url()` 严格要求带 scheme 的绝对 URL，会拒掉 local-driver 写出来的 `/uploads/2026/05/<hex>.png` 相对路径。结果 §6 落地后浏览器 smoke 在保存文章时被 400 拦下，CoverUploader 的回填链路名义存在、实际断裂。修复：抽 `coverFieldSchema = z.string().refine(v => v === "" || /^https?:\/\//.test(v) || v.startsWith("/"))`，接受 三类合法值（空字符串清除 / 绝对 http(s) URL / `/`-rooted 路径）；同步改 column.ts 防止未来 column CoverUploader 改造时踩坑。这是对原 Non-Goals "不动 Post/Column schema" 的一处合理偏离 — bug 修复，而非设计变更。详见 tasks.md §6.9。
+
 ### D8: 图片宽高获取
 
 **选择：** server-side 用 `image-size` 包（同步 / 零依赖 / ~30KB），只读取头部字节解析 width/height

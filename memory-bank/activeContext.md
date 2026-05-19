@@ -17,6 +17,9 @@
 **已修复的代码债（§6 审计期间）**：
 - `src/lib/schemas/post.ts:44` + `column.ts:37`：`cover: z.string().url()` 拒绝 `/uploads/...` 相对路径 → 抽 `coverFieldSchema` 用 refine 接受 空字符串 / 绝对 URL / `/`-rooted 路径。修复后浏览器 smoke 通过保存文章流程
 
+**审计期间记录、未修复的范围外问题**：
+- 登录表单 zodResolver `z.string().email()` 拒 `.local` TLD（用户已通过 seed `admin@example.com` 绕过）→ 已落 `memory-bank/knownIssues.md` KI-001，不在 P1-3 媒体上传范围
+
 **§5 审计期遗留修复**：
 - §4 deleteMedia 外层 silent catch → 真错误透传（保留 storage 内部 ENOENT/NoSuchKey 幂等）
 - §2 storage factory 裸 `Error + code` → `errors.missingEnv()` AppError 统一形态
