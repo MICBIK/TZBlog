@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto"
 import type { Media } from "@prisma/client"
+import { imageSize } from "image-size"
 
 import { db } from "@/lib/db"
 import { storage as defaultStorage, type IStorage } from "@/lib/storage"
@@ -28,12 +29,26 @@ function buildKey(mimeType: string): string {
   return `${yyyy}/${mm}/${randomBytes(12).toString("hex")}.${ext}`
 }
 
+// best-effort：image-size 拒不合规 buffer 时尺寸留 null（Media.width/height 本就 optional）
+function readDimensions(buf: Buffer): { width: number | null; height: number | null } {
+  try {
+    const dim = imageSize(buf)
+    if (typeof dim.width === "number" && typeof dim.height === "number") {
+      return { width: dim.width, height: dim.height }
+    }
+  } catch {
+    // 解析失败 → 尺寸未知
+  }
+  return { width: null, height: null }
+}
+
 export async function createMedia(
   input: MediaCreateInput,
   store: IStorage = defaultStorage,
 ): Promise<Media> {
   const key = buildKey(input.mimeType)
   const { url } = await store.put({ key, body: input.body, contentType: input.mimeType })
+  const { width, height } = readDimensions(input.body)
 
   try {
     return await db.media.create({
@@ -43,6 +58,8 @@ export async function createMedia(
         filename: input.filename,
         mimeType: input.mimeType,
         size: input.size,
+        width,
+        height,
         uploadedBy: input.uploadedBy,
       },
     })
