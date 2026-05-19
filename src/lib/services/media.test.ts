@@ -15,6 +15,7 @@ let testStorage: LocalDiskStorage
 
 beforeEach(async () => {
   await resetAll()
+  await testDb.$executeRawUnsafe(`TRUNCATE TABLE "Media" RESTART IDENTITY CASCADE`)
   authorId = await ensureTestUser()
   tmpDir = await mkdtemp(join(tmpdir(), "tzblog-media-svc-"))
   testStorage = new LocalDiskStorage({ uploadDir: tmpDir, publicUrlPrefix: "/uploads" })
