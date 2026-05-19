@@ -73,4 +73,30 @@ describe("POST /api/admin/uploads", () => {
     expect(row).not.toBeNull()
     expect(row!.uploadedBy).toBe(authorId)
   })
+
+  it("§5.4 response contains data.{id,url,filename,mimeType,size,width,height,createdAt}", async () => {
+    const fd = new FormData()
+    fd.set("file", new File([REAL_PNG_1X1], "test.png", { type: "image/png" }))
+    const req = new Request("http://localhost/api/admin/uploads", {
+      method: "POST",
+      body: fd,
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.data).toHaveProperty("id")
+    expect(typeof body.data.id).toBe("string")
+    expect(body.data).toHaveProperty("url")
+    expect(typeof body.data.url).toBe("string")
+    expect(body.data).toHaveProperty("filename")
+    expect(typeof body.data.filename).toBe("string")
+    expect(body.data).toHaveProperty("mimeType")
+    expect(typeof body.data.mimeType).toBe("string")
+    expect(body.data).toHaveProperty("size")
+    expect(typeof body.data.size).toBe("number")
+    expect(body.data).toHaveProperty("width")
+    expect(body.data).toHaveProperty("height")
+    expect(body.data).toHaveProperty("createdAt")
+    expect(typeof body.data.createdAt).toBe("string")
+  })
 })
