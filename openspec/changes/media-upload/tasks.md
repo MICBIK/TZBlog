@@ -209,14 +209,14 @@
 
 > 行为合同已由 §4 §5 测试覆盖；UI 组件本身走 manual smoke：每条任务完成后人工验证一次。commit message 用 `feat(media): <task>`，借助 §3 起就有的 `test(media):` 通过 husky hook。
 
-- [ ] 6.1 实现 `components/admin/posts/CoverUploader.tsx`（拖拽 + 点击上传 + 预览 + 清除）→ smoke：新建文章页拖一张图，看 Post.cover 写入正确 url
-- [ ] 6.2 改 `components/admin/posts/PostMetaSidebar.tsx`：cover Input → CoverUploader
-- [ ] 6.3 实现 `components/editor/ImageUploadButton.tsx` → smoke：点击工具栏图标上传图，光标处插入 `![](url)`
-- [ ] 6.4 改 `components/editor/MarkdownEditorWithPreview.tsx` 工具栏加 ImageUploadButton
-- [ ] 6.5 实现 `components/admin/media/MediaCard.tsx`（hover 显示复制 URL / 删除两个图标按钮）
-- [ ] 6.6 实现 `components/admin/media/MediaRowActions.tsx`（confirm dialog + sonner toast）
-- [ ] 6.7 实现 `src/app/(admin)/admin/media/page.tsx`（卡片网格 + 分页 + 空状态）→ smoke：seed 15 条 → 翻页 → hover 图标 → 复制 / 删除
-- [ ] 6.8 admin 导航栏"媒体"链接由占位升级为实际路由
+- [x] 6.1 实现 `components/admin/posts/CoverUploader.tsx`（拖拽 + 点击上传 + 预览 + 清除）→ smoke：新建文章页拖一张图，看 Post.cover 写入正确 url
+- [x] 6.2 改 `components/admin/posts/PostMetaSidebar.tsx`：cover Input → CoverUploader
+- [x] 6.3 实现 `components/editor/ImageUploadButton.tsx` → smoke：点击工具栏图标上传图，光标处插入 `![](url)`
+- [x] 6.4 改 `components/editor/MarkdownEditorWithPreview.tsx` 工具栏加 ImageUploadButton
+- [x] 6.5 实现 `components/admin/media/MediaCard.tsx`（hover 显示复制 URL / 删除两个图标按钮）
+- [x] 6.6 实现 `components/admin/media/MediaRowActions.tsx`（confirm dialog + sonner toast）
+- [x] 6.7 实现 `src/app/(admin)/admin/media/page.tsx`（卡片网格 + 分页 + 空状态）→ smoke：seed 15 条 → 翻页 → hover 图标 → 复制 / 删除
+- [x] 6.8 admin 导航栏"媒体"链接由占位升级为实际路由
 
 ## 7. [P1] 集成验收
 
