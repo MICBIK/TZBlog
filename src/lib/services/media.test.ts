@@ -31,6 +31,12 @@ afterAll(async () => {
 
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
+// 1x1 红色 PNG（image-size 可识别）
+const REAL_PNG_1X1 = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+  "base64",
+)
+
 function makeInput(overrides: Partial<MediaCreateInput> = {}): MediaCreateInput {
   return {
     filename: "test.png",
@@ -70,6 +76,22 @@ describe("createMedia", () => {
     await expect(createMedia(makeInput(), testStorage)).rejects.toThrow("DB error")
     expect(deleteSpy).toHaveBeenCalledOnce()
     vi.restoreAllMocks()
+  })
+
+  // 4.8 image-size 集成
+  it("stores width/height from real PNG", async () => {
+    const result = await createMedia(
+      makeInput({ body: REAL_PNG_1X1, size: REAL_PNG_1X1.length }),
+      testStorage,
+    )
+    expect(result.width).toBe(1)
+    expect(result.height).toBe(1)
+  })
+
+  it("leaves width/height null when buffer is not a readable image", async () => {
+    const result = await createMedia(makeInput(), testStorage) // 8-byte stub
+    expect(result.width).toBeNull()
+    expect(result.height).toBeNull()
   })
 })
 
