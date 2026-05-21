@@ -2,18 +2,10 @@ import Link from "next/link";
 
 import { HeroEditorial } from "@/components/site/HeroEditorial";
 import { PostCard } from "@/components/site/PostCard";
+import { TechStack } from "@/components/site/TechStack";
 import { getCurrentLocale } from "@/lib/i18n";
 import { listPosts } from "@/lib/services/posts";
 import { getSiteStats } from "@/lib/services/stats";
-
-const techStack = [
-  "TypeScript",
-  "React",
-  "Next.js",
-  "Node.js",
-  "PostgreSQL",
-  "Docker",
-];
 
 export default async function HomePage() {
   const locale = getCurrentLocale();
@@ -27,22 +19,7 @@ export default async function HomePage() {
     <div className="space-y-24">
       <HeroEditorial />
 
-      {/* Tech Stack */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-semibold tracking-tight">Tech Stack</h2>
-        <div className="rounded-lg border border-border bg-muted/40 p-6 font-mono text-sm">
-          <p className="text-muted-fg">
-            <span className="text-accent">$</span> whoami
-          </p>
-          <ul className="mt-3 space-y-1">
-            {techStack.map((tech) => (
-              <li key={tech} className="text-fg">
-                <span className="text-muted-fg">-</span> {tech}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <TechStack />
 
       {/* Recent Posts */}
       <section className="space-y-6">
