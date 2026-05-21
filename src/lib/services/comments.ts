@@ -4,16 +4,18 @@ import { db } from "@/lib/db"
 import { errors } from "@/lib/errors"
 
 /**
- * Comment service — D3 评论流（PENDING 默认 + 1 层 reply）。
+ * Comment service — D3 评论流（PENDING 默认 + 1 层 reply）+ C 评论审核（admin 端 mutation/list）。
  *
- * createComment:
- *   - 验证 post 存在（NOT_FOUND on missing slug）
- *   - 若带 parentId：验证 parent 存在 + parent.parentId === null（深度 ≤ 1）
- *   - 事务内 insert PENDING + Post.commentCount + 1
+ * D3:
+ *   createComment / listApprovedComments
  *
- * listApprovedComments:
- *   - 仅 APPROVED；顶层按 createdAt asc；reply 嵌套在父下
- *   - depth-2 限制：reply 自身的 replies 永远为空数组
+ * C (admin-comments-review):
+ *   listCommentsForAdmin / updateCommentStatus / bulkUpdateCommentStatus / deleteComment
+ *
+ * 计数器规则（R6 修正 D3 R5）：
+ *   - createComment 不再 +1（PENDING 不计）
+ *   - updateCommentStatus：→ APPROVED +1；APPROVED → 其他 -1；其他间不变
+ *   - deleteComment：原 status === APPROVED 时 -1；含 cascade replies 的同样累计
  */
 
 export type CreateCommentInput = {
@@ -131,4 +133,67 @@ export async function listApprovedComments(
   }
 
   return tops
+}
+
+// ============================================================
+// C epic stubs — TDD RED 阶段占位，GREEN 阶段填充
+// ============================================================
+
+export type AdminCommentListItem = {
+  id: string
+  authorName: string
+  authorEmail: string
+  authorWebsite: string | null
+  content: string
+  status: CommentStatus
+  parentId: string | null
+  visitorHash: string
+  ipAddress: string
+  reviewedBy: string | null
+  reviewedAt: Date | null
+  createdAt: Date
+  post: { slug: string; title: string }
+}
+
+export type CommentAdminFilter = {
+  status?: CommentStatus
+  postId?: string
+  q?: string
+  page?: number
+  pageSize?: number
+}
+
+export async function listCommentsForAdmin(
+  filter: CommentAdminFilter,
+): Promise<{
+  items: AdminCommentListItem[]
+  total: number
+  page: number
+  pageSize: number
+}> {
+  throw new Error(`not implemented: listCommentsForAdmin(${JSON.stringify(filter)})`)
+}
+
+export async function updateCommentStatus(
+  id: string,
+  status: CommentStatus,
+  reviewerId: string,
+): Promise<{ id: string; status: CommentStatus }> {
+  throw new Error(
+    `not implemented: updateCommentStatus(${id}, ${status}, ${reviewerId})`,
+  )
+}
+
+export async function bulkUpdateCommentStatus(
+  ids: string[],
+  status: CommentStatus,
+  reviewerId: string,
+): Promise<{ updated: number }> {
+  throw new Error(
+    `not implemented: bulkUpdateCommentStatus([${ids.length}], ${status}, ${reviewerId})`,
+  )
+}
+
+export async function deleteComment(id: string): Promise<void> {
+  throw new Error(`not implemented: deleteComment(${id})`)
 }
