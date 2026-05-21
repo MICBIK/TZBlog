@@ -88,6 +88,10 @@
   - follow-up commits：`6634ee5 → 74a9382 → 58c5c90 → 323198d → 528e23a → ce1ad70 → e64bb3d → bcbcc27 → 113935b → 1986096 → 7fdff94 → b118fe1 → 4fe2f60 → 8e8040b → 488c887`
   - 审计后置 B1（YAGNI 清理）：`listAllPublishedSlugs` 删 dead locale 参数 — commits `4b8a4c5 → 330d343`
   - **SDD 追溯补齐**：原实现绕过 CLAUDE.md TDD 铁律 #2（无 test-map），审计后补齐 `.claude/sdd/seo-and-feed/{proposal.md, specs/{sitemap,feed,og-and-metadata,robots}/spec.md, test-map.md, tasks.md}`
+  - **X1/X2 build 阻塞解除**（2026-05-21）：
+    - X1 `.env.production AUTH_SECRET < 16 字符` — openssl 旋转到 43 字符 base64，备份 `.env.production.bak`
+    - X2 `.env.production DATABASE_URL host=postgres` 本地不可达 — 新建 `.env.production.local` 覆盖 DATABASE_URL=localhost:5433/tzblog（已 .gitignore），VPS 部署不受影响
+    - 全量验收：typecheck ✓ / lint ✓ / test ✓ 245 passed / build ✓ 22/22
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 
 ### P2 前台展示（Week 3-4）

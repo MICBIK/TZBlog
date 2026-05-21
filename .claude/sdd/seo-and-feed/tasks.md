@@ -128,8 +128,12 @@
 
 - [x] G.1 更新 `memory-bank/{progress,activeContext}.md`，knownIssues.md 登记 §F follow-up 缺口
 - [x] G.2 ha1den decision point：F 段 7 项缺口（H2/H3/H4 + M1-M4 + L）已按 A 方案合到当前 SDD，§F.8 B1 dead-param 审计后置修复已落地
-- [ ] G.3 `/opsx:verify seo-and-feed`（执行前确保 X1 `.env.production AUTH_SECRET` build 阻塞已修复）
-- [ ] G.4 `/opsx:archive seo-and-feed`
+- [x] G.3 build 阻塞解除：
+  - X1 `.env.production AUTH_SECRET < 16 字符` — `openssl rand -base64 32` 旋转到 43 字符 + sed in-place 替换（`.env.production.bak` 保留作回滚）
+  - X2 `.env.production DATABASE_URL host=postgres` 本地不可达 — 新建 `.env.production.local`（已 `.gitignore`，权限 600，仅覆盖 `DATABASE_URL=localhost:5433/tzblog`），Next.js 加载优先级最高，VPS 部署时该文件不存在不影响
+  - 三件套 + build 全绿：typecheck ✓ / lint ✓ / test ✓ 33 files / 245 passed / 1 skipped / build ✓ 22/22 静态页面
+  - 关键路由：`/sitemap.xml`、`/rss.xml`（都 Static + Revalidate 10m）、`/robots.txt`（Static）、`/posts/[slug]/opengraph-image`（Dynamic per-slug）
+- [ ] G.4 manual smoke + `/opsx:archive seo-and-feed`（ha1den 处理）
 
 ## Commit 历史快照
 
