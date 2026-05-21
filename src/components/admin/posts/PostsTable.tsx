@@ -9,6 +9,16 @@ import type { PostStatus } from "@prisma/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -56,6 +66,7 @@ export function PostsTable({
   const router = useRouter();
   const [items, setItems] = useState<PostListItem[]>(initialItems);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PostListItem | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const canPrev = page > 1;
@@ -67,11 +78,10 @@ export function PostsTable({
     router.refresh();
   }
 
-  async function handleDelete(post: PostListItem) {
-    const ok = window.confirm(
-      `确认删除文章「${post.title}」？该操作不可恢复。`,
-    );
-    if (!ok) return;
+  async function confirmDelete() {
+    const post = pendingDelete;
+    if (!post) return;
+    setPendingDelete(null);
 
     setPendingId(post.id);
     try {
@@ -205,7 +215,7 @@ export function PostsTable({
                         status: row.status,
                       }}
                       onPublishToggle={() => handlePublishToggle(row)}
-                      onDelete={() => handleDelete(row)}
+                      onDelete={() => setPendingDelete(row)}
                     />
                   </TableCell>
                 </TableRow>
@@ -238,6 +248,30 @@ export function PostsTable({
           </Button>
         </div>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除文章</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete
+                ? `将删除文章「${pendingDelete.title}」。级联删除：所有评论 / 点赞 / 浏览记录 / 标签关联 / 翻译。该操作不可恢复。`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
