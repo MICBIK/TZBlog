@@ -1,5 +1,7 @@
 import "dotenv/config";
 
+import { readFileSync } from "node:fs";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { PostWithRelations } from "@/lib/services/posts";
@@ -30,13 +32,17 @@ describe("post opengraph-image", () => {
       post({ slug: "hello", status: "PUBLISHED", title: "Hello World" }),
     );
 
-    const { default: OgImage } = await importOgImage();
-    const response = await OgImage({ params: { slug: "hello" } });
+    const { default: OgImage, size } = await importOgImage();
+    const response = await OgImage({
+      params: Promise.resolve({ slug: "hello" }),
+    });
 
+    expect(size).toEqual({ width: 1200, height: 630 });
     expect(mocks.getPostBySlug).toHaveBeenCalledWith("hello");
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("image/png");
+    expect((await response.arrayBuffer()).byteLength).toBeGreaterThan(1000);
   });
 
   it("calls notFound when post missing or not published", async () => {
@@ -54,16 +60,30 @@ describe("post opengraph-image", () => {
       mocks.getPostBySlug.mockResolvedValue(value);
 
       await expect(
-        OgImage({ params: { slug: value?.slug ?? "missing" } }),
+        OgImage({
+          params: Promise.resolve({ slug: value?.slug ?? "missing" }),
+        }),
       ).rejects.toThrow("NEXT_NOT_FOUND");
       expect(mocks.notFound).toHaveBeenCalledTimes(1);
     }
+  });
+
+  it("uses promise-only params prop shape", () => {
+    const source = readFileSync(
+      new URL("./opengraph-image.tsx", import.meta.url),
+      "utf8",
+    );
+
+    expect(source).toContain("params: Promise<{ slug: string }>");
+    expect(source).not.toContain(
+      "params: { slug: string } | Promise<{ slug: string }>",
+    );
   });
 });
 
 async function importOgImage(): Promise<{
   default: (props: {
-    params: { slug: string } | Promise<{ slug: string }>;
+    params: Promise<{ slug: string }>;
   }) => Promise<Response>;
   size: { width: 1200; height: 630 };
   contentType: "image/png";
@@ -71,7 +91,7 @@ async function importOgImage(): Promise<{
   const modulePath = "./" + "opengraph-image";
   return (await import(modulePath)) as {
     default: (props: {
-      params: { slug: string } | Promise<{ slug: string }>;
+      params: Promise<{ slug: string }>;
     }) => Promise<Response>;
     size: { width: 1200; height: 630 };
     contentType: "image/png";
