@@ -87,13 +87,18 @@ describe("<LikeButton /> SPEC-D3-L-8", () => {
   })
 
   it("rolls back to previous state + toast.error on POST failure", async () => {
-    mocks.fetch
-      .mockResolvedValueOnce(
-        makeResponse(200, { data: { liked: false, likeCount: 3 } }),
-      )
-      .mockResolvedValueOnce(
-        makeResponse(500, { error: { code: "INTERNAL_ERROR", message: "boom" } }),
-      )
+    // mount GET 立即 resolve
+    mocks.fetch.mockResolvedValueOnce(
+      makeResponse(200, { data: { liked: false, likeCount: 3 } }),
+    )
+
+    // POST 用 deferred Promise 控制时序，让乐观断言先成立再回滚
+    let resolvePost!: (value: Response) => void
+    mocks.fetch.mockReturnValueOnce(
+      new Promise<Response>((resolve) => {
+        resolvePost = resolve
+      }),
+    )
 
     render(<LikeButton slug="hello" initialLikeCount={3} />)
 
@@ -107,8 +112,16 @@ describe("<LikeButton /> SPEC-D3-L-8", () => {
 
     await userEvent.click(btn)
 
-    // 乐观先升到 4
+    // 乐观先升到 4（POST 还没 resolve）
     expect(btn).toHaveTextContent("4")
+    expect(btn).toHaveAttribute("aria-pressed", "true")
+
+    // 触发失败响应
+    resolvePost(
+      makeResponse(500, {
+        error: { code: "INTERNAL_ERROR", message: "boom" },
+      }),
+    )
 
     // POST 500 后回滚
     await waitFor(() => expect(btn).toHaveAttribute("aria-pressed", "false"))
