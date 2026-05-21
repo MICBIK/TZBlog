@@ -8,6 +8,8 @@ import { extractToc, renderMarkdown } from "@/lib/markdown";
 import { DEFAULT_LOCALE, getCurrentLocale, type Locale } from "@/lib/i18n";
 import { PostViewBeacon } from "@/components/site/PostViewBeacon";
 import { PostToc } from "@/components/site/PostToc";
+import { LikeButton } from "@/components/site/LikeButton";
+import { CommentSection } from "@/components/site/CommentSection";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -109,7 +111,7 @@ export default async function PostDetailPage({ params }: Props) {
           {tr.excerpt && <p className="text-lg text-muted-fg">{tr.excerpt}</p>}
           <div className="flex items-center gap-4 pt-2 font-mono text-xs text-muted-fg">
             <span>views {post.viewCount}</span>
-            <span>likes {post.likeCount}</span>
+            <LikeButton slug={post.slug} initialLikeCount={post.likeCount} />
             <span>comments {post.commentCount}</span>
           </div>
         </header>
@@ -132,6 +134,8 @@ export default async function PostDetailPage({ params }: Props) {
             ))}
           </footer>
         )}
+
+        <CommentSection postId={post.id} slug={post.slug} />
       </div>
 
       {headings.length > 0 && (
