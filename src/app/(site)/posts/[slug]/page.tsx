@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -63,6 +64,7 @@ export default async function PostDetailPage({ params }: Props) {
   const columnLabel = columnTr?.name ?? post.column?.slug ?? null;
 
   const tagSlugs = post.tags.map((t) => t.tag.slug);
+  const cover = post.cover?.trim();
 
   return (
     <article className="space-y-10">
@@ -76,6 +78,15 @@ export default async function PostDetailPage({ params }: Props) {
       </Link>
 
       <header className="space-y-4">
+        {cover ? (
+          <div className="aspect-[3/1] w-full overflow-hidden rounded-xl">
+            <img
+              src={cover}
+              alt={tr.title}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        ) : null}
         <div className="flex items-baseline gap-3 font-mono text-xs text-muted-fg">
           {post.publishedAt && (
             <time>{format(new Date(post.publishedAt), "yyyy-MM-dd")}</time>
