@@ -157,3 +157,9 @@
 | integration (`api/admin/uploads/route.test.ts` 等) | 同上 + Auth.js mock | 同上 |
 
 若任一 RED 测试因环境不可用无法跑（如 Postgres 未启），按 CLAUDE.md §6 必须先补 `[RED-补证]` 任务挂起当前微循环。
+
+## §7 验收补充测试
+
+| Spec-ID | Test Layer | Test File | Test Function | Notes |
+|---------|-----------|-----------|---------------|-------|
+| — | unit/component | `src/components/admin/media/MediaUploadDropzone.test.tsx` | `MediaUploadDropzone render / keyboard trigger / single file success / single file failure / multiple file upload / partial failures` | §7 验收新增组件，无对应 spec scenario |

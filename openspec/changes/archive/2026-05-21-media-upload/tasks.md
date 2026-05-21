@@ -227,9 +227,11 @@
 
 ## 7. [P1] 集成验收
 
-- [ ] 7.1 跑 `pnpm typecheck && pnpm lint && pnpm test && pnpm build`，全绿
-- [ ] 7.2 manual smoke：上传 png/jpg/webp/gif 各一张；上传 svg / 6MB / exe-改 png 各应被拒；删除一张已被某 Post.cover 引用的图，看 Post 详情页破图（接受的副作用）
-- [ ] 7.3 切 `STORAGE_DRIVER=s3` 跑一遍 docker:dev MinIO，验证 driver 切换无业务侧代码改动（验证 D1 决策）
-- [ ] 7.4 更新 `memory-bank/activeContext.md` + `progress.md`：标记 P1-3 媒体上传完成
-- [ ] 7.5 `/opsx:verify media-upload` 验证实现完整性
-- [ ] 7.6 `/opsx:archive media-upload`
+- [x] 7.1 跑 `pnpm typecheck && pnpm lint && pnpm test && pnpm build`，全绿
+- [x] 7.2 manual smoke：上传 png/jpg/webp/gif 各一张；上传 svg / 6MB / exe-改 png 各应被拒；删除一张已被某 Post.cover 引用的图，看 Post 详情页破图（接受的副作用）
+  - v2 smoke：B-H、L、M 已通过；K 因 `Post.cover` 前台未渲染跳过并登记 KI-002。
+- [x] 7.3 切 `STORAGE_DRIVER=s3` 跑一遍 docker:dev MinIO，验证 driver 切换无业务侧代码改动（验证 D1 决策）
+  - 跳过：用户要求后续手动验。
+- [x] 7.4 更新 `memory-bank/activeContext.md` + `progress.md`：标记 P1-3 媒体上传完成
+- [x] 7.5 `/opsx:verify media-upload` 验证实现完整性
+- [x] 7.6 `/opsx:archive media-upload`

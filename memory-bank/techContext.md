@@ -89,6 +89,7 @@ docker:prod   docker compose -f docker/docker-compose.yml up -d
 ## 测试栈
 
 - **单元 / 集成**：Vitest
+- **组件测试 infra**：Vitest 4 + jsdom + @testing-library/react + @testing-library/user-event（`src/**/*.test.tsx` / `tests/**/*.test.tsx` 自动用 jsdom project）
 - **组件**：React Testing Library + Vitest
 - **E2E**（V2）：Playwright；MVP 阶段先靠手测 + 关键路径单测
 
