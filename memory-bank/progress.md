@@ -105,7 +105,15 @@
   - SDD 全程严格 TDD（scaffold 1 + likes 6 + comments 12 = 19 commit），无追溯补齐，commits `843d2df → 4bf15a8`
   - 全量测试：41 files / 286 passed / 1 skipped（基线 245 → 286，+41 specs）；build 全绿（新增 `/api/posts/[slug]/like`、`/api/posts/[slug]/comments` 路由）
   - 决策记录：R1 永久 unique 点赞（schema 一致 / CLAUDE.md 24h 滚动放弃，待后续 sync 文档），R2 D3 含 1 层 reply（depth=2 限制），R3 honeypot 推 V2，R4 rate-limit 内存版（单 VPS 实例 OK），R5 commentCount 每次插入 +1（含 PENDING）
-- [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
+- [x] **2026-05-21** P1 收尾 — 评论审核页（admin-comments-review SDD）
+  - **schema migration**: `Comment.reviewedBy String?` + `reviewedAt DateTime?` + `@@index([status, createdAt])`，migration `20260521132300_add_comment_review_fields`；`reviewedBy` 为 String 兼容 ai-{model}-{ver} marker（R9 决策铺垫 AI 审核）
+  - **counter-fix** (R6 修正 D3 R5)：createComment 不再 commentCount +1；updateCommentStatus 流转 +/-（→ APPROVED +1 / APPROVED → 非 -1 / 其他 0）；deleteComment APPROVED -1（含 cascade replies 中 APPROVED count）
+  - **review-service** (SPEC-C-V-1..8)：listCommentsForAdmin / updateCommentStatus（含 reviewer 写入 + 幂等 R7）/ bulkUpdateCommentStatus（loop + NOT_FOUND skip）/ deleteComment（cascade replies + 计数器累计）
+  - **review-api** (SPEC-C-A-1..5)：3 路由 — `GET /api/admin/comments` (list+filter+pagination) / `PATCH/DELETE /api/admin/comments/[id]` / `POST /api/admin/comments/bulk`；全部 requireAdminSession，未登录 → 401
+  - **review-ui** (SPEC-C-U-1..3)：`/admin/comments` page 4 tab + URL sync + 5 路并行 status 计数；`CommentsTable` 含多选 checkbox + 4 行内动作（通过/垃圾/拒绝/删除）+ BulkActions 顶部条 + 乐观更新 + 失败回滚；AdminSidebar link 已 P0 落地（U-4 跳过）
+  - SDD 全程严格 TDD（scaffold 1 + 7 个 commit pair + 1 文档同步 = 15 commit），commits `6e81598 → 88cd33e`
+  - 决策：R6 仅计 APPROVED / R7 幂等 / R8 真删 / R9 记录 reviewer（兼容 ai-* prefix marker）
+  - 全量测试：47 files / 329 passed / 1 skipped（基线 286 → 329，+43 specs）；build 全绿（新增 `/admin/comments` + `/api/admin/comments/*` 含 `bulk`）
 
 ### P2 前台展示（Week 3-4）
 
