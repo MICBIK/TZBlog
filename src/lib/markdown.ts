@@ -28,6 +28,12 @@ interface HastRoot {
   children: HastNode[];
 }
 
+export type TocHeading = {
+  id: string;
+  text: string;
+  level: 2 | 3;
+};
+
 /**
  * Markdown rendering pipeline (per systemPatterns §13).
  *
@@ -142,6 +148,24 @@ function codeLanguage(node: HastElement): string | null {
   return null;
 }
 
+function rehypeCollectToc(headings: TocHeading[]) {
+  return (tree: HastRoot) => {
+    visit(tree as never, "element", (node: unknown) => {
+      const el = node as HastElement;
+      if (el.tagName !== "h2" && el.tagName !== "h3") return;
+
+      const id = el.properties?.id;
+      if (typeof id !== "string" || !id) return;
+
+      headings.push({
+        id,
+        text: hastToString(el as never),
+        level: el.tagName === "h2" ? 2 : 3,
+      });
+    });
+  };
+}
+
 // Sanitize schema extension — allow attributes shiki and our anchor plugins emit.
 // `clobberPrefix: ""` disables the default `user-content-` id rewrite so heading
 // slugs stay aligned with the autolink hrefs emitted by `rehype-autolink-headings`.
@@ -208,4 +232,20 @@ export async function renderMarkdown(
     .use(rehypeStringify)
     .process(content);
   return String(file);
+}
+
+export async function extractToc(content: string): Promise<TocHeading[]> {
+  if (!content) return [];
+
+  const headings: TocHeading[] = [];
+  await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype, { allowDangerousHtml: false })
+    .use(rehypeSlug)
+    .use(rehypeCollectToc, headings)
+    .use(rehypeStringify)
+    .process(content);
+
+  return headings;
 }
