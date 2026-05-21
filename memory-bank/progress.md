@@ -113,7 +113,16 @@
   - **review-ui** (SPEC-C-U-1..3)：`/admin/comments` page 4 tab + URL sync + 5 路并行 status 计数；`CommentsTable` 含多选 checkbox + 4 行内动作（通过/垃圾/拒绝/删除）+ BulkActions 顶部条 + 乐观更新 + 失败回滚；AdminSidebar link 已 P0 落地（U-4 跳过）
   - SDD 全程严格 TDD（scaffold 1 + 7 个 commit pair + 1 文档同步 = 15 commit），commits `6e81598 → 88cd33e`
   - 决策：R6 仅计 APPROVED / R7 幂等 / R8 真删 / R9 记录 reviewer（兼容 ai-* prefix marker）
-  - 全量测试：47 files / 329 passed / 1 skipped（基线 286 → 329，+43 specs）；build 全绿（新增 `/admin/comments` + `/api/admin/comments/*` 含 `bulk`）
+- [x] **2026-05-21** P2 收尾 — 自研 Analytics 客户端上报（analytics-beacon SDD）
+  - **trackPayloadSchema** (SPEC-A-S-1..3): path `/` 开头 max 500 + referrer optional url-or-empty
+  - **recordPageView** (SPEC-A-V-1..2): parseUserAgent → 拆 device/browser/os → db.pageView.create；空字符串 referrer 归 null
+  - **POST /api/track** (SPEC-A-A-1..5): DNT 守 → zod.parse → path 黑名单（/admin|/api|/login 正则）→ rate-limit `analytics:${vh}` 60/min → recordPageView → 204
+  - **<AnalyticsBeacon>** (SPEC-A-B-1..4): "use client" + usePathname + useEffect + 客户端 DNT/黑名单双守 + sendBeacon-or-fetch keepalive fallback；body `{path, referrer:document.referrer}`
+  - **layout 接入** (SPEC-A-L-1): SiteLayout 嵌入 `<AnalyticsBeacon />`，(site) 组所有页面自动上报，(admin) 组不在此 layout 不受影响
+  - 决策：R10 不上报 admin（双守）/ R11 不去重（rate-limit 兜底）/ R12 记 referrer（P4 仪表盘需流量来源）/ R14 尊重 DNT（合规预备）
+  - SDD `.claude/sdd/analytics-beacon/` 全程严格 TDD（scaffold 1 + 5 commit pair = 11 commit），commits `4900742 → ccab40e`
+  - 全量测试：52 files / 352 passed / 1 skipped（基线 329 → 352，+23 specs）；build 全绿（新增 `/api/track` 路由）
+  - 不动 Prisma schema（PageView 表 P0 已就绪）；待 P4 后台 Analytics 仪表盘消费数据
 
 ### P2 前台展示（Week 3-4）
 
