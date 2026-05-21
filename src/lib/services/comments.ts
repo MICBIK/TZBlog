@@ -1,7 +1,8 @@
-import type { CommentStatus } from "@prisma/client"
+import type { CommentStatus, Prisma } from "@prisma/client"
 
 import { db } from "@/lib/db"
-import { errors } from "@/lib/errors"
+import { AppError, errors } from "@/lib/errors"
+import { DEFAULT_LOCALE } from "@/lib/i18n"
 
 /**
  * Comment service — D3 评论流（PENDING 默认 + 1 层 reply）+ C 评论审核（admin 端 mutation/list）。
@@ -171,7 +172,64 @@ export async function listCommentsForAdmin(
   page: number
   pageSize: number
 }> {
-  throw new Error(`not implemented: listCommentsForAdmin(${JSON.stringify(filter)})`)
+  const where: Prisma.CommentWhereInput = {}
+  if (filter.status) where.status = filter.status
+  if (filter.postId) where.postId = filter.postId
+  if (filter.q && filter.q.trim()) {
+    const q = filter.q.trim()
+    where.OR = [
+      { authorName: { contains: q, mode: "insensitive" } },
+      { authorEmail: { contains: q, mode: "insensitive" } },
+      { content: { contains: q, mode: "insensitive" } },
+    ]
+  }
+
+  const page = filter.page ?? 1
+  const pageSize = filter.pageSize ?? 20
+  const skip = (page - 1) * pageSize
+
+  const [rows, total] = await Promise.all([
+    db.comment.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
+      include: {
+        post: {
+          select: {
+            slug: true,
+            translations: {
+              where: { locale: DEFAULT_LOCALE },
+              select: { title: true },
+              take: 1,
+            },
+          },
+        },
+      },
+    }),
+    db.comment.count({ where }),
+  ])
+
+  const items: AdminCommentListItem[] = rows.map((r) => ({
+    id: r.id,
+    authorName: r.authorName,
+    authorEmail: r.authorEmail,
+    authorWebsite: r.authorWebsite,
+    content: r.content,
+    status: r.status,
+    parentId: r.parentId,
+    visitorHash: r.visitorHash,
+    ipAddress: r.ipAddress,
+    reviewedBy: r.reviewedBy,
+    reviewedAt: r.reviewedAt,
+    createdAt: r.createdAt,
+    post: {
+      slug: r.post.slug,
+      title: r.post.translations[0]?.title ?? r.post.slug,
+    },
+  }))
+
+  return { items, total, page, pageSize }
 }
 
 export async function updateCommentStatus(
@@ -179,9 +237,40 @@ export async function updateCommentStatus(
   status: CommentStatus,
   reviewerId: string,
 ): Promise<{ id: string; status: CommentStatus }> {
-  throw new Error(
-    `not implemented: updateCommentStatus(${id}, ${status}, ${reviewerId})`,
-  )
+  const current = await db.comment.findUnique({
+    where: { id },
+    select: { id: true, status: true, postId: true },
+  })
+  if (!current) {
+    throw errors.notFound(`Comment ${id} not found`)
+  }
+
+  const wasApproved = current.status === "APPROVED"
+  const willBeApproved = status === "APPROVED"
+
+  let countDelta = 0
+  if (!wasApproved && willBeApproved) countDelta = 1
+  else if (wasApproved && !willBeApproved) countDelta = -1
+  // 同 status 或非 APPROVED 间切换：0（含幂等场景）
+
+  await db.$transaction(async (tx) => {
+    await tx.comment.update({
+      where: { id },
+      data: {
+        status,
+        reviewedBy: reviewerId,
+        reviewedAt: new Date(),
+      },
+    })
+    if (countDelta !== 0) {
+      await tx.post.update({
+        where: { id: current.postId },
+        data: { commentCount: { increment: countDelta } },
+      })
+    }
+  })
+
+  return { id, status }
 }
 
 export async function bulkUpdateCommentStatus(
@@ -189,11 +278,51 @@ export async function bulkUpdateCommentStatus(
   status: CommentStatus,
   reviewerId: string,
 ): Promise<{ updated: number }> {
-  throw new Error(
-    `not implemented: bulkUpdateCommentStatus([${ids.length}], ${status}, ${reviewerId})`,
-  )
+  let updated = 0
+  for (const id of ids) {
+    try {
+      await updateCommentStatus(id, status, reviewerId)
+      updated++
+    } catch (e) {
+      if (e instanceof AppError && e.code === "NOT_FOUND") continue
+      throw e
+    }
+  }
+  return { updated }
 }
 
 export async function deleteComment(id: string): Promise<void> {
-  throw new Error(`not implemented: deleteComment(${id})`)
+  const current = await db.comment.findUnique({
+    where: { id },
+    select: { id: true, status: true, postId: true, parentId: true },
+  })
+  if (!current) {
+    throw errors.notFound(`Comment ${id} not found`)
+  }
+
+  // 顶层评论被删时，先收集所有 APPROVED 子 reply 用于计数器调整
+  let approvedRepliesCount = 0
+  if (current.parentId === null) {
+    const replies = await db.comment.findMany({
+      where: { parentId: id },
+      select: { id: true, status: true },
+    })
+    approvedRepliesCount = replies.filter((r) => r.status === "APPROVED").length
+  }
+
+  const selfDelta = current.status === "APPROVED" ? -1 : 0
+  const totalDelta = selfDelta - approvedRepliesCount
+
+  await db.$transaction(async (tx) => {
+    if (current.parentId === null) {
+      await tx.comment.deleteMany({ where: { parentId: id } })
+    }
+    await tx.comment.delete({ where: { id } })
+    if (totalDelta !== 0) {
+      await tx.post.update({
+        where: { id: current.postId },
+        data: { commentCount: { increment: totalDelta } },
+      })
+    }
+  })
 }
