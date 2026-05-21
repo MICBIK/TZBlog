@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest"
 
-import { commentCreateSchema } from "./comment"
+import {
+  commentBulkUpdateSchema,
+  commentCreateSchema,
+  commentFilterSchema,
+  commentStatusUpdateSchema,
+} from "./comment"
 
 const validPayload = {
   authorName: "Alice",
@@ -102,6 +107,78 @@ describe("commentCreateSchema (SPEC-D3-C-6)", () => {
   it("rejects an empty-string parentId", () => {
     expect(() =>
       commentCreateSchema.parse({ ...validPayload, parentId: "" }),
+    ).toThrow()
+  })
+})
+
+describe("commentFilterSchema (admin)", () => {
+  it("accepts empty object (all fields optional)", () => {
+    expect(() => commentFilterSchema.parse({})).not.toThrow()
+  })
+
+  it("accepts valid status enum", () => {
+    expect(() => commentFilterSchema.parse({ status: "PENDING" })).not.toThrow()
+    expect(() => commentFilterSchema.parse({ status: "APPROVED" })).not.toThrow()
+    expect(() => commentFilterSchema.parse({ status: "SPAM" })).not.toThrow()
+    expect(() => commentFilterSchema.parse({ status: "REJECTED" })).not.toThrow()
+  })
+
+  it("rejects invalid status", () => {
+    expect(() =>
+      commentFilterSchema.parse({ status: "UNKNOWN" }),
+    ).toThrow()
+  })
+
+  it("coerces page / pageSize from string (URL searchParams)", () => {
+    const parsed = commentFilterSchema.parse({ page: "3", pageSize: "50" })
+    expect(parsed.page).toBe(3)
+    expect(parsed.pageSize).toBe(50)
+  })
+
+  it("rejects pageSize > 100", () => {
+    expect(() =>
+      commentFilterSchema.parse({ pageSize: 101 }),
+    ).toThrow()
+  })
+})
+
+describe("commentStatusUpdateSchema", () => {
+  it("accepts valid status enum", () => {
+    expect(() =>
+      commentStatusUpdateSchema.parse({ status: "APPROVED" }),
+    ).not.toThrow()
+  })
+
+  it("rejects missing status", () => {
+    expect(() => commentStatusUpdateSchema.parse({})).toThrow()
+  })
+
+  it("rejects invalid status", () => {
+    expect(() =>
+      commentStatusUpdateSchema.parse({ status: "RANDOM" }),
+    ).toThrow()
+  })
+})
+
+describe("commentBulkUpdateSchema", () => {
+  it("accepts ids + status", () => {
+    expect(() =>
+      commentBulkUpdateSchema.parse({
+        ids: ["a", "b", "c"],
+        status: "APPROVED",
+      }),
+    ).not.toThrow()
+  })
+
+  it("rejects empty ids array", () => {
+    expect(() =>
+      commentBulkUpdateSchema.parse({ ids: [], status: "APPROVED" }),
+    ).toThrow()
+  })
+
+  it("rejects ids containing empty strings", () => {
+    expect(() =>
+      commentBulkUpdateSchema.parse({ ids: ["a", ""], status: "APPROVED" }),
     ).toThrow()
   })
 })
