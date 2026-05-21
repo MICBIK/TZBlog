@@ -11,6 +11,16 @@ import { ColumnRowActions } from "@/components/admin/columns/ColumnRowActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -41,6 +51,7 @@ export function ColumnsTable({ initialColumns }: ColumnsTableProps) {
   const [editing, setEditing] = useState<ColumnRow | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ColumnRow | null>(null);
   const [reorderingId, setReorderingId] = useState<string | null>(null);
 
   const total = columns.length;
@@ -116,21 +127,18 @@ export function ColumnsTable({ initialColumns }: ColumnsTableProps) {
     }
   }
 
-  async function handleDelete(id: string) {
-    const target = columns.find((c) => c.id === id);
+  async function confirmDelete() {
+    const target = pendingDelete;
     if (!target) return;
-    const ok = window.confirm(
-      `确认删除专栏「${target.name}」？该操作不可恢复。`,
-    );
-    if (!ok) return;
+    setPendingDelete(null);
 
-    setPendingDeleteId(id);
+    setPendingDeleteId(target.id);
     try {
-      const res = await fetch(`/api/admin/columns/${id}`, {
+      const res = await fetch(`/api/admin/columns/${target.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setColumns((prev) => prev.filter((c) => c.id !== id));
+      setColumns((prev) => prev.filter((c) => c.id !== target.id));
       toast.success(`已删除「${target.name}」`);
     } catch (err) {
       toast.error("删除失败", {
@@ -245,7 +253,7 @@ export function ColumnsTable({ initialColumns }: ColumnsTableProps) {
                     <ColumnRowActions
                       column={row}
                       onEdit={() => openEdit(row)}
-                      onDelete={() => handleDelete(row.id)}
+                      onDelete={() => setPendingDelete(row)}
                     />
                   </TableCell>
                 </TableRow>
@@ -254,6 +262,29 @@ export function ColumnsTable({ initialColumns }: ColumnsTableProps) {
           </TableBody>
         </Table>
       </div>
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除专栏</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete
+                ? `将删除专栏「${pendingDelete.name}」。级联删除：所有翻译。如该专栏下有文章，删除可能失败（请先迁移文章）。该操作不可恢复。`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
