@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { env } from "@/lib/env";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,11 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(env.SITE_URL),
   title: {
     default: "TZBlog",
     template: "%s · TZBlog",
   },
   description: "个人技术博客",
+  openGraph: {
+    type: "website",
+    siteName: "TZBlog",
+    locale: "zh_CN",
+  },
 };
 
 export default function RootLayout({
