@@ -8,10 +8,26 @@ export default defineConfig({
     },
   },
   test: {
-    globals: false,
-    environment: "node",
-    include: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
-    // DB 测试共享同一个 Postgres，必须串行避免互相 truncate
-    fileParallelism: false,
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
+          // DB 测试共享同一个 Postgres，必须串行避免互相 truncate
+          fileParallelism: false,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "jsdom",
+          environment: "jsdom",
+          include: ["src/**/*.test.tsx", "tests/**/*.test.tsx"],
+          setupFiles: ["./vitest.setup.ts"],
+        },
+      },
+    ],
   },
 });
