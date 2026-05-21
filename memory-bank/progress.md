@@ -65,6 +65,13 @@
   - 组件 jsdom：`PostsTable.test.tsx` 8 specs（empty / Badge / 标签折叠 / 删除 confirm / 乐观发布 + 回滚 / 分页边界）+ `PostsFilters.test.tsx` 5 specs（debounce 300ms 边界 / Select push / page reset / 重置 / "全部"清空）+ `PostEditor.test.tsx` 7 specs（create+publish 跳转 / 草稿 PATCH / title 空 / slug 非法 / CONFLICT toast / 网络错误 / mode 差异）
   - commit：`6b0f5fb → 504e9ae → 47e44e7 → 9594770 → 004b576`
   - 全量测试：22 files / 213 passed / 1 skipped（基线 170 → 213，+43 specs）
+- [x] **2026-05-21** P2 前台展示 D1 — 首页接真实数据 + cover 渲染（KI-002 闭环）
+  - SPEC-D1-1 首页 Recent Posts：删 samplePosts，接入 `listPosts({page:1, pageSize:3, status:"PUBLISHED"})`，沿用 `/posts` 列表行风格（`flex-col divide-y`）保持视觉一致
+  - SPEC-D1-2 Site Stats：新 service `src/lib/services/stats.ts#getSiteStats`（`sum(viewCount where PUBLISHED)` / `count(post PUBLISHED)` / `count(comment APPROVED)`，Promise.all 并发）
+  - SPEC-D1-3 PostCard cover：左缩略图 `aspect-[16/10]`，cover 为 null 不渲染图位；原生 `<img>` + 行级 eslint-disable
+  - SPEC-D1-4 详情页 cover：title 上方 hero banner `aspect-[3/1]`，cover 为 null 不渲染
+  - 5 个 TDD 微循环 RED→GREEN（commits `667e0e8 → 7281ee8`）+ 1 个 chore 收尾
+  - 全量测试：26 files / 221 passed / 1 skipped（基线 213 → 221，+8 specs）
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 
 ### P2 前台展示（Week 3-4）
@@ -108,6 +115,7 @@
 
 - **2026-05-21** `pg@9` deprecation warning：测试运行时 `Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0`。当前 `pg@8.21`，不阻塞 test/build。pg 升 9 时一并改异步流。
 - **2026-05-21** `PostsFilters` URL canonical 行为不写 `page=1`（`filterToSearchParams` 显式跳过）。codex 补外围测试时按此实际行为测；如未来需要在 URL 显式带 `page=1`，需同步改实现 + 测试期望。
+- **2026-05-21** 前台 cover 用原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`，未走 `next/image`。原因：MinIO/local 双 storage driver 的 URL 模式动态切换，配 `next.config.ts#images.remotePatterns` 噪音大。未来如接 CDN 或决定单一 driver 时再换 `next/image`。
 
 
 ## 度量指标

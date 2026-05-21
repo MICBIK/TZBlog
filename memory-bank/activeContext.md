@@ -4,23 +4,22 @@
 
 ## 当前焦点
 
-**P1 后台 CMS 主干已完结（专栏 / 媒体 / 文章列表 / 文章编辑器），下一步：评论审核页 或 进入 P2 前台展示**
+**P1 主干 + P2-D1 已完结（首页真数据 + 文章 cover 渲染），下一步：D2 文章详情 TOC 侧栏，或 C 评论审核页 / E RSS·sitemap·OG**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
-- 文章列表 + 筛选 + 编辑器：代码在 P0 阶段已落，**2026-05-21** 补齐 5 个外围测试文件（API route + 关键组件 jsdom），全量 22 files / 213 passed / 1 skipped。
-- 全套自动验证（pnpm typecheck / lint / test）全绿。
-- 后台主功能链路完整：列表 → 筛选（q/status/column/tag）→ 新建 → 上传封面 → 草稿 → 发布 → 编辑 → 归档 → 删除。
+- 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
+- **2026-05-21** P2 前台 D1 完成：首页 `Recent Posts` 接 `listPosts` top 3、`Site Stats` 接 `getSiteStats` 真实计数、`PostCard` 与详情页 hero banner 渲染 `Post.cover`。**KI-002 闭环**。
+- 全套自动验证（pnpm typecheck / lint / test）全绿，基线 213 → 221，+8 specs。
 
 ## 下一步计划
 
-1. **C. 评论审核页**（P1 收尾）：pending/approved/spam/rejected 标签 + 批量操作。需先 seed 少量评论。
-2. **D. P2 前台展示开门**：首页 Hero + 最近文章 + 文章详情（Shiki + TOC），顺便闭环 KI-002（`Post.cover` 前台未渲染）。
+1. **D2. 文章详情 TOC 侧栏**（P2 推进）：基于 markdown.ts 已有的 rehype-slug + autolink-headings，加客户端 TOC 侧栏 + IntersectionObserver active 高亮。
+2. **C. 评论审核页**（P1 收尾）：pending/approved/spam/rejected 标签 + 批量操作。需先 seed 少量评论。
 3. **E. RSS / sitemap / OG 图生成**（P2 中期）。
 
 ## 待办池 / 已知问题
 
 - KI-001：登录表单 zodResolver 拒 `.local` TLD，见 `memory-bank/knownIssues.md`。
-- KI-002：`Post.cover` 前台未渲染，P2 前台展示阶段处理。
 
 ## 关键决策（已锁定）
 
