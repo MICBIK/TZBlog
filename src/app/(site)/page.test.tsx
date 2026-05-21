@@ -35,6 +35,30 @@ beforeEach(() => {
 });
 
 describe("HomePage recent posts", () => {
+  it("renders HeroEditorial and keeps downstream homepage sections", async () => {
+    render(await HomePage());
+
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: /Building things,\s*one commit\s*at a time\./,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { level: 1, name: "Hi, I'm HaiDen." }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Read Blog →" })).toHaveAttribute(
+      "href",
+      "/posts",
+    );
+    expect(screen.getByRole("link", { name: "About →" })).toHaveAttribute(
+      "href",
+      "/about",
+    );
+    expect(screen.getByRole("heading", { level: 2, name: "Recent Posts" })).toBeInTheDocument();
+    expect(screen.getByText("0 views · 0 posts · 0 comments")).toBeInTheDocument();
+  });
+
   it("renders top 3 published posts in publishedAt desc", async () => {
     mocks.listPosts.mockResolvedValue({
       items: [
