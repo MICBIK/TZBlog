@@ -5,6 +5,7 @@ import type { PostWithRelations } from "@/lib/services/posts";
 import PostDetailPage from "./page";
 
 const mocks = vi.hoisted(() => ({
+  extractToc: vi.fn(),
   getCurrentLocale: vi.fn(),
   getPostBySlug: vi.fn(),
   notFound: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock("@/lib/services/posts", () => ({
 }));
 
 vi.mock("@/lib/markdown", () => ({
+  extractToc: mocks.extractToc,
   renderMarkdown: mocks.renderMarkdown,
 }));
 
@@ -36,6 +38,7 @@ vi.mock("@/components/site/PostViewBeacon", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.extractToc.mockResolvedValue([]);
   mocks.getCurrentLocale.mockReturnValue("zh");
   mocks.renderMarkdown.mockResolvedValue("<p>正文</p>");
   mocks.notFound.mockImplementation(() => {
@@ -68,6 +71,26 @@ describe("PostDetailPage cover banner", () => {
     expect(
       screen.getByRole("heading", { name: "Detail Title" }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("PostDetailPage TOC", () => {
+  it("does not render toc aside when headings empty", async () => {
+    mocks.extractToc.mockResolvedValue([]);
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+
+    render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
+
+    expect(screen.queryByTestId("post-toc")).toBeNull();
+  });
+
+  it("renders toc aside when headings present", async () => {
+    mocks.extractToc.mockResolvedValue([{ id: "a", text: "A", level: 2 }]);
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+
+    render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
+
+    expect(screen.getByTestId("post-toc")).toBeInTheDocument();
   });
 });
 
