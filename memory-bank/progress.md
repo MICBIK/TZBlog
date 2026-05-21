@@ -123,6 +123,18 @@
   - SDD `.claude/sdd/analytics-beacon/` 全程严格 TDD（scaffold 1 + 5 commit pair = 11 commit），commits `4900742 → ccab40e`
   - 全量测试：52 files / 352 passed / 1 skipped（基线 329 → 352，+23 specs）；build 全绿（新增 `/api/track` 路由）
   - 不动 Prisma schema（PageView 表 P0 已就绪）；待 P4 后台 Analytics 仪表盘消费数据
+- [x] **2026-05-22** 4 SDD 归档后 manual smoke 复验（seo-and-feed / comments-and-likes / admin-comments-review / analytics-beacon）
+  - P2-E：sitemap / rss / robots / OG 图（1200×630 PNG）全通过
+  - P2-D3：LikeButton 幂等、评论默认 PENDING、PENDING 评论不显示前台
+  - P1-C：4 tab + 行内动作 + bulk + DELETE 全通过（行内删除 confirm 因 in-app browser 限制改用 API 旁路验证）
+  - P2-A：3 条 PageView 入库（/、post、column），/admin 无埋点，DNT 服务端路径 `curl -H "DNT: 1"` 返回 204 + 计数不变
+- [x] **2026-05-22** P1-C 后置 UX patch — 评论删除改 shadcn AlertDialog（解除 in-app browser confirm 限制）
+  - 装 shadcn `alert-dialog` 组件（`radix-ui@1.4.3` umbrella package）
+  - `CommentsTable.tsx`：`window.confirm` → 受控 `<AlertDialog open={pendingDelete !== null}>`；保留 cascade replies 提示
+  - 测试拆分：原单一 confirm 测试 → 3 个 dialog 交互断言（open / cancel / confirm）
+  - commits `c466f52` (test RED) → `593be7f` (feat GREEN, hook ✓ TDD 节奏)
+  - 全量测试：52 files / 354 passed / 1 skipped（基线 352 → 354，+2 specs）
+  - 已知重复：`PostsTable.tsx` / `ColumnsTable.tsx` 同款 `window.confirm` 模式未改（P3 follow-up，详见技术债务段）
 
 ### P2 前台展示（Week 3-4）
 
@@ -166,6 +178,7 @@
 - **2026-05-21** `pg@9` deprecation warning：测试运行时 `Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0`。当前 `pg@8.21`，不阻塞 test/build。pg 升 9 时一并改异步流。
 - **2026-05-21** `PostsFilters` URL canonical 行为不写 `page=1`（`filterToSearchParams` 显式跳过）。codex 补外围测试时按此实际行为测；如未来需要在 URL 显式带 `page=1`，需同步改实现 + 测试期望。
 - **2026-05-21** 前台 cover 用原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`，未走 `next/image`。原因：MinIO/local 双 storage driver 的 URL 模式动态切换，配 `next.config.ts#images.remotePatterns` 噪音大。未来如接 CDN 或决定单一 driver 时再换 `next/image`。
+- **2026-05-22** `PostsTable.tsx:71` + `ColumnsTable.tsx:122` 仍用 `window.confirm` 做删除确认。CommentsTable 已迁移到 shadcn AlertDialog（c466f52/593be7f），同款 UX 限制（in-app browser 无 native confirm 支持）需复用同样方案。P3 follow-up：两个表格各自一对 TDD 微循环改造，约 1h 工作量。
 
 
 ## 度量指标

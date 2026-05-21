@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**P2 完结（Analytics 客户端上报）+ P1 全部闭环。下一步：3-4 个 SDD archive / Hero design pass / P3 部署上线**
+**P1 + P2 全部闭环（含 4 SDD smoke 复验 + AlertDialog UX patch）。下一步：CLAUDE.md R1/R6 文档同步 / Hero design pass / P3 部署上线**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -14,16 +14,14 @@
 - **2026-05-21** P2-D3 完成（评论区 + 点赞）：永久 unique 点赞、评论默认 PENDING、1 层 reply、rate-limit 5min/3、详情页接入 `<LikeButton>` + `<CommentSection>`。SDD `.claude/sdd/comments-and-likes/` 全程严格 TDD 微循环。
 - **2026-05-21** P1 收尾完成（admin-comments-review）：schema 加 `reviewedBy`/`reviewedAt`（兼容 AI 审核 marker）；counter-fix 修正 D3 R5（commentCount 仅计 APPROVED）；admin /comments 4 tab + 多选 BulkActions + 行内动作；3 路由 + 5 endpoint；幂等 + cascade replies + 计数器累计。
 - **2026-05-21** P2 收尾完成（analytics-beacon）：trackPayloadSchema + recordPageView + POST /api/track（DNT 守 + 黑名单 + rate-limit 60/min）+ <AnalyticsBeacon> client + SiteLayout 接入；4 决策（R10/R11/R12/R14）全部选 A（推荐）。SDD `.claude/sdd/analytics-beacon/` 全程严格 TDD。
-- 全套自动验证（pnpm typecheck / lint / test / build）全绿，基线 245 → 286 → 329 → 352（D3 +41 + C +43 + Analytics +23）。
+- **2026-05-22** 4 SDD 归档后 manual smoke 复验全通过（含 1 个工具偏离 — admin 删除评论 confirm 改 API 旁路验证）。
+- **2026-05-22** P1-C 后置 UX patch：shadcn AlertDialog 替换 `CommentsTable.tsx` 的 `window.confirm`，解除 in-app browser 限制；测试 352 → 354（+2 net）；commits `c466f52 → 593be7f`。
+- 全套自动验证（pnpm typecheck / lint / test / build）全绿，基线 245 → 286 → 329 → 352 → 354。
 
 ## 下一步计划
 
-1. **manual smoke 4 SDD** + `/opsx:archive` 批量归档：
-   - `seo-and-feed` (P2-E)
-   - `comments-and-likes` (P2-D3)
-   - `admin-comments-review` (P1-C)
-   - `analytics-beacon` (P2-A)
-2. **CLAUDE.md 同步**：R1 / R6 决策落地后，"点赞 24h 滚动" 与 "commentCount 计 PENDING" 两行同步改为 "永久 unique" + "仅计 APPROVED"。
+1. **CLAUDE.md 同步**：R1 / R6 决策落地后，"点赞 24h 滚动" 与 "commentCount 计 PENDING" 两行同步改为 "永久 unique" + "仅计 APPROVED"。
+2. **PostsTable / ColumnsTable AlertDialog 复刻**（P3 follow-up，约 1h）：同款 `window.confirm` 模式仍存在两处，方案已在 CommentsTable 验证。
 3. **Hero / 营销页 design pass**：按 ECC design-quality 重做首页 Hero（editorial / bento / scrollytelling 方向待 ha1den 选）。
 4. **P3 部署上线**：Dockerfile + Caddyfile + VPS 配置 + 备份脚本，灰度上线。
 
