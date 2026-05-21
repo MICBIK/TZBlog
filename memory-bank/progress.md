@@ -76,8 +76,16 @@
   - SPEC-D2-1..3 `extractToc(content)`：复用 `unified + remarkParse + remarkGfm + remarkRehype + rehypeSlug` 管道前半段 + `rehypeCollectToc` hast visitor，提取 h2/h3 的 `{id, text, level}`，跳过 h1/h4+；id 与 `renderMarkdown` 输出**字面一致**（测试用 regex 守护）
   - SPEC-D2-4..6 `PostToc.tsx` 客户端组件：渲染 `<nav data-testid="post-toc">` + h3 缩进 `pl-3`；`IntersectionObserver` `rootMargin: "-80px 0px -50% 0px"` 高亮 active；unmount 时 `disconnect()`
   - SPEC-D2-7..8 详情页接入：grid 布局 `lg:grid-cols-[minmax(0,1fr)_200px] lg:gap-12`，右侧 `<aside className="hidden lg:block">` + `sticky top-24`；headings 为空时不渲染 aside
-  - 3 个 TDD 微循环 RED→GREEN（commits `e9a6287 → 6959d7f`）
+  - 3 个 TDD 微循环 RED→GREEN（commits `e9a6287 → 6959d7f`)
   - 全量测试：27 files / 229 passed / 1 skipped（基线 221 → 229，+8 specs）
+- [x] **2026-05-21** P2 前台展示 E — RSS / sitemap / OG 图（**实现绿，SDD 追溯性补齐**）
+  - SPEC-E-1..2 sitemap：`app/sitemap.ts` 静态路由 + 全部 PUBLISHED post (`lastModified=updatedAt`) + 全部 column；DRAFT/ARCHIVED 排除 + `src/lib/site-meta.ts` (`SITE_META` + `absoluteUrl`)
+  - SPEC-E-3..5 feed：`app/rss.xml/route.ts` RSS 2.0 channel + cap 20 (`publishedAt desc`) + XML 5 类预定义实体转义
+  - SPEC-E-6..7 og-and-metadata：`app/(site)/posts/[slug]/opengraph-image.tsx` 1200×630 image/png + missing/DRAFT/ARCHIVED → notFound
+  - 3 个 TDD 微循环 RED→GREEN（commits `b083b57 → 9321483 → b15e17e → 2741ce8 → 5f35aec → 4c89f10`)
+  - 全量测试：31 files / 237 passed / 1 skipped（基线 229 → 237，+8 specs）
+  - **审计后置 follow-up（合并前应处理）**：H2 sitemap pageSize 1000 绕过 zod max 100、H3 `robots.ts` 未实现、H4 `app/layout.tsx` 缺 `metadataBase`、M1 og-image Props union shim、M2 sitemap 未按 locale 过滤 column、M3 rss/sitemap 缺缓存、M4 RSS 缺 atom:link / lastBuildDate — 详见 `.claude/sdd/seo-and-feed/tasks.md §F`，登记为 KI-003
+  - **SDD 追溯补齐**：原实现绕过 CLAUDE.md TDD 铁律 #2（无 test-map），审计后补齐 `.claude/sdd/seo-and-feed/{proposal.md, specs/{sitemap,feed,og-and-metadata,robots}/spec.md, test-map.md, tasks.md}`
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 
 ### P2 前台展示（Week 3-4）
@@ -85,7 +93,7 @@
 - [ ] 首页 Hero + 技术栈 + 最近文章 + GitHub 数据
 - [ ] 文章详情（Shiki + TOC + 浏览上报 + 点赞 + 评论区）
 - [ ] 文章列表 + 专栏聚合页 + 标签页
-- [ ] RSS / sitemap / OG 图生成
+- [x] RSS / sitemap / OG 图生成（**E 主体已落 + SDD 追溯补齐；F 段 follow-up 待 ha1den 决策合并策略**）
 - [ ] 自研 Analytics 客户端上报（`<AnalyticsBeacon>`）
 
 ### P3 部署上线（Week 5）
