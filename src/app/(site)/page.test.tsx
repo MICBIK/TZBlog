@@ -94,6 +94,21 @@ describe("HomePage recent posts", () => {
   });
 });
 
+describe("HomePage site stats", () => {
+  it("renders site stats from getSiteStats", async () => {
+    mocks.getSiteStats.mockResolvedValue({
+      views: 60,
+      posts: 3,
+      comments: 2,
+    });
+
+    render(await HomePage());
+
+    expect(mocks.getSiteStats).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("60 views · 3 posts · 2 comments")).toBeInTheDocument();
+  });
+});
+
 function post(overrides: Partial<PostListItem>): PostListItem {
   return {
     id: "post-id",
