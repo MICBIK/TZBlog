@@ -63,27 +63,20 @@ export async function createComment(
     }
   }
 
-  const created = await db.$transaction(async (tx) => {
-    const c = await tx.comment.create({
-      data: {
-        postId: post.id,
-        authorName: input.authorName,
-        authorEmail: input.authorEmail,
-        authorWebsite: input.authorWebsite ?? null,
-        content: input.content,
-        status: "PENDING",
-        visitorHash: input.visitorHash,
-        ipAddress: input.ipAddress,
-        userAgent: input.userAgent,
-        parentId: input.parentId ?? null,
-      },
-      select: { id: true, status: true },
-    })
-    await tx.post.update({
-      where: { id: post.id },
-      data: { commentCount: { increment: 1 } },
-    })
-    return c
+  const created = await db.comment.create({
+    data: {
+      postId: post.id,
+      authorName: input.authorName,
+      authorEmail: input.authorEmail,
+      authorWebsite: input.authorWebsite ?? null,
+      content: input.content,
+      status: "PENDING",
+      visitorHash: input.visitorHash,
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+      parentId: input.parentId ?? null,
+    },
+    select: { id: true, status: true },
   })
 
   return created
