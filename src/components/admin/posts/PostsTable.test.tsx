@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,7 +7,6 @@ import type { PostListItem } from "@/lib/services/posts";
 import { PostsTable } from "./PostsTable";
 
 const mocks = vi.hoisted(() => ({
-  confirm: vi.fn(),
   fetch: vi.fn(),
   push: vi.fn(),
   refresh: vi.fn(),
@@ -55,9 +54,7 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal("confirm", mocks.confirm);
   vi.stubGlobal("fetch", mocks.fetch);
-  mocks.confirm.mockReturnValue(true);
   mocks.fetch.mockResolvedValue(okResponse());
 });
 
@@ -104,7 +101,7 @@ describe("PostsTable", () => {
     expect(screen.getByText("+2")).toBeInTheDocument();
   });
 
-  it("deletes a row after confirmation and a successful DELETE", async () => {
+  it("inline delete: click 删除 opens AlertDialog without firing DELETE", async () => {
     const user = userEvent.setup();
     renderTable({
       items: [
@@ -117,6 +114,47 @@ describe("PostsTable", () => {
     await user.click(screen.getByRole("button", { name: "操作 delete-me" }));
     await user.click(screen.getAllByRole("button", { name: "删除" })[0]);
 
+    const dialog = screen.getByRole("alertdialog");
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByText("确认删除文章")).toBeInTheDocument();
+    expect(within(dialog).getByText(/删掉我/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/评论/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/点赞/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/浏览记录/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/不可恢复/)).toBeInTheDocument();
+    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(screen.getByText("删掉我")).toBeInTheDocument();
+  });
+
+  it("inline delete: AlertDialog 取消 → no DELETE + row stays", async () => {
+    const user = userEvent.setup();
+    renderTable({
+      items: [post({ id: "cancel-delete", slug: "cancel-delete", title: "取消删除" })],
+    });
+
+    await user.click(screen.getByRole("button", { name: "操作 cancel-delete" }));
+    await user.click(screen.getByRole("button", { name: "删除" }));
+    await user.click(screen.getByRole("button", { name: /^取消$/ }));
+
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(screen.getByText("取消删除")).toBeInTheDocument();
+  });
+
+  it("inline delete: AlertDialog 确认删除 → DELETE + row removal + toast.success", async () => {
+    const user = userEvent.setup();
+    renderTable({
+      items: [
+        post({ id: "delete-me", slug: "delete-me", title: "删掉我" }),
+        post({ id: "keep-me", slug: "keep-me", title: "保留我" }),
+      ],
+      total: 2,
+    });
+
+    await user.click(screen.getByRole("button", { name: "操作 delete-me" }));
+    await user.click(screen.getAllByRole("button", { name: "删除" })[0]);
+    await user.click(screen.getByRole("button", { name: /^确认删除$/ }));
+
     await waitFor(() => {
       expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/posts/delete-me", {
         method: "DELETE",
@@ -125,19 +163,6 @@ describe("PostsTable", () => {
     expect(screen.queryByText("删掉我")).not.toBeInTheDocument();
     expect(screen.getByText("保留我")).toBeInTheDocument();
     expect(mocks.toastSuccess).toHaveBeenCalledWith("已删除「删掉我」");
-  });
-
-  it("does not call DELETE when confirmation is cancelled", async () => {
-    const user = userEvent.setup();
-    mocks.confirm.mockReturnValue(false);
-    renderTable({
-      items: [post({ id: "cancel-delete", slug: "cancel-delete" })],
-    });
-
-    await user.click(screen.getByRole("button", { name: "操作 cancel-delete" }));
-    await user.click(screen.getByRole("button", { name: "删除" }));
-
-    expect(mocks.fetch).not.toHaveBeenCalled();
   });
 
   it("optimistically updates DRAFT to PUBLISHED and keeps it after PATCH succeeds", async () => {
