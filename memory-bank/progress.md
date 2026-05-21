@@ -72,6 +72,12 @@
   - SPEC-D1-4 详情页 cover：title 上方 hero banner `aspect-[3/1]`，cover 为 null 不渲染
   - 5 个 TDD 微循环 RED→GREEN（commits `667e0e8 → 7281ee8`）+ 1 个 chore 收尾
   - 全量测试：26 files / 221 passed / 1 skipped（基线 213 → 221，+8 specs）
+- [x] **2026-05-21** P2 前台展示 D2 — 文章详情 TOC 侧栏
+  - SPEC-D2-1..3 `extractToc(content)`：复用 `unified + remarkParse + remarkGfm + remarkRehype + rehypeSlug` 管道前半段 + `rehypeCollectToc` hast visitor，提取 h2/h3 的 `{id, text, level}`，跳过 h1/h4+；id 与 `renderMarkdown` 输出**字面一致**（测试用 regex 守护）
+  - SPEC-D2-4..6 `PostToc.tsx` 客户端组件：渲染 `<nav data-testid="post-toc">` + h3 缩进 `pl-3`；`IntersectionObserver` `rootMargin: "-80px 0px -50% 0px"` 高亮 active；unmount 时 `disconnect()`
+  - SPEC-D2-7..8 详情页接入：grid 布局 `lg:grid-cols-[minmax(0,1fr)_200px] lg:gap-12`，右侧 `<aside className="hidden lg:block">` + `sticky top-24`；headings 为空时不渲染 aside
+  - 3 个 TDD 微循环 RED→GREEN（commits `e9a6287 → 6959d7f`）
+  - 全量测试：27 files / 229 passed / 1 skipped（基线 221 → 229，+8 specs）
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 
 ### P2 前台展示（Week 3-4）

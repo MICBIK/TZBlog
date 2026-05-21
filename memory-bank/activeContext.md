@@ -4,18 +4,19 @@
 
 ## 当前焦点
 
-**P1 主干 + P2-D1 已完结（首页真数据 + 文章 cover 渲染），下一步：D2 文章详情 TOC 侧栏，或 C 评论审核页 / E RSS·sitemap·OG**
+**P1 主干 + P2-D1/D2 已完结（首页真数据 + 文章 cover + 详情页 TOC 侧栏），下一步：E RSS/sitemap/OG 图，或 C 评论审核页 / D3 评论区+点赞**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
 - **2026-05-21** P2 前台 D1 完成：首页 `Recent Posts` 接 `listPosts` top 3、`Site Stats` 接 `getSiteStats` 真实计数、`PostCard` 与详情页 hero banner 渲染 `Post.cover`。**KI-002 闭环**。
-- 全套自动验证（pnpm typecheck / lint / test）全绿，基线 213 → 221，+8 specs。
+- **2026-05-21** P2 前台 D2 完成：`extractToc` 复用 unified+rehypeSlug 管道，与 `renderMarkdown` 字面一致；`PostToc` 客户端组件用 IntersectionObserver 高亮 active；详情页 grid 布局 + `hidden lg:block` 右侧 sticky aside。
+- 全套自动验证（pnpm typecheck / lint / test）全绿，基线 213 → 229，+16 specs。
 
 ## 下一步计划
 
-1. **D2. 文章详情 TOC 侧栏**（P2 推进）：基于 markdown.ts 已有的 rehype-slug + autolink-headings，加客户端 TOC 侧栏 + IntersectionObserver active 高亮。
+1. **E. RSS / sitemap / OG 图**（P2 中期）：`app/rss.xml/route.ts` + `app/sitemap.ts`（Next.js 内置 MetadataRoute）+ `app/(site)/posts/[slug]/opengraph-image.tsx`（ImageResponse）。
 2. **C. 评论审核页**（P1 收尾）：pending/approved/spam/rejected 标签 + 批量操作。需先 seed 少量评论。
-3. **E. RSS / sitemap / OG 图生成**（P2 中期）。
+3. **D3. 评论区 + 点赞**（P2 前台交互）：visitorHash 去重，匿名提交，5min/3 评论 rate limit。需动 schema 或复用现有 `Comment` 表。
 
 ## 待办池 / 已知问题
 
