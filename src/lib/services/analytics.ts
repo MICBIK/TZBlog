@@ -1,7 +1,15 @@
+import { db } from "@/lib/db"
+import { parseUserAgent } from "@/lib/visitor"
+
 /**
  * Analytics service — PageView 入库。
  *
- * Stub: TDD RED 阶段，签名占位让 typecheck 通过；运行时 throw。
+ * recordPageView(input):
+ *   - 用 parseUserAgent(ua) 拆 device / browser / os
+ *   - insert PageView 行
+ *   - 不去重（R11 决策），rate-limit 在 API 层兜底
+ *
+ * referrer 处理：空字符串与省略都归一化为 null（与 form 层 union 对齐）
  */
 
 export interface RecordPageViewInput {
@@ -12,5 +20,16 @@ export interface RecordPageViewInput {
 }
 
 export async function recordPageView(input: RecordPageViewInput): Promise<void> {
-  throw new Error(`not implemented: recordPageView(${input.path}, ${input.visitorHash})`)
+  const { device, browser, os } = parseUserAgent(input.ua)
+  await db.pageView.create({
+    data: {
+      path: input.path,
+      visitorHash: input.visitorHash,
+      userAgent: input.ua,
+      device,
+      browser,
+      os,
+      referrer: input.referrer ? input.referrer : null,
+    },
+  })
 }
