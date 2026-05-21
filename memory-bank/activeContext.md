@@ -4,29 +4,25 @@
 
 ## 当前焦点
 
-**P2-E（RSS / sitemap / OG）实现已落 + SDD 追溯补齐 — 等 ha1den 决策审计 follow-up 合并策略，之后进 C/D3**
+**P2-E 已完结（RSS / sitemap / OG + §F 审计 follow-up），下一步 C 评论审核页 / D3 评论区 + 点赞**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
 - **2026-05-21** P2 前台 D1 完成：首页 `Recent Posts` 接 `listPosts` top 3、`Site Stats` 接 `getSiteStats` 真实计数、`PostCard` 与详情页 hero banner 渲染 `Post.cover`。**KI-002 闭环**。
 - **2026-05-21** P2 前台 D2 完成：`extractToc` 复用 unified+rehypeSlug 管道，与 `renderMarkdown` 字面一致；`PostToc` 客户端组件用 IntersectionObserver 高亮 active；详情页 grid 布局 + `hidden lg:block` 右侧 sticky aside。
-- **2026-05-21** P2 前台 E 主体完成：`app/sitemap.ts` + `app/rss.xml/route.ts` + `app/(site)/posts/[slug]/opengraph-image.tsx` + `src/lib/site-meta.ts`，3 个 TDD 微循环 RED→GREEN（commits `b083b57 → 4c89f10`）。
-- **2026-05-21** P2-E SDD 追溯补齐：先前实现绕过 CLAUDE.md TDD 铁律 #2，审计后补 `.claude/sdd/seo-and-feed/{proposal, specs/{sitemap,feed,og-and-metadata,robots}/spec, test-map, tasks}.md`。robots capability 标 PLANNED 等 follow-up 落地。
-- 全套自动验证（pnpm typecheck / lint / test）全绿，基线 229 → 237，+8 specs。
+- **2026-05-21** P2 前台 E 完成：`sitemap.xml`、`robots.txt`、`rss.xml`、post OG image、root `metadataBase`、`SITE_META`，并完成 §F 审计 follow-up（KI-003 RESOLVED）。
+- **2026-05-21** P2-E SDD 追溯补齐：先前实现绕过 CLAUDE.md TDD 铁律 #2，审计后补 `.claude/sdd/seo-and-feed/{proposal, specs/{sitemap,feed,og-and-metadata,robots}/spec, test-map, tasks}.md`，本轮 §F follow-up 已在同一 SDD 内闭环。
+- 全套自动验证（pnpm typecheck / lint / test）全绿，基线 229 → 245，+16 specs。
 
 ## 下一步计划
 
-1. **🎯 ha1den decision point — P2-E 审计 follow-up 合并策略**（卡在这里）：
-   - 选 A：F 段 7 项缺口（H2/H3/H4 + M1-M4 + L）合到当前 SDD 一起合并 main（推荐，避免 H 级 SEO bug 流入 main）
-   - 选 B：F 段独立成新 SDD `seo-and-feed-followup`，当前 SDD 先 archive 走起
-   - 选 C：F 段直接放进 KI-003 待办池，先合 main
-2. **C. 评论审核页**（P1 收尾）：pending/approved/spam/rejected 标签 + 批量操作。需先 seed 少量评论。
-3. **D3. 评论区 + 点赞**（P2 前台交互）：visitorHash 去重，匿名提交，5min/3 评论 rate limit。需动 schema 或复用现有 `Comment` 表。
+1. **C. 评论审核页**（P1 收尾）：pending/approved/spam/rejected 标签 + 批量操作。需先 seed 少量评论。
+2. **D3. 评论区 + 点赞**（P2 前台交互）：visitorHash 去重，匿名提交，5min/3 评论 rate limit。需动 schema 或复用现有 `Comment` 表。
+3. **P2-E manual smoke / archive**：访问 `/sitemap.xml`、`/robots.txt`、`/rss.xml`、`/posts/<slug>/opengraph-image` 后再跑 verify/archive。
 
 ## 待办池 / 已知问题
 
 - KI-001：登录表单 zodResolver 拒 `.local` TLD，见 `memory-bank/knownIssues.md`。
-- **KI-003：SEO/feed 套件审计 follow-up（H2/H3/H4 + M1-M4 + L）**，详见 `memory-bank/knownIssues.md` + `.claude/sdd/seo-and-feed/tasks.md §F`。
 
 ## 关键决策（已锁定）
 

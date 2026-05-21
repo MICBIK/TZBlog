@@ -68,53 +68,53 @@
 
 > 当前 `sitemap.ts:10` 写 `pageSize: 1000` 绕过 `postFilterSchema.pageSize.max(100)`；文章数 > 1000 时静默截断。
 
-- [ ] F.1.a [TEST-RED] 在 `src/lib/services/posts.test.ts` 写 `listAllPublishedSlugs returns every PUBLISHED post across pages`（seed 250 条 PUBLISHED post），跑测试粘 FAIL
-- [ ] F.1.b [IMPL-GREEN] 在 `src/lib/services/posts.ts` 新增 `listAllPublishedSlugs(locale): Promise<{ slug: string; updatedAt: Date }[]>`：内部循环 `findMany` 分页拉取（pageSize=100），粘 PASS
-- [ ] F.1.c [TEST-RED] 在 `src/app/sitemap.test.ts` 补 `walks pagination for >1000 PUBLISHED posts`（seed 1050 条），粘 FAIL
-- [ ] F.1.d [IMPL-GREEN] 把 `sitemap.ts` 中 listPosts 调用改为 `listAllPublishedSlugs(DEFAULT_LOCALE)`，粘 PASS
+- [x] F.1.a [TEST-RED] 在 `src/lib/services/posts.test.ts` 写 `listAllPublishedSlugs returns every PUBLISHED post across pages`（seed 250 条 PUBLISHED post），跑测试粘 FAIL（commit `e64bb3d`）
+- [x] F.1.b [IMPL-GREEN] 在 `src/lib/services/posts.ts` 新增 `listAllPublishedSlugs(locale): Promise<{ slug: string; updatedAt: Date }[]>`：内部循环 `findMany` 分页拉取（pageSize=100），粘 PASS（commit `bcbcc27`）
+- [x] F.1.c [TEST-RED] 在 `src/app/sitemap.test.ts` 补 `walks pagination for >1000 PUBLISHED posts`（seed 1050 条），粘 FAIL（commit `113935b`）
+- [x] F.1.d [IMPL-GREEN] 把 `sitemap.ts` 中 listPosts 调用改为 `listAllPublishedSlugs(DEFAULT_LOCALE)`，粘 PASS（commit `1986096`）
 
 ### F.2 [MEDIUM M2] sitemap 按 locale 过滤 column
 
 > 当前 `listColumns()` 不过 locale，列出无 zh 翻译的 column 会在前台 404。
 
-- [ ] F.2.a [TEST-RED] 在 `src/app/sitemap.test.ts` 加 `excludes columns without DEFAULT_LOCALE translation`（seed 2 column，一个无 zh 翻译），粘 FAIL
-- [ ] F.2.b [IMPL-GREEN] 把 `sitemap.ts` 改用 `listColumnsForLocale(DEFAULT_LOCALE)`，粘 PASS
+- [x] F.2.a [TEST-RED] 在 `src/app/sitemap.test.ts` 加 `excludes columns without DEFAULT_LOCALE translation`（seed 2 column，一个无 zh 翻译），粘 FAIL（commit `7fdff94`）
+- [x] F.2.b [IMPL-GREEN] 把 `sitemap.ts` 改用 `listColumnsForLocale(DEFAULT_LOCALE)`，粘 PASS（commit `b118fe1`，同 commit 并入 sitemap `revalidate = 600`）
 
 ### F.3 [MEDIUM M3] rss / sitemap 缓存策略
 
 > Route Handler / Metadata Route 默认每次请求都打 DB，爬虫高频访问会浪费。
 
-- [ ] F.3.a [TEST-PRE-COVERED] 行为级断言较难（test runtime 不模拟 Next ISR），改走 design 决策：选 `export const revalidate = 600`（10min）作为基准，写到 design 决策段落或 `memory-bank/systemPatterns.md`
-- [ ] F.3.b [IMPL-GREEN] 在 `sitemap.ts` 与 `rss.xml/route.ts` 顶部加 `export const revalidate = 600`，跑 `pnpm build` 确认无回归
+- [x] F.3.a [TEST-PRE-COVERED] 行为级断言较难（test runtime 不模拟 Next ISR），改走 design 决策：选 `export const revalidate = 600`（10min）作为基准，写到 design 决策段落或 `memory-bank/systemPatterns.md`（commit `488c887`）
+- [x] F.3.b [IMPL-GREEN] 在 `sitemap.ts` 与 `rss.xml/route.ts` 顶部加 `export const revalidate = 600`，跑 `pnpm build` 确认无回归（sitemap 部分 commit `b118fe1`；rss 部分 commit `8e8040b`）
 
 ### F.4 [MEDIUM M4 + HIGH H4] RSS 增强 + `metadataBase` 修复
 
 > RSS 缺 `<atom:link rel="self">` + `<lastBuildDate>`；app/layout.tsx 缺 `metadataBase` 导致 OG 元数据相对 URL 拼接不可靠。
 
-- [ ] F.4.a [TEST-RED] 在 `rss.xml/route.test.ts` 加 `includes <atom:link rel="self"> and <lastBuildDate>`，粘 FAIL
-- [ ] F.4.b [IMPL-GREEN] 在 `rss.xml/route.ts` 加 `<atom:link>` self-ref（含 xmlns:atom）+ `<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`，粘 PASS
-- [ ] F.4.c [IMPL-GREEN no-tdd] 在 `src/app/layout.tsx` 的 `metadata` export 加 `metadataBase: new URL(env.SITE_URL)` + `openGraph: { type: "website", siteName: "TZBlog", locale: "zh_CN" }` — 这是元数据配置而非业务逻辑，commit 加 `[no-tdd]` 标签
+- [x] F.4.a [TEST-RED] 在 `rss.xml/route.test.ts` 加 `includes <atom:link rel="self"> and <lastBuildDate>`，粘 FAIL（commit `4fe2f60`）
+- [x] F.4.b [IMPL-GREEN] 在 `rss.xml/route.ts` 加 `<atom:link>` self-ref（含 xmlns:atom）+ `<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`，粘 PASS（commit `8e8040b`，同 commit 并入 rss `revalidate = 600` 与 F.7.a）
+- [x] F.4.c [TEST-RED + IMPL-GREEN] 在 `src/app/layout.tsx` 的 `metadata` export 加 `metadataBase: new URL(env.SITE_URL)` + `openGraph: { type: "website", siteName: "TZBlog", locale: "zh_CN" }`（RED commit `528e23a`，GREEN commit `ce1ad70`）
 
 ### F.5 [MEDIUM M1] og-image Props 类型 union 收敛到 Promise
 
 > 当前 `params: { slug: string } | Promise<{ slug: string }>` 是兼容 shim，违反 CLAUDE.md "禁兼容 shim"。
 
-- [ ] F.5.a [TEST-RED] 改 `opengraph-image.test.ts` 中两处 `params` 从 `{ slug: "hello" }` 改为 `Promise.resolve({ slug: "hello" })`，跑测试粘 FAIL（因实现类型 union 接受同步对象但测试形态变了）
-- [ ] F.5.b [IMPL-GREEN] 把 `opengraph-image.tsx:9` 的 `Props.params` 改为 `Promise<{ slug: string }>` 纯 Promise，粘 PASS
+- [x] F.5.a [TEST-RED] 改 `opengraph-image.test.ts` 中两处 `params` 从 `{ slug: "hello" }` 改为 `Promise.resolve({ slug: "hello" })`，并补 promise-only source invariant + size / image bytes 断言，跑测试粘 FAIL（commit `58c5c90`）
+- [x] F.5.b [IMPL-GREEN] 把 `opengraph-image.tsx:9` 的 `Props.params` 改为 `Promise<{ slug: string }>` 纯 Promise，粘 PASS（commit `323198d`）
 
 ### F.6 [HIGH H3] 落地 robots.ts
 
 > SDD 已留 `specs/robots/spec.md` 占位，实现未落地。
 
-- [ ] F.6.a [TEST-RED] 新增 `src/app/robots.test.ts`：测 `robots() returns rules with userAgent="*" and allow="/"` + `robots() sitemap field uses absoluteUrl("/sitemap.xml")`（mock `@/lib/env` 注入 `SITE_URL`），跑测试粘 FAIL
-- [ ] F.6.b [IMPL-GREEN] 新增 `src/app/robots.ts` 按 spec 示例落地，粘 PASS
+- [x] F.6.a [TEST-RED] 新增 `src/app/robots.test.ts`：测 `robots() returns rules with userAgent="*" and allow="/"` + `robots() sitemap field uses absoluteUrl("/sitemap.xml")`（mock `@/lib/env` 注入 `SITE_URL`），跑测试粘 FAIL（commit `6634ee5`）
+- [x] F.6.b [IMPL-GREEN] 新增 `src/app/robots.ts` 按 spec 示例落地，粘 PASS（commit `74a9382`）
 
 ### F.7 [LOW] 清理与小优化
 
-- [ ] F.7.a [IMPL no-tdd] 删 `src/app/rss.xml/route.ts:11` 的 `posts.items.slice(0, 20)` 冗余（service 已 `pageSize: 20`）
-- [ ] F.7.b [IMPL no-tdd] 删空目录 `src/lib/seo/`，或填入共享 metadata helper（视 F.4.c 是否抽 helper 决定）
-- [ ] F.7.c [测试增强 no-tdd] 在 `opengraph-image.test.ts` 补 `expect(size).toEqual({ width: 1200, height: 630 })` + `expect((await response.arrayBuffer()).byteLength).toBeGreaterThan(1000)`
-- [ ] F.7.d [可选] sitemap 加 `priority` 与 `changeFrequency`（首页 1.0, post 0.7, column 0.5；首页 daily, post weekly, column weekly）
+- [x] F.7.a [IMPL no-tdd] 删 `src/app/rss.xml/route.ts:11` 的 `posts.items.slice(0, 20)` 冗余（service 已 `pageSize: 20`；commit `8e8040b`）
+- [x] F.7.b [IMPL no-tdd] 删空目录 `src/lib/seo/`，或填入共享 metadata helper（视 F.4.c 是否抽 helper 决定；空目录不受 Git 跟踪，已 `rmdir`，无代码 commit）
+- [x] F.7.c [测试增强] 在 `opengraph-image.test.ts` 补 `expect(size).toEqual({ width: 1200, height: 630 })` + `expect((await response.arrayBuffer()).byteLength).toBeGreaterThan(1000)`（并入 commit `58c5c90`）
+- [x] F.7.d [SKIPPED] sitemap 加 `priority` 与 `changeFrequency`（首页 1.0, post 0.7, column 0.5；首页 daily, post weekly, column weekly）— 非必需，本轮按 brief 建议跳过，后续有 SEO 精调需求再补断言落地
 
 ## G. 收尾
 
