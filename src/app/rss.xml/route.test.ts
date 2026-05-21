@@ -81,7 +81,7 @@ describe("GET /rss.xml", () => {
       }),
     );
     mocks.listPosts.mockResolvedValue({
-      items,
+      items: items.slice(0, 20),
       total: 25,
       page: 1,
       pageSize: 20,
