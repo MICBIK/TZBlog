@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PostCard } from "@/components/site/PostCard";
 import { getCurrentLocale } from "@/lib/i18n";
 import { listPosts } from "@/lib/services/posts";
+import { getSiteStats } from "@/lib/services/stats";
 
 const techStack = [
   "TypeScript",
@@ -20,6 +21,7 @@ export default async function HomePage() {
     { page: 1, pageSize: 3, status: "PUBLISHED" },
     locale,
   );
+  const stats = await getSiteStats();
 
   return (
     <div className="space-y-24">
@@ -90,7 +92,7 @@ export default async function HomePage() {
       {/* Site Stats */}
       <section className="border-t border-border pt-8">
         <p className="text-sm text-muted-fg">
-          0 views · 0 posts · 0 comments
+          {stats.views} views · {stats.posts} posts · {stats.comments} comments
         </p>
       </section>
     </div>
