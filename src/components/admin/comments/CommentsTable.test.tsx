@@ -65,7 +65,7 @@ describe("<CommentsTable /> SPEC-C-U-2 + U-3", () => {
     )
     expect(screen.getByText("Alice")).toBeInTheDocument()
     expect(screen.getByText(/hello world/)).toBeInTheDocument()
-    expect(screen.getByText(/你好|hello/)).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "你好" })).toBeInTheDocument()
   })
 
   it("inline 通过 button fires PATCH + optimistic status change + toast.success", async () => {
