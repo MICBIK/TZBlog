@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -80,6 +79,7 @@ export default async function PostDetailPage({ params }: Props) {
       <header className="space-y-4">
         {cover ? (
           <div className="aspect-[3/1] w-full overflow-hidden rounded-xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={cover}
               alt={tr.title}

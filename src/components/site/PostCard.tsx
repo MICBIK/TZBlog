@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { format } from "date-fns";
 
@@ -14,21 +13,12 @@ export type PostCardPost = {
   publishedAt?: Date | string | null;
   columnName?: string | null;
   tags: PostCardTag[];
-  viewCount?: number;
 };
 
 type PostCardProps = {
   post: PostCardPost;
 };
 
-/**
- * Minimal list-row card used on the public posts index.
- *
- * Visual language follows the project's Claude/Apple/OpenAI-leaning style:
- * generous whitespace, mono metadata, no shadows, hover-only affordances.
- * Counts (viewCount) are intentionally not shown here to keep the index calm —
- * detail page surfaces them.
- */
 export function PostCard({ post }: PostCardProps) {
   const cover = post.cover?.trim();
 
@@ -39,6 +29,7 @@ export function PostCard({ post }: PostCardProps) {
     >
       {cover ? (
         <div className="aspect-[16/10] w-32 shrink-0 overflow-hidden rounded-md md:w-44">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={cover}
             alt={post.title}

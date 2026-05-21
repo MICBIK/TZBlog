@@ -30,7 +30,6 @@ function post(overrides: { cover: string | null }): PostCardPost {
     publishedAt: new Date("2026-05-21T00:00:00Z"),
     columnName: null,
     tags: [],
-    viewCount: 0,
     ...overrides,
   } as unknown as PostCardPost;
 }
