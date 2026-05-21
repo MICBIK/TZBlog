@@ -81,7 +81,7 @@ pnpm docker:dev       # 启动本地 Postgres + MinIO 容器
 
 - `visitorHash = sha256(ip + userAgent + dailySalt)`
 - 浏览去重：同访客 + 同文章 + 同天 = 一次
-- 点赞：同访客 + 同文章 24h 内一次
+- 点赞：同访客 + 同文章 永久 unique（一次）
 - 评论：同 visitorHash 5 分钟内最多 3 条
 
 ## 编码规范
