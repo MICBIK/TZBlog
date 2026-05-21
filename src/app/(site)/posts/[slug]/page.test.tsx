@@ -36,6 +36,32 @@ vi.mock("@/components/site/PostViewBeacon", () => ({
   ),
 }));
 
+vi.mock("@/components/site/LikeButton", () => ({
+  LikeButton: ({
+    slug,
+    initialLikeCount,
+  }: {
+    slug: string;
+    initialLikeCount: number;
+  }) => (
+    <div
+      data-testid="mock-like-button"
+      data-slug={slug}
+      data-initial-count={String(initialLikeCount)}
+    />
+  ),
+}));
+
+vi.mock("@/components/site/CommentSection", () => ({
+  CommentSection: ({ postId, slug }: { postId: string; slug: string }) => (
+    <div
+      data-testid="mock-comment-section"
+      data-post-id={postId}
+      data-slug={slug}
+    />
+  ),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.extractToc.mockResolvedValue([]);
@@ -91,6 +117,29 @@ describe("PostDetailPage TOC", () => {
     render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
 
     expect(screen.getByTestId("post-toc")).toBeInTheDocument();
+  });
+});
+
+describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
+  it("renders LikeButton in place of likes count + CommentSection at end of article", async () => {
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+
+    render(
+      await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }),
+    );
+
+    // LikeButton 出现，props 来自 post
+    const likeBtn = screen.getByTestId("mock-like-button");
+    expect(likeBtn).toHaveAttribute("data-slug", "detail");
+    expect(likeBtn).toHaveAttribute("data-initial-count", "2");
+
+    // 原 "likes N" 静态数字已被替换（不应再出现 likes 2 文本）
+    expect(screen.queryByText(/^likes 2$/)).toBeNull();
+
+    // CommentSection 出现，props 含 postId + slug
+    const section = screen.getByTestId("mock-comment-section");
+    expect(section).toHaveAttribute("data-post-id", "post-id");
+    expect(section).toHaveAttribute("data-slug", "detail");
   });
 });
 
