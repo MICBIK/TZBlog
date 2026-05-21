@@ -188,6 +188,30 @@ export async function getPostBySlug(
   return db.post.findUnique({ where: { slug }, include: includeRelations })
 }
 
+export async function listAllPublishedSlugs(
+  locale: Locale,
+): Promise<Array<{ slug: string; updatedAt: Date }>> {
+  void locale
+
+  const pageSize = 100
+  const rows: Array<{ slug: string; updatedAt: Date }> = []
+
+  for (let page = 0; ; page++) {
+    const batch = await db.post.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }],
+      skip: page * pageSize,
+      take: pageSize,
+      select: { slug: true, updatedAt: true },
+    })
+
+    rows.push(...batch)
+    if (batch.length < pageSize) break
+  }
+
+  return rows
+}
+
 // ---------- mutations ----------
 
 /**
