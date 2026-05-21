@@ -15,7 +15,7 @@ export default async function MediaAdminPage({
   const params = (await searchParams) ?? {};
   const filter = mediaFilterSchema.parse({
     page: params.page ?? "1",
-    pageSize: 24,
+    pageSize: 12,
   });
   const { items, total, page, pageSize } = await listMedia(filter);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -45,7 +45,7 @@ export default async function MediaAdminPage({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
           {items.map((media) => (
             <MediaCard key={media.id} media={media} />
           ))}

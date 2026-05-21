@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { Toaster } from "@/components/ui/sonner";
 import { auth, signOut } from "@/lib/auth";
 
 const NAV_ITEMS = [
@@ -64,6 +65,7 @@ export default async function AdminLayout({
         </header>
 
         <main className="flex-1 px-6 py-8">{children}</main>
+        <Toaster richColors position="top-right" />
       </div>
     </div>
   );
