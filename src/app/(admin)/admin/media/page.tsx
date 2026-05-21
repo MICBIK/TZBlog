@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { MediaCard } from "@/components/admin/media/MediaCard";
+import { MediaUploadDropzone } from "@/components/admin/media/MediaUploadDropzone";
 import { Button } from "@/components/ui/button";
 import { mediaFilterSchema } from "@/lib/schemas/media";
 import { listMedia } from "@/lib/services/media";
@@ -32,6 +33,8 @@ export default async function MediaAdminPage({
           </p>
         </div>
       </header>
+
+      <MediaUploadDropzone />
 
       {items.length === 0 ? (
         <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--bg))] px-6 py-12 text-center">
