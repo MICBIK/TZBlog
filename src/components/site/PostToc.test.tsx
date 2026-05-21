@@ -28,17 +28,22 @@ async function loadPostToc(): Promise<PostTocModule> {
 beforeEach(() => {
   vi.clearAllMocks();
   observerState.callback = null;
-  vi.stubGlobal(
-    "IntersectionObserver",
-    vi.fn((callback: IntersectionObserverCallback) => {
+
+  class MockIntersectionObserver {
+    root = null;
+    rootMargin = "";
+    thresholds = [];
+    observe = observerState.observe;
+    disconnect = observerState.disconnect;
+    unobserve = vi.fn();
+    takeRecords = vi.fn(() => []);
+
+    constructor(callback: IntersectionObserverCallback) {
       observerState.callback = callback;
-      return {
-        disconnect: observerState.disconnect,
-        observe: observerState.observe,
-        unobserve: vi.fn(),
-      };
-    }),
-  );
+    }
+  }
+
+  vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
 });
 
 describe("PostToc", () => {
