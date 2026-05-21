@@ -7,6 +7,7 @@ import {
   resetAll,
   testDb,
 } from "../../tests/helpers/db";
+import { DEFAULT_LOCALE } from "@/lib/i18n";
 
 let authorId: string;
 
@@ -84,6 +85,23 @@ describe("sitemap", () => {
     expect(postUrls).toContain(`${baseUrl}/posts/sitemap-published-0`);
     expect(postUrls).toContain(`${baseUrl}/posts/sitemap-published-1049`);
   });
+
+  it("excludes columns without DEFAULT_LOCALE translation", async () => {
+    await Promise.all([
+      createColumnWithLocale("visible-column", DEFAULT_LOCALE),
+      createColumnWithLocale("en-only-column", "en"),
+    ]);
+
+    const { default: sitemap } = await importSitemap();
+    const entries = await sitemap();
+    const baseUrl = siteUrl();
+    const columnUrls = entries
+      .map((entry) => entry.url)
+      .filter((url) => url.startsWith(`${baseUrl}/columns/`));
+
+    expect(columnUrls).toContain(`${baseUrl}/columns/visible-column`);
+    expect(columnUrls).not.toContain(`${baseUrl}/columns/en-only-column`);
+  });
 });
 
 function siteUrl(): string {
@@ -123,12 +141,16 @@ async function createPost(
 }
 
 async function createColumn(slug: string) {
+  return createColumnWithLocale(slug, DEFAULT_LOCALE);
+}
+
+async function createColumnWithLocale(slug: string, locale: string) {
   return testDb.column.create({
     data: {
       slug,
       translations: {
         create: {
-          locale: "zh",
+          locale,
           name: slug,
           description: `${slug} description`,
         },
