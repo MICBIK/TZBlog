@@ -6,12 +6,22 @@ import { toast } from "sonner"
 import type { CommentStatus } from "@prisma/client"
 
 import type { AdminCommentListItem } from "@/lib/services/comments"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 /**
  * <CommentsTable> — admin 评论审核表格。
  *
  * 行内动作 PATCH（乐观更新 status + 失败回滚）：通过 / 垃圾 / 拒绝
- * 行内 DELETE（确认后真删，含 cascade replies）：删除
+ * 行内 DELETE（AlertDialog 确认后真删，含 cascade replies）：删除
  * 多选 + BulkActions（顶部条）：批量通过 / 标垃圾 / 拒绝
  *
  * BulkActions ids 顺序按 items 顺序，与 selected Set 无关，便于测试可预测断言。
@@ -47,6 +57,8 @@ export function CommentsTable({
   const [items, setItems] = useState<AdminCommentListItem[]>(initialItems)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [pending, setPending] = useState<Set<string>>(new Set())
+  const [pendingDelete, setPendingDelete] =
+    useState<AdminCommentListItem | null>(null)
 
   function toggleSelect(id: string): void {
     setSelected((prev) => {
@@ -93,11 +105,10 @@ export function CommentsTable({
     }
   }
 
-  async function handleDelete(item: AdminCommentListItem): Promise<void> {
-    const ok = window.confirm(
-      `确认删除「${item.authorName}」的评论？该操作不可恢复。`,
-    )
-    if (!ok) return
+  async function confirmDelete(): Promise<void> {
+    const item = pendingDelete
+    if (!item) return
+    setPendingDelete(null)
 
     setPending((prev) => new Set(prev).add(item.id))
     try {
@@ -270,7 +281,7 @@ export function CommentsTable({
                       <button
                         type="button"
                         disabled={isPending}
-                        onClick={() => handleDelete(item)}
+                        onClick={() => setPendingDelete(item)}
                         className="rounded border border-border px-2 py-0.5 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
                       >
                         删除
@@ -289,6 +300,30 @@ export function CommentsTable({
           共 {total} 条 · 第 {page} 页 / 每页 {pageSize}
         </span>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除评论</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete
+                ? `将删除「${pendingDelete.authorName}」的评论。该操作不可恢复，且会级联删除所有 reply。`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
