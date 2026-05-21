@@ -139,10 +139,10 @@
 ### P2 前台展示（Week 3-4）
 
 - [ ] 首页 Hero + 技术栈 + 最近文章 + GitHub 数据
-- [ ] 文章详情（Shiki + TOC + 浏览上报 + 点赞 + 评论区）
+- [x] 文章详情（Shiki + TOC + 浏览上报 + 点赞 + 评论区）—— D2 (TOC) + D3 (likes/comments) + analytics-beacon (page views) 已分别 archived
 - [ ] 文章列表 + 专栏聚合页 + 标签页
 - [x] RSS / sitemap / OG 图生成（E 主体 + F.1-F.7 follow-up 全部落地，commits `6634ee5 → 8e8040b` + `488c887`）
-- [ ] 自研 Analytics 客户端上报（`<AnalyticsBeacon>`）
+- [x] 自研 Analytics 客户端上报（`<AnalyticsBeacon>`）—— archive/2026-05-21-analytics-beacon/
 
 ### P3 部署上线（Week 5）
 
