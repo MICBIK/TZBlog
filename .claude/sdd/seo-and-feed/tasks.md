@@ -116,11 +116,19 @@
 - [x] F.7.c [测试增强] 在 `opengraph-image.test.ts` 补 `expect(size).toEqual({ width: 1200, height: 630 })` + `expect((await response.arrayBuffer()).byteLength).toBeGreaterThan(1000)`（并入 commit `58c5c90`）
 - [x] F.7.d [SKIPPED] sitemap 加 `priority` 与 `changeFrequency`（首页 1.0, post 0.7, column 0.5；首页 daily, post weekly, column weekly）— 非必需，本轮按 brief 建议跳过，后续有 SEO 精调需求再补断言落地
 
+### F.8 [审计后置 B1] listAllPublishedSlugs 删 dead locale 参数 (YAGNI)
+
+> 来源：本轮主脑审计发现 codex 按 brief 实现的 `listAllPublishedSlugs(locale)` 内部用 `void locale` 抑制 ESLint —— locale 参数从未被使用。违反 YAGNI 与 CLAUDE.md "禁兼容 shim"。**brief 设计瑕疵**（主脑责任），codex 严格按要求实现无过失。
+
+- [x] F.8.a [TEST-RED] 在 `src/lib/services/posts.test.ts:475` 加 `expect(listAllPublishedSlugs.length).toBe(0)` arity 断言（守住未来不再悄悄塞回 locale 参数）；调用形态保留 `DEFAULT_LOCALE` 不变以让 typecheck 通过；跑 `pnpm test src/lib/services/posts.test.ts` 粘 FAIL（commit `4b8a4c5`）
+  - 真实 FAIL 输出：`AssertionError: expected 1 to be +0`
+- [x] F.8.b [IMPL-GREEN] `posts.ts:191` 删 `locale: Locale` 参数 + 删 `void locale`；`sitemap.ts:12` 调用点 `listAllPublishedSlugs(DEFAULT_LOCALE)` → `listAllPublishedSlugs()`；`posts.test.ts:476` 与 importPostsService 类型签名同步删 locale 参数；跑测试粘 PASS 28/28（commit `330d343`）
+
 ## G. 收尾
 
 - [x] G.1 更新 `memory-bank/{progress,activeContext}.md`，knownIssues.md 登记 §F follow-up 缺口
-- [ ] G.2 ha1den decision point：决定 §F follow-up 是合到当前 change 一起合并 main，还是独立成新 SDD（建议合到当前 change 内，否则 H2 / H3 / H4 落到 main 就是真 SEO bug）
-- [ ] G.3 `/opsx:verify seo-and-feed`（执行前确保 §F 选择已落地）
+- [x] G.2 ha1den decision point：F 段 7 项缺口（H2/H3/H4 + M1-M4 + L）已按 A 方案合到当前 SDD，§F.8 B1 dead-param 审计后置修复已落地
+- [ ] G.3 `/opsx:verify seo-and-feed`（执行前确保 X1 `.env.production AUTH_SECRET` build 阻塞已修复）
 - [ ] G.4 `/opsx:archive seo-and-feed`
 
 ## Commit 历史快照
@@ -133,5 +141,16 @@
 | `2741ce8` | C.1.b + C.2.b + C.3.b [IMPL-GREEN] | SPEC-E-3..5 |
 | `5f35aec` | D.1.a + D.2.a [TEST-RED] | SPEC-E-6..7 |
 | `4c89f10` | D.1.b + D.2.b [IMPL-GREEN] | SPEC-E-6..7 |
+| `a650dbb` | SDD 追溯补齐 [no-tdd] | — |
+| `6634ee5 → 74a9382` | F.6 robots.ts | SPEC-E-R-1..2 |
+| `58c5c90 → 323198d` | F.5 + F.7.c og-image Promise params + image bytes | M1 + 测试增强 |
+| `528e23a → ce1ad70` | F.4.c metadataBase + openGraph defaults | H4 |
+| `e64bb3d → bcbcc27` | F.1.a/b listAllPublishedSlugs helper | H2 part 1 |
+| `113935b → 1986096` | F.1.c/d sitemap 接入 helper | H2 part 2 |
+| `7fdff94 → b118fe1` | F.2 + F.3 sitemap (locale filter + revalidate) | M2 + M3 |
+| `4fe2f60 → 8e8040b` | F.4.a/b + F.3 + F.7.a rss (atom+lastBuild + revalidate + slice 清理) | M4 + M3 + L1 |
+| `488c887` | F.3.a 缓存策略决策 [no-tdd] | M3 |
+| `70cbfd5` | follow-up 闭环同步 [no-tdd] | — |
+| `4b8a4c5 → 330d343` | F.8 listAllPublishedSlugs 删 dead locale 参数 | B1 (审计后置) |
 
-> 节奏注记：6 提交均 `test(<scope>): SPEC-E-X..Y RED` → `feat(<scope>): SPEC-E-X..Y` 严格配对，husky commit-msg hook 全通过。但本 SDD 在 commit 落地后才补齐，违反 CLAUDE.md TDD 执行铁律 #2（tasks.md 生成前 MUST 已有 test-map.md），追溯性补齐已完成。下一轮 SDD 必须先建本目录三件套（proposal + 4×spec + test-map）再起任务。
+> 节奏注记：原 6 + follow-up 16 + B1 2 = 24 个有效 commit，全部 `test(<scope>)` → `feat(<scope>)` 严格配对，scope 一致，husky commit-msg hook 全通过。本 SDD 在原 6 commit 落地后追溯补齐（commit `a650dbb`），违反 CLAUDE.md TDD 执行铁律 #2（tasks.md 生成前 MUST 已有 test-map.md）—— 下一轮 SDD 必须先建本目录三件套（proposal + 4×spec + test-map）再起任务。

@@ -86,6 +86,7 @@
   - 全量测试：31 files / 237 passed / 1 skipped（基线 229 → 237，+8 specs）
   - §F 审计 follow-up：H2 sitemap 全量分页、H3 `robots.ts`、H4 `metadataBase`、M1 Promise params、M2 column locale filter、M3 `revalidate = 600`、M4 RSS atom/self + lastBuildDate、L1/L4/L7 清理（F.7.d priority/changeFrequency 按 optional 跳过）
   - follow-up commits：`6634ee5 → 74a9382 → 58c5c90 → 323198d → 528e23a → ce1ad70 → e64bb3d → bcbcc27 → 113935b → 1986096 → 7fdff94 → b118fe1 → 4fe2f60 → 8e8040b → 488c887`
+  - 审计后置 B1（YAGNI 清理）：`listAllPublishedSlugs` 删 dead locale 参数 — commits `4b8a4c5 → 330d343`
   - **SDD 追溯补齐**：原实现绕过 CLAUDE.md TDD 铁律 #2（无 test-map），审计后补齐 `.claude/sdd/seo-and-feed/{proposal.md, specs/{sitemap,feed,og-and-metadata,robots}/spec.md, test-map.md, tasks.md}`
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 
