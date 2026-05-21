@@ -188,11 +188,9 @@ export async function getPostBySlug(
   return db.post.findUnique({ where: { slug }, include: includeRelations })
 }
 
-export async function listAllPublishedSlugs(
-  locale: Locale,
-): Promise<Array<{ slug: string; updatedAt: Date }>> {
-  void locale
-
+export async function listAllPublishedSlugs(): Promise<
+  Array<{ slug: string; updatedAt: Date }>
+> {
   const pageSize = 100
   const rows: Array<{ slug: string; updatedAt: Date }> = []
 

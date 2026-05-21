@@ -9,7 +9,7 @@ export const revalidate = 600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [posts, columns] = await Promise.all([
-    listAllPublishedSlugs(DEFAULT_LOCALE),
+    listAllPublishedSlugs(),
     listColumnsForLocale(DEFAULT_LOCALE),
   ])
 

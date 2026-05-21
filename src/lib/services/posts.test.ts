@@ -473,7 +473,7 @@ describe("listAllPublishedSlugs", () => {
 
     const { listAllPublishedSlugs } = await importPostsService()
     expect(listAllPublishedSlugs.length).toBe(0)
-    const rows = await listAllPublishedSlugs(DEFAULT_LOCALE)
+    const rows = await listAllPublishedSlugs()
 
     expect(rows).toHaveLength(250)
     expect(new Set(rows.map((row) => row.slug)).size).toBe(250)
@@ -539,15 +539,15 @@ describe("incrementPostView", () => {
 })
 
 async function importPostsService(): Promise<{
-  listAllPublishedSlugs: (
-    locale: typeof DEFAULT_LOCALE,
-  ) => Promise<Array<{ slug: string; updatedAt: Date }>>
+  listAllPublishedSlugs: () => Promise<
+    Array<{ slug: string; updatedAt: Date }>
+  >
 }> {
   const modulePath = "./" + "posts"
   return (await import(modulePath)) as {
-    listAllPublishedSlugs: (
-      locale: typeof DEFAULT_LOCALE,
-    ) => Promise<Array<{ slug: string; updatedAt: Date }>>
+    listAllPublishedSlugs: () => Promise<
+      Array<{ slug: string; updatedAt: Date }>
+    >
   }
 }
 
