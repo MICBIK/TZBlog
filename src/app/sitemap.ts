@@ -2,13 +2,15 @@ import type { MetadataRoute } from "next"
 
 import { DEFAULT_LOCALE } from "@/lib/i18n"
 import { absoluteUrl } from "@/lib/site-meta"
-import { listColumns } from "@/lib/services/columns"
+import { listColumnsForLocale } from "@/lib/services/columns"
 import { listAllPublishedSlugs } from "@/lib/services/posts"
+
+export const revalidate = 600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [posts, columns] = await Promise.all([
     listAllPublishedSlugs(DEFAULT_LOCALE),
-    listColumns(),
+    listColumnsForLocale(DEFAULT_LOCALE),
   ])
 
   return [
