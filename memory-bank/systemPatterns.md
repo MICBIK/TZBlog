@@ -183,3 +183,9 @@ content (Markdown 字符串)
 - 普通文件 camelCase：`useDebounce.ts` / `markdown.ts`
 - 路由文件按 Next 约定：`page.tsx` / `layout.tsx` / `route.ts`
 - 测试文件 `*.test.ts` 与被测文件同目录
+
+## 17. SEO/feed 缓存策略
+
+- `/sitemap.xml` 与 `/rss.xml` 使用 `export const revalidate = 600`，以 10 分钟为基准缓存窗口。
+- 理由：搜索引擎与 RSS reader 不需要秒级实时性；10 分钟足够覆盖发布后可见性，同时避免爬虫高频访问时每次打 Postgres。
+- 文章发布/更新路径仍写 DB 为准；缓存过期后由 Next 重新生成，避免额外 cache invalidation 复杂度。
