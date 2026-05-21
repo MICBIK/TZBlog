@@ -6,7 +6,6 @@ import type { AdminCommentListItem } from "@/lib/services/comments"
 import { CommentsTable } from "./CommentsTable"
 
 const mocks = vi.hoisted(() => ({
-  confirm: vi.fn(),
   fetch: vi.fn(),
   push: vi.fn(),
   refresh: vi.fn(),
@@ -24,9 +23,7 @@ vi.mock("sonner", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.stubGlobal("confirm", mocks.confirm)
   vi.stubGlobal("fetch", mocks.fetch)
-  mocks.confirm.mockReturnValue(true)
   mocks.fetch.mockResolvedValue(new Response("{}", { status: 200 }))
 })
 
@@ -104,7 +101,7 @@ describe("<CommentsTable /> SPEC-C-U-2 + U-3", () => {
     })
   })
 
-  it("inline delete: confirm + DELETE + row removal + toast.success", async () => {
+  it("inline delete: click 删除 opens AlertDialog without firing DELETE", async () => {
     render(
       <CommentsTable
         initialItems={[makeItem("c1", "PENDING")]}
@@ -115,6 +112,42 @@ describe("<CommentsTable /> SPEC-C-U-2 + U-3", () => {
     )
 
     await userEvent.click(screen.getByRole("button", { name: /^删除$/ }))
+
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument()
+    expect(screen.getByText("确认删除评论")).toBeInTheDocument()
+    expect(screen.getByText(/Alice.*评论/)).toBeInTheDocument()
+    expect(mocks.fetch).not.toHaveBeenCalled()
+  })
+
+  it("inline delete: AlertDialog 取消 → no DELETE + row stays", async () => {
+    render(
+      <CommentsTable
+        initialItems={[makeItem("c1", "PENDING")]}
+        total={1}
+        page={1}
+        pageSize={20}
+      />,
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: /^删除$/ }))
+    await userEvent.click(screen.getByRole("button", { name: /^取消$/ }))
+
+    expect(mocks.fetch).not.toHaveBeenCalled()
+    expect(screen.getByText("Alice")).toBeInTheDocument()
+  })
+
+  it("inline delete: AlertDialog 确认删除 → DELETE + row removal + toast.success", async () => {
+    render(
+      <CommentsTable
+        initialItems={[makeItem("c1", "PENDING")]}
+        total={1}
+        page={1}
+        pageSize={20}
+      />,
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: /^删除$/ }))
+    await userEvent.click(screen.getByRole("button", { name: /^确认删除$/ }))
 
     await waitFor(() => {
       expect(mocks.fetch).toHaveBeenCalledWith(
