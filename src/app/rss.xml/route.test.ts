@@ -54,7 +54,7 @@ describe("GET /rss.xml", () => {
     expect(body.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(
       true,
     );
-    expect(body).toContain('<rss version="2.0">');
+    expect(body).toContain('<rss version="2.0"');
     expect(body).toContain("<channel>");
     expect(body).toContain("<title>TZBlog</title>");
     expect(body).toContain(`<link>${baseUrl}</link>`);
@@ -99,6 +99,28 @@ describe("GET /rss.xml", () => {
     expect(body).toContain("<title>Post 1</title>");
     expect(body).toContain("<title>Post 20</title>");
     expect(body).not.toContain("<title>Post 21</title>");
+  });
+
+  it('includes <atom:link rel="self"> and <lastBuildDate>', async () => {
+    mocks.listPosts.mockResolvedValue({
+      items: [post({ slug: "rss-self", title: "RSS Self" })],
+      total: 1,
+      page: 1,
+      pageSize: 20,
+    });
+
+    const { GET } = await importRoute();
+    const response = await GET();
+    const body = await response.text();
+    const baseUrl = siteUrl();
+
+    expect(body).toContain('xmlns:atom="http://www.w3.org/2005/Atom"');
+    expect(body).toContain(
+      `<atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />`,
+    );
+    expect(body).toMatch(
+      /<lastBuildDate>[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} GMT<\/lastBuildDate>/,
+    );
   });
 
   it('escapes &, <, >, ", and \' in title and description', async () => {
