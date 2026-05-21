@@ -472,6 +472,7 @@ describe("listAllPublishedSlugs", () => {
     await seedPublishedRows(250)
 
     const { listAllPublishedSlugs } = await importPostsService()
+    expect(listAllPublishedSlugs.length).toBe(0)
     const rows = await listAllPublishedSlugs(DEFAULT_LOCALE)
 
     expect(rows).toHaveLength(250)
