@@ -92,6 +92,19 @@
     - X1 `.env.production AUTH_SECRET < 16 字符` — openssl 旋转到 43 字符 base64，备份 `.env.production.bak`
     - X2 `.env.production DATABASE_URL host=postgres` 本地不可达 — 新建 `.env.production.local` 覆盖 DATABASE_URL=localhost:5433/tzblog（已 .gitignore），VPS 部署不受影响
     - 全量验收：typecheck ✓ / lint ✓ / test ✓ 245 passed / build ✓ 22/22
+- [x] **2026-05-21** P2 前台展示 D3 — 评论区 + 点赞（comments-and-likes SDD）
+  - SPEC-D3-L-1..4 likes service：`addLike(slug, vh)` 事务 PostLike.create + Post.likeCount+1，P2002 当 idempotent；`hasLikedBy` 查询；NOT_FOUND 守卫
+  - SPEC-D3-L-5..7 likes API：`POST/GET /api/posts/[slug]/like`，含 missing slug 404
+  - SPEC-D3-L-8 `<LikeButton>`：mount-GET 初态 + 乐观 +1 + POST 成功保留 / 失败回滚 + toast.error
+  - SPEC-D3-C-6 `commentCreateSchema`：authorName/email/content/website/parentId 边界 13 用例
+  - SPEC-D3-C-1..5+C-7 comments service：createComment 顶层 + 1 层 reply + reply-of-reply 拒绝 + slug/parent NOT_FOUND；listApprovedComments 嵌套 APPROVED-only
+  - SPEC-D3-C-8..9 comments API：rate-limit `comment:${vh}` 5min/3，第 4 次 429；GET 仅 APPROVED + 嵌套
+  - SPEC-D3-C-10 `<CommentForm>`：react-hook-form + zodResolver + 表单 schema 接受空 website；success / 429 / error 三态 banner
+  - SPEC-D3-C-11 `<CommentList>`：顶层 ul + reply `<li data-comment-reply class="pl-8 border-l">` 缩进；顶层「回复」按钮 toggle 内嵌 `<CommentForm parentId>`；reply 自身无按钮
+  - SPEC-D3-C-12 PostDetailPage 接入：line 112 计数行 `likes N` → `<LikeButton>`；article 末尾挂 `<CommentSection postId slug>`
+  - SDD 全程严格 TDD（scaffold 1 + likes 6 + comments 12 = 19 commit），无追溯补齐，commits `843d2df → 4bf15a8`
+  - 全量测试：41 files / 286 passed / 1 skipped（基线 245 → 286，+41 specs）；build 全绿（新增 `/api/posts/[slug]/like`、`/api/posts/[slug]/comments` 路由）
+  - 决策记录：R1 永久 unique 点赞（schema 一致 / CLAUDE.md 24h 滚动放弃，待后续 sync 文档），R2 D3 含 1 层 reply（depth=2 限制），R3 honeypot 推 V2，R4 rate-limit 内存版（单 VPS 实例 OK），R5 commentCount 每次插入 +1（含 PENDING）
 - [ ] 评论审核页（pending/approved/spam/rejected 标签 + 批量操作）
 
 ### P2 前台展示（Week 3-4）

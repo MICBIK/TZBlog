@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**P2-E 已完结（RSS / sitemap / OG + §F 审计 follow-up），下一步 C 评论审核页 / D3 评论区 + 点赞**
+**P2-D3 已完结（评论区 + 点赞），下一步 C 评论审核页 / Analytics 上报 / Hero 重做（待 ha1den 选）**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -12,13 +12,15 @@
 - **2026-05-21** P2 前台 D2 完成：`extractToc` 复用 unified+rehypeSlug 管道，与 `renderMarkdown` 字面一致；`PostToc` 客户端组件用 IntersectionObserver 高亮 active；详情页 grid 布局 + `hidden lg:block` 右侧 sticky aside。
 - **2026-05-21** P2 前台 E 完成：`sitemap.xml`、`robots.txt`、`rss.xml`、post OG image、root `metadataBase`、`SITE_META`，并完成 §F 审计 follow-up（KI-003 RESOLVED）。
 - **2026-05-21** P2-E SDD 追溯补齐：先前实现绕过 CLAUDE.md TDD 铁律 #2，审计后补 `.claude/sdd/seo-and-feed/{proposal, specs/{sitemap,feed,og-and-metadata,robots}/spec, test-map, tasks}.md`，本轮 §F follow-up 已在同一 SDD 内闭环。
-- 全套自动验证（pnpm typecheck / lint / test）全绿，基线 229 → 245，+16 specs。
+- **2026-05-21** P2-D3 完成（评论区 + 点赞）：永久 unique 点赞（schema 一致 / 24h 滚动放弃）、评论默认 PENDING、1 层 reply、rate-limit 5min/3、详情页接入 `<LikeButton>` + `<CommentSection>`。SDD `.claude/sdd/comments-and-likes/` 全程严格 TDD 微循环（19 个 commit），无追溯补齐。
+- 全套自动验证（pnpm typecheck / lint / test / build）全绿，基线 245 → 286（+41 specs）。
 
 ## 下一步计划
 
-1. **C. 评论审核页**（P1 收尾）：pending/approved/spam/rejected 标签 + 批量操作。需先 seed 少量评论。
-2. **D3. 评论区 + 点赞**（P2 前台交互）：visitorHash 去重，匿名提交，5min/3 评论 rate limit。需动 schema 或复用现有 `Comment` 表。
-3. **P2-E manual smoke / archive**：访问 `/sitemap.xml`、`/robots.txt`、`/rss.xml`、`/posts/<slug>/opengraph-image` 后再跑 verify/archive。
+1. **C. 评论审核页**（P1 收尾）：admin 端 pending/approved/spam/rejected 标签 + 批量审核 + 软删除。D3 已经造好 PENDING 流入。
+2. **Analytics 客户端上报**（P2 收尾）：`<AnalyticsBeacon>` 接 `/api/track`，与 PageView 表对接。
+3. **P2-E + P2-D3 manual smoke / archive**：访问 `/sitemap.xml`、`/robots.txt`、`/rss.xml`、`/posts/<slug>/opengraph-image`、点赞 + 评论 + reply 完整端到端，再跑 archive。
+4. **Hero 重做 / 营销页**：D1 用了基础风格，未来按 ECC design-quality（编辑/bento/scrollytelling 等方向）替换。
 
 ## 待办池 / 已知问题
 
