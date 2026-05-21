@@ -59,6 +59,18 @@ describe("HomePage recent posts", () => {
     expect(screen.getByText("0 views · 0 posts · 0 comments")).toBeInTheDocument();
   });
 
+  it("renders TechStack between hero and recent posts", async () => {
+    render(await HomePage());
+
+    expect(screen.getByText("FRONTEND")).toBeInTheDocument();
+    expect(screen.getByText("CONTENT & EDITOR")).toBeInTheDocument();
+    expect(screen.getByText("Next.js 15")).toBeInTheDocument();
+    expect(screen.getByText("App Router + RSC + Server Actions")).toBeInTheDocument();
+    expect(screen.queryByText(/\$\s*whoami/)).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Recent Posts" })).toBeInTheDocument();
+    expect(screen.getByText("0 views · 0 posts · 0 comments")).toBeInTheDocument();
+  });
+
   it("renders top 3 published posts in publishedAt desc", async () => {
     mocks.listPosts.mockResolvedValue({
       items: [
