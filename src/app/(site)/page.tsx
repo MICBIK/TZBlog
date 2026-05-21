@@ -1,13 +1,9 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PostCard } from "@/components/site/PostCard";
+import { getCurrentLocale } from "@/lib/i18n";
+import { listPosts } from "@/lib/services/posts";
 
 const techStack = [
   "TypeScript",
@@ -18,28 +14,13 @@ const techStack = [
   "Docker",
 ];
 
-const samplePosts = [
-  {
-    slug: "sample-post-1",
-    title: "Sample Post 1",
-    excerpt: "Placeholder excerpt for the first sample post.",
-    date: "2026-01-01",
-  },
-  {
-    slug: "sample-post-2",
-    title: "Sample Post 2",
-    excerpt: "Placeholder excerpt for the second sample post.",
-    date: "2026-01-08",
-  },
-  {
-    slug: "sample-post-3",
-    title: "Sample Post 3",
-    excerpt: "Placeholder excerpt for the third sample post.",
-    date: "2026-01-15",
-  },
-];
+export default async function HomePage() {
+  const locale = getCurrentLocale();
+  const { items: recentPosts } = await listPosts(
+    { page: 1, pageSize: 3, status: "PUBLISHED" },
+    locale,
+  );
 
-export default function HomePage() {
   return (
     <div className="space-y-24">
       {/* Hero */}
@@ -90,19 +71,20 @@ export default function HomePage() {
             View all
           </Link>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {samplePosts.map((post) => (
-            <Card key={post.slug} className="bg-bg">
-              <CardHeader>
-                <CardTitle className="text-base">{post.title}</CardTitle>
-                <CardDescription>{post.date}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-fg">{post.excerpt}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {recentPosts.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border py-16 text-center text-sm text-muted-fg">
+            还没有发布的文章。
+          </div>
+        ) : (
+          <div
+            data-testid="home-recent-posts"
+            className="flex flex-col divide-y divide-border"
+          >
+            {recentPosts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Site Stats */}
