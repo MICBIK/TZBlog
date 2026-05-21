@@ -46,7 +46,7 @@ function visitor(suffix = "vh"): {
 }
 
 describe("createComment", () => {
-  it("inserts PENDING top-level comment + Post.commentCount +1 (SPEC-D3-C-1)", async () => {
+  it("inserts PENDING top-level comment + Post.commentCount stays 0 (SPEC-D3-C-1 / SPEC-C-F-1)", async () => {
     const post = await makePost("hello")
 
     const result = await createComment({
@@ -66,8 +66,10 @@ describe("createComment", () => {
     expect(c!.authorEmail).toBe("alice@example.com")
     expect(c!.content).toBe("hi there")
 
+    // SPEC-C-F-1: 修正 D3 R5，commentCount 不再于 createComment 阶段 +1，
+    // 改为只在 status 转换到 APPROVED 时累加（见 §A.2 updateCommentStatus）。
     const updated = await testDb.post.findUnique({ where: { id: post.id } })
-    expect(updated!.commentCount).toBe(1)
+    expect(updated!.commentCount).toBe(0)
   })
 
   it("creates depth-2 reply when parentId points to APPROVED top-level (SPEC-D3-C-2)", async () => {
@@ -98,7 +100,7 @@ describe("createComment", () => {
     expect(c!.status).toBe("PENDING")
 
     const updated = await testDb.post.findUnique({ where: { id: post.id } })
-    expect(updated!.commentCount).toBe(1) // 仅 createComment 加的那次
+    expect(updated!.commentCount).toBe(0) // SPEC-C-F-1: PENDING 不计
   })
 
   it("rejects reply-of-reply with VALIDATION_ERROR (SPEC-D3-C-3)", async () => {
