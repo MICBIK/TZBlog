@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { HeroEditorial } from "@/components/site/HeroEditorial";
 import { PostCard } from "@/components/site/PostCard";
 import { getCurrentLocale } from "@/lib/i18n";
 import { listPosts } from "@/lib/services/posts";
@@ -25,23 +25,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-24">
-      {/* Hero */}
-      <section className="space-y-6">
-        <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
-          Hi, I&apos;m HaiDen.
-        </h1>
-        <p className="text-lg text-muted-fg md:text-xl">
-          A developer who builds things and writes about them.
-        </p>
-        <div className="flex flex-wrap gap-3 pt-2">
-          <Button asChild size="lg">
-            <Link href="/posts">Read Blog</Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/about">About Me</Link>
-          </Button>
-        </div>
-      </section>
+      <HeroEditorial />
 
       {/* Tech Stack */}
       <section className="space-y-6">
