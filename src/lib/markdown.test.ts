@@ -43,3 +43,52 @@ describe("renderMarkdown", () => {
     expect(html).not.toContain("alert(");
   });
 });
+
+type MarkdownModule = {
+  extractToc: (
+    content: string,
+  ) => Promise<Array<{ id: string; text: string; level: 2 | 3 }>>;
+};
+
+async function loadMarkdownModule(): Promise<MarkdownModule> {
+  const modulePath = "./markdown";
+  return (await import(modulePath)) as MarkdownModule;
+}
+
+function headingIds(html: string): string[] {
+  return Array.from(html.matchAll(/<h[23][^>]*id="([^"]+)"/g)).map(
+    (match) => match[1],
+  );
+}
+
+describe("extractToc", () => {
+  it("extracts h2/h3 with ids matching renderMarkdown output", async () => {
+    const { extractToc } = await loadMarkdownModule();
+    const markdown = "## Intro\n### Details\n## Conclusion";
+
+    const toc = await extractToc(markdown);
+
+    expect(toc).toEqual([
+      { id: "intro", text: "Intro", level: 2 },
+      { id: "details", text: "Details", level: 3 },
+      { id: "conclusion", text: "Conclusion", level: 2 },
+    ]);
+    expect(toc.map((h) => h.id)).toEqual(
+      headingIds(await renderMarkdown(markdown)),
+    );
+  });
+
+  it("skips h1 and h4+", async () => {
+    const { extractToc } = await loadMarkdownModule();
+
+    await expect(extractToc("# Top\n## A\n#### Deep")).resolves.toEqual([
+      { id: "a", text: "A", level: 2 },
+    ]);
+  });
+
+  it("returns [] for empty input", async () => {
+    const { extractToc } = await loadMarkdownModule();
+
+    await expect(extractToc("")).resolves.toEqual([]);
+  });
+});
