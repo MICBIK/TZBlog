@@ -6,7 +6,7 @@ import { SITE_META } from "@/lib/site-meta"
 import { getPostBySlug, type PostWithRelations } from "@/lib/services/posts"
 
 type Props = {
-  params: { slug: string } | Promise<{ slug: string }>
+  params: Promise<{ slug: string }>
 }
 
 export const size = {
