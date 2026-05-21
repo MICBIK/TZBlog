@@ -4,9 +4,10 @@ import { format } from "date-fns";
 import type { Metadata } from "next";
 
 import { getPostBySlug, type PostWithRelations } from "@/lib/services/posts";
-import { renderMarkdown } from "@/lib/markdown";
+import { extractToc, renderMarkdown } from "@/lib/markdown";
 import { DEFAULT_LOCALE, getCurrentLocale, type Locale } from "@/lib/i18n";
 import { PostViewBeacon } from "@/components/site/PostViewBeacon";
+import { PostToc } from "@/components/site/PostToc";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -56,6 +57,7 @@ export default async function PostDetailPage({ params }: Props) {
   if (!tr) notFound();
 
   const html = await renderMarkdown(tr.content);
+  const headings = await extractToc(tr.content);
 
   const columnTr = post.column
     ? pickColumnTranslation(post.column, locale)
@@ -66,68 +68,78 @@ export default async function PostDetailPage({ params }: Props) {
   const cover = post.cover?.trim();
 
   return (
-    <article className="space-y-10">
-      <PostViewBeacon slug={post.slug} />
+    <article className="lg:grid lg:grid-cols-[minmax(0,1fr)_200px] lg:gap-12">
+      <div className="space-y-10">
+        <PostViewBeacon slug={post.slug} />
 
-      <Link
-        href="/posts"
-        className="inline-block font-mono text-xs text-muted-fg transition hover:text-fg"
-      >
-        ← 所有文章
-      </Link>
+        <Link
+          href="/posts"
+          className="inline-block font-mono text-xs text-muted-fg transition hover:text-fg"
+        >
+          ← 所有文章
+        </Link>
 
-      <header className="space-y-4">
-        {cover ? (
-          <div className="aspect-[3/1] w-full overflow-hidden rounded-xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={cover}
-              alt={tr.title}
-              className="h-full w-full object-cover"
-            />
+        <header className="space-y-4">
+          {cover ? (
+            <div className="aspect-[3/1] w-full overflow-hidden rounded-xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cover}
+                alt={tr.title}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ) : null}
+          <div className="flex items-baseline gap-3 font-mono text-xs text-muted-fg">
+            {post.publishedAt && (
+              <time>{format(new Date(post.publishedAt), "yyyy-MM-dd")}</time>
+            )}
+            {post.column && columnLabel && (
+              <Link
+                href={`/columns/${post.column.slug}`}
+                className="transition hover:text-fg"
+              >
+                · {columnLabel}
+              </Link>
+            )}
           </div>
-        ) : null}
-        <div className="flex items-baseline gap-3 font-mono text-xs text-muted-fg">
-          {post.publishedAt && (
-            <time>{format(new Date(post.publishedAt), "yyyy-MM-dd")}</time>
-          )}
-          {post.column && columnLabel && (
-            <Link
-              href={`/columns/${post.column.slug}`}
-              className="transition hover:text-fg"
-            >
-              · {columnLabel}
-            </Link>
-          )}
-        </div>
-        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-          {tr.title}
-        </h1>
-        {tr.excerpt && <p className="text-lg text-muted-fg">{tr.excerpt}</p>}
-        <div className="flex items-center gap-4 pt-2 font-mono text-xs text-muted-fg">
-          <span>views {post.viewCount}</span>
-          <span>likes {post.likeCount}</span>
-          <span>comments {post.commentCount}</span>
-        </div>
-      </header>
+          <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+            {tr.title}
+          </h1>
+          {tr.excerpt && <p className="text-lg text-muted-fg">{tr.excerpt}</p>}
+          <div className="flex items-center gap-4 pt-2 font-mono text-xs text-muted-fg">
+            <span>views {post.viewCount}</span>
+            <span>likes {post.likeCount}</span>
+            <span>comments {post.commentCount}</span>
+          </div>
+        </header>
 
-      <div
-        className="prose prose-neutral max-w-none dark:prose-invert"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+        <div
+          className="prose prose-neutral max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
 
-      {tagSlugs.length > 0 && (
-        <footer className="flex flex-wrap gap-2 border-t border-border pt-8 font-mono text-xs text-muted-fg">
-          {tagSlugs.map((s) => (
-            <Link
-              key={s}
-              href={`/posts?tag=${encodeURIComponent(s)}`}
-              className="transition hover:text-fg"
-            >
-              #{s}
-            </Link>
-          ))}
-        </footer>
+        {tagSlugs.length > 0 && (
+          <footer className="flex flex-wrap gap-2 border-t border-border pt-8 font-mono text-xs text-muted-fg">
+            {tagSlugs.map((s) => (
+              <Link
+                key={s}
+                href={`/posts?tag=${encodeURIComponent(s)}`}
+                className="transition hover:text-fg"
+              >
+                #{s}
+              </Link>
+            ))}
+          </footer>
+        )}
+      </div>
+
+      {headings.length > 0 && (
+        <aside className="hidden lg:block">
+          <div className="sticky top-24">
+            <PostToc headings={headings} />
+          </div>
+        </aside>
       )}
     </article>
   );
