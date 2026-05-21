@@ -15,6 +15,7 @@ import {
   incrementPostView,
 } from "./posts"
 import { AppError } from "@/lib/errors"
+import { DEFAULT_LOCALE } from "@/lib/i18n"
 
 /**
  * Integration tests against the dev Postgres (port 5433, db `tzblog`).
@@ -466,6 +467,22 @@ describe("listPosts — pagination + filters", () => {
   })
 })
 
+describe("listAllPublishedSlugs", () => {
+  it("returns every PUBLISHED post across pages", async () => {
+    await seedPublishedRows(250)
+
+    const { listAllPublishedSlugs } = await importPostsService()
+    const rows = await listAllPublishedSlugs(DEFAULT_LOCALE)
+
+    expect(rows).toHaveLength(250)
+    expect(new Set(rows.map((row) => row.slug)).size).toBe(250)
+    expect(rows.map((row) => row.slug)).toEqual(
+      Array.from({ length: 250 }, (_, index) => `published-${249 - index}`),
+    )
+    expect(rows.every((row) => row.updatedAt instanceof Date)).toBe(true)
+  })
+})
+
 describe("incrementPostView", () => {
   async function makePost(slug = "v"): Promise<string> {
     const p = await createPost(
@@ -519,3 +536,37 @@ describe("incrementPostView", () => {
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 })
+
+async function importPostsService(): Promise<{
+  listAllPublishedSlugs: (
+    locale: typeof DEFAULT_LOCALE,
+  ) => Promise<Array<{ slug: string; updatedAt: Date }>>
+}> {
+  const modulePath = "./" + "posts"
+  return (await import(modulePath)) as {
+    listAllPublishedSlugs: (
+      locale: typeof DEFAULT_LOCALE,
+    ) => Promise<Array<{ slug: string; updatedAt: Date }>>
+  }
+}
+
+async function seedPublishedRows(count: number): Promise<void> {
+  const rows = Array.from({ length: count }, (_, index) => ({
+    id: `published-${index}-id`,
+    slug: `published-${index}`,
+    status: "PUBLISHED" as const,
+    publishedAt: new Date(Date.UTC(2026, 0, 1, 0, 0, index)),
+    authorId,
+  }))
+
+  await testDb.post.createMany({ data: rows })
+  await testDb.postTranslation.createMany({
+    data: rows.map((row) => ({
+      postId: row.id,
+      locale: DEFAULT_LOCALE,
+      title: row.slug,
+      excerpt: `${row.slug} excerpt`,
+      content: `${row.slug} content`,
+    })),
+  })
+}
