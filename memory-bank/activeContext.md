@@ -4,17 +4,18 @@
 
 ## 当前焦点
 
-**P1 媒体上传已完结，下一步：文章列表 + 筛选 / 文章编辑器页**
+**P1 后台 CMS 主干已完结（专栏 / 媒体 / 文章列表 / 文章编辑器），下一步：评论审核页 或 进入 P2 前台展示**
 
-- 媒体上传 §1-§7 已完成：Storage 抽象（local / s3 driver）、upload schema、media service、API routes、CoverUploader、ImageUploadButton、媒体库列表、MediaUploadDropzone、全局 Toaster、分页 12/页。
-- 测试现状：Vitest node + jsdom projects；全量 170 passed / 1 skipped（171）。
-- §7 v2 smoke：B-H、L、M 真实浏览器验证通过，截图与 Network 输出在 `/tmp/media-smoke-v2-results.json`。
-- 7.3 `STORAGE_DRIVER=s3` 切换按用户要求跳过，后续由用户手动验。
+- 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
+- 文章列表 + 筛选 + 编辑器：代码在 P0 阶段已落，**2026-05-21** 补齐 5 个外围测试文件（API route + 关键组件 jsdom），全量 22 files / 213 passed / 1 skipped。
+- 全套自动验证（pnpm typecheck / lint / test）全绿。
+- 后台主功能链路完整：列表 → 筛选（q/status/column/tag）→ 新建 → 上传封面 → 草稿 → 发布 → 编辑 → 归档 → 删除。
 
 ## 下一步计划
 
-1. 文章列表 + 筛选（专栏 / 状态 / 标签）
-2. 文章编辑器页（接入 MarkdownEditorWithPreview + 元数据侧栏）
+1. **C. 评论审核页**（P1 收尾）：pending/approved/spam/rejected 标签 + 批量操作。需先 seed 少量评论。
+2. **D. P2 前台展示开门**：首页 Hero + 最近文章 + 文章详情（Shiki + TOC），顺便闭环 KI-002（`Post.cover` 前台未渲染）。
+3. **E. RSS / sitemap / OG 图生成**（P2 中期）。
 
 ## 待办池 / 已知问题
 
