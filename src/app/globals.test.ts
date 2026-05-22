@@ -51,4 +51,14 @@ describe("globals.css editorial system", () => {
     expect(css).toContain(".markdown-alert-warning");
     expect(css).toContain(".markdown-alert-caution");
   });
+
+  it("defines launch-surface primitives with reduced-motion compatibility", () => {
+    expect(css).toContain(".launch-surface");
+    expect(css).toContain(".launch-panel");
+    expect(css).toContain(".launch-grid");
+    expect(css).toContain("[data-launch-orbit]");
+    expect(css).toContain("prefers-reduced-motion: reduce");
+    expect(css).toContain("[data-launch-orbit]");
+    expect(css).toContain("animation: none");
+  });
 });

@@ -18,6 +18,13 @@ interface AboutContent {
   story: {
     paragraphs: string[];
   };
+  principles: {
+    intro: string;
+    items: Array<{
+      label: string;
+      detail: string;
+    }>;
+  };
   contact: {
     email: string;
     links: Array<{
@@ -37,6 +44,7 @@ describe("aboutContent", () => {
     expect(typedContent.hero.lead).toEqual(expect.any(String));
     expect(typedContent.now.items).toEqual(expect.any(Array));
     expect(typedContent.story.paragraphs).toEqual(expect.any(Array));
+    expect(typedContent.principles.items).toEqual(expect.any(Array));
     expect(typedContent.contact.links).toEqual(expect.any(Array));
   });
 
@@ -60,6 +68,15 @@ describe("aboutContent", () => {
     expect(aboutContent.hero.lead.length).toBeGreaterThan(0);
     expect(aboutContent.now.items.length).toBeGreaterThanOrEqual(2);
     expect(aboutContent.story.paragraphs.length).toBeGreaterThanOrEqual(2);
+    expect(aboutContent.principles.intro).toContain("TZBlog");
+    expect(aboutContent.principles.items.length).toBeGreaterThanOrEqual(3);
+    expect(allContentStrings(aboutContent)).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/Markdown/),
+        expect.stringMatching(/self-hosted|Self-hosted/),
+        expect.stringMatching(/Next\.js|PostgreSQL|MinIO/),
+      ]),
+    );
     expect(aboutContent.contact.email).toMatch(/.+@.+\..+/);
     expect(aboutContent.contact.links.length).toBeGreaterThanOrEqual(1);
   });
@@ -78,9 +95,11 @@ function allContentStrings(content: AboutContent): string[] {
     content.hero.headline,
     content.hero.lead,
     content.now.intro,
+    content.principles.intro,
     content.contact.email,
     ...content.now.items.flatMap((item) => [item.label, item.detail]),
     ...content.story.paragraphs,
+    ...content.principles.items.flatMap((item) => [item.label, item.detail]),
     ...content.contact.links.flatMap((link) => [link.label, link.href]),
   ];
 }

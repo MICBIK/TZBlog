@@ -16,6 +16,15 @@ const pageExports = aboutPageModule as {
   };
 };
 
+type AboutContentWithPrinciples = typeof aboutContent & {
+  principles: {
+    items: Array<{ label: string; detail: string }>;
+  };
+};
+
+const expectedAboutContent =
+  aboutContent as AboutContentWithPrinciples;
+
 describe("AboutPage", () => {
   it("AboutPage renders 4 sections in order", async () => {
     render(await AboutPage());
@@ -26,6 +35,10 @@ describe("AboutPage", () => {
     });
     const nowHeading = screen.getByRole("heading", { level: 2, name: "Now" });
     const storyHeading = screen.getByRole("heading", { level: 2, name: "Story" });
+    const principlesHeading = screen.getByRole("heading", {
+      level: 2,
+      name: "Principles",
+    });
     const contactHeading = screen.getByRole("heading", {
       level: 2,
       name: "Contact",
@@ -35,6 +48,7 @@ describe("AboutPage", () => {
     expect(aboutContent.now.items[0].label).toBe("Shipping");
     expect(screen.getByText(aboutContent.now.items[0].label)).toBeInTheDocument();
     expect(screen.getByText(aboutContent.story.paragraphs[0])).toBeInTheDocument();
+    expect(screen.getByText(expectedAboutContent.principles.items[0].label)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: aboutContent.contact.email })).toBeInTheDocument();
     expect(
       heroHeading.compareDocumentPosition(nowHeading) & Node.DOCUMENT_POSITION_FOLLOWING,
@@ -46,6 +60,14 @@ describe("AboutPage", () => {
       storyHeading.compareDocumentPosition(contactHeading) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    expect(
+      storyHeading.compareDocumentPosition(principlesHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      principlesHeading.compareDocumentPosition(contactHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("AboutPage exports metadata with title + description", () => {
@@ -55,12 +77,12 @@ describe("AboutPage", () => {
     expect(pageExports.metadata?.openGraph?.description).toBe(aboutContent.hero.lead);
   });
 
-  it("AboutPage uses semantic headings (1 h1, 3 h2)", async () => {
+  it("AboutPage uses semantic headings (1 h1, 4 h2)", async () => {
     const { container } = render(await AboutPage());
 
     expect(container.querySelector("article")).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(3);
-    expect(container.querySelectorAll("section[aria-labelledby]")).toHaveLength(4);
+    expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(4);
+    expect(container.querySelectorAll("section[aria-labelledby]")).toHaveLength(5);
   });
 });

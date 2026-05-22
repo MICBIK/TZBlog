@@ -30,6 +30,14 @@ vi.mock("@/components/site/GithubCard", () => ({
   ),
 }));
 
+vi.mock("@/components/site/LaunchNarrative", () => ({
+  LaunchNarrative: () => (
+    <section data-testid="launch-narrative-stub">
+      <h2>A self-hosted publishing system, built in public.</h2>
+    </section>
+  ),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getCurrentLocale.mockReturnValue("zh");
@@ -98,6 +106,28 @@ describe("HomePage recent posts", () => {
     ).toBeTruthy();
     expect(
       githubCard.compareDocumentPosition(recentHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("homepage renders launch narrative between hero and tech stack", async () => {
+    render(await HomePage());
+
+    const hero = screen.getByRole("heading", {
+      level: 1,
+      name: /Building things,\s*one commit\s*at a time\./,
+    });
+    const launchNarrative = screen.getByTestId("launch-narrative-stub");
+    const techStack = screen.getByText("FRONTEND");
+
+    expect(launchNarrative).toBeInTheDocument();
+    expect(screen.getByText("A self-hosted publishing system, built in public.")).toBeInTheDocument();
+    expect(
+      hero.compareDocumentPosition(launchNarrative) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      launchNarrative.compareDocumentPosition(techStack) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
