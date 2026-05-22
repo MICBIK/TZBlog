@@ -80,15 +80,24 @@ describe("globals.css editorial system", () => {
     for (const file of files) {
       const source = readFileSync(join(process.cwd(), file), "utf-8");
 
-      expect(source, `${file} uses unresolved text var class`).not.toMatch(
-        /text-\[var\(--text-/,
-      );
-      expect(source, `${file} uses unresolved leading var class`).not.toMatch(
-        /leading-\[var\(--leading-/,
-      );
-      expect(source, `${file} uses unresolved tracking var class`).not.toMatch(
-        /tracking-\[var\(--tracking-/,
-      );
+      expect(
+        source,
+        `${file} uses unresolved text var class`,
+      ).not.toContain(unresolvedVarClassToken("text"));
+      expect(
+        source,
+        `${file} uses unresolved leading var class`,
+      ).not.toContain(unresolvedVarClassToken("leading"));
+      expect(
+        source,
+        `${file} uses unresolved tracking var class`,
+      ).not.toContain(unresolvedVarClassToken("tracking"));
     }
   });
 });
+
+function unresolvedVarClassToken(kind: string): string {
+  const openBracket = String.fromCharCode(91);
+  const openParen = String.fromCharCode(40);
+  return `${kind}-${openBracket}var${openParen}--${kind}-`;
+}
