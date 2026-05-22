@@ -3,6 +3,7 @@ import { format } from "date-fns";
 
 type PostCardTag = {
   slug: string;
+  name: string;
 };
 
 export type PostCardPost = {
@@ -23,10 +24,7 @@ export function PostCard({ post }: PostCardProps) {
   const cover = post.cover?.trim();
 
   return (
-    <Link
-      href={`/posts/${post.slug}`}
-      className="group flex gap-4 py-6 transition md:gap-6"
-    >
+    <article className="group flex gap-4 py-6 transition md:gap-6">
       {cover ? (
         <div className="aspect-[16/10] w-32 shrink-0 overflow-hidden rounded-md md:w-44">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -45,8 +43,13 @@ export function PostCard({ post }: PostCardProps) {
           )}
           {post.columnName && <span>· {post.columnName}</span>}
         </div>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight text-fg group-hover:underline md:text-2xl">
-          {post.title}
+        <h2 className="mt-2 text-xl font-semibold tracking-tight text-fg md:text-2xl">
+          <Link
+            href={`/posts/${post.slug}`}
+            className="transition group-hover:underline"
+          >
+            {post.title}
+          </Link>
         </h2>
         {post.excerpt && (
           <p className="mt-2 line-clamp-2 text-sm text-muted-fg">
@@ -56,11 +59,17 @@ export function PostCard({ post }: PostCardProps) {
         {post.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2 font-mono text-xs text-muted-fg">
             {post.tags.slice(0, 4).map((t) => (
-              <span key={t.slug}>#{t.slug}</span>
+              <Link
+                key={t.slug}
+                href={`/tags/${encodeURIComponent(t.slug)}`}
+                className="transition hover:text-fg"
+              >
+                #{t.name}
+              </Link>
             ))}
           </div>
         )}
       </div>
-    </Link>
+    </article>
   );
 }

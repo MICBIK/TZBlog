@@ -126,7 +126,7 @@ export default async function PostDetailPage({ params }: Props) {
             {tagSlugs.map((s) => (
               <Link
                 key={s}
-                href={`/posts?tag=${encodeURIComponent(s)}`}
+                href={`/tags/${encodeURIComponent(s)}`}
                 className="transition hover:text-fg"
               >
                 #{s}
