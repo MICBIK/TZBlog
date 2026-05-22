@@ -40,20 +40,17 @@ describe("aboutContent", () => {
     expect(typedContent.contact.links).toEqual(expect.any(Array));
   });
 
-  it("about.ts has TODO[pre-launch] warning", async () => {
+  it("aboutContentHasNoPreLaunchPlaceholders", async () => {
     const fileContent = await readFile(
       join(process.cwd(), "src/lib/content/about.ts"),
       "utf-8",
     );
     const { aboutContent } = await loadAboutContent();
 
-    expect(fileContent).toContain(
-      "// TODO[pre-launch]: replace placeholder strings before deploy",
+    expect(fileContent).not.toContain("TODO[pre-launch]");
+    expect(allContentStrings(aboutContent)).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/Placeholder:/)]),
     );
-    expect(fileContent).toContain(
-      "// sections: hero.headline, hero.lead, now.items, story.paragraphs, contact.email",
-    );
-    expect(aboutContent.story.paragraphs[0]).toMatch(/^Placeholder:/);
   });
 
   it("aboutContent fields non-empty", async () => {
@@ -74,4 +71,16 @@ async function loadAboutContent() {
   return (await vi.importActual(aboutModulePath)) as {
     aboutContent: AboutContent;
   };
+}
+
+function allContentStrings(content: AboutContent): string[] {
+  return [
+    content.hero.headline,
+    content.hero.lead,
+    content.now.intro,
+    content.contact.email,
+    ...content.now.items.flatMap((item) => [item.label, item.detail]),
+    ...content.story.paragraphs,
+    ...content.contact.links.flatMap((link) => [link.label, link.href]),
+  ];
 }
