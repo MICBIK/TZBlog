@@ -16,6 +16,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/i18n", () => ({
+  SUPPORTED_LOCALES: ["zh", "en"],
   getCurrentLocale: mocks.getCurrentLocale,
 }));
 
