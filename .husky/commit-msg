@@ -3,7 +3,7 @@
 # 规则：
 #   1) feat: commit 前 5 个 commit 必须有同 scope 的 test:
 #   2) [no-tdd] 标签仅在 staged 改动只涉及白名单文件时放行（防伪造逃生口）
-# 白名单：纯样式 (*.css/*.scss/*.sass/*.less)、文档 (*.md/*.mdx/*.txt/*.rst)
+# 白名单：纯样式 (*.css/*.scss/*.sass/*.less)、文档 (*.md/*.mdx/*.txt/*.rst / LICENSE)
 
 new_msg=$(cat "$1" 2>/dev/null || cat .git/COMMIT_EDITMSG 2>/dev/null || echo "")
 
@@ -29,6 +29,7 @@ if echo "$new_msg" | grep -q '\[no-tdd\]'; then
     case "$f" in
       *.css|*.scss|*.sass|*.less|*.postcss) ;;
       *.md|*.mdx|*.txt|*.rst) ;;
+      LICENSE) ;;
       "")  ;;
       *)
         violating_files="${violating_files}    ${f}
@@ -45,7 +46,7 @@ EOF
     echo "  违规文件："
     printf "%s" "$violating_files"
     echo ""
-    echo "  [no-tdd] 仅限白名单：*.css/*.scss/*.sass/*.less/*.md/*.mdx/*.txt/*.rst"
+    echo "  [no-tdd] 仅限白名单：*.css/*.scss/*.sass/*.less/*.md/*.mdx/*.txt/*.rst / LICENSE"
     echo ""
     echo "  补救方案："
     echo "    1) 移除 [no-tdd] 标签，按 TDD 节奏先写 test(<scope>): 再写 feat(<scope>):"
