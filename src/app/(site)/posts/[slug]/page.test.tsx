@@ -143,7 +143,37 @@ describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
   });
 });
 
-function post({ cover }: { cover: string | null }): PostWithRelations {
+describe("PostDetailPage tag links", () => {
+  it("Post detail page tag links use /tags/{slug}", async () => {
+    mocks.getPostBySlug.mockResolvedValue(
+      post({
+        cover: null,
+        tags: [
+          {
+            tag: { id: "tag-id", slug: "foo", name: "Foo" },
+          },
+        ],
+      }),
+    );
+
+    render(
+      await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }),
+    );
+
+    expect(screen.getByRole("link", { name: "#foo" })).toHaveAttribute(
+      "href",
+      "/tags/foo",
+    );
+  });
+});
+
+function post({
+  cover,
+  tags = [],
+}: {
+  cover: string | null;
+  tags?: PostWithRelations["tags"];
+}): PostWithRelations {
   return {
     id: "post-id",
     slug: "detail",
@@ -168,7 +198,7 @@ function post({ cover }: { cover: string | null }): PostWithRelations {
       },
     ],
     column: null,
-    tags: [],
+    tags,
     author: { id: "author-id", email: "author@example.com", name: "Author" },
   } as PostWithRelations;
 }

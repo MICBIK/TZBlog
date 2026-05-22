@@ -22,7 +22,27 @@ describe("PostCard cover", () => {
   });
 });
 
-function post(overrides: { cover: string | null }): PostCardPost {
+describe("PostCard tag links", () => {
+  it("PostCard tag link points to /tags/{slug}", () => {
+    render(
+      <PostCard
+        post={post({
+          cover: null,
+          tags: [{ slug: "foo", name: "Foo" }],
+        })}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: /Foo/ })).toHaveAttribute(
+      "href",
+      "/tags/foo",
+    );
+  });
+});
+
+function post(
+  overrides: { cover: string | null; tags?: Array<{ slug: string; name: string }> },
+): PostCardPost {
   return {
     slug: "cover-post",
     title: "Cover Title",
