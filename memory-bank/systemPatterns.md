@@ -189,3 +189,59 @@ content (Markdown 字符串)
 - `/sitemap.xml` 与 `/rss.xml` 使用 `export const revalidate = 600`，以 10 分钟为基准缓存窗口。
 - 理由：搜索引擎与 RSS reader 不需要秒级实时性；10 分钟足够覆盖发布后可见性，同时避免爬虫高频访问时每次打 Postgres。
 - 文章发布/更新路径仍写 DB 为准；缓存过期后由 Next 重新生成，避免额外 cache invalidation 复杂度。
+
+## 18. async RSC 在 vitest 页面级集成测试
+
+### 问题
+
+React 19 的 server component 允许 `export async function Foo()` 直接 await 数据再返回 JSX。`render(await Foo())` 在单元测试里没问题（外层先 await，再把已 resolve 的 JSX 树丢给 RTL）。
+
+但**一旦 async RSC 出现在另一个 RSC 的 children 位置**（典型场景：`<HomePage>` 里写 `<GithubCard />`），vitest 的 jsdom + React 渲染器无法在测试时把内嵌 async 组件展开，会抛：
+
+```
+<Foo> is an async Client Component. Only Server Components can be async at the moment.
+A component suspended inside an `act` scope, but the `act` call was not awaited.
+```
+
+整个父页面的所有测试连锁崩溃，不只是新加的那个。
+
+### 解法（项目内统一模式）
+
+**在父页面的 test 文件里，用 `vi.mock` 把那个 async 子组件整体替换成 sync 桩**，不要去 mock 它内部依赖的 service。桩组件渲染最少够断言用的标签 / `data-testid` 即可。
+
+```ts
+vi.mock("@/components/site/Foo", () => ({
+  Foo: () => (
+    <section data-testid="foo-stub">
+      <h2>FOO · LABEL</h2>
+    </section>
+  ),
+}));
+```
+
+集成测试只断言**接线**（导入路径、DOM 顺序、props 透传），不断言 Foo 内部 UI（那是 `Foo.test.tsx` 的事）。
+
+### 先例
+
+- `src/app/(site)/posts/[slug]/page.test.tsx` — mock 异步 `CommentSection`
+- `src/app/(site)/page.test.tsx` — mock 异步 `GithubCard`
+
+### 何时套用 / 何时不套用
+
+| 情形 | 套用 §18 |
+|---|---|
+| async RSC 嵌在另一个被 vitest 直接 render 的 RSC 里 | ✅ |
+| async RSC 是顶层、测试直接 `render(await Foo())` | ❌ 不需要，单元测试照常 |
+| 子组件是 sync（`export function Foo()`），即使父是 async | ❌ 不需要 |
+| Server Action / `use server` 函数 | ❌ 另一套 mock 思路 |
+
+### 不要做的事
+
+- 不要为了"测得动"把 `export async function` 改回 sync + 把 await 上提到父组件 — 那是用业务代码迁就测试工具，反了。
+- 不要在 page 级 test 里直接 mock async 子组件**依赖的 service**（如本例 `@/lib/services/github`）— mock 了 service，组件仍然是 async，问题没解决。
+- 不要在 jsdom 里强行加 `<Suspense>` 兜底 — RTL 的 act 流和 React 19 RSC 的解析阶段不在同一根上。
+
+### 等什么时候可以删掉这一节
+
+当 vitest / `@testing-library/react` 官方明确支持 async RSC 作为 children 渲染（届时 React 19 RSC + jsdom 集成成熟），上述桩可以拆掉，测试直接 render。在此之前，这是 TZBlog 推荐做法。
+
