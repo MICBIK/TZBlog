@@ -24,7 +24,7 @@ export async function MarkdownPreview({
   return (
     <article
       className={[
-        "prose prose-neutral dark:prose-invert max-w-none",
+        "markdown-body max-w-none",
         className ?? "",
       ].join(" ")}
       dangerouslySetInnerHTML={{ __html: html }}

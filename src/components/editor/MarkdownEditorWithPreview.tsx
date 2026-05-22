@@ -69,7 +69,7 @@ export function MarkdownEditorWithPreview({
           aria-label="Markdown preview"
         >
           <article
-            className="prose prose-neutral dark:prose-invert max-w-none"
+            className="markdown-body max-w-none"
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
           <p className="mt-6 text-xs text-[hsl(var(--muted))]">

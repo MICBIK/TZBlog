@@ -119,7 +119,7 @@ export default async function PostDetailPage({ params }: Props) {
         </header>
 
         <div
-          className="prose prose-neutral max-w-none dark:prose-invert"
+          className="markdown-body max-w-none"
           dangerouslySetInnerHTML={{ __html: html }}
         />
 

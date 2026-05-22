@@ -28,6 +28,8 @@ interface HastRoot {
   children: HastNode[];
 }
 
+type MarkdownAlertType = "NOTE" | "TIP" | "IMPORTANT" | "WARNING" | "CAUTION";
+
 export type TocHeading = {
   id: string;
   text: string;
@@ -166,12 +168,80 @@ function rehypeCollectToc(headings: TocHeading[]) {
   };
 }
 
+function rehypeMarkdownAlerts() {
+  return (tree: HastRoot) => {
+    visit(tree as never, "element", (node: unknown) => {
+      const el = node as HastElement;
+      if (el.tagName !== "blockquote") return;
+
+      const match = extractAlertMarker(el);
+      if (!match) return;
+
+      const type = match.type.toLowerCase();
+      el.tagName = "aside";
+      el.properties = {
+        ...(el.properties ?? {}),
+        className: ["markdown-alert", `markdown-alert-${type}`],
+        dataAlertType: type,
+        role: "note",
+      };
+      el.children = [
+        {
+          type: "element",
+          tagName: "div",
+          properties: { className: ["markdown-alert-title"] },
+          children: [{ type: "text", value: match.type }],
+        },
+        ...el.children,
+      ];
+    });
+  };
+}
+
+function extractAlertMarker(
+  blockquote: HastElement,
+): { type: MarkdownAlertType } | null {
+  const firstParagraph = blockquote.children.find(
+    (child): child is HastElement =>
+      (child as HastElement).type === "element" &&
+      (child as HastElement).tagName === "p",
+  );
+  if (!firstParagraph) return null;
+
+  const firstText = firstParagraph.children.find(
+    (child): child is HastText => (child as HastText).type === "text",
+  );
+  if (!firstText) return null;
+
+  const marker = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*\n\s*|\s+|$)/.exec(
+    firstText.value,
+  );
+  if (!marker) return null;
+
+  const type = marker[1] as MarkdownAlertType;
+  firstText.value = firstText.value.slice(marker[0].length);
+
+  if (
+    firstText.value === "" &&
+    firstParagraph.children.every(
+      (child) => child === firstText || hastToString(child as never) === "",
+    )
+  ) {
+    blockquote.children = blockquote.children.filter(
+      (child) => child !== firstParagraph,
+    );
+  }
+
+  return { type };
+}
+
 // Sanitize schema extension — allow attributes shiki and our anchor plugins emit.
 // `clobberPrefix: ""` disables the default `user-content-` id rewrite so heading
 // slugs stay aligned with the autolink hrefs emitted by `rehype-autolink-headings`.
 const sanitizeSchema = {
   ...defaultSchema,
   clobberPrefix: "",
+  tagNames: [...(defaultSchema.tagNames ?? []), "aside"],
   attributes: {
     ...(defaultSchema.attributes ?? {}),
     "*": [
@@ -195,6 +265,16 @@ const sanitizeSchema = {
       "className",
       "style",
       "tabIndex",
+    ],
+    div: [
+      ...((defaultSchema.attributes?.div ?? []) as unknown as string[]),
+      "className",
+    ],
+    aside: [
+      ...((defaultSchema.attributes?.blockquote ?? []) as unknown as string[]),
+      "className",
+      "dataAlertType",
+      "role",
     ],
     a: [
       ...((defaultSchema.attributes?.a ?? []) as unknown as string[]),
@@ -225,6 +305,7 @@ export async function renderMarkdown(
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: false })
+    .use(rehypeMarkdownAlerts)
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(rehypeSanitize, sanitizeSchema)
