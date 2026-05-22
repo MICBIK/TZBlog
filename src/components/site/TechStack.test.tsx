@@ -14,12 +14,12 @@ describe("<TechStack />", () => {
     expect(screen.getByText("INFRA")).toBeInTheDocument();
     expect(screen.getByText("TOOLING")).toBeInTheDocument();
 
-    expect(screen.getByText("Next.js 15")).toBeInTheDocument();
+    expect(screen.getByText("Next.js 16")).toBeInTheDocument();
     expect(screen.getByText("React 19")).toBeInTheDocument();
     expect(screen.getByText("TypeScript 5")).toBeInTheDocument();
     expect(screen.getByText("Tailwind CSS v4")).toBeInTheDocument();
     expect(screen.getByText("shadcn/ui")).toBeInTheDocument();
-    expect(screen.getByText("Tiptap v2")).toBeInTheDocument();
+    expect(screen.getByText("Markdown source editor")).toBeInTheDocument();
     expect(screen.getByText("remark + rehype")).toBeInTheDocument();
     expect(screen.getByText("Shiki")).toBeInTheDocument();
     expect(screen.getByText("PostgreSQL 16")).toBeInTheDocument();
@@ -39,9 +39,10 @@ describe("<TechStack />", () => {
   it("each item renders with name + note", async () => {
     render(await techStack());
 
-    const next = screen.getByText("Next.js 15").closest("div");
+    const next = screen.getByText("Next.js 16").closest("div");
     expect(next).not.toBeNull();
     expect(within(next!).getByText("App Router + RSC + Server Actions")).toBeInTheDocument();
+    expect(screen.getByText("split source + preview")).toBeInTheDocument();
     expect(screen.getByText("with strict mode")).toBeInTheDocument();
     expect(screen.getByText("CSS-vars driven theming")).toBeInTheDocument();
   });

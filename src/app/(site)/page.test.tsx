@@ -72,7 +72,7 @@ describe("HomePage recent posts", () => {
 
     expect(screen.getByText("FRONTEND")).toBeInTheDocument();
     expect(screen.getByText("CONTENT & EDITOR")).toBeInTheDocument();
-    expect(screen.getByText("Next.js 15")).toBeInTheDocument();
+    expect(screen.getByText("Next.js 16")).toBeInTheDocument();
     expect(screen.getByText("App Router + RSC + Server Actions")).toBeInTheDocument();
     expect(screen.queryByText(/\$\s*whoami/)).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Recent Posts" })).toBeInTheDocument();
