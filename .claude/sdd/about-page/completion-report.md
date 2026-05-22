@@ -74,16 +74,31 @@
 
 ## PRE-LAUNCH ACTION REQUIRED
 
-Before deploy, edit `src/lib/content/about.ts` and replace every `Placeholder:` string with real copy.
+Before deploy, edit `src/lib/content/about.ts` and replace every placeholder field with real copy. The top-file `TODO[pre-launch]` warning and the `// sections: ...` line below it must stay visible until every row in the table below is reviewed.
 
-Required review targets:
+This checklist mirrors the field list declared at `src/lib/content/about.ts:2` and is the authoritative pre-launch sign-off list:
 
-- `hero.lead`
-- `now.intro`
-- `story.paragraphs[0]`
-- `story.paragraphs[1]`
+| Field | Current value | Why it needs review |
+|---|---|---|
+| `hero.headline` | `"Building things people read."` | No `Placeholder:` prefix on purpose (avoids the homepage looking like an unfinished demo) — still a placeholder, must confirm or rewrite. |
+| `hero.lead` | `"Placeholder: I'm ha1den. I ship full-stack software and write about what I learn along the way."` | Explicit `Placeholder:` prefix — must rewrite. Also flows into `metadata.description` and `openGraph.description`, so SEO copy ships from this field. |
+| `now.intro` | `"Placeholder: As of May 2026."` | Explicit `Placeholder:` prefix; also update the date if the launch slips past May 2026. |
+| `now.items[0].detail` | `"TZBlog from scratch (Next.js 15 + Prisma + MinIO)."` | Real-sounding but listed under the TODO clause — verify it is still accurate at launch. |
+| `now.items[1].detail` | `"Designing Data-Intensive Applications (re-read)."` | Same — verify or update. |
+| `now.items[2].detail` | `"Small CLI experiments."` | Same — verify or update. |
+| `story.paragraphs[0]` | `"Placeholder: I started building things on the web in [year]. The first deploy taught me [lesson]."` | Explicit `Placeholder:` prefix plus `[year]` / `[lesson]` template slots — must rewrite. |
+| `story.paragraphs[1]` | `"Placeholder: These days I focus on shipping small, well-made things and writing them up here."` | Explicit `Placeholder:` prefix — must rewrite. |
+| `contact.email` | `"hello@example.com"` | `example.com` is an IETF-reserved example domain (RFC 2606); will not route real mail — must replace with a real inbox before deploy. |
 
-The top-file `TODO[pre-launch]` warning must stay visible until this content is replaced.
+### Self-check command
+
+Before deploy, run this from the repo root. Every match it surfaces must be intentional, otherwise fix the underlying field:
+
+```bash
+grep -nE 'Placeholder:|example\.com|Building things people read|\[year\]|\[lesson\]' src/lib/content/about.ts
+```
+
+A clean launch typically means the command returns either zero lines, or only the comment lines at the top of the file (the `TODO[pre-launch]` warning and the `// sections: ...` checklist).
 
 ## File List
 
