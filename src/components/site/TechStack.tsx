@@ -12,7 +12,7 @@ const techStack: TechCategory[] = [
   {
     label: "Frontend",
     items: [
-      { name: "Next.js 15", note: "App Router + RSC + Server Actions" },
+      { name: "Next.js 16", note: "App Router + RSC + Server Actions" },
       { name: "React 19", note: "with strict mode" },
       { name: "TypeScript 5", note: "strict everywhere" },
       { name: "Tailwind CSS v4", note: "CSS-vars driven theming" },
@@ -22,7 +22,7 @@ const techStack: TechCategory[] = [
   {
     label: "Content & Editor",
     items: [
-      { name: "Tiptap v2", note: "WYSIWYG ↔ Markdown" },
+      { name: "Markdown source editor", note: "split source + preview" },
       { name: "remark + rehype", note: "server-side MD pipeline" },
       { name: "Shiki", note: "syntax highlighting" },
     ],
