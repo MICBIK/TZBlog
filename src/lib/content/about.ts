@@ -1,6 +1,3 @@
-// TODO[pre-launch]: replace placeholder strings before deploy
-// sections: hero.headline, hero.lead, now.items, story.paragraphs, contact.email
-
 interface AboutContent {
   hero: {
     headline: string;
@@ -28,35 +25,35 @@ interface AboutContent {
 
 export const aboutContent = {
   hero: {
-    headline: "Building things people read.",
+    headline: "Shipping software, then writing down the tradeoffs.",
     lead:
-      "Placeholder: I'm ha1den. I ship full-stack software and write about what I learn along the way.",
+      "I build full-stack products, self-host the pieces that matter, and use this site to document the engineering decisions behind them.",
   },
   now: {
-    intro: "Placeholder: As of May 2026.",
+    intro: "As of May 2026, the focus is making TZBlog production-ready and turning the build log into durable technical notes.",
     items: [
       {
         label: "Shipping",
-        detail: "TZBlog from scratch (Next.js 15 + Prisma + MinIO).",
+        detail: "TZBlog from scratch with Next.js 16, Prisma 7, PostgreSQL, MinIO, and Caddy.",
       },
       {
-        label: "Reading",
-        detail: "Designing Data-Intensive Applications (re-read).",
+        label: "Writing",
+        detail: "Implementation notes on CMS architecture, self-hosted deployment, observability, and product polish.",
       },
       {
-        label: "Building",
-        detail: "Small CLI experiments.",
+        label: "Hardening",
+        detail: "Pre-launch quality gates, backups, Lighthouse fixes, and a practical V2/V3 roadmap.",
       },
     ],
   },
   story: {
     paragraphs: [
-      "Placeholder: I started building things on the web in [year]. The first deploy taught me [lesson].",
-      "Placeholder: These days I focus on shipping small, well-made things and writing them up here.",
+      "TZBlog is intentionally built as a single, inspectable system: public pages, admin CMS, comments, analytics, media storage, and deployment all live in one Next.js codebase.",
+      "The goal is not just to publish posts. It is to keep enough ownership over the stack that performance, data, privacy, and editorial workflow can be tuned without waiting on a hosted platform.",
     ],
   },
   contact: {
-    email: "hello@example.com",
+    email: "hello@ha1den.dev",
     links: [
       {
         label: "GitHub",
