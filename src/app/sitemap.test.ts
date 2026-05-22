@@ -86,6 +86,24 @@ describe("sitemap", () => {
     expect(postUrls).toContain(`${baseUrl}/posts/sitemap-published-1049`);
   });
 
+  it("includes /tags index and per-tag detail URLs", async () => {
+    await testDb.tag.create({
+      data: { slug: "nextjs", name: "Next.js" },
+    });
+    await testDb.tag.create({
+      data: { slug: "typescript", name: "TypeScript" },
+    });
+
+    const { default: sitemap } = await importSitemap();
+    const entries = await sitemap();
+    const baseUrl = siteUrl();
+    const urls = entries.map((entry) => entry.url);
+
+    expect(urls).toContain(`${baseUrl}/tags`);
+    expect(urls).toContain(`${baseUrl}/tags/nextjs`);
+    expect(urls).toContain(`${baseUrl}/tags/typescript`);
+  });
+
   it("excludes columns without DEFAULT_LOCALE translation", async () => {
     await Promise.all([
       createColumnWithLocale("visible-column", DEFAULT_LOCALE),

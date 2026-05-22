@@ -7,14 +7,16 @@ afterEach(() => {
 });
 
 describe("robots", () => {
-  it('returns rules with userAgent="*" and allow="/"', async () => {
+  it('returns rules with userAgent="*", allow="/", disallow /admin + /api', async () => {
     vi.doMock("@/lib/env", () => ({
       env: { SITE_URL: "https://tzblog.example.com" },
     }));
 
     const { default: robots } = await importRobots();
 
-    expect(robots().rules).toEqual([{ userAgent: "*", allow: "/" }]);
+    expect(robots().rules).toEqual([
+      { userAgent: "*", allow: "/", disallow: ["/admin", "/api"] },
+    ]);
   });
 
   it('sitemap field uses absoluteUrl("/sitemap.xml")', async () => {
