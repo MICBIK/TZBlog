@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TZBlog
 
-## Getting Started
+> Last verified: 2026-05-22
 
-First, run the development server:
+自研个人技术博客系统：前台内容展示、后台 CMS、自研 Analytics、媒体存储和自部署链路在一个 Next.js 应用里闭环。
+
+<!-- TODO[post-launch]: replace with real homepage screenshot. -->
+![home](./docs/assets/screenshot-home.png)
+
+## 介绍
+
+TZBlog 是 ha1den 的个人技术博客工程，目标是把写作、发布、互动、分析和部署都掌握在自己的系统里。
+
+- 前台：Editorial 风格首页、文章、专栏、标签、About、RSS、sitemap、OG 图。
+- 后台 CMS：文章和专栏管理、Tiptap Markdown WYSIWYG、媒体库、评论审核。
+- 自研 Analytics：前台 PageView 上报，后台仪表盘消费 Postgres 聚合数据。
+- 自部署：Docker Compose + Caddy + VPS，不依赖托管平台的默认模板。
+
+## 技术栈
+
+| 类别 | 选型 |
+| --- | --- |
+| 框架 | Next.js 16.2.6 (App Router / RSC / Server Actions) |
+| 语言 | TypeScript 5 strict |
+| UI | React 19 + Tailwind CSS v4 + shadcn/ui + Radix UI |
+| 数据库 | PostgreSQL 16 + Prisma 7 |
+| 认证 | Auth.js v5 (Credentials provider) |
+| 编辑器 | Tiptap v3 + tiptap-markdown，存储格式为 Markdown |
+| Markdown 渲染 | remark + rehype + Shiki |
+| 媒体 | local storage / MinIO (S3 协议) 双 driver |
+| 测试 | Vitest + React Testing Library |
+| 部署 | Docker Compose + Caddy auto HTTPS + VPS |
+
+## 快速开始
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env
+pnpm docker:dev
+pnpm db:migrate
+pnpm db:seed
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打开 [http://localhost:3000](http://localhost:3000)。本地 Postgres 默认端口来自 `docker/docker-compose.dev.yml`，环境变量以 `.env.example` 为准。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+常用质量门：
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
 
-## Learn More
+详细本地开发流程见 [docs/development.md](docs/development.md)。
 
-To learn more about Next.js, take a look at the following resources:
+## 项目结构
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+src/
+├── app/(site)/         # 前台公开页面
+├── app/(admin)/        # 后台 CMS，middleware 守卫
+├── app/api/            # REST API
+├── components/         # site / admin / ui / editor 组件
+├── lib/services/       # 只放跨表业务流程
+├── lib/schemas/        # zod schema，前后端共享
+└── middleware.ts       # /admin 与 /api/admin 守卫
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+prisma/                 # schema、migrations、seed
+docker/                 # 本地与生产 compose 文件
+docs/                   # 人类可读文档
+.claude/sdd/            # Spec-Driven Development artifacts
+memory-bank/            # 项目上下文与进度记录
+```
 
-## Deploy on Vercel
+## 约定
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Commit 使用 Conventional Commits + scope，例如 `feat(post-detail): SPEC-X-1 add comment form`。
+- TDD 微循环为 `test(scope): SPEC RED` -> `feat(scope): SPEC GREEN`，同 scope 配对。
+- SDD 变更以 `.claude/sdd/<feature>/` 为 SSOT，先有 `proposal` / `specs` / `test-map` / `tasks` 再执行。
+- `[no-tdd]` 仅用于纯文档或纯样式改动，且 staged 文件必须在 hook 白名单内。
+- 组件文件用 `PascalCase.tsx`，普通工具文件用 `camelCase.ts`，测试文件与被测文件同目录。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+更多规则见 [docs/conventions.md](docs/conventions.md)，架构说明见 [docs/architecture.md](docs/architecture.md)。
+
+## 部署
+
+生产目标是 VPS 自部署。典型启动顺序：
+
+```bash
+docker compose pull
+docker compose up -d
+docker compose exec app pnpm db:deploy
+docker compose exec app pnpm db:seed
+```
+
+Caddy 负责反向代理与 HTTPS，Postgres 与 MinIO 由 Docker Compose 管理。详细 env、Caddyfile、备份、升级流程见 [docs/deployment.md](docs/deployment.md)。
+
+## License
+
+MIT © 2026 ha1den. See [LICENSE](LICENSE).
