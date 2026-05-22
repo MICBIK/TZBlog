@@ -26,8 +26,8 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[hsl(var(--bg))] text-[hsl(var(--fg))]">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-[hsl(var(--border))] px-4 py-6">
+    <div className="flex min-h-screen bg-bg text-fg">
+      <aside className="flex w-60 shrink-0 flex-col border-r border-border px-4 py-6">
         <div className="mb-8 px-2 text-lg font-semibold tracking-tight">
           TZBlog
         </div>
@@ -36,7 +36,7 @@ export default async function AdminLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-md px-3 py-2 text-sm text-[hsl(var(--muted))] transition-colors hover:bg-[hsl(var(--accent))]/10 hover:text-[hsl(var(--fg))]"
+              className="rounded-md px-3 py-2 text-sm text-muted-fg transition-colors hover:bg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {item.label}
             </Link>
@@ -45,8 +45,8 @@ export default async function AdminLayout({
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-[hsl(var(--border))] px-6">
-          <span className="text-sm text-[hsl(var(--muted))]">
+        <header className="flex h-14 items-center justify-between border-b border-border px-6">
+          <span className="text-sm text-muted-fg">
             {session.user.email}
           </span>
           <form
@@ -57,7 +57,7 @@ export default async function AdminLayout({
           >
             <button
               type="submit"
-              className="rounded-md border border-[hsl(var(--border))] px-3 py-1.5 text-sm transition-colors hover:bg-[hsl(var(--accent))]/10"
+              className="rounded-md border border-border px-3 py-1.5 text-sm text-fg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               登出
             </button>
