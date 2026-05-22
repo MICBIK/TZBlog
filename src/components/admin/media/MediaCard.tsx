@@ -37,6 +37,9 @@ export function MediaCard({ media }: MediaCardProps) {
         <img
           src={media.url}
           alt={media.filename}
+          width={600}
+          height={600}
+          loading="lazy"
           className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
         />
         <div className="absolute right-3 top-3 flex items-center gap-2 opacity-100 transition-all sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">

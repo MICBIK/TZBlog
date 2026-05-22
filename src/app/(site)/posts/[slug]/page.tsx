@@ -88,6 +88,8 @@ export default async function PostDetailPage({ params }: Props) {
               <img
                 src={cover}
                 alt={tr.title}
+                width={1600}
+                height={534}
                 className="h-full w-full object-cover"
               />
             </div>

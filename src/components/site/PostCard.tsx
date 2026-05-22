@@ -31,6 +31,8 @@ export function PostCard({ post }: PostCardProps) {
           <img
             src={cover}
             alt={post.title}
+            width={1600}
+            height={1000}
             loading="lazy"
             className="h-full w-full object-cover"
           />
