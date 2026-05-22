@@ -18,7 +18,7 @@ export function HeroEditorial() {
           id="hero-heading"
           data-reveal
           style={revealStyle("0ms")}
-          className="font-serif text-[var(--text-hero)] leading-[var(--leading-display)] tracking-[var(--tracking-tight)] text-fg"
+          className="font-serif text-hero leading-display tracking-tight text-fg"
         >
           Building things,{" "}
           <br />
@@ -60,7 +60,7 @@ export function HeroEditorial() {
         <p
           data-reveal
           style={revealStyle("60ms")}
-          className="font-mono text-[var(--text-label)] tracking-[var(--tracking-label)] uppercase text-muted-fg"
+          className="font-mono text-label tracking-label uppercase text-muted-fg"
         >
           001 / NOTES
         </p>
@@ -68,7 +68,7 @@ export function HeroEditorial() {
         <p
           data-reveal
           style={revealStyle("100ms")}
-          className="text-[var(--text-label)] tracking-[var(--tracking-label)] uppercase text-muted-fg"
+          className="text-label tracking-label uppercase text-muted-fg"
         >
           BLOG · ISSUE 002 · MAY 2026
         </p>
@@ -78,7 +78,7 @@ export function HeroEditorial() {
         <p
           data-reveal
           style={revealStyle("160ms")}
-          className="font-serif text-[var(--text-base)] leading-[var(--leading-body)] italic text-muted-fg"
+          className="font-serif text-base leading-body italic text-muted-fg"
         >
           ha1den · Notes from the field · May 2026
         </p>

@@ -28,7 +28,7 @@ function SuccessState({ data }: { data: OkData }) {
       <header className="space-y-3">
         <h2
           id="github-card-heading"
-          className="font-mono uppercase text-[var(--text-label)] tracking-[var(--tracking-label)] text-muted-fg"
+          className="font-mono uppercase text-label tracking-label text-muted-fg"
         >
           {LABEL}
         </h2>
@@ -53,12 +53,12 @@ function SuccessState({ data }: { data: OkData }) {
             href={user.html_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-serif text-[var(--text-base)] text-fg hover:underline"
+            className="font-serif text-base text-fg hover:underline"
           >
             {user.login}
           </a>
           {user.bio ? (
-            <p className="text-sm leading-[var(--leading-body)] text-muted-fg">
+            <p className="text-sm leading-body text-muted-fg">
               {user.bio}
             </p>
           ) : null}
@@ -66,10 +66,10 @@ function SuccessState({ data }: { data: OkData }) {
       </div>
 
       <div className="flex items-baseline gap-3">
-        <span className="font-serif text-[var(--text-h2)] leading-[var(--leading-display)] tracking-[var(--tracking-tight)] text-fg">
+        <span className="font-serif text-h2 leading-display tracking-tight text-fg">
           {recentCommitCount}
         </span>
-        <span className="font-mono uppercase text-[var(--text-label)] tracking-[var(--tracking-label)] text-muted-fg">
+        <span className="font-mono uppercase text-label tracking-label text-muted-fg">
           commits · last 7 days
         </span>
       </div>
@@ -84,7 +84,7 @@ function SuccessState({ data }: { data: OkData }) {
               className="group block space-y-1"
             >
               <span className="flex items-baseline justify-between gap-3">
-                <span className="font-serif text-[var(--text-base)] text-fg group-hover:underline">
+                <span className="font-serif text-base text-fg group-hover:underline">
                   {repo.name}
                 </span>
                 <span className="font-mono text-sm text-muted-fg">
@@ -92,7 +92,7 @@ function SuccessState({ data }: { data: OkData }) {
                 </span>
               </span>
               {repo.description ? (
-                <span className="block text-sm leading-[var(--leading-body)] text-muted-fg">
+                <span className="block text-sm leading-body text-muted-fg">
                   {repo.description}
                 </span>
               ) : null}
@@ -118,7 +118,7 @@ function FallbackState({ reason }: { reason: UnavailableReason }) {
       <header className="space-y-3">
         <h2
           id="github-card-heading"
-          className="font-mono uppercase text-[var(--text-label)] tracking-[var(--tracking-label)] text-muted-fg"
+          className="font-mono uppercase text-label tracking-label text-muted-fg"
         >
           {LABEL}
         </h2>
@@ -128,10 +128,10 @@ function FallbackState({ reason }: { reason: UnavailableReason }) {
         />
       </header>
 
-      <p className="font-serif text-[var(--text-base)] text-fg">
+      <p className="font-serif text-base text-fg">
         GitHub data unavailable
       </p>
-      <p className="text-sm leading-[var(--leading-body)] text-muted-fg">
+      <p className="text-sm leading-body text-muted-fg">
         {fallbackHint(reason)}
       </p>
     </section>

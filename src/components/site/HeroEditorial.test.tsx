@@ -13,7 +13,7 @@ describe("<HeroEditorial />", () => {
       "Building things, one commit at a time.",
     );
     expect(h1.className).toContain("font-serif");
-    expect(h1.className).toContain("text-[var(--text-hero)]");
+    expect(h1).toHaveClass("text-hero");
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("link", { name: "Read Blog →" })).toHaveAttribute(
@@ -39,8 +39,8 @@ describe("<HeroEditorial />", () => {
 
     const label = screen.getByText("BLOG · ISSUE 002 · MAY 2026");
     expect(label).toHaveClass("uppercase");
-    expect(label.className).toContain("tracking-[var(--tracking-label)]");
-    expect(label.className).toContain("text-[var(--text-label)]");
+    expect(label).toHaveClass("tracking-label");
+    expect(label).toHaveClass("text-label");
   });
 
   it("dateline renders with serif italic className", async () => {
@@ -65,7 +65,7 @@ describe("<HeroEditorial />", () => {
 
     const marginalia = screen.getByText("001 / NOTES");
     expect(marginalia).toHaveClass("uppercase");
-    expect(marginalia.className).toContain("tracking-[var(--tracking-label)]");
+    expect(marginalia).toHaveClass("tracking-label");
   });
 
   it("hero children have data-reveal attribute with staggered --reveal-delay", async () => {

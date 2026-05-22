@@ -56,9 +56,9 @@ describe("<GithubCard />", () => {
     const repo = screen.getByText("TZBlog");
 
     expect(label).toHaveClass("uppercase");
-    expect(label.className).toContain("text-[var(--text-label)]");
-    expect(label.className).toContain("tracking-[var(--tracking-label)]");
-    expect(number.className).toContain("text-[var(--text-h2)]");
+    expect(label).toHaveClass("text-label");
+    expect(label).toHaveClass("tracking-label");
+    expect(number).toHaveClass("text-h2");
     expect(repo.className).toContain("font-serif");
     expect(
       container.querySelector('[class*="w-12"][class*="border-t"][class*="border-border"]'),

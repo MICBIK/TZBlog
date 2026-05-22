@@ -53,8 +53,8 @@ describe("<TechStack />", () => {
     const label = screen.getByText("FRONTEND");
     expect(label).toHaveClass("uppercase");
     expect(label).toHaveClass("text-muted-fg");
-    expect(label.className).toContain("text-[var(--text-label)]");
-    expect(label.className).toContain("tracking-[var(--tracking-label)]");
+    expect(label).toHaveClass("text-label");
+    expect(label).toHaveClass("tracking-label");
   });
 
   it("item grid uses responsive cols", async () => {

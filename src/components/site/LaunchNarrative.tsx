@@ -26,19 +26,19 @@ export function LaunchNarrative() {
       className="launch-surface relative overflow-hidden rounded-[2rem] px-5 py-8 sm:px-8 lg:px-10"
     >
       <div data-launch-orbit aria-hidden="true" />
-      <div className="relative grid gap-10 lg:grid-cols-[5fr_7fr] lg:items-end">
+      <div className="relative space-y-8">
         <header className="space-y-4">
-          <p className="font-mono text-[var(--text-label)] tracking-[var(--tracking-label)] uppercase text-muted-fg">
+          <p className="font-mono text-label tracking-label uppercase text-muted-fg">
             BUILD LOG · PRODUCT SYSTEM
           </p>
           <div className="h-px w-12 border-t border-border" aria-hidden="true" />
           <h2
             id="launch-narrative-heading"
-            className="font-serif text-[var(--text-h2)] leading-[var(--leading-display)] tracking-[var(--tracking-tight)] text-fg"
+            className="font-serif text-h2 leading-display tracking-tight text-fg"
           >
             A self-hosted publishing system, built in public.
           </h2>
-          <p className="max-w-[54ch] text-sm leading-[var(--leading-body)] text-muted-fg md:text-base">
+          <p className="max-w-[54ch] text-sm leading-body text-muted-fg md:text-base">
             TZBlog is the site and the case study: a source-first editor, a
             PostgreSQL-backed CMS, a small analytics stack, and launch notes
             about the tradeoffs behind each layer.
@@ -53,13 +53,13 @@ export function LaunchNarrative() {
               style={{ "--reveal-delay": `${index * 80}ms` } as React.CSSProperties}
               className="launch-panel space-y-4 p-5"
             >
-              <p className="font-mono text-[var(--text-label)] tracking-[var(--tracking-label)] uppercase text-muted-fg">
+              <p className="font-mono text-label tracking-label uppercase text-muted-fg">
                 {card.label}
               </p>
-              <h3 className="font-serif text-[var(--text-lead)] leading-[var(--leading-display)] tracking-[var(--tracking-tight)] text-fg">
+              <h3 className="font-serif text-lead leading-display tracking-tight text-fg">
                 {card.title}
               </h3>
-              <p className="text-sm leading-[var(--leading-body)] text-muted-fg">
+              <p className="text-sm leading-body text-muted-fg">
                 {card.detail}
               </p>
             </article>

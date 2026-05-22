@@ -45,11 +45,11 @@ export default async function TagDetailPage({ params, searchParams }: Props) {
   return (
     <article className="space-y-12">
       <header className="space-y-3">
-        <p className="font-mono text-[var(--text-label)] tracking-[var(--tracking-label)] uppercase text-muted-fg">
+        <p className="font-mono text-label tracking-label uppercase text-muted-fg">
           TAG
         </p>
         <div className="h-px w-12 border-t border-border" aria-hidden="true" />
-        <h1 className="font-serif text-[var(--text-h1)] leading-[var(--leading-display)] tracking-[var(--tracking-tight)] text-fg">
+        <h1 className="font-serif text-h1 leading-display tracking-tight text-fg">
           {tag.name}
         </h1>
         <p className="font-mono text-sm text-muted-fg">
@@ -58,7 +58,7 @@ export default async function TagDetailPage({ params, searchParams }: Props) {
       </header>
 
       {items.length === 0 ? (
-        <p className="font-serif text-[var(--text-base)] leading-[var(--leading-body)] text-muted-fg">
+        <p className="font-serif text-base leading-body text-muted-fg">
           No posts in this tag yet.
         </p>
       ) : (

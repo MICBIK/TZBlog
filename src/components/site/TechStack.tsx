@@ -63,12 +63,12 @@ export function TechStack() {
       className="space-y-[var(--space-stack-lg)]"
     >
       <header className="space-y-2">
-        <p className="font-mono text-[var(--text-label)] tracking-[var(--tracking-label)] uppercase text-muted-fg">
+        <p className="font-mono text-label tracking-label uppercase text-muted-fg">
           What powers this
         </p>
         <h2
           id="tech-stack-heading"
-          className="font-serif text-[var(--text-h2)] leading-[var(--leading-display)] tracking-[var(--tracking-tight)] text-fg"
+          className="font-serif text-h2 leading-display tracking-tight text-fg"
         >
           Tech Stack
         </h2>
@@ -90,7 +90,7 @@ export function TechStack() {
             >
               <h3
                 id={headingId}
-                className="font-mono text-[var(--text-label)] tracking-[var(--tracking-label)] uppercase text-muted-fg"
+                className="font-mono text-label tracking-label uppercase text-muted-fg"
               >
                 {category.label.toUpperCase()}
               </h3>
@@ -98,11 +98,11 @@ export function TechStack() {
               <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
                 {category.items.map((item) => (
                   <div key={item.name} className="space-y-1">
-                    <p className="font-serif text-[var(--text-base)] text-fg">
+                    <p className="font-serif text-base text-fg">
                       {item.name}
                     </p>
                     {item.note ? (
-                      <p className="text-sm leading-[var(--leading-body)] text-muted-fg">
+                      <p className="text-sm leading-body text-muted-fg">
                         {item.note}
                       </p>
                     ) : null}
