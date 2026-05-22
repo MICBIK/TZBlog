@@ -56,7 +56,7 @@ export function HeroEditorial() {
         </div>
       </div>
 
-      <aside className="space-y-4 lg:pt-2">
+      <div className="space-y-4 lg:pt-2">
         <p
           data-reveal
           style={revealStyle("60ms")}
@@ -82,7 +82,7 @@ export function HeroEditorial() {
         >
           ha1den · Notes from the field · May 2026
         </p>
-      </aside>
+      </div>
     </section>
   );
 }
