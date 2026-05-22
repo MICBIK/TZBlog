@@ -99,6 +99,22 @@ describe("prelaunch docs sanity", () => {
     expect(combined).not.toContain("V2 / V3 路线");
   });
 
+  it("i18nRoadmapRecordsCurrentSingleLocaleLimitations", async () => {
+    const progress = await readProjectFile("memory-bank/progress.md");
+    const systemPatterns = await readProjectFile("memory-bank/systemPatterns.md");
+    const knownIssues = await readProjectFile("memory-bank/knownIssues.md");
+    const combined = `${progress}\n${systemPatterns}\n${knownIssues}`;
+
+    expect(combined).toContain("KI-004");
+    expect(combined).toContain("当前实现仍是单 locale");
+    expect(combined).toContain("app/[lang]");
+    expect(combined).toContain("dictionary");
+    expect(combined).toContain("metadata / RSS / sitemap");
+    expect(combined).toContain("getCurrentLocale()");
+    expect(combined).toContain("Next.js App Router locale routing");
+    expect(combined).toContain("V3 独立 SDD");
+  });
+
   it("developerGuidanceDoesNotContainStaleEntrypoints", async () => {
     const staleMarkers = [
       "Next.js 15",
