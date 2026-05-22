@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   getCurrentLocale: vi.fn(),
   getSiteStats: vi.fn(),
   listPosts: vi.fn(),
+  getGithubData: vi.fn(),
 }));
 
 vi.mock("@/lib/i18n", () => ({
@@ -22,6 +23,10 @@ vi.mock("@/lib/services/stats", () => ({
   getSiteStats: mocks.getSiteStats,
 }));
 
+vi.mock("@/lib/services/github", () => ({
+  getGithubData: mocks.getGithubData,
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getCurrentLocale.mockReturnValue("zh");
@@ -31,6 +36,10 @@ beforeEach(() => {
     total: 0,
     page: 1,
     pageSize: 3,
+  });
+  mocks.getGithubData.mockResolvedValue({
+    status: "unavailable",
+    reason: "missing_env",
   });
 });
 
@@ -69,6 +78,29 @@ describe("HomePage recent posts", () => {
     expect(screen.queryByText(/\$\s*whoami/)).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Recent Posts" })).toBeInTheDocument();
     expect(screen.getByText("0 views · 0 posts · 0 comments")).toBeInTheDocument();
+  });
+
+  it("homepage renders GithubCard between TechStack and Recent Posts", async () => {
+    render(await HomePage());
+
+    expect(mocks.getGithubData).toHaveBeenCalledTimes(1);
+
+    const techStackLabel = screen.getByText("FRONTEND");
+    const githubLabel = screen.getByText("GITHUB · DEVELOPMENT");
+    const recentHeading = screen.getByRole("heading", {
+      level: 2,
+      name: "Recent Posts",
+    });
+
+    expect(githubLabel).toBeInTheDocument();
+    expect(
+      techStackLabel.compareDocumentPosition(githubLabel) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      githubLabel.compareDocumentPosition(recentHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("renders top 3 published posts in publishedAt desc", async () => {
