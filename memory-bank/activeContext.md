@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**P1 + P2 全部闭环（含 4 SDD smoke 复验 + AlertDialog UX patch）。下一步：CLAUDE.md R1/R6 文档同步 / Hero design pass / P3 部署上线**
+**prelaunch-readiness 收尾中：技术债/文档债已进入 SDD 验证。下一步：public-launch-polish 展示打磨，然后 P3 部署上线。**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -15,15 +15,16 @@
 - **2026-05-21** P1 收尾完成（admin-comments-review）：schema 加 `reviewedBy`/`reviewedAt`（兼容 AI 审核 marker）；counter-fix 修正 D3 R5（commentCount 仅计 APPROVED）；admin /comments 4 tab + 多选 BulkActions + 行内动作；3 路由 + 5 endpoint；幂等 + cascade replies + 计数器累计。
 - **2026-05-21** P2 收尾完成（analytics-beacon）：trackPayloadSchema + recordPageView + POST /api/track（DNT 守 + 黑名单 + rate-limit 60/min）+ <AnalyticsBeacon> client + SiteLayout 接入；4 决策（R10/R11/R12/R14）全部选 A（推荐）。SDD `.claude/sdd/analytics-beacon/` 全程严格 TDD。
 - **2026-05-22** 4 SDD 归档后 manual smoke 复验全通过（含 1 个工具偏离 — admin 删除评论 confirm 改 API 旁路验证）。
-- **2026-05-22** P1-C 后置 UX patch：shadcn AlertDialog 替换 `CommentsTable.tsx` 的 `window.confirm`，解除 in-app browser 限制；测试 352 → 354（+2 net）；commits `c466f52 → 593be7f`。
-- 全套自动验证（pnpm typecheck / lint / test / build）全绿，基线 245 → 286 → 329 → 352 → 354。
+- **2026-05-22** P1-C 后置 UX patch：shadcn AlertDialog 替换评论删除原生确认框，解除 in-app browser 限制；测试 352 → 354（+2 net）；commits `c466f52 → 593be7f`。
+- **2026-05-23** prelaunch-readiness：`src/proxy.ts` 替代旧入口、Prisma 7 preview flag 清理、About/TechStack 上线文案修正、README/AGENTS/CLAUDE/docs/memory-bank 当前事实同步中。
+- 上一轮全套自动验证（pnpm typecheck / lint / test / build）全绿，基线 245 → 286 → 329 → 352 → 354；本轮最终验证待跑。
 
 ## 下一步计划
 
-1. **CLAUDE.md 同步**：R1 / R6 决策落地后，"点赞 24h 滚动" 与 "commentCount 计 PENDING" 两行同步改为 "永久 unique" + "仅计 APPROVED"。
-2. **PostsTable / ColumnsTable AlertDialog 复刻**（P3 follow-up，约 1h）：同款 `window.confirm` 模式仍存在两处，方案已在 CommentsTable 验证。
-3. **Hero / 营销页 design pass**：按 ECC design-quality 重做首页 Hero（editorial / bento / scrollytelling 方向待 ha1den 选）。
-4. **P3 部署上线**：Dockerfile + Caddyfile + VPS 配置 + 备份脚本，灰度上线。
+1. **public-launch-polish**：首页 Hero / 项目展示 / README 截图 / 真实示例内容 / OG 视觉统一，单独 SDD。
+2. **P3 部署上线**：补 `Dockerfile`、生产 smoke、备份脚本、VPS/域名配置、灰度上线。
+3. **V2 backlog**：主题 GUI、详细 Analytics、评论邮件通知、编辑器增强，分别独立 SDD。
+4. **V3 backlog**：zh/en locale routing、Header 切换器、英文内容与多语言 SEO/RSS/sitemap，独立 SDD。
 
 ## 待办池 / 已知问题
 
@@ -37,7 +38,7 @@
 | 框架 | Next.js 16 (App Router) |
 | DB / ORM | Postgres 16 + Prisma 7（driver adapter @prisma/adapter-pg）|
 | UI | shadcn/ui + Tailwind v4 + CSS 变量 |
-| 编辑器 | Tiptap WYSIWYG + Markdown 序列化 |
+| 编辑器 | Markdown source editor + split preview，存储 Markdown |
 | 认证 | Auth.js v5 split-config（Edge-safe + Full）|
 | 媒体 | local / MinIO S3 driver |
 | 部署 | VPS + Docker Compose + Caddy |
@@ -48,8 +49,8 @@
 ## 注意事项 / 偏离记录
 
 - **Prisma 7 driver adapter 模式**：schema.prisma 内不再写 datasource.url；运行期 `src/lib/db.ts` 用 `@prisma/adapter-pg`；migrate/introspect 走 `prisma.config.ts` 的 datasource.url（dotenv 主动加载）。
-- **Next.js 16 中间件 deprecation**：构建会报 `middleware.ts` deprecated → 应改名 `proxy.ts`，但功能正常工作。
-- **Tiptap markdown pipeline 简化**：`MarkdownEditorWithPreview` 客户端预览用了 mini-renderer（待 V2 接 marked + DOMPurify 完整化），完整 remark+shiki 已落到服务端 `MarkdownPreview`。
+- **Next.js 16 request guard**：当前使用 `src/proxy.ts` 守 `/admin/*` 与 `/api/admin/*`。
+- **Markdown preview pipeline 简化**：`MarkdownEditorWithPreview` 客户端预览用了 mini-renderer（待 V2 接 marked + DOMPurify 完整化），完整 remark+shiki 已落到服务端 `MarkdownPreview`。
 - **rehype-shiki 替换**：原计划的 `rehype-shiki@0.0.9` 与 shiki@4 不兼容，改成内联 transformer 调用 `createHighlighter` + `codeToHast`。
 
 ## 待用户决策（不阻塞 P1）

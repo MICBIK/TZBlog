@@ -1,4 +1,4 @@
-> Last verified: 2026-05-22
+> Last verified: 2026-05-23
 
 # 架构概览
 
@@ -9,8 +9,8 @@ TZBlog 是单体 Next.js 应用：公开前台、后台 CMS、REST API、自研 
 | 组 | 路径 | 用途 | 守卫 |
 | --- | --- | --- | --- |
 | `(site)` | `/`, `/posts/*`, `/columns/*`, `/tags/*`, `/about` | 公开内容页 | 无认证 |
-| `(admin)` | `/admin/*`, `/login` | 后台 CMS 与登录页 | `/admin/*` 由 middleware 守 |
-| `api/` | `/api/*` | REST API、Auth、Analytics 上报 | `/api/admin/*` 由 middleware 守 |
+| `(admin)` | `/admin/*`, `/login` | 后台 CMS 与登录页 | `/admin/*` 由 proxy 守 |
+| `api/` | `/api/*` | REST API、Auth、Analytics 上报 | `/api/admin/*` 由 proxy 守 |
 
 公开内容页使用 Server Component 直接读取数据；后台页面通过 admin API 和表格/表单组件完成管理操作。RSS、sitemap、robots 和文章 OG 图在 `src/app/` 下按 Next.js 文件约定实现。
 

@@ -5,7 +5,7 @@ TBD - created by archiving change media-upload. Update Purpose after archive.
 ## Requirements
 ### Requirement: POST /api/admin/uploads 鉴权
 
-`/api/admin/uploads` SHALL 仅对登录 admin 开放。`src/middleware.ts` 守 `/api/admin/*`，handler 内部 MUST 二次 `auth()` 取 session 以拿到 `session.user.id` 用作 `Media.uploadedBy`。
+`/api/admin/uploads` SHALL 仅对登录 admin 开放。`src/proxy.ts` 守 `/api/admin/*`，handler 内部 MUST 二次 `auth()` 取 session 以拿到 `session.user.id` 用作 `Media.uploadedBy`。
 
 #### Scenario: 未登录请求被拒
 - **WHEN** 未携带有效 session cookie 的请求 POST `/api/admin/uploads`
@@ -87,4 +87,3 @@ TBD - created by archiving change media-upload. Update Purpose after archive.
 #### Scenario: 失败响应 shape
 - **WHEN** 任意校验失败
 - **THEN** 响应非 2xx，JSON 含 `error.code` (VALIDATION / PAYLOAD_TOO_LARGE / UNAUTHORIZED / INTERNAL) 与 `error.message`（人类可读，中文）
-

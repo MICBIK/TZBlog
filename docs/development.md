@@ -1,4 +1,4 @@
-> Last verified: 2026-05-22
+> Last verified: 2026-05-23
 
 # 本地开发
 
@@ -85,7 +85,9 @@ rm -rf .docker-data
 
 ## 编辑器
 
-后台文章编辑器基于 Tiptap + tiptap-markdown，内部编辑 ProseMirror document，最终保存 Markdown 字符串。
+后台文章编辑器对管理员暴露 Markdown source editor + split preview：编辑区保留 Markdown 原文，预览区使用 lightweight client renderer 做草稿态检查。发布后的权威渲染仍由服务端 remark + rehype + Shiki pipeline 负责。
+
+当前编辑层仍保留 Tiptap v3 + tiptap-markdown 依赖，用于 Markdown round-trip；后续如果要彻底替换为 textarea/source editor，需要单独开 SDD，因为会影响工具栏、光标行为、快捷操作和回归测试。
 
 开发时可访问：
 

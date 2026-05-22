@@ -6,11 +6,11 @@ context: |
   参考设计语言：Claude / Apple / OpenAI 官网。
 
   Tech stack:
-    - Next.js 15 (App Router, RSC, Server Actions)
+    - Next.js 16 (App Router, RSC, Server Actions)
     - TypeScript 5 (strict)
-    - PostgreSQL 16 + Prisma 5
+    - PostgreSQL 16 + Prisma 7
     - Tailwind CSS v4 + shadcn/ui (CSS variable-driven theme)
-    - Tiptap v2 (WYSIWYG, serialize to Markdown via tiptap-markdown)
+    - Markdown source editor + split preview (stores Markdown; editor layer still uses Tiptap v3 + tiptap-markdown)
     - remark + rehype + Shiki (render Markdown to HTML)
     - Auth.js v5 (Credentials provider, single admin)
     - MinIO (self-hosted S3) for media
@@ -19,7 +19,7 @@ context: |
 
   Architecture:
     - 单体 Next.js 应用，不分 monorepo
-    - 路由组 (site) / (admin)；middleware 守 /admin/* 与 /api/admin/*
+    - 路由组 (site) / (admin)；proxy 守 /admin/* 与 /api/admin/*
     - i18n 通过 *Translation 子表，按 (parentId, locale) 唯一
     - 主题通过 CSS 变量；MVP 不做切换，但所有色值必须用 var(--...) 引用
     - 计数器（viewCount / likeCount / commentCount）内嵌 Post 表；详情表记录原始事件
@@ -27,7 +27,7 @@ context: |
   Conventions:
     - Conventional Commits（feat / fix / chore / docs / refactor / test）
     - ECC TDD：红 (test:) → 绿 (feat:) → 重构 (refactor:) 三个 git checkpoint
-    - 一个 OpenSpec change 对应一组功能 commit，不混 feature
+    - 一个 SDD feature 对应一组功能 commit，不混 feature
     - API 响应：{ data, meta? } / { error: { code, message, details? } }
     - 表单 schema 与 API schema 共用 zod，前后端各 validate 一次
 
@@ -58,11 +58,11 @@ rules:
     - 禁止纯实现任务（即不绑定 spec 的 impl 任务）
     - 禁止把所有测试集中放最后
     - 单微循环 ≤ 30 分钟工作量；每个任务可独立验证
-    - tasks.md 生成前必须已有 openspec/changes/<feature>/test-map.md
+    - tasks.md 生成前必须已有 .claude/sdd/<feature>/test-map.md
     - 任务前缀标注阶段：[P0] / [P1] / [P2] / [P3] / [P4]
     - 涉及 Prisma 迁移的微循环必须有迁移后的 prisma migrate dev 通过证据
     - 涉及 Server Action / API 的 spec 必须有 zod schema 校验测试
-    - 例外标签 [NO-TDD] 仅限：纯样式（Tailwind class / CSS 变量）、文档、OpenSpec 元文件
+    - 例外标签 [NO-TDD] 仅限：纯样式（Tailwind class / CSS 变量）、文档、SDD 元文件
     - 重构、依赖增减、shadcn 组件 add 不在 NO-TDD 范围内
   spec:
     - 涉及数据持久化时必须包含 Prisma schema 片段

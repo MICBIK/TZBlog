@@ -9,7 +9,7 @@ import { createColumn, listColumns } from "@/lib/services/columns"
 /**
  * Admin column collection API.
  *
- * Auth: `middleware.ts` already guards `/api/admin/*`, but we re-check the
+ * Auth: `src/proxy.ts` already guards `/api/admin/*`, but we re-check the
  * session in-handler as a defense-in-depth (covers direct service tests and
  * any future middleware regressions).
  */

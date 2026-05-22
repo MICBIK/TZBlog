@@ -13,7 +13,7 @@ import { createPost, listPosts } from "@/lib/services/posts"
 /**
  * Admin post collection API.
  *
- * Auth: `middleware.ts` already guards `/api/admin/*`, but we re-check the
+ * Auth: `src/proxy.ts` already guards `/api/admin/*`, but we re-check the
  * session in-handler as defense-in-depth. The check also gives us
  * `session.user.id` for `createPost`'s `authorId`.
  */

@@ -36,7 +36,7 @@ export interface MarkdownEditorProps {
 }
 
 /**
- * Tiptap WYSIWYG editor that exposes/consumes Markdown (per systemPatterns §14).
+ * Editor adapter that exposes/consumes Markdown (per systemPatterns §14).
  *
  * Internal ProseMirror state holds JSON, but the contract with the rest of the
  * app is Markdown — `onChange` always emits Markdown, and `value` always feeds

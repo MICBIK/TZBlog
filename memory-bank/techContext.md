@@ -4,23 +4,23 @@
 
 | 层 | 选型 | 版本 | 备注 |
 |---|---|---|---|
-| Runtime | Node.js | 20 LTS | Docker 镜像 `node:20-alpine` |
-| 包管理 | pnpm | 9.x | `pnpm-lock.yaml` 提交 |
-| 框架 | Next.js | 15.x | App Router + RSC + Server Actions |
-| UI 库 | React | 19.x | 随 Next 15 升级 |
-| 语言 | TypeScript | 5.x | `strict: true` |
+| Runtime | Node.js | 20 LTS / local 22.x | Docker 镜像目标 `node:20-alpine`，本机验证可用 Node 22 |
+| 包管理 | pnpm | 10.29.2 | `pnpm-lock.yaml` 提交 |
+| 框架 | Next.js | 16.2.6 | App Router + RSC + Server Actions |
+| UI 库 | React | 19.2.4 | 随 Next 16 使用 |
+| 语言 | TypeScript | 5.9.x | `strict: true` |
 | 样式 | Tailwind CSS | 4.x | CSS-first 配置（`@theme`），主题变量驱动 |
 | 组件 | shadcn/ui | latest | 源码本地化，按需 add |
 | 数据库 | PostgreSQL | 16 | Docker 容器 `postgres:16-alpine` |
-| ORM | Prisma | 5.x | `@prisma/client` + `prisma` CLI |
+| ORM | Prisma | 7.8.0 | `@prisma/client` + `prisma` CLI + `@prisma/adapter-pg` |
 | 认证 | Auth.js | 5.x (beta) | Credentials provider，单管理员 |
-| 编辑器 | Tiptap | 2.x | `@tiptap/react` + `tiptap-markdown` 序列化 |
-| MD 渲染 | remark + rehype | latest | `rehype-shiki` 代码高亮，`rehype-slug` + `rehype-autolink-headings` 锚点 |
+| 编辑器 | Markdown source editor + split preview | current | 存储格式 Markdown；编辑层仍保留 Tiptap v3 + `tiptap-markdown` round-trip 依赖 |
+| MD 渲染 | remark + rehype + Shiki | latest / Shiki 4.x | 服务端 Markdown 渲染、slug/anchor、代码高亮 |
 | 表单 | react-hook-form + zod | latest | API 与表单共享 schema |
 | 媒体 | MinIO | latest | S3 协议，与 VPS 同栈 |
 | MinIO 客户端 | minio (npm) | latest | 上传 / 签名 URL |
 | 反向代理 | Caddy | 2.x | 自动 HTTPS（Let's Encrypt） |
-| 容器编排 | Docker Compose | v2 | 5 个服务：app / postgres / minio / caddy / （V2）analytics worker |
+| 容器编排 | Docker Compose | v2 | 4 个服务：app / postgres / minio / caddy |
 
 ## 环境变量（key 列表，值不存仓库）
 
@@ -64,7 +64,7 @@ PORT                        # Next.js 监听端口，默认 3000
 |---|---|
 | Docker Desktop | 跑 Postgres + MinIO 容器 |
 | pnpm | 包管理 |
-| Node 20 | nvm / fnm 管理 |
+| Node 20+ | nvm / fnm 管理；生产镜像仍以 Node 20 LTS 为目标 |
 | direnv（可选） | `.envrc` 自动加载 |
 
 ## 关键脚本（package.json）
@@ -73,7 +73,7 @@ PORT                        # Next.js 监听端口，默认 3000
 dev           next dev --turbo
 build         prisma generate && next build
 start         next start -p ${PORT:-3000}
-lint          next lint
+lint          eslint src --ext .ts,.tsx --max-warnings 0
 typecheck     tsc --noEmit
 test          vitest run
 test:watch    vitest
@@ -91,7 +91,7 @@ docker:prod   docker compose -f docker/docker-compose.yml up -d
 - **单元 / 集成**：Vitest
 - **组件测试 infra**：Vitest 4 + jsdom + @testing-library/react + @testing-library/user-event（`src/**/*.test.tsx` / `tests/**/*.test.tsx` 自动用 jsdom project）
 - **组件**：React Testing Library + Vitest
-- **E2E**（V2）：Playwright；MVP 阶段先靠手测 + 关键路径单测
+- **E2E**（backlog）：Playwright；当前以 Vitest + component/integration tests + manual smoke 为主
 
 ## VPS 推荐配置
 

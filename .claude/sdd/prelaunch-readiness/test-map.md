@@ -7,6 +7,6 @@
 | prelaunch-content-001 | unit | src/lib/content/about.test.ts | aboutContentHasNoPreLaunchPlaceholders | existing test update |
 | prelaunch-content-002 | component | src/components/site/TechStack.test.tsx | TechStack renders current launch stack | existing test update |
 | prelaunch-docs-001 | unit | tests/docs-sanity.test.ts | docsDoNotContainStaleCurrentStackMarkers | scan active docs |
+| prelaunch-docs-001 | unit | tests/docs-sanity.test.ts | developerGuidanceDoesNotContainStaleEntrypoints | scan current guidance docs and source comments |
 | prelaunch-docs-002 | unit | tests/docs-sanity.test.ts | progressReflectsResolvedDebtsAndCurrentBacklog | scan progress.md |
 | prelaunch-roadmap-001 | unit | tests/docs-sanity.test.ts | roadmapContainsExplicitV2V3BacklogBoundaries | scan progress/projectBrief |
-

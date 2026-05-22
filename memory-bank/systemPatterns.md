@@ -1,6 +1,6 @@
 # System Patterns — TZBlog
 
-约束这个项目「代码长什么样」的统一规则。所有 OpenSpec change / ECC 实现都要遵守。
+约束这个项目「代码长什么样」的统一规则。所有 `.claude/sdd` feature / ECC 实现都要遵守。
 
 ## 1. 应用形态：单体（不是 monorepo）
 
@@ -18,7 +18,7 @@ src/app/
 │   ├── columns/[slug]/
 │   ├── tags/[tag]/
 │   └── layout.tsx          前台 Header/Footer
-├── (admin)/       # 后台管理，middleware 守卫
+├── (admin)/       # 后台管理，proxy 守卫
 │   ├── admin/
 │   │   ├── posts/
 │   │   ├── columns/
@@ -37,13 +37,12 @@ src/app/
     │   ├── posts/
     │   ├── comments/        审核操作
     │   └── analytics/
-    ├── analytics/
-    │   └── pageview/route.ts POST  全局上报
+    ├── track/route.ts        POST  全局 PageView 上报
     ├── media/upload/route.ts
     └── rss.xml/route.ts
 ```
 
-- `middleware.ts` 守 `/admin/*` 和 `/api/admin/*`，未登录 → `/login?from=...`
+- `proxy.ts` 守 `/admin/*` 和 `/api/admin/*`，未登录 → `/login?from=...`
 - 普通用户 API 不需要鉴权，但要 rate-limit（按 IP）
 
 ## 3. 数据访问
@@ -97,13 +96,13 @@ model PostTranslation {
 ```
 
 - 查询时一律 `where: { locale: currentLocale }`
-- 当前 locale 由 `src/lib/i18n.ts` 中间件解析（MVP 写死 "zh"，V3 从 URL 解析）
+- 当前 locale 由 `src/lib/i18n.ts` helper 提供（MVP 写死 "zh"，V3 从 URL 解析）
 - **不要**在主表里塞 `titleZh / titleEn` 列
 
 ## 8. 主题系统（CSS 变量 first）
 
 - **从 P0 开始** 所有颜色都用 CSS 变量：`color: hsl(var(--fg))` 而不是 `color: #000`
-- 变量定义在 `src/styles/globals.css` 的 `@theme` 块
+- 变量定义在 `src/app/globals.css` 的 `@theme` 块
 - V2 加主题切换：只换 `:root[data-theme="solar"]` 下的变量值，组件零修改
 - 命名约定：`--bg / --fg / --muted / --accent / --border / --ring` 等语义化，**不要** `--blue-500`
 
@@ -138,7 +137,7 @@ model PostTranslation {
 
 ## 12. 自研分析（替代 Umami）
 
-- 客户端 `<AnalyticsBeacon>` 注入到根 layout，路由变化时（含初次）发 `POST /api/analytics/pageview`
+- 客户端 `<AnalyticsBeacon>` 注入到前台 layout，路由变化时（含初次）发 `POST /api/track`
 - 服务端写 `PageView` 表，**不阻塞**响应（fire-and-forget）
 - 字段：path / visitorHash / referrer / userAgent / 解析后的 device/browser/os
 - 仪表盘聚合查询：`@@index([createdAt])` + `@@index([path, createdAt])` 撑住中小流量
@@ -161,12 +160,11 @@ content (Markdown 字符串)
 - 渲染结果用 React Server Component 缓存（`unstable_cache`），key = postId + locale + updatedAt
 - 用户提交的 Markdown 永远先经 sanitize（rehype-sanitize），防 XSS
 
-## 14. 编辑器（Tiptap）契约
+## 14. 编辑器契约
 
-- Tiptap 内部 state 是 ProseMirror JSON，**存储格式是 Markdown 字符串**
-- 序列化：`tiptap-markdown` 扩展，editor.storage.markdown.getMarkdown()
-- 反序列化：editor.commands.setContent(markdown)
-- 后端永远收 Markdown，不收 JSON
+- 管理端编辑体验是 Markdown source editor + split preview；编辑区必须保留 Markdown 原文，预览区只做草稿态辅助。
+- 存储格式永远是 Markdown 字符串；后端永远收 Markdown，不收 JSON。
+- 当前编辑层仍保留 Tiptap v3 + `tiptap-markdown` round-trip 依赖；如果要彻底替换为 textarea/source editor，必须单独 SDD 并覆盖工具栏、光标行为、有序列表和 heading 回归。
 
 ## 15. Git 提交规范
 
@@ -175,7 +173,7 @@ content (Markdown 字符串)
   - `test: add tests for <feature>` (RED)
   - `feat: implement <feature>` (GREEN)
   - `refactor: clean up <feature>` (REFACTOR)
-- 一个 OpenSpec change 一组 commit，不混 feature
+- 一个 SDD feature 一组 commit，不混 feature
 
 ## 16. 文件命名
 
@@ -244,4 +242,3 @@ vi.mock("@/components/site/Foo", () => ({
 ### 等什么时候可以删掉这一节
 
 当 vitest / `@testing-library/react` 官方明确支持 async RSC 作为 children 渲染（届时 React 19 RSC + jsdom 集成成熟），上述桩可以拆掉，测试直接 render。在此之前，这是 TZBlog 推荐做法。
-
