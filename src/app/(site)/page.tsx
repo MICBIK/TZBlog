@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { GithubCard } from "@/components/site/GithubCard";
 import { HeroEditorial } from "@/components/site/HeroEditorial";
+import { LaunchNarrative } from "@/components/site/LaunchNarrative";
 import { PostCard } from "@/components/site/PostCard";
 import { TechStack } from "@/components/site/TechStack";
 import { getCurrentLocale } from "@/lib/i18n";
@@ -19,6 +20,8 @@ export default async function HomePage() {
   return (
     <div className="space-y-24">
       <HeroEditorial />
+
+      <LaunchNarrative />
 
       <TechStack />
 

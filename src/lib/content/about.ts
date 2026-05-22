@@ -13,6 +13,13 @@ interface AboutContent {
   story: {
     paragraphs: string[];
   };
+  principles: {
+    intro: string;
+    items: Array<{
+      label: string;
+      detail: string;
+    }>;
+  };
   contact: {
     email: string;
     links: Array<{
@@ -50,6 +57,27 @@ export const aboutContent = {
     paragraphs: [
       "TZBlog is intentionally built as a single, inspectable system: public pages, admin CMS, comments, analytics, media storage, and deployment all live in one Next.js codebase.",
       "The goal is not just to publish posts. It is to keep enough ownership over the stack that performance, data, privacy, and editorial workflow can be tuned without waiting on a hosted platform.",
+    ],
+  },
+  principles: {
+    intro:
+      "TZBlog is shaped around a practical constraint: every layer should be understandable enough to debug, replace, and write about.",
+    items: [
+      {
+        label: "Source-first",
+        detail:
+          "Markdown remains the canonical authoring format, with preview and publishing treated as render targets rather than hidden editor state.",
+      },
+      {
+        label: "Operational ownership",
+        detail:
+          "Next.js, PostgreSQL, MinIO, Docker Compose, and Caddy keep the deployment path small enough to audit before launch.",
+      },
+      {
+        label: "Written tradeoffs",
+        detail:
+          "Implementation choices are recorded as notes: what shipped, what was deferred, and which V2/V3 work needs its own SDD.",
+      },
     ],
   },
   contact: {
