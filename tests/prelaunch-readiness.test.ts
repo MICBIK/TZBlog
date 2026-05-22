@@ -21,4 +21,14 @@ describe("prelaunch readiness", () => {
     expect(proxy).toContain("NextAuth(authConfig)");
     expect(proxy).toContain('matcher: ["/admin/:path*", "/api/admin/:path*"]');
   });
+
+  it("prismaSchemaDoesNotUseDeprecatedDriverAdaptersPreview", async () => {
+    const schema = await readFile(
+      join(process.cwd(), "prisma/schema.prisma"),
+      "utf-8",
+    );
+
+    expect(schema).not.toContain("previewFeatures");
+    expect(schema).not.toContain("driverAdapters");
+  });
 });
