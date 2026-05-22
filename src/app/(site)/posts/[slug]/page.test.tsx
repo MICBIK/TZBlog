@@ -143,6 +143,21 @@ describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
   });
 });
 
+describe("PostDetailPage markdown reading system", () => {
+  it("renders article HTML inside markdown-body instead of prose-only defaults", async () => {
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+
+    const { container } = render(
+      await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }),
+    );
+
+    const articleBody = container.querySelector(".markdown-body");
+    expect(articleBody).toBeInTheDocument();
+    expect(articleBody?.className).toContain("max-w-none");
+    expect(articleBody?.className).not.toContain("prose");
+  });
+});
+
 describe("PostDetailPage tag links", () => {
   it("Post detail page tag links use /tags/{slug}", async () => {
     mocks.getPostBySlug.mockResolvedValue(

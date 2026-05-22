@@ -36,4 +36,19 @@ describe("globals.css editorial system", () => {
   it("prefers Inter in the sans font chain", () => {
     expect(css).toMatch(/--font-sans:[\s\S]*var\(--font-inter\)/);
   });
+
+  it("defines markdown-body reading styles and callout variants", () => {
+    expect(css).toContain(".markdown-body");
+    expect(css).toContain(".markdown-body h1");
+    expect(css).toContain(".markdown-body a");
+    expect(css).toContain(".markdown-body code");
+    expect(css).toContain(".markdown-body pre");
+    expect(css).toContain(".markdown-body table");
+    expect(css).toContain(".markdown-alert");
+    expect(css).toContain(".markdown-alert-note");
+    expect(css).toContain(".markdown-alert-tip");
+    expect(css).toContain(".markdown-alert-important");
+    expect(css).toContain(".markdown-alert-warning");
+    expect(css).toContain(".markdown-alert-caution");
+  });
 });

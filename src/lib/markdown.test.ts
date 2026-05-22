@@ -36,9 +36,54 @@ describe("renderMarkdown", () => {
     expect(html).toContain("<td>1</td>");
   });
 
+  it("renders GitHub-style alerts as semantic callouts", async () => {
+    const md = [
+      "> [!NOTE]",
+      "> A short note with `code`.",
+      "",
+      "> [!TIP]",
+      "> Prefer small batches.",
+      "",
+      "> [!IMPORTANT]",
+      "> This affects launch readiness.",
+      "",
+      "> [!WARNING]",
+      "> Check backups first.",
+      "",
+      "> [!CAUTION]",
+      "> This can break production.",
+    ].join("\n");
+
+    const html = await renderMarkdown(md);
+
+    for (const type of ["note", "tip", "important", "warning", "caution"]) {
+      expect(html).toContain(`markdown-alert markdown-alert-${type}`);
+      expect(html).toContain(`data-alert-type="${type}"`);
+    }
+    expect(html).toContain("markdown-alert-title");
+    expect(html).toContain("NOTE");
+    expect(html).toContain("<code>code</code>");
+    expect(html).not.toContain("[!NOTE]");
+  });
+
   it("strips dangerous embedded HTML", async () => {
     const md = 'Hello\n\n<script>alert("xss")</script>\n\nworld';
     const html = await renderMarkdown(md);
+    expect(html).not.toContain("<script");
+    expect(html).not.toContain("alert(");
+  });
+
+  it("keeps sanitize protection inside transformed alerts", async () => {
+    const md = [
+      "> [!WARNING]",
+      "> <img src=x onerror=alert(1)>",
+      "> <script>alert('xss')</script>",
+    ].join("\n");
+
+    const html = await renderMarkdown(md);
+
+    expect(html).toContain("markdown-alert-warning");
+    expect(html).not.toContain("onerror");
     expect(html).not.toContain("<script");
     expect(html).not.toContain("alert(");
   });
