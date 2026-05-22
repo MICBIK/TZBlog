@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { GithubCard } from "@/components/site/GithubCard";
 import { HeroEditorial } from "@/components/site/HeroEditorial";
 import { PostCard } from "@/components/site/PostCard";
 import { TechStack } from "@/components/site/TechStack";
@@ -20,6 +21,8 @@ export default async function HomePage() {
       <HeroEditorial />
 
       <TechStack />
+
+      <GithubCard />
 
       {/* Recent Posts */}
       <section className="space-y-6">
