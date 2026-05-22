@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**prelaunch-readiness 收尾中：技术债/文档债已进入 SDD 验证。下一步：public-launch-polish 展示打磨，然后 P3 部署上线。**
+**prelaunch-readiness 已完成：技术债/文档债已按 SDD 验证并通过质量门。下一步：public-launch-polish 展示打磨，然后 P3 部署上线。**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -16,8 +16,8 @@
 - **2026-05-21** P2 收尾完成（analytics-beacon）：trackPayloadSchema + recordPageView + POST /api/track（DNT 守 + 黑名单 + rate-limit 60/min）+ <AnalyticsBeacon> client + SiteLayout 接入；4 决策（R10/R11/R12/R14）全部选 A（推荐）。SDD `.claude/sdd/analytics-beacon/` 全程严格 TDD。
 - **2026-05-22** 4 SDD 归档后 manual smoke 复验全通过（含 1 个工具偏离 — admin 删除评论 confirm 改 API 旁路验证）。
 - **2026-05-22** P1-C 后置 UX patch：shadcn AlertDialog 替换评论删除原生确认框，解除 in-app browser 限制；测试 352 → 354（+2 net）；commits `c466f52 → 593be7f`。
-- **2026-05-23** prelaunch-readiness：`src/proxy.ts` 替代旧入口、Prisma 7 preview flag 清理、About/TechStack 上线文案修正、README/AGENTS/CLAUDE/docs/memory-bank 当前事实同步中。
-- 上一轮全套自动验证（pnpm typecheck / lint / test / build）全绿，基线 245 → 286 → 329 → 352 → 354；本轮最终验证待跑。
+- **2026-05-23** prelaunch-readiness：`src/proxy.ts` 替代旧入口、Prisma 7 preview flag 清理、About/TechStack 上线文案修正、README/AGENTS/CLAUDE/docs/memory-bank 当前事实同步完成。
+- **2026-05-23** 最终质量门通过：`pnpm typecheck` ✓、`pnpm lint` ✓、`pnpm test` ✓（85 files / 460 passed / 1 skipped）、`pnpm build` ✓。旧 Next middleware / Prisma preview warning 已消失；测试仍有已记录的 `pg@9` deprecation warning。
 
 ## 下一步计划
 
