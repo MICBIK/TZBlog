@@ -33,11 +33,26 @@ export const metadata: Metadata = {
     default: "TZBlog",
     template: "%s · TZBlog",
   },
-  description: "个人技术博客",
+  description: "ha1den 的技术博客 — Next.js / TypeScript / 性能优化 / 产品工程",
   openGraph: {
     type: "website",
     siteName: "TZBlog",
     locale: "zh_CN",
+    description: "ha1den 的技术博客 — Next.js / TypeScript / 性能优化 / 产品工程",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "TZBlog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TZBlog",
+    description: "ha1den 的技术博客 — Next.js / TypeScript / 性能优化 / 产品工程",
+    images: ["/opengraph-image"],
   },
 };
 
