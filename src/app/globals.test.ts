@@ -61,4 +61,34 @@ describe("globals.css editorial system", () => {
     expect(css).toContain("[data-launch-orbit]");
     expect(css).toContain("animation: none");
   });
+
+  it("site components use generated theme utilities instead of unresolved var arbitrary classes", () => {
+    const files = [
+      "src/components/site/HeroEditorial.tsx",
+      "src/components/site/TechStack.tsx",
+      "src/components/site/GithubCard.tsx",
+      "src/components/site/LaunchNarrative.tsx",
+      "src/components/site/about/AboutHero.tsx",
+      "src/components/site/about/AboutNow.tsx",
+      "src/components/site/about/AboutStory.tsx",
+      "src/components/site/about/AboutPrinciples.tsx",
+      "src/components/site/about/AboutContact.tsx",
+      "src/app/(site)/tags/page.tsx",
+      "src/app/(site)/tags/[slug]/page.tsx",
+    ];
+
+    for (const file of files) {
+      const source = readFileSync(join(process.cwd(), file), "utf-8");
+
+      expect(source, `${file} uses unresolved text var class`).not.toMatch(
+        /text-\[var\(--text-/,
+      );
+      expect(source, `${file} uses unresolved leading var class`).not.toMatch(
+        /leading-\[var\(--leading-/,
+      );
+      expect(source, `${file} uses unresolved tracking var class`).not.toMatch(
+        /tracking-\[var\(--tracking-/,
+      );
+    }
+  });
 });
