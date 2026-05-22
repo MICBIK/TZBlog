@@ -3,8 +3,7 @@
 // 详见 memory-bank/systemPatterns.md §7 §9 §10 §11 §12
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -304,7 +303,6 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-
 
 
 
