@@ -1,8 +1,27 @@
-export default function AboutPage() {
+import type { Metadata } from "next";
+
+import { AboutContact } from "@/components/site/about/AboutContact";
+import { AboutHero } from "@/components/site/about/AboutHero";
+import { AboutNow } from "@/components/site/about/AboutNow";
+import { AboutStory } from "@/components/site/about/AboutStory";
+import { aboutContent } from "@/lib/content/about";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: aboutContent.hero.lead,
+  openGraph: {
+    title: "About — TZBlog",
+    description: aboutContent.hero.lead,
+  },
+};
+
+export default async function AboutPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-4xl font-bold tracking-tight">About</h1>
-      <p className="text-lg text-muted-fg">Coming soon.</p>
-    </div>
+    <article className="space-y-[var(--space-section)]">
+      <AboutHero {...aboutContent.hero} />
+      <AboutNow {...aboutContent.now} />
+      <AboutStory {...aboutContent.story} />
+      <AboutContact {...aboutContent.contact} />
+    </article>
   );
 }
