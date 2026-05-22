@@ -159,17 +159,20 @@
 - [ ] Lighthouse 调优（目标桌面 95+ / 移动 90+）
 - [x] SEO 元信息 / robots.txt / 站点描述
 - [x] README + 部署文档
+- [x] **2026-05-23** public-launch-polish 主体：Markdown alerts + `.markdown-body` 阅读系统、首页项目叙事区、About Principles、管理侧边栏 light mode 对比度修复；i18n 当前限制记录为 KI-004，完整迁移进入 V3 独立 SDD
 
 ## V2 backlog（MVP 上线后，独立 SDD）
 
 - [ ] 主题系统 GUI（后台编辑色板 + 一键切换 + 多套预设主题）
 - [ ] 详细 Analytics（来源 / 设备 / 国家 / 对比 / 导出）
 - [ ] 评论邮件通知（被回复时邮件）
-- [ ] 编辑器增强：表格 / 脚注 / 数学公式 / 拖拽上传图片
+- [ ] 编辑器增强：表格 / 脚注 / 数学公式 / 拖拽上传图片；客户端预览可评估 marked + DOMPurify，保持 Markdown source editor 契约不变
+- [ ] 文章展示增强：真实示例内容、首页/文章页截图资产、OG 视觉统一、Lighthouse 后续微调
 
 ## V3 backlog（MVP 上线后，独立 SDD）
 
-- [ ] 多语言（zh / en） — 路由 `/en/...` + Header 切换器 + en 翻译数据
+- [ ] 多语言（zh / en） — V3 独立 SDD：Next.js App Router locale routing（建议 `app/[lang]`）、Header 语言切换器、dictionary 静态文案、en 翻译数据、metadata / RSS / sitemap / canonical / alternate links 全链路 locale-aware
+- [ ] i18n 数据流迁移：`getCurrentLocale()` 不再固定返回 zh，改由 route params / proxy negotiation / cookies 明确注入；所有 public services、SEO/feed、OG 图和列表页统一从当前 locale 读取
 
 V2/V3 不属于本轮 prelaunch-readiness；涉及 DB/UI/API/邮件/路由结构时必须分别开独立 SDD。
 
@@ -181,6 +184,7 @@ V2/V3 不属于本轮 prelaunch-readiness；涉及 DB/UI/API/邮件/路由结构
 - **2026-05-21** `PostsFilters` URL canonical 行为不写 `page=1`（`filterToSearchParams` 显式跳过）。codex 补外围测试时按此实际行为测；如未来需要在 URL 显式带 `page=1`，需同步改实现 + 测试期望。
 - **2026-05-21** 前台 cover 用原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`，未走 `next/image`。原因：MinIO/local 双 storage driver 的 URL 模式动态切换，配 `next.config.ts#images.remotePatterns` 噪音大。未来如接 CDN 或决定单一 driver 时再换 `next/image`。
 - **2026-05-23** `prelaunch-readiness` 清理：Next proxy 入口、Prisma preview flag、About/TechStack 上线文案、README/AGENTS/CLAUDE/docs/memory-bank 当前事实已同步。后续若继续改编辑器底层实现，单开 editor-source-mode SDD。
+- **2026-05-23** KI-004 多语言当前仍是架构预留：schema 有 `*Translation` 子表和 `SUPPORTED_LOCALES`，但当前实现仍是单 locale；V3 需要独立 SDD 完成 route/dictionary/metadata/RSS/sitemap 全链路迁移。
 
 
 ## 度量指标

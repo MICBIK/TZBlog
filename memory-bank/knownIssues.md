@@ -27,3 +27,11 @@
 - **影响范围**：P1-3 验收矩阵 K（"删除被引用封面后前台破图"）不可观测。
 - **解法**：D1 在 `PostCard`（左缩略图 `aspect-[16/10]`）与详情页 header（hero banner `aspect-[3/1]`）接入 `Post.cover` 渲染；cover 为 `null` 或空串时整个图位不渲染，无破图占位。原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`（暂不接 next/image，避开 MinIO/local 双 driver 的 `remotePatterns` 配置）。
 - **闭环 commits**：`163e281 → 51922b1 → 5cf5c6e → 7281ee8`
+
+## KI-004 多语言当前仍是单 locale 架构预留
+
+- **首次发现**：2026-05-23（public-launch-polish 审计）
+- **现象**：`SUPPORTED_LOCALES = ["zh", "en"]` 和 Prisma `*Translation` 子表已经存在，但当前实现仍是单 locale：`getCurrentLocale()` 固定返回 `zh`，public routes 没有 `app/[lang]`，Header 没有语言切换，静态 UI copy 没有 dictionary，metadata / RSS / sitemap / OG 图也没有 locale-aware 输出。
+- **影响范围**：不能宣称站点已支持 zh/en 多语言；英文内容、SEO alternate links、RSS/sitemap、canonical、分享图都会停留在 zh 单一路径语义。
+- **临时解法**：MVP 继续作为中文单语言站点上线，数据模型保留 en 翻译能力但不暴露伪多语言入口。
+- **永久解法**：V3 独立 SDD，按 Next.js App Router locale routing 迁移 public route tree（建议 `app/[lang]`），引入 dictionary，改 `getCurrentLocale()` 从 route params / proxy negotiation / cookies 注入，补齐 metadata / RSS / sitemap / canonical / alternate links，逐页回归服务端数据查询 locale 来源。

@@ -96,8 +96,17 @@ model PostTranslation {
 ```
 
 - 查询时一律 `where: { locale: currentLocale }`
-- 当前 locale 由 `src/lib/i18n.ts` helper 提供（MVP 写死 "zh"，V3 从 URL 解析）
+- 当前 locale 由 `src/lib/i18n.ts` helper 提供；MVP 当前实现仍是单 locale，`getCurrentLocale()` 固定返回 `zh`
 - **不要**在主表里塞 `titleZh / titleEn` 列
+
+### V3 locale routing direction
+
+- 必须作为 V3 独立 SDD 实施，不能在普通 UI polish 中局部改。
+- 采用 Next.js App Router locale routing：优先评估 `app/[lang]` route segment，让 public 页面、metadata、RSS、sitemap、OG 图都能从 params 取得 locale。
+- 静态 UI 文案走 dictionary，不再把中文/英文硬编码散落在组件里。
+- `proxy.ts` 只做 locale negotiation / redirect 时必须保留 admin/auth/API guard 现有行为。
+- `metadata / RSS / sitemap` 必须同时输出 locale-aware URL、canonical、alternate links；避免只翻译页面内容但 SEO/feed 仍指向单 locale。
+- V3 完成前，`SUPPORTED_LOCALES = ["zh", "en"]` 只代表数据模型预留，不代表站点已经完成多语言支持。
 
 ## 8. 主题系统（CSS 变量 first）
 

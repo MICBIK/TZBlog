@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**prelaunch-readiness 已完成：技术债/文档债已按 SDD 验证并通过质量门。下一步：public-launch-polish 展示打磨，然后 P3 部署上线。**
+**public-launch-polish 正在收尾：Markdown 阅读系统、首页/关于页展示、admin light mode 对比度已完成；当前正在更新 i18n/V2/V3 文档债并准备最终质量门与浏览器逐页审查。**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -17,14 +17,16 @@
 - **2026-05-22** 4 SDD 归档后 manual smoke 复验全通过（含 1 个工具偏离 — admin 删除评论 confirm 改 API 旁路验证）。
 - **2026-05-22** P1-C 后置 UX patch：shadcn AlertDialog 替换评论删除原生确认框，解除 in-app browser 限制；测试 352 → 354（+2 net）；commits `c466f52 → 593be7f`。
 - **2026-05-23** prelaunch-readiness：`src/proxy.ts` 替代旧入口、Prisma 7 preview flag 清理、About/TechStack 上线文案修正、README/AGENTS/CLAUDE/docs/memory-bank 当前事实同步完成。
+- **2026-05-23** public-launch-polish：Markdown GitHub-style alerts + `.markdown-body` 阅读系统、首页 LaunchNarrative、About Principles、launch-surface 背景/面板 primitives、admin sidebar/header light mode 对比度修复已落地。
+- **2026-05-23** i18n 限制明确记录为 KI-004：当前实现仍是单 locale，V3 独立 SDD 才做 Next.js App Router locale routing、dictionary、metadata / RSS / sitemap 全链路迁移。
 - **2026-05-23** 最终质量门通过：`pnpm typecheck` ✓、`pnpm lint` ✓、`pnpm test` ✓（85 files / 460 passed / 1 skipped）、`pnpm build` ✓。旧 Next middleware / Prisma preview warning 已消失；测试仍有已记录的 `pg@9` deprecation warning。
 
 ## 下一步计划
 
-1. **public-launch-polish**：首页 Hero / 项目展示 / README 截图 / 真实示例内容 / OG 视觉统一，单独 SDD。
+1. **本轮收尾**：跑 `pnpm typecheck` / `pnpm lint` / `pnpm test` / `pnpm build`，然后用 in-app Browser 审查 `/`、`/about`、`/posts`、`/admin`、`/admin/posts/new`。
 2. **P3 部署上线**：补 `Dockerfile`、生产 smoke、备份脚本、VPS/域名配置、灰度上线。
-3. **V2 backlog**：主题 GUI、详细 Analytics、评论邮件通知、编辑器增强，分别独立 SDD。
-4. **V3 backlog**：zh/en locale routing、Header 切换器、英文内容与多语言 SEO/RSS/sitemap，独立 SDD。
+3. **V2 backlog**：主题 GUI、详细 Analytics、评论邮件通知、编辑器增强、真实示例内容和 OG 视觉统一，分别独立 SDD。
+4. **V3 backlog**：Next.js App Router locale routing（`app/[lang]`）、dictionary、Header 切换器、英文内容与多语言 SEO/RSS/sitemap，独立 SDD。
 
 ## 待办池 / 已知问题
 
@@ -52,6 +54,7 @@
 - **Next.js 16 request guard**：当前使用 `src/proxy.ts` 守 `/admin/*` 与 `/api/admin/*`。
 - **Markdown preview pipeline 简化**：`MarkdownEditorWithPreview` 客户端预览用了 mini-renderer（待 V2 接 marked + DOMPurify 完整化），完整 remark+shiki 已落到服务端 `MarkdownPreview`。
 - **rehype-shiki 替换**：原计划的 `rehype-shiki@0.0.9` 与 shiki@4 不兼容，改成内联 transformer 调用 `createHighlighter` + `codeToHast`。
+- **i18n 当前状态**：当前实现仍是单 locale；`SUPPORTED_LOCALES` 只代表数据模型预留，不代表站点已支持多语言。
 
 ## 待用户决策（不阻塞 P1）
 
