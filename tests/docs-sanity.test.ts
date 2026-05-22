@@ -14,6 +14,14 @@ const activeDocs = [
   "memory-bank/activeContext.md",
 ];
 
+const developerGuidanceDocs = [
+  "openspec/config.yaml",
+  "openspec/specs/media-upload/spec.md",
+  "src/app/api/admin/posts/route.ts",
+  "src/app/api/admin/columns/route.ts",
+  "src/components/editor/MarkdownEditor.tsx",
+];
+
 async function readProjectFile(path: string): Promise<string> {
   return readFile(join(process.cwd(), path), "utf-8");
 }
@@ -89,5 +97,32 @@ describe("prelaunch docs sanity", () => {
     expect(combined).toContain("独立 SDD");
     expect(combined).toContain("不属于本轮 prelaunch-readiness");
     expect(combined).not.toContain("V2 / V3 路线");
+  });
+
+  it("developerGuidanceDoesNotContainStaleEntrypoints", async () => {
+    const staleMarkers = [
+      "Next.js 15",
+      "Prisma 5",
+      "Tiptap WYSIWYG editor",
+      "src/middleware.ts",
+      "middleware.ts` already guards",
+      "OpenSpec change",
+      "openspec/changes/<feature>/test-map.md",
+    ];
+
+    const docs = await Promise.all(
+      developerGuidanceDocs.map(async (path) => ({
+        path,
+        content: await readProjectFile(path),
+      })),
+    );
+
+    for (const { path, content } of docs) {
+      for (const marker of staleMarkers) {
+        expect(content, `${path} still contains ${marker}`).not.toContain(
+          marker,
+        );
+      }
+    }
   });
 });
