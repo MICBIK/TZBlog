@@ -5,7 +5,15 @@ import { basicSetup } from "codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { indentUnit } from "@codemirror/language";
 import { EditorState, Prec } from "@codemirror/state";
-import { EditorView, keymap, placeholder as cmPlaceholder } from "@codemirror/view";
+import {
+  Decoration,
+  type DecorationSet,
+  EditorView,
+  keymap,
+  placeholder as cmPlaceholder,
+  ViewPlugin,
+  type ViewUpdate,
+} from "@codemirror/view";
 import { EditorToolbar } from "./EditorToolbar";
 
 export interface MarkdownSourceApi {
@@ -100,6 +108,7 @@ export function MarkdownEditor({
           ),
           basicSetup,
           markdown(),
+          markdownSourceHighlight,
           indentUnit.of("  "),
           cmPlaceholder(placeholder ?? "在这里写 Markdown..."),
           EditorView.lineWrapping,
@@ -142,6 +151,10 @@ export function MarkdownEditor({
               backgroundColor: "hsl(var(--bg))",
               borderColor: "hsl(var(--border))",
               color: "hsl(var(--muted-fg))",
+            },
+            ".cm-md-heading-line": {
+              color: "hsl(var(--fg))",
+              fontWeight: "700",
             },
             "&.cm-focused": {
               outline: "2px solid hsl(var(--ring))",
@@ -277,6 +290,45 @@ function insertAtSelection(
     scrollIntoView: true,
   });
   return true;
+}
+
+const markdownSourceHighlight = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+
+    constructor(view: EditorView) {
+      this.decorations = buildMarkdownSourceDecorations(view);
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = buildMarkdownSourceDecorations(update.view);
+      }
+    }
+  },
+  {
+    decorations: (plugin) => plugin.decorations,
+  },
+);
+
+function buildMarkdownSourceDecorations(view: EditorView): DecorationSet {
+  const decorations = [];
+
+  for (const range of view.visibleRanges) {
+    let position = range.from;
+
+    while (position <= range.to) {
+      const line = view.state.doc.lineAt(position);
+      if (/^#{1,6}\s/.test(line.text)) {
+        decorations.push(Decoration.line({ class: "cm-md-heading-line" }).range(line.from));
+      }
+
+      if (line.to >= range.to) break;
+      position = line.to + 1;
+    }
+  }
+
+  return Decoration.set(decorations, true);
 }
 
 export default MarkdownEditor;
