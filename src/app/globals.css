@@ -88,6 +88,11 @@
   --code-inline-bg: 220 14% 96%;
   --code-inline-fg: 220 30% 18%;
 
+  /* Tables */
+  --table-th-bg: 220 14% 96%;
+  --table-row-zebra: 220 14% 98%;
+  --table-row-hover: 220 14% 95%;
+
   /* Lines / inputs / focus */
   --border: 220 13% 91%;
   --input: 220 13% 91%;
@@ -149,6 +154,10 @@
   --code-chrome-fg: 240 5% 70%;
   --code-inline-bg: 240 10% 12%;
   --code-inline-fg: 210 20% 90%;
+
+  --table-th-bg: 240 10% 10%;
+  --table-row-zebra: 240 8% 8%;
+  --table-row-hover: 240 8% 12%;
 
   --border: 240 4% 16%;
   --input: 240 4% 16%;
@@ -547,11 +556,20 @@
   }
 
   .markdown-body th {
-    background: hsl(var(--muted));
+    background: hsl(var(--table-th-bg));
     color: hsl(var(--fg));
+    font-family: var(--font-mono);
     font-size: var(--text-label);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
+  }
+
+  .markdown-body tbody tr:nth-child(odd) {
+    background: hsl(var(--table-row-zebra));
+  }
+
+  .markdown-body tbody tr:hover {
+    background: hsl(var(--table-row-hover));
   }
 
   .markdown-body hr {
