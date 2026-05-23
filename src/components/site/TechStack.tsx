@@ -1,60 +1,9 @@
-interface TechItem {
-  name: string;
-  note?: string;
-}
+import Link from "next/link";
 
-interface TechCategory {
-  label: string;
-  items: TechItem[];
-}
-
-const techStack: TechCategory[] = [
-  {
-    label: "Frontend",
-    items: [
-      { name: "Next.js 16", note: "App Router + RSC + Server Actions" },
-      { name: "React 19", note: "with strict mode" },
-      { name: "TypeScript 5", note: "strict everywhere" },
-      { name: "Tailwind CSS v4", note: "CSS-vars driven theming" },
-      { name: "shadcn/ui", note: "primitives + Radix under the hood" },
-    ],
-  },
-  {
-    label: "Content & Editor",
-    items: [
-      { name: "Markdown source editor", note: "split source + preview" },
-      { name: "remark + rehype", note: "server-side MD pipeline" },
-      { name: "Shiki", note: "syntax highlighting" },
-    ],
-  },
-  {
-    label: "Backend & Data",
-    items: [
-      { name: "PostgreSQL 16", note: "single source of truth" },
-      { name: "Prisma 7", note: "with @prisma/adapter-pg driver" },
-      { name: "Auth.js v5", note: "Credentials provider, Edge-safe" },
-      { name: "Zod", note: "shared client/server schemas" },
-      { name: "MinIO", note: "S3-compatible media storage" },
-    ],
-  },
-  {
-    label: "Infra",
-    items: [
-      { name: "Docker Compose", note: "app + Postgres + MinIO + Caddy" },
-      { name: "Caddy", note: "automatic HTTPS + reverse proxy" },
-      { name: "Self-hosted VPS", note: "no platform lock-in" },
-    ],
-  },
-  {
-    label: "Tooling",
-    items: [
-      { name: "pnpm", note: "fast, disk-efficient" },
-      { name: "Vitest", note: "unit + integration" },
-      { name: "ESLint", note: "+ TypeScript-aware rules" },
-      { name: "Playwright", note: "planned for E2E + visual regression" },
-    ],
-  },
-];
+import {
+  formatTechStackRationale,
+  techStackCategories,
+} from "@/lib/content/tech-stack";
 
 export function TechStack() {
   return (
@@ -64,19 +13,19 @@ export function TechStack() {
     >
       <header className="space-y-2">
         <p className="font-mono text-label tracking-label uppercase text-muted-fg">
-          What powers this
+          5 areas, 30+ pieces, all self-hosted.
         </p>
         <h2
           id="tech-stack-heading"
           className="font-serif text-h2 leading-display tracking-tight text-fg"
         >
-          Tech Stack
+          技术体系
         </h2>
         <div className="h-px w-12 border-t border-border" aria-hidden="true" />
       </header>
 
       <div className="space-y-[var(--space-stack-lg)]">
-        {techStack.map((category, index) => {
+        {techStackCategories.map((category, index) => {
           const headingId = `ts-${category.label
             .toLowerCase()
             .replace(/[^a-z]+/g, "-")
@@ -98,19 +47,25 @@ export function TechStack() {
               <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
                 {category.items.map((item) => (
                   <div key={item.name} className="space-y-1">
-                    <p className="font-serif text-base text-fg">
+                    <abbr
+                      data-testid="tech-stack-item-name"
+                      title={formatTechStackRationale(item)}
+                      className="block cursor-help no-underline"
+                    >
+                      <span className="font-serif text-base text-fg">
                       {item.name}
-                    </p>
-                    {item.note ? (
+                      </span>
+                    </abbr>
+                    {item.rationale ? (
                       <p className="text-sm leading-body text-muted-fg">
-                        {item.note}
+                        {item.rationale}
                       </p>
                     ) : null}
                   </div>
                 ))}
               </div>
 
-              {index < techStack.length - 1 ? (
+              {index < techStackCategories.length - 1 ? (
                 <div
                   className="h-px w-full border-t border-border pt-4"
                   aria-hidden="true"
@@ -120,6 +75,13 @@ export function TechStack() {
           );
         })}
       </div>
+
+      <Link
+        href="/about#tech-stack"
+        className="inline-flex text-sm text-muted-fg transition-colors hover:text-fg"
+      >
+        完整技术选型理由 →
+      </Link>
     </section>
   );
 }
