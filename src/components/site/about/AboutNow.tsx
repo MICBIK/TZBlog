@@ -29,13 +29,18 @@ export function AboutNow({ intro, items }: AboutNowProps) {
       </p>
 
       <dl className="grid gap-6 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div key={item.label} className="grid gap-1 sm:grid-cols-subgrid sm:col-span-2">
             <dt className="font-mono text-label tracking-label uppercase text-muted-fg">
-              {item.label}
+              Focus {String(index + 1).padStart(2, "0")}
             </dt>
-            <dd className="font-serif text-base leading-body text-fg">
-              {item.detail}
+            <dd className="space-y-2">
+              <h3 className="font-serif text-h3 leading-display tracking-tight text-fg">
+                {item.label}
+              </h3>
+              <p className="font-serif text-base leading-body text-muted-fg">
+                {item.detail}
+              </p>
             </dd>
           </div>
         ))}
