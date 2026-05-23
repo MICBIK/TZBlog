@@ -24,6 +24,12 @@ interface ToolButtonProps {
   onClick: () => void;
 }
 
+interface MediaPickerItem {
+  id: string;
+  filename: string;
+  url: string;
+}
+
 const TOOLBAR_ITEMS = [
   { action: "bold", label: "加粗 Bold ⌘B", marker: "B" },
   { action: "italic", label: "斜体 Italic ⌘I", marker: "I" },
@@ -45,6 +51,10 @@ type ToolbarAction = (typeof TOOLBAR_ITEMS)[number]["action"];
 export function EditorToolbar({ source }: EditorToolbarProps) {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
+  const [mediaItems, setMediaItems] = useState<MediaPickerItem[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaError, setMediaError] = useState<string | null>(null);
 
   const submitLink = () => {
     const url = linkUrl.trim();
@@ -53,6 +63,37 @@ export function EditorToolbar({ source }: EditorToolbarProps) {
     source.wrapSelection("[", `](${url})`);
     setLinkUrl("");
     setLinkDialogOpen(false);
+  };
+
+  const openMediaDialog = async () => {
+    setMediaDialogOpen(true);
+    setMediaError(null);
+    setMediaLoading(true);
+
+    try {
+      const response = await fetch("/api/admin/media?pageSize=24");
+      if (!response.ok) {
+        throw new Error(`Media request failed with ${response.status}`);
+      }
+
+      const payload = (await response.json()) as { data?: MediaPickerItem[] };
+      if (!Array.isArray(payload.data)) {
+        throw new Error("Media response is missing data[]");
+      }
+
+      setMediaItems(payload.data);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown media loading error";
+      setMediaError(message);
+      setMediaItems([]);
+    } finally {
+      setMediaLoading(false);
+    }
+  };
+
+  const insertImage = (media: MediaPickerItem) => {
+    source?.insertSnippet(`![${sanitizeImageAlt(media.filename)}](${media.url})`);
+    setMediaDialogOpen(false);
   };
 
   return (
@@ -71,6 +112,11 @@ export function EditorToolbar({ source }: EditorToolbarProps) {
             onClick={() => {
               if (item.action === "link") {
                 setLinkDialogOpen(true);
+                return;
+              }
+
+              if (item.action === "image") {
+                void openMediaDialog();
                 return;
               }
 
@@ -112,6 +158,50 @@ export function EditorToolbar({ source }: EditorToolbarProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={mediaDialogOpen} onOpenChange={setMediaDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>选择图片</DialogTitle>
+            <DialogDescription>
+              从媒体库选择一张图片，并以 Markdown image 语法插入到当前位置。
+            </DialogDescription>
+          </DialogHeader>
+
+          {mediaError ? (
+            <div
+              role="alert"
+              className="rounded-md border border-[hsl(var(--destructive))] bg-[hsl(var(--destructive))]/10 p-3 text-sm text-[hsl(var(--destructive))]"
+            >
+              {mediaError}
+            </div>
+          ) : null}
+
+          <div className="max-h-72 space-y-2 overflow-auto">
+            {mediaLoading ? (
+              <p className="text-sm text-[hsl(var(--muted-fg))]">正在加载媒体...</p>
+            ) : null}
+
+            {!mediaLoading && !mediaError && mediaItems.length === 0 ? (
+              <p className="text-sm text-[hsl(var(--muted-fg))]">媒体库暂无图片。</p>
+            ) : null}
+
+            {mediaItems.map((media) => (
+              <button
+                key={media.id}
+                type="button"
+                onClick={() => insertImage(media)}
+                className="flex w-full items-center justify-between rounded-md border border-[hsl(var(--border))] px-3 py-2 text-left text-sm transition-colors hover:bg-[hsl(var(--muted))]"
+              >
+                <span className="font-medium text-[hsl(var(--fg))]">{media.filename}</span>
+                <span className="truncate pl-4 text-xs text-[hsl(var(--muted-fg))]">
+                  {media.url}
+                </span>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
@@ -141,6 +231,10 @@ function runToolbarAction(source: MarkdownSourceApi | null, action: ToolbarActio
   }
 
   source.focus();
+}
+
+function sanitizeImageAlt(filename: string): string {
+  return filename.replace(/\[|\]/g, "");
 }
 
 function ToolButton({ label, marker, disabled, onClick }: ToolButtonProps) {
