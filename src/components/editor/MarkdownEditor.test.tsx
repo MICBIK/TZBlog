@@ -155,4 +155,30 @@ describe("MarkdownEditor source contract", () => {
     expect(onChange).toHaveBeenCalledWith("```\n\n```");
     expect(sourceApiRef.current?.getMarkdown()).toBe("```\n\n```");
   });
+
+  it("toolbar callout action inserts a NOTE alert block", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+
+    render(
+      <MarkdownEditor
+        value=""
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(0, 0);
+    await user.click(screen.getByRole("button", { name: /提示块.*Callout.*NOTE/ }));
+
+    expect(onChange).toHaveBeenCalledWith("> [!NOTE]\n> 内容");
+    expect(sourceApiRef.current?.getMarkdown()).toBe("> [!NOTE]\n> 内容");
+  });
 });
