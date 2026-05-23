@@ -20,7 +20,7 @@ describe("<GithubCard />", () => {
 
     render(await githubCard());
 
-    expect(screen.getByText("GITHUB · DEVELOPMENT")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "GitHub Activity" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "ha1den" })).toHaveAttribute(
       "href",
       "https://github.com/ha1den",
@@ -41,20 +41,23 @@ describe("<GithubCard />", () => {
 
     render(await githubCard());
 
-    expect(screen.getByText("GITHUB · DEVELOPMENT")).toBeInTheDocument();
-    expect(screen.getByText("GitHub data unavailable")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "GitHub Activity" })).toBeInTheDocument();
+    expect(screen.getByText("GitHub 数据暂不可用")).toBeInTheDocument();
+    expect(screen.getByTestId("github-fallback-icon")).toBeInTheDocument();
     expect(screen.getByText(/Set GITHUB_USERNAME/)).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
-  it("GithubCard Editorial styling includes hairline, rule line, and hierarchy", async () => {
+  it("uses launch-panel container while preserving hierarchy", async () => {
     vi.mocked(getGithubData).mockResolvedValue(okGithubData());
 
     const { container } = render(await githubCard());
-    const label = screen.getByText("GITHUB · DEVELOPMENT");
+    const label = screen.getByText("GITHUB");
     const number = screen.getByText("42");
     const repo = screen.getByText("TZBlog");
 
+    expect(container.querySelector("section")).toHaveClass("launch-panel");
+    expect(container.querySelector("section")).toHaveClass("min-h-[420px]");
     expect(label).toHaveClass("uppercase");
     expect(label).toHaveClass("text-label");
     expect(label).toHaveClass("tracking-label");
@@ -63,6 +66,19 @@ describe("<GithubCard />", () => {
     expect(
       container.querySelector('[class*="w-12"][class*="border-t"][class*="border-border"]'),
     ).toBeInTheDocument();
+  });
+
+  it("fallback keeps the normal card height", async () => {
+    vi.mocked(getGithubData).mockResolvedValue({
+      status: "unavailable",
+      reason: "rate_limited",
+    });
+
+    const { container } = render(await githubCard());
+
+    expect(container.querySelector("section")).toHaveClass("launch-panel");
+    expect(container.querySelector("section")).toHaveClass("min-h-[420px]");
+    expect(screen.getByText("GitHub 数据暂不可用")).toBeInTheDocument();
   });
 
   it("GithubCard a11y attrs include avatar dimensions and external link rel", async () => {
