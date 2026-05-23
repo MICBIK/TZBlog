@@ -49,6 +49,55 @@ describe("renderMarkdown", () => {
     vi.resetModules();
   });
 
+  it("reuses highlighter across repeated code block renders", async () => {
+    vi.resetModules();
+    const createHighlighter = vi.fn(async () => ({
+      codeToHast: () => ({ type: "root", children: [] }),
+      getLoadedLanguages: () => ["ts"],
+    }));
+    vi.doMock("shiki", () => ({ createHighlighter }));
+
+    const { renderMarkdown: renderMarkdownWithMock } = await import("./markdown");
+
+    await renderMarkdownWithMock("```ts\nconst x = 1;\n```");
+    await renderMarkdownWithMock("```ts\nconst y = 2;\n```");
+
+    expect(createHighlighter).toHaveBeenCalledTimes(1);
+
+    vi.doUnmock("shiki");
+    vi.resetModules();
+  });
+
+  it("renders large markdown within time budget", async () => {
+    const section = [
+      "## Section",
+      "",
+      "> [!NOTE]",
+      "> Keep this readable.",
+      "",
+      "```ts",
+      "const value = 1;",
+      "```",
+      "",
+      "| a | b |",
+      "|---|---|",
+      "| 1 | 2 |",
+      "",
+      "- item",
+      "  - nested",
+      "",
+    ].join("\n");
+    const markdown = Array.from({ length: 25 }, () => section).join("\n");
+    const startedAt = performance.now();
+
+    const html = await renderMarkdown(markdown);
+    const duration = performance.now() - startedAt;
+
+    expect(html).toContain("markdown-alert-note");
+    expect(html).toContain("code-block");
+    expect(duration).toBeLessThan(3000);
+  });
+
   it("emits dual-theme markup for code blocks", async () => {
     const md = "```ts\nconst x: number = 1;\n```";
     const html = await renderMarkdown(md);
