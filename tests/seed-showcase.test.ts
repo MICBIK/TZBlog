@@ -1,4 +1,6 @@
 import { execFile } from "node:child_process"
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import { promisify } from "node:util"
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
@@ -69,6 +71,67 @@ describe("showcase seed", () => {
       "self-hosted-nextjs-observability",
     ])
   })
+
+  it("seededContentSupportsPublicShowcaseRoutes", async () => {
+    await runSeed()
+
+    const latestPost = await testDb.post.findFirst({
+      where: { status: "PUBLISHED" },
+      orderBy: { publishedAt: { sort: "desc", nulls: "last" } },
+      include: {
+        translations: true,
+        column: { include: { translations: true } },
+        tags: { include: { tag: true } },
+        comments: { where: { status: "APPROVED" } },
+      },
+    })
+    const columns = await testDb.column.findMany({
+      include: {
+        translations: true,
+        posts: { where: { status: "PUBLISHED" }, select: { id: true } },
+      },
+    })
+    const tags = await testDb.tag.findMany({
+      include: {
+        posts: {
+          where: { post: { status: "PUBLISHED" } },
+          select: { postId: true },
+        },
+      },
+    })
+
+    expect(latestPost?.slug).toBe("self-hosted-nextjs-observability")
+    expect(latestPost?.cover).toMatch(/^\/showcase\/cover-[\w-]+\.png$/)
+    expect(assetExists(latestPost?.cover)).toBe(true)
+    expect(latestPost?.translations[0].content).toContain("## MVP 指标")
+    expect(latestPost?.translations[0].content).toContain("### 交付前检查")
+    expect(latestPost?.translations[0].content).toContain("> [!WARNING]")
+    expect(latestPost?.translations[0].content).toContain("| 指标 |")
+    expect(latestPost?.translations[0].content).toContain("```ts")
+    expect(latestPost?.translations[0].content).toContain(
+      "![](/showcase/article-observability.png)",
+    )
+    expect(assetExists("/showcase/article-observability.png")).toBe(true)
+    expect(latestPost?.column?.translations[0].name).toBe("工程札记")
+    expect(latestPost?.tags.map((row) => row.tag.slug).sort()).toEqual([
+      "analytics",
+      "nextjs",
+      "self-hosting",
+    ])
+
+    expect(columns).toHaveLength(2)
+    expect(columns.every((column) => column.posts.length > 0)).toBe(true)
+    expect(columns.every((column) => assetExists(column.cover))).toBe(true)
+    expect(tags.length).toBeGreaterThanOrEqual(6)
+    expect(tags.every((tag) => tag.posts.length > 0)).toBe(true)
+
+    const commentedPost = await testDb.post.findUnique({
+      where: { slug: "notion-like-markdown-workflow" },
+      include: { comments: { where: { status: "APPROVED" } } },
+    })
+    expect(commentedPost?.commentCount).toBe(commentedPost?.comments.length)
+    expect(commentedPost?.comments[0]?.content).toContain("Markdown 存储边界")
+  })
 })
 
 async function runSeed(): Promise<void> {
@@ -81,4 +144,9 @@ async function runSeed(): Promise<void> {
     },
     timeout: 30_000,
   })
+}
+
+function assetExists(path: string | null | undefined): boolean {
+  if (!path || !path.startsWith("/")) return false
+  return existsSync(join(process.cwd(), "public", path))
 }
