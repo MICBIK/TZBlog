@@ -1,4 +1,26 @@
-interface AboutContent {
+export interface AboutProjectIntentSection {
+  heading: string;
+  body: string;
+}
+
+export interface ImplementationApproachEntry {
+  label: string;
+  heading: string;
+  body: string;
+  code?: string;
+}
+
+export interface RoadmapItem {
+  label: string;
+  description: string;
+}
+
+export interface RoadmapColumn {
+  phase: string;
+  items: RoadmapItem[];
+}
+
+export interface AboutContent {
   hero: {
     headline: string;
     lead: string;
@@ -13,12 +35,22 @@ interface AboutContent {
   story: {
     paragraphs: string[];
   };
+  projectIntent: {
+    sections: AboutProjectIntentSection[];
+  };
+  implementationApproach: {
+    entries: ImplementationApproachEntry[];
+  };
   principles: {
     intro: string;
     items: Array<{
       label: string;
       detail: string;
     }>;
+  };
+  futureRoadmap: {
+    columns: RoadmapColumn[];
+    i18nDisclosure: string;
   };
   contact: {
     email: string;
@@ -63,6 +95,54 @@ export const aboutContent = {
       "The goal is not just to publish posts. It is to keep enough ownership over the stack that performance, data, privacy, and editorial workflow can be tuned without waiting on a hosted platform.",
     ],
   },
+  projectIntent: {
+    sections: [
+      {
+        heading: "Why this exists",
+        body:
+          "TZBlog avoids Substack, Ghost, and Notion because the CMS, analytics, Markdown renderer, and deployment path need to stay inspectable. The first self-built CMS pass took 8 days, which is small enough to own and write about.",
+      },
+      {
+        heading: "Who it's for",
+        body:
+          "It is for engineers thinking about ownership, tradeoffs, and tools: people who care why a Next.js 16, PostgreSQL 16, MinIO, and Caddy stack is chosen over a hosted black box.",
+      },
+      {
+        heading: "What it isn't",
+        body:
+          "It is not marketing, not SEO nesting, and not a paid wall. The source stays reviewable under the repository LICENSE while the site runs toward a Hetzner CX22 4GB VPS launch target.",
+      },
+    ],
+  },
+  implementationApproach: {
+    entries: [
+      {
+        label: "01",
+        heading: "SDD + TDD micro-cycles",
+        body:
+          "Each capability starts with a spec, a real failing test, and a matching implementation commit so behavior changes remain reviewable.",
+        code: "test(about): A-6\nfeat(about): A-6",
+      },
+      {
+        label: "02",
+        heading: "Self-hosted CMS over CMS-as-a-service",
+        body:
+          "The CMS is intentionally narrow: posts, columns, comments, analytics, and media stay in one codebase instead of splitting ownership across hosted publishing tools.",
+      },
+      {
+        label: "03",
+        heading: "Markdown is the source of truth",
+        body:
+          "Editing stays as Markdown source while preview, published pages, RSS, and search summaries derive from the same stored string.",
+      },
+      {
+        label: "04",
+        heading: "Document tradeoffs in memory-bank",
+        body:
+          "Durable decisions live in memory-bank and SDD artifacts so future work starts from recorded constraints rather than rediscovery.",
+      },
+    ],
+  },
   principles: {
     intro:
       "TZBlog is shaped around a practical constraint: every layer should be understandable enough to debug, replace, and write about.",
@@ -83,6 +163,62 @@ export const aboutContent = {
           "Implementation choices are recorded as notes: what shipped, what was deferred, and which V2/V3 work needs its own SDD.",
       },
     ],
+  },
+  futureRoadmap: {
+    columns: [
+      {
+        phase: "Current",
+        items: [
+          {
+            label: "MVP",
+            description:
+              "CMS, comments, analytics, RSS, sitemap, Markdown reading, and deployment documentation are being closed for launch.",
+          },
+          {
+            label: "Pre-launch",
+            description:
+              "Browser audit, Lighthouse follow-up, backup scripts, and production smoke remain before public release.",
+          },
+        ],
+      },
+      {
+        phase: "V2",
+        items: [
+          {
+            label: "Theme GUI",
+            description:
+              "Admin-managed design tokens, visual presets, and safer theme switching.",
+          },
+          {
+            label: "Editor enhancements",
+            description:
+              "Tables, footnotes, math, drag-and-drop media, and richer Markdown authoring helpers.",
+          },
+          {
+            label: "Detailed analytics",
+            description:
+              "Sources, devices, regions, comparisons, and export workflows for the self-hosted analytics stack.",
+          },
+        ],
+      },
+      {
+        phase: "V3",
+        items: [
+          {
+            label: "Multilingual i18n",
+            description:
+              "Locale routing, dictionaries, translated content, metadata, RSS, sitemap, and canonical strategy.",
+          },
+          {
+            label: "Language switcher",
+            description:
+              "A public UI for zh/en once the route tree and SEO surface are ready.",
+          },
+        ],
+      },
+    ],
+    i18nDisclosure:
+      "TZBlog 目前是一个中文单语言（zh-CN）个人技术博客。数据模型预留了多语言能力，但当前 UI、SEO、RSS、sitemap、后台编辑均未启用多语言路径。V3 将作为独立 SDD 处理。",
   },
   contact: {
     email: "hello@ha1den.dev",
