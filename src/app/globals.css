@@ -112,6 +112,16 @@
   --table-row-zebra: 220 14% 98%;
   --table-row-hover: 220 14% 95%;
 
+  /* Admin status badges */
+  --status-pending-bg: 38 100% 90%;
+  --status-pending-fg: 38 92% 30%;
+  --status-approved-bg: 155 60% 90%;
+  --status-approved-fg: 155 58% 28%;
+  --status-spam-bg: 0 80% 92%;
+  --status-spam-fg: 0 70% 38%;
+  --status-rejected-bg: 220 14% 92%;
+  --status-rejected-fg: 220 14% 36%;
+
   /* Keyboard */
   --kbd-bg: 0 0% 100%;
   --kbd-fg: 222 47% 11%;
@@ -193,6 +203,15 @@
   --table-th-bg: 240 10% 10%;
   --table-row-zebra: 240 8% 8%;
   --table-row-hover: 240 8% 12%;
+
+  --status-pending-bg: 38 50% 14%;
+  --status-pending-fg: 38 92% 70%;
+  --status-approved-bg: 155 40% 12%;
+  --status-approved-fg: 155 55% 68%;
+  --status-spam-bg: 0 45% 14%;
+  --status-spam-fg: 0 75% 72%;
+  --status-rejected-bg: 220 12% 18%;
+  --status-rejected-fg: 220 15% 76%;
 
   --kbd-bg: 240 10% 12%;
   --kbd-fg: 210 20% 90%;
@@ -284,6 +303,31 @@
     background: hsl(var(--sidebar-bg-active));
     color: hsl(var(--sidebar-fg-hover));
     font-weight: 500;
+  }
+
+  .admin-status-badge {
+    background: hsl(var(--status-pending-bg));
+    color: hsl(var(--status-pending-fg));
+  }
+
+  .admin-status-badge[data-status="pending"] {
+    background: hsl(var(--status-pending-bg));
+    color: hsl(var(--status-pending-fg));
+  }
+
+  .admin-status-badge[data-status="approved"] {
+    background: hsl(var(--status-approved-bg));
+    color: hsl(var(--status-approved-fg));
+  }
+
+  .admin-status-badge[data-status="spam"] {
+    background: hsl(var(--status-spam-bg));
+    color: hsl(var(--status-spam-fg));
+  }
+
+  .admin-status-badge[data-status="rejected"] {
+    background: hsl(var(--status-rejected-bg));
+    color: hsl(var(--status-rejected-fg));
   }
 
   ::selection {

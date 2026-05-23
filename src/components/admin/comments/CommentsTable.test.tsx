@@ -88,10 +88,13 @@ describe("<CommentsTable /> SPEC-C-U-2 + U-3", () => {
     ] as const
 
     for (const [label, status] of badges) {
-      const badge = screen.getByText(label)
+      const badge = screen
+        .getAllByText(label)
+        .find((element) => element.tagName === "SPAN")
 
+      expect(badge).toBeDefined()
       expect(badge).toHaveAttribute("data-status", status)
-      expect(badge.className).not.toMatch(/amber|green|rose|zinc/)
+      expect(badge?.className).not.toMatch(/amber|green|rose|zinc/)
     }
   })
 

@@ -41,11 +41,11 @@ const STATUS_LABEL: Record<CommentStatus, string> = {
   REJECTED: "已拒",
 }
 
-const STATUS_BADGE_CLS: Record<CommentStatus, string> = {
-  PENDING: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200",
-  APPROVED: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200",
-  SPAM: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200",
-  REJECTED: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
+const STATUS_DATA: Record<CommentStatus, string> = {
+  PENDING: "pending",
+  APPROVED: "approved",
+  SPAM: "spam",
+  REJECTED: "rejected",
 }
 
 export function CommentsTable({
@@ -247,7 +247,8 @@ export function CommentsTable({
                   </td>
                   <td className="px-3 py-3">
                     <span
-                      className={`inline-block rounded px-2 py-0.5 text-xs ${STATUS_BADGE_CLS[item.status]}`}
+                      data-status={STATUS_DATA[item.status]}
+                      className="admin-status-badge inline-block rounded px-2 py-0.5 text-xs font-medium"
                     >
                       {STATUS_LABEL[item.status]}
                     </span>
