@@ -23,6 +23,12 @@ describe("AdminSidebar navigation", () => {
     "utf-8",
   );
 
+  it("excludes dead or sandbox-only admin routes from the final nav", () => {
+    expect(source).not.toMatch(/href:\s*"\/admin\/analytics"/);
+    expect(source).not.toMatch(/href:\s*"\/admin\/settings"/);
+    expect(source).not.toMatch(/href:\s*"\/admin\/_editor-demo"/);
+  });
+
   it("links only to existing admin pages", () => {
     const hrefs = Array.from(source.matchAll(/href:\s*"([^"]+)"/g)).map(
       ([, href]) => href,
