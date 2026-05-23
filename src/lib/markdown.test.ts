@@ -66,6 +66,43 @@ describe("renderMarkdown", () => {
     expect(html).not.toContain("[!NOTE]");
   });
 
+  it("emits markdown-alert aside with title div and icon svg", async () => {
+    const md = [
+      "> [!NOTE]",
+      "> A short note with `code`.",
+      "",
+      "> [!TIP]",
+      "> Prefer small batches.",
+      "",
+      "> [!IMPORTANT]",
+      "> This affects launch readiness.",
+      "",
+      "> [!WARNING]",
+      "> Check backups first.",
+      "",
+      "> [!CAUTION]",
+      "> This can break production.",
+    ].join("\n");
+
+    const html = await renderMarkdown(md);
+
+    for (const [type, label] of [
+      ["note", "Note"],
+      ["tip", "Tip"],
+      ["important", "Important"],
+      ["warning", "Warning"],
+      ["caution", "Caution"],
+    ] as const) {
+      const aside = extractAlertAside(html, type);
+
+      expect(aside).toContain('class="markdown-alert-title"');
+      expect(aside).toContain('class="markdown-alert-icon"');
+      expect(aside).toContain('aria-hidden="true"');
+      expect(aside).toContain(`class="markdown-alert-label">${label}</span>`);
+      expect(aside).toContain("<p>");
+    }
+  });
+
   it("strips dangerous embedded HTML", async () => {
     const md = 'Hello\n\n<script>alert("xss")</script>\n\nworld';
     const html = await renderMarkdown(md);
@@ -104,6 +141,20 @@ function headingIds(html: string): string[] {
   return Array.from(html.matchAll(/<h[23][^>]*id="([^"]+)"/g)).map(
     (match) => match[1],
   );
+}
+
+function extractAlertAside(html: string, type: string): string {
+  const match = html.match(
+    new RegExp(
+      `<aside[^>]*markdown-alert-${type}[^>]*>[\\s\\S]*?<\\/aside>`,
+    ),
+  );
+
+  if (!match) {
+    throw new Error(`Missing markdown-alert-${type} aside`);
+  }
+
+  return match[0];
 }
 
 describe("extractToc", () => {
