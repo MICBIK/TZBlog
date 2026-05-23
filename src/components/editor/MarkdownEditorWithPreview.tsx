@@ -88,11 +88,6 @@ export function MarkdownEditorWithPreview({
             className="markdown-body max-w-none"
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
-          <p className="mt-6 text-xs text-[hsl(var(--muted))]">
-            Lightweight in-browser preview. The published page uses the full
-            remark/rehype/shiki pipeline, so code highlighting and edge-case
-            Markdown will render exactly as expected after publish.
-          </p>
         </div>
       </div>
     </div>
