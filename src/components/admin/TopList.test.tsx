@@ -40,6 +40,6 @@ describe("<TopList />", () => {
     expect(within(list).getByText("5")).toBeInTheDocument()
 
     rerender(<TopList title="Top Paths" items={[]} />)
-    expect(screen.getByText("No data")).toBeInTheDocument()
+    expect(screen.getByText("暂无数据")).toBeInTheDocument()
   })
 })

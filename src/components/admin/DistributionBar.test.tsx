@@ -41,6 +41,6 @@ describe("<DistributionBar />", () => {
     expect(bars[1]).toHaveStyle({ width: "25%" })
 
     rerender(<DistributionBar title="Devices" items={[]} />)
-    expect(screen.getByText("No data")).toBeInTheDocument()
+    expect(screen.getByText("暂无数据")).toBeInTheDocument()
   })
 })

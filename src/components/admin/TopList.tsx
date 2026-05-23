@@ -23,7 +23,7 @@ export function TopList({ title, items }: TopListProps) {
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <p className="text-sm text-muted-fg">No data</p>
+          <p className="text-sm text-muted-fg">暂无数据</p>
         ) : (
           <ol data-testid="top-list" className="space-y-3">
             {items.map((item, index) => (

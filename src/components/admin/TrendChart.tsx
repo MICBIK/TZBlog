@@ -12,11 +12,12 @@ const WIDTH = 600
 
 export function TrendChart({ data, height = 96 }: TrendChartProps) {
   if (data.length === 0) {
-    return <p className="text-sm text-muted-fg">No trend data</p>
+    return <p className="text-sm text-muted-fg">暂无趋势数据</p>
   }
 
   const maxCount = Math.max(...data.map((point) => point.count), 1)
   const stepX = data.length > 1 ? WIDTH / (data.length - 1) : 0
+  const chartLabel = `最近 ${data.length} 天趋势图`
   const points = data
     .map((point, index) => {
       const x = data.length > 1 ? index * stepX : WIDTH / 2
@@ -28,13 +29,13 @@ export function TrendChart({ data, height = 96 }: TrendChartProps) {
   return (
     <svg
       role="img"
-      aria-label={`Trend chart over ${data.length} days`}
+      aria-label={chartLabel}
       viewBox={`0 0 ${WIDTH} ${height}`}
       className="h-24 w-full text-primary"
       preserveAspectRatio="none"
       data-testid="trend-chart"
     >
-      <title>{`Trend chart over ${data.length} days`}</title>
+      <title>{chartLabel}</title>
       <polyline
         points={points}
         fill="none"

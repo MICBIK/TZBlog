@@ -34,11 +34,11 @@ describe("<TrendChart />", () => {
     const polyline = container.querySelector("svg polyline")
     expect(svg).toBeInTheDocument()
     expect(svg).toHaveAttribute("role", "img")
-    expect(svg).toHaveAttribute("aria-label", "Trend chart over 3 days")
+    expect(svg).toHaveAttribute("aria-label", "最近 3 天趋势图")
     expect(polyline).toBeInTheDocument()
     expect(polyline).toHaveAttribute("stroke", "currentColor")
 
     rerender(<TrendChart data={[]} />)
-    expect(screen.getByText("No trend data")).toBeInTheDocument()
+    expect(screen.getByText("暂无趋势数据")).toBeInTheDocument()
   })
 })

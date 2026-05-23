@@ -25,7 +25,7 @@ export function DistributionBar({ title, items }: DistributionBarProps) {
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <p className="text-sm text-muted-fg">No data</p>
+          <p className="text-sm text-muted-fg">暂无数据</p>
         ) : (
           <div className="space-y-4">
             {items.map((item) => {
