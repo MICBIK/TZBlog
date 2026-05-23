@@ -7,11 +7,18 @@ import { indentUnit } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView, placeholder as cmPlaceholder } from "@codemirror/view";
 
+export interface MarkdownSourceApi {
+  getMarkdown: () => string;
+  focus: () => void;
+}
+
 export interface MarkdownEditorProps {
   /** Current Markdown value (controlled). */
   value: string;
   /** Fired with the latest Markdown after each edit. */
   onChange: (markdown: string) => void;
+  /** Exposes the literal source document for toolbar and round-trip checks. */
+  onReady?: (api: MarkdownSourceApi) => void;
   /** Placeholder shown when the document is empty. */
   placeholder?: string;
   /** Optional extra className on the outer wrapper. */
@@ -28,6 +35,7 @@ export interface MarkdownEditorProps {
 export function MarkdownEditor({
   value,
   onChange,
+  onReady,
   placeholder,
   className,
 }: MarkdownEditorProps) {
@@ -35,11 +43,16 @@ export function MarkdownEditor({
   const viewRef = useRef<EditorView | null>(null);
   const valueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const onReadyRef = useRef(onReady);
   const applyingExternalChangeRef = useRef(false);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   useEffect(() => {
     if (!mountRef.current || viewRef.current) return;
@@ -93,6 +106,10 @@ export function MarkdownEditor({
     });
 
     viewRef.current = view;
+    onReadyRef.current?.({
+      getMarkdown: () => view.state.doc.toString(),
+      focus: () => view.focus(),
+    });
 
     return () => {
       view.destroy();
