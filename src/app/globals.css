@@ -370,7 +370,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-reduced-motion-safe] * {
+    --reveal-delay: 0ms;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
   [data-reveal] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-reduced-motion-safe] [data-reveal] {
     animation: none;
     opacity: 1;
     transform: none;
@@ -876,6 +890,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-reduced-motion-safe] .launch-panel,
+  [data-reduced-motion-safe] .launch-panel:hover {
+    transform: none;
+  }
+
+  [data-reduced-motion-safe] [data-launch-orbit] {
+    animation: none;
+  }
+
   .launch-panel,
   .launch-panel:hover {
     transform: none;
