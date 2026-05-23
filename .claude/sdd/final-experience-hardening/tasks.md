@@ -21,6 +21,8 @@
 4. admin-polish
   4.1.a [TEST-RED] write failing component test for admin-polish-001
   4.1.b [IMPL-GREEN] localize analytics helper empty states
+  4.2.a [TEST-RED] write failing page test for admin-polish-002
+  4.2.b [IMPL-GREEN] localize dashboard page chrome and failure fallback
 
 5. finish
   5.1 [no-tdd] run full quality gate and browser smoke

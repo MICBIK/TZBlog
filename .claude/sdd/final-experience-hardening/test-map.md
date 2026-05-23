@@ -9,5 +9,6 @@
 | public-index-002 | component | src/components/site/ColumnCard.test.tsx | rendersStableCoverFrameWhenCoverExists | New cover rendering contract |
 | public-index-003 | page | src/app/(site)/tags/[slug]/page.test.tsx | rendersChineseSingleLocaleTagDetail | Tag detail chrome and metadata |
 | admin-polish-001 | component | src/components/admin/admin-dashboard-chrome.test.tsx | rendersChineseAnalyticsEmptyStates | Dashboard helper empty states |
+| admin-polish-002 | page | src/app/(admin)/admin/page.test.tsx | rendersChineseDashboardChrome | Dashboard page-level labels and fallbacks |
 
 <!-- Draft auto-generated from explore. Review before use. Generated: 2026-05-24T00:00:00+08:00 -->
