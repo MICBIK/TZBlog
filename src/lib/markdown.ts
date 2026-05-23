@@ -194,6 +194,7 @@ function createCodeBlockFigure(
       children: [{ type: "text", value: filename }],
     });
   }
+  captionChildren.push(createCodeCopyButton());
 
   return {
     type: "element",
@@ -210,6 +211,59 @@ function createCodeBlockFigure(
         children: captionChildren,
       },
       pre,
+    ],
+  };
+}
+
+function createCodeCopyButton(): HastElement {
+  return {
+    type: "element",
+    tagName: "button",
+    properties: {
+      className: ["code-block-copy"],
+      dataCopy: "",
+      ariaLabel: "复制代码",
+      dataState: "idle",
+      type: "button",
+    },
+    children: [
+      {
+        type: "element",
+        tagName: "svg",
+        properties: {
+          ariaHidden: "true",
+          className: ["code-block-copy-icon"],
+          fill: "none",
+          stroke: "currentColor",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          strokeWidth: "2",
+          viewBox: "0 0 24 24",
+        },
+        children: [
+          {
+            type: "element",
+            tagName: "rect",
+            properties: {
+              height: "14",
+              rx: "2",
+              ry: "2",
+              width: "14",
+              x: "8",
+              y: "8",
+            },
+            children: [],
+          },
+          {
+            type: "element",
+            tagName: "path",
+            properties: {
+              d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
+            },
+            children: [],
+          },
+        ],
+      },
     ],
   };
 }
