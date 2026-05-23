@@ -13,6 +13,10 @@ export type PostCardPost = {
   excerpt?: string | null;
   publishedAt?: Date | string | null;
   columnName?: string | null;
+  readingMinutes?: number | null;
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
   tags: PostCardTag[];
 };
 
@@ -22,9 +26,19 @@ type PostCardProps = {
 
 export function PostCard({ post }: PostCardProps) {
   const cover = post.cover?.trim();
+  const headingId = `post-card-title-${post.slug}`;
+  const readingMinutes =
+    post.readingMinutes ?? estimateReadingMinutes(post.title, post.excerpt);
+  const viewCount = post.viewCount ?? 0;
+  const likeCount = post.likeCount ?? 0;
+  const commentCount = post.commentCount ?? 0;
 
   return (
-    <article className="group flex gap-4 py-6 transition md:gap-6">
+    <article
+      aria-labelledby={headingId}
+      data-post-card="dense"
+      className="group flex gap-4 py-6 transition md:gap-6"
+    >
       {cover ? (
         <div className="aspect-[16/10] w-32 shrink-0 overflow-hidden rounded-md md:w-44">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -39,13 +53,17 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       ) : null}
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-3 font-mono text-xs text-muted-fg">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono text-xs text-muted-fg">
           {post.publishedAt && (
             <time>{format(new Date(post.publishedAt), "yyyy-MM-dd")}</time>
           )}
-          {post.columnName && <span>· {post.columnName}</span>}
+          {post.columnName && <span>{post.columnName}</span>}
+          <span>{readingMinutes} 分钟阅读</span>
         </div>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight text-fg md:text-2xl">
+        <h2
+          id={headingId}
+          className="mt-2 text-xl font-semibold tracking-tight text-fg md:text-2xl"
+        >
           <Link
             href={`/posts/${post.slug}`}
             className="transition group-hover:underline"
@@ -58,6 +76,11 @@ export function PostCard({ post }: PostCardProps) {
             {post.excerpt}
           </p>
         )}
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 font-mono text-xs text-muted-fg">
+          <span>{viewCount} 次浏览</span>
+          <span>{likeCount} 个赞</span>
+          <span>{commentCount} 条评论</span>
+        </div>
         {post.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2 font-mono text-xs text-muted-fg">
             {post.tags.slice(0, 4).map((t) => (
@@ -74,4 +97,16 @@ export function PostCard({ post }: PostCardProps) {
       </div>
     </article>
   );
+}
+
+function estimateReadingMinutes(title: string, excerpt?: string | null): number {
+  const text = `${title} ${excerpt ?? ""}`.trim();
+  if (!text) return 1;
+
+  const cjkCount = (text.match(/[\u3400-\u9fff]/g) ?? []).length;
+  const latinWordCount = (text.replace(/[\u3400-\u9fff]/g, " ").match(/\b\w+\b/g) ?? [])
+    .length;
+  const estimatedWords = cjkCount + latinWordCount;
+
+  return Math.max(1, Math.ceil(estimatedWords / 500));
 }
