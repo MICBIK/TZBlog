@@ -142,25 +142,26 @@ function rehypeShiki(options: RehypeShikiOptions) {
     });
 
     for (const { parent, index, pre, lang, filename, code } of codeBlocks) {
-      const useLang = lang && loadedLangs.has(lang) ? lang : "text";
-      let highlightedPre = pre;
+      let highlightedPre = createPlainCodePre(pre);
 
-      try {
-        const hast = highlighter.codeToHast(code, {
-          lang: useLang,
-          themes,
-          defaultColor: "light",
-        }) as unknown as HastRoot;
-        // codeToHast returns a root containing the <pre> element. Replace the
-        // current <pre> in-place with shiki's <pre>.
-        const shikiPre = hast.children.find(
-          (c): c is HastElement => (c as HastElement).type === "element" && (c as HastElement).tagName === "pre",
-        );
-        if (shikiPre) {
-          highlightedPre = shikiPre;
+      if (lang && loadedLangs.has(lang)) {
+        try {
+          const hast = highlighter.codeToHast(code, {
+            lang,
+            themes,
+            defaultColor: "light",
+          }) as unknown as HastRoot;
+          // codeToHast returns a root containing the <pre> element. Replace the
+          // current <pre> in-place with shiki's <pre>.
+          const shikiPre = hast.children.find(
+            (c): c is HastElement => (c as HastElement).type === "element" && (c as HastElement).tagName === "pre",
+          );
+          if (shikiPre) {
+            highlightedPre = shikiPre;
+          }
+        } catch {
+          highlightedPre = createPlainCodePre(pre);
         }
-      } catch {
-        // Fall through and leave the node untouched on failure.
       }
 
       parent.children[index] = createCodeBlockFigure(highlightedPre, lang, filename);
@@ -217,6 +218,21 @@ function createCodeBlockFigure(
       },
       pre,
     ],
+  };
+}
+
+function createPlainCodePre(pre: HastElement): HastElement {
+  return {
+    ...pre,
+    properties: {},
+    children: pre.children.map((child) => {
+      const el = child as HastElement;
+      if (el.type !== "element" || el.tagName !== "code") return child;
+      return {
+        ...el,
+        properties: {},
+      };
+    }),
   };
 }
 
