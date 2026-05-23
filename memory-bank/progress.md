@@ -172,7 +172,7 @@
 
 ## V3 backlog（MVP 上线后，独立 SDD）
 
-- [ ] 多语言（zh / en） — V3 独立 SDD：Next.js App Router locale routing（建议 `app/[lang]`）、Header 语言切换器、dictionary 静态文案、en 翻译数据、metadata / RSS / sitemap / canonical / alternate links 全链路 locale-aware
+- [ ] 多语言（zh / en） — V3 独立 SDD `i18n-locale-routing-v3`：Next.js App Router locale routing（建议 `app/[lang]`）、Header 语言切换器、dictionary 静态文案、en 翻译数据、metadata / RSS / sitemap / canonical / alternate links 全链路 locale-aware
 - [ ] i18n 数据流迁移：`getCurrentLocale()` 不再固定返回 zh，改由 route params / proxy negotiation / cookies 明确注入；所有 public services、SEO/feed、OG 图和列表页统一从当前 locale 读取
 
 V2/V3 不属于本轮 prelaunch-readiness；涉及 DB/UI/API/邮件/路由结构时必须分别开独立 SDD。
