@@ -184,8 +184,8 @@ export function ColumnsTable({ initialColumns }: ColumnsTableProps) {
           }
         />
       </div>
-      <div className="rounded-md border border-border">
-        <Table>
+      <div className="rounded-md border border-border bg-card overflow-hidden">
+        <Table className="admin-table">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[120px]">#</TableHead>

@@ -186,8 +186,9 @@ export function CommentsTable({
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="rounded-md border border-border bg-card overflow-hidden">
+        <div className="overflow-x-auto">
+        <table className="admin-table w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs text-muted-fg">
               <th className="w-10 px-3 py-2"></th>
@@ -294,6 +295,7 @@ export function CommentsTable({
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div className="flex items-center justify-between font-mono text-xs text-muted-fg">

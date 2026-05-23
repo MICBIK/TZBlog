@@ -133,8 +133,8 @@ export function PostsTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-md border border-border">
-        <Table>
+      <div className="rounded-md border border-border bg-card overflow-hidden">
+        <Table className="admin-table">
           <TableHeader>
             <TableRow>
               <TableHead>标题</TableHead>
