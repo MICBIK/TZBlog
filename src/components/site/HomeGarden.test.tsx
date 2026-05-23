@@ -54,6 +54,44 @@ describe("<HomeGarden />", () => {
     ).toHaveAttribute("data-home-module-state", "loading");
     expect(screen.getByText("站点统计加载中")).toBeInTheDocument();
   });
+
+  it("collapsesIdentityRailOnMobile", () => {
+    render(
+      <HomeGarden
+        hero={<section>Hero ready</section>}
+        featuredAndRecent={<section>Posts ready</section>}
+        columns={<section>Projects ready</section>}
+        principles={<section>Principles ready</section>}
+        techStack={<section>Tech stack ready</section>}
+        github={<section>GitHub ready</section>}
+        stats={<section>Stats ready</section>}
+      />,
+    );
+
+    const identityRail = screen.getByRole("complementary", {
+      name: "作者身份",
+    });
+    const contentStream = screen.getByRole("main", {
+      name: "首页内容流",
+    });
+    const contextRail = screen.getByRole("complementary", {
+      name: "首页上下文",
+    });
+
+    expect(identityRail).toHaveAttribute("data-home-mobile-profile-summary");
+    expect(identityRail).toHaveClass("order-1", "max-w-full", "min-w-0");
+    expect(contentStream).toHaveClass("order-2", "max-w-full", "min-w-0");
+    expect(contextRail).toHaveClass("order-3", "max-w-full", "min-w-0");
+
+    expect(
+      identityRail.compareDocumentPosition(contentStream) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      contentStream.compareDocumentPosition(contextRail) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
 });
 
 function moduleState(
