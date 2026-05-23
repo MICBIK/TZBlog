@@ -52,6 +52,27 @@ describe("globals.css editorial system", () => {
     expect(css).toContain(".markdown-alert-caution");
   });
 
+  it("defines callout accent and tint tokens for light and dark themes", () => {
+    const themeBlocks = [
+      [":root", cssBlock(css, ":root")],
+      [".dark", cssBlock(css, ".dark")],
+    ] as const;
+    const calloutTypes = ["note", "tip", "important", "warning", "caution"];
+    const tokenKinds = ["accent", "tint"];
+
+    for (const [selector, block] of themeBlocks) {
+      for (const type of calloutTypes) {
+        for (const kind of tokenKinds) {
+          const token = `--callout-${type}-${kind}`;
+
+          expect(block, `${selector} defines ${token}`).toMatch(
+            new RegExp(`${token}:\\s*[^;]+;`),
+          );
+        }
+      }
+    }
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
@@ -100,4 +121,15 @@ function unresolvedVarClassToken(kind: string): string {
   const openBracket = String.fromCharCode(91);
   const openParen = String.fromCharCode(40);
   return `${kind}-${openBracket}var${openParen}--${kind}-`;
+}
+
+function cssBlock(css: string, selector: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = css.match(new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\n\\}`));
+
+  if (!match) {
+    throw new Error(`Missing ${selector} block in globals.css`);
+  }
+
+  return match[1];
 }
