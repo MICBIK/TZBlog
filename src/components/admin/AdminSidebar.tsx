@@ -1,13 +1,11 @@
 import Link from "next/link";
 import {
-  BarChart3,
   FileText,
   Image as ImageIcon,
   LayoutDashboard,
   type LucideIcon,
   MessageSquare,
   Newspaper,
-  Settings,
 } from "lucide-react";
 
 type AdminLink = {
@@ -22,8 +20,6 @@ const adminLinks: AdminLink[] = [
   { href: "/admin/columns", label: "专栏", icon: Newspaper },
   { href: "/admin/comments", label: "评论", icon: MessageSquare },
   { href: "/admin/media", label: "媒体", icon: ImageIcon },
-  { href: "/admin/analytics", label: "分析", icon: BarChart3 },
-  { href: "/admin/settings", label: "设置", icon: Settings },
 ];
 
 export function AdminSidebar() {
