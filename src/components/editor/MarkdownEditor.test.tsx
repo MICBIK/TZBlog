@@ -300,4 +300,19 @@ describe("MarkdownEditor source contract", () => {
 
     expect(onChange).toHaveBeenCalledWith("[]");
   });
+
+  it("applies lightweight markdown heading highlight without rendering", async () => {
+    const { container } = render(
+      <MarkdownEditor value="## Heading" onChange={vi.fn()} />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".cm-content")).toBeInTheDocument();
+    });
+
+    expect(container.querySelector(".cm-md-heading-line")).toHaveTextContent(
+      "## Heading",
+    );
+    expect(container.querySelector("h2")).not.toBeInTheDocument();
+  });
 });
