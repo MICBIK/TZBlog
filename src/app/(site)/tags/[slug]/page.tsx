@@ -18,11 +18,11 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const tag = await getTagBySlug(slug);
-  if (!tag) return { title: "Tag not found" };
+  if (!tag) return { title: "标签不存在 — TZBlog" };
 
   return {
-    title: `${tag.name} — Tag`,
-    description: `Posts tagged with ${tag.name}`,
+    title: `${tag.name} — 标签 — TZBlog`,
+    description: `浏览 ${tag.name} 标签下的所有文章`,
   };
 }
 
@@ -46,20 +46,20 @@ export default async function TagDetailPage({ params, searchParams }: Props) {
     <article className="space-y-12">
       <header className="space-y-3">
         <p className="font-mono text-label tracking-label uppercase text-muted-fg">
-          TAG
+          标签 · 详情
         </p>
         <div className="h-px w-12 border-t border-border" aria-hidden="true" />
         <h1 className="font-serif text-h1 leading-display tracking-tight text-fg">
           {tag.name}
         </h1>
         <p className="font-mono text-sm text-muted-fg">
-          {total} {total === 1 ? "post" : "posts"}
+          {total} 篇文章
         </p>
       </header>
 
       {items.length === 0 ? (
         <p className="font-serif text-base leading-body text-muted-fg">
-          No posts in this tag yet.
+          这个标签下还没有发布文章。
         </p>
       ) : (
         <div className="flex flex-col divide-y divide-border">
