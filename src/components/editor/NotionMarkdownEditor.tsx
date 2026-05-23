@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 export interface NotionMarkdownEditorProps {
   value: string;
   onChange: (markdown: string) => void;
+  onSave?: () => void;
   mediaItems?: Array<{
     id: string;
     alt: string;
@@ -30,6 +31,7 @@ const slashCommands = [
 export function NotionMarkdownEditor({
   value,
   onChange,
+  onSave,
   mediaItems = [],
 }: NotionMarkdownEditorProps) {
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
@@ -102,6 +104,12 @@ export function NotionMarkdownEditor({
         onSelect={trackSelection}
         onKeyUp={trackSelection}
         onMouseUp={trackSelection}
+        onKeyDown={(event) => {
+          if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+            event.preventDefault();
+            onSave?.();
+          }
+        }}
         onChange={(event) => {
           const next = event.currentTarget.value;
           setMenuOpen(next.endsWith("/"));

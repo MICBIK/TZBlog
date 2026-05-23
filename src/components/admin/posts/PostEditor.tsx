@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { NotionMarkdownEditor } from "@/components/editor/NotionMarkdownEditor";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MarkdownEditorWithPreview } from "@/components/editor/MarkdownEditorWithPreview";
 
 import { PostMetaSidebar, type PostMeta } from "./PostMetaSidebar";
 
@@ -264,11 +264,10 @@ export function PostEditor({
             className="resize-none"
           />
           <div className="min-h-[32rem]">
-            <MarkdownEditorWithPreview
+            <NotionMarkdownEditor
               value={content}
               onChange={setContent}
               onSave={() => submit("DRAFT")}
-              placeholder="开始写作..."
             />
           </div>
         </div>
