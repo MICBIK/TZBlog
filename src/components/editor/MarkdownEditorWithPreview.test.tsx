@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ComponentType } from "react";
 
@@ -85,5 +85,45 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(mocks.renderMarkdown).toHaveBeenCalledTimes(1);
     expect(mocks.renderMarkdown).toHaveBeenCalledWith("abc");
+  });
+
+  it("does not let stale preview renders overwrite the latest html", async () => {
+    vi.useFakeTimers();
+    let resolveOld: ((html: string) => void) | null = null;
+    let resolveNew: ((html: string) => void) | null = null;
+    mocks.renderMarkdown.mockImplementation(
+      (value: string) =>
+        new Promise<string>((resolve) => {
+          if (value === "old") resolveOld = resolve;
+          if (value === "new") resolveNew = resolve;
+        }),
+    );
+    const { MarkdownEditorWithPreview } = await import("./MarkdownEditorWithPreview");
+    const { rerender } = render(
+      <MarkdownEditorWithPreview value="old" onChange={vi.fn()} />,
+    );
+
+    await vi.advanceTimersByTimeAsync(200);
+    expect(mocks.renderMarkdown).toHaveBeenCalledWith("old");
+
+    rerender(<MarkdownEditorWithPreview value="new" onChange={vi.fn()} />);
+    await vi.advanceTimersByTimeAsync(200);
+    expect(mocks.renderMarkdown).toHaveBeenCalledWith("new");
+
+    await act(async () => {
+      resolveNew?.("<p>new</p>");
+      await Promise.resolve();
+    });
+    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+      "<p>new</p>",
+    );
+
+    await act(async () => {
+      resolveOld?.("<p>old</p>");
+      await Promise.resolve();
+    });
+    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+      "<p>new</p>",
+    );
   });
 });
