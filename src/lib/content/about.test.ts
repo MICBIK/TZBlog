@@ -80,6 +80,20 @@ describe("aboutContent", () => {
     expect(aboutContent.contact.email).toMatch(/.+@.+\..+/);
     expect(aboutContent.contact.links.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("about content data has reading column", async () => {
+    const { aboutContent } = await loadAboutContent();
+
+    expect(aboutContent.now.items.map((item) => item.label)).toEqual([
+      "Shipping",
+      "Writing",
+      "Reading",
+      "Hardening",
+    ]);
+    expect(aboutContent.now.items.find((item) => item.label === "Reading")?.detail).toContain(
+      "Designing Data-Intensive Apps",
+    );
+  });
 });
 
 const aboutModulePath = "./about";
