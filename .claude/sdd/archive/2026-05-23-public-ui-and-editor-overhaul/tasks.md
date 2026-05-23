@@ -1118,8 +1118,8 @@ M1-C evidence (2026-05-23):
 
 #### M3-D-5 SDD 归档
 
-- [ ] `git mv .claude/sdd/public-ui-and-editor-overhaul .claude/sdd/archive/YYYY-MM-DD-public-ui-and-editor-overhaul`
-- [ ] commit: `chore(sdd): archive public-ui-and-editor-overhaul [no-tdd]`
+- [x] `git mv .claude/sdd/public-ui-and-editor-overhaul .claude/sdd/archive/YYYY-MM-DD-public-ui-and-editor-overhaul`
+- [x] commit: `chore(sdd): archive public-ui-and-editor-overhaul`
 
 #### M3-D-6 PR / 交付给 ha1den
 

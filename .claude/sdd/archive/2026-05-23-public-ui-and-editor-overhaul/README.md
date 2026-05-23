@@ -2,7 +2,7 @@
 
 > **执行方读完这一份就能开干**。
 > 本目录是一份完整的 SDD（Spec-Driven Development）feature，被设计为可由另一个 AI / 工程师独立完成实施。
-> 主脑：ha1den / 起草：副驾（tevxz1n 协议 v3）/ 起草日期：2026-05-23 / 状态：proposal aligned，等待 implementation。
+> 主脑：ha1den / 起草：副驾（tevxz1n 协议 v3）/ 起草日期：2026-05-23 / 状态：implementation complete，等待 archive。
 
 ---
 
