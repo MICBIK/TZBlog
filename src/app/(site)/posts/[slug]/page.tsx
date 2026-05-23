@@ -10,6 +10,7 @@ import { PostViewBeacon } from "@/components/site/PostViewBeacon";
 import { PostToc } from "@/components/site/PostToc";
 import { LikeButton } from "@/components/site/LikeButton";
 import { CommentSection } from "@/components/site/CommentSection";
+import { MarkdownCopyButtons } from "@/components/markdown/MarkdownCopyButtons";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -122,6 +123,7 @@ export default async function PostDetailPage({ params }: Props) {
           className="markdown-body max-w-none"
           dangerouslySetInnerHTML={{ __html: html }}
         />
+        <MarkdownCopyButtons />
 
         {tagSlugs.length > 0 && (
           <footer className="flex flex-wrap gap-2 border-t border-border pt-8 font-mono text-xs text-muted-fg">
