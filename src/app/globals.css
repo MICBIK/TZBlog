@@ -93,6 +93,12 @@
   --table-row-zebra: 220 14% 98%;
   --table-row-hover: 220 14% 95%;
 
+  /* Keyboard */
+  --kbd-bg: 0 0% 100%;
+  --kbd-fg: 222 47% 11%;
+  --kbd-shadow-inset: 220 13% 91%;
+  --shadow-inset-thin: inset 0 0 0 1px hsl(220 13% 91% / 0.6);
+
   /* Lines / inputs / focus */
   --border: 220 13% 91%;
   --input: 220 13% 91%;
@@ -158,6 +164,11 @@
   --table-th-bg: 240 10% 10%;
   --table-row-zebra: 240 8% 8%;
   --table-row-hover: 240 8% 12%;
+
+  --kbd-bg: 240 10% 12%;
+  --kbd-fg: 210 20% 90%;
+  --kbd-shadow-inset: 240 10% 18%;
+  --shadow-inset-thin: inset 0 0 0 1px hsl(240 10% 18% / 0.65);
 
   --border: 240 4% 16%;
   --input: 240 4% 16%;
@@ -541,6 +552,17 @@
     accent-color: hsl(var(--accent));
     margin-right: 0.5rem;
     transform: translateY(0.08em);
+  }
+
+  .markdown-body kbd {
+    background: hsl(var(--kbd-bg));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.25rem;
+    box-shadow: var(--shadow-inset-thin);
+    color: hsl(var(--kbd-fg));
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 0.1em 0.4em;
   }
 
   .markdown-body table {
