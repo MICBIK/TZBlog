@@ -136,6 +136,12 @@ describe("globals.css editorial system", () => {
     expect(header).toContain("letter-spacing: var(--tracking-label);");
   });
 
+  it("task list checkbox uses accent color", () => {
+    const block = cssBlock(css, '.markdown-body li input[type="checkbox"]');
+
+    expect(block).toContain("accent-color: hsl(var(--accent));");
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
