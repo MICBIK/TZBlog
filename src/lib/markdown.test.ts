@@ -57,6 +57,15 @@ describe("renderMarkdown", () => {
     expect(html.match(/<pre\b/g) ?? []).toHaveLength(1);
   });
 
+  it("wraps shiki pre in code-block figure with data-language", async () => {
+    const md = "```ts\nconst x: number = 1;\n```";
+    const html = await renderMarkdown(md);
+
+    expect(html).toMatch(
+      /<figure class="code-block" data-language="ts">[\s\S]*<figcaption class="code-block-chrome">[\s\S]*<span class="code-block-language">TS<\/span>[\s\S]*<\/figcaption>[\s\S]*<pre\b/,
+    );
+  });
+
   it("renders GFM tables", async () => {
     const md = ["| a | b |", "|---|---|", "| 1 | 2 |"].join("\n");
     const html = await renderMarkdown(md);
