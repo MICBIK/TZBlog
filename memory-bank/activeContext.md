@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**public-launch-polish 正在收尾：Markdown 阅读系统、首页/关于页展示、admin light mode 对比度已完成；当前正在更新 i18n/V2/V3 文档债并准备最终质量门与浏览器逐页审查。**
+**public-ui-and-editor-overhaul 已完成 M1 基础重做；当前入口是 M2：admin readability、首页 redesign、About redesign。**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -20,13 +20,14 @@
 - **2026-05-23** public-launch-polish：Markdown GitHub-style alerts + `.markdown-body` 阅读系统、首页 LaunchNarrative、About Principles、launch-surface 背景/面板 primitives、admin sidebar/header light mode 对比度修复已落地。
 - **2026-05-23** i18n 限制明确记录为 KI-004：当前实现仍是单 locale，V3 独立 SDD 才做 Next.js App Router locale routing、dictionary、metadata / RSS / sitemap 全链路迁移。
 - **2026-05-23** 最终质量门通过：`pnpm typecheck` ✓、`pnpm lint` ✓、`pnpm test` ✓（85 files / 460 passed / 1 skipped）、`pnpm build` ✓。旧 Next middleware / Prisma preview warning 已消失；测试仍有已记录的 `pg@9` deprecation warning。
+- **2026-05-23** public-ui-and-editor-overhaul M1 完成：Markdown reading / editor source contract / editor preview parity 已完成；编辑器切到 CodeMirror 6 source editor，删除 Tiptap/lowlight；右侧 preview 改走完整 `renderMarkdown` 管道并复用 copy button hydration。质量门：`pnpm typecheck` ✓、`pnpm lint` ✓、`pnpm test` ✓（95 files / 529 passed / 1 skipped）、`pnpm build` ✓；editor route diff gzip 52.2 KiB < 90 KiB；浏览器截图归档到 `.claude/sdd/public-ui-and-editor-overhaul/audit/editor-final.png`。
 
 ## 下一步计划
 
-1. **本轮收尾**：跑 `pnpm typecheck` / `pnpm lint` / `pnpm test` / `pnpm build`，然后用 in-app Browser 审查 `/`、`/about`、`/posts`、`/admin`、`/admin/posts/new`。
-2. **P3 部署上线**：补 `Dockerfile`、生产 smoke、备份脚本、VPS/域名配置、灰度上线。
-3. **V2 backlog**：主题 GUI、详细 Analytics、评论邮件通知、编辑器增强、真实示例内容和 OG 视觉统一，分别独立 SDD。
-4. **V3 backlog**：Next.js App Router locale routing（`app/[lang]`）、dictionary、Header 切换器、英文内容与多语言 SEO/RSS/sitemap，独立 SDD。
+1. **M2-A admin readability**：按 SDD 微循环修 admin token 对比度、AdminSidebar 接入、死链删除、active state。
+2. **M2-B/M2-C public UI redesign**：首页七段重组、About 八段重组，并保持中文单语言声明。
+3. **M3 收口**：incomplete pages inventory、i18n current-state docs、light/dark 12 路由浏览器审查、completion-report、archive。
+4. **P3 部署上线**：补 `Dockerfile`、生产 smoke、备份脚本、VPS/域名配置、灰度上线。
 
 ## 待办池 / 已知问题
 
@@ -52,7 +53,7 @@
 
 - **Prisma 7 driver adapter 模式**：schema.prisma 内不再写 datasource.url；运行期 `src/lib/db.ts` 用 `@prisma/adapter-pg`；migrate/introspect 走 `prisma.config.ts` 的 datasource.url（dotenv 主动加载）。
 - **Next.js 16 request guard**：当前使用 `src/proxy.ts` 守 `/admin/*` 与 `/api/admin/*`。
-- **Markdown preview pipeline 简化**：`MarkdownEditorWithPreview` 客户端预览用了 mini-renderer（待 V2 接 marked + DOMPurify 完整化），完整 remark+shiki 已落到服务端 `MarkdownPreview`。
+- **Markdown preview pipeline**：`MarkdownEditorWithPreview` 客户端预览已改走与发布态相同的 `renderMarkdown` unified + Shiki 管道；mini-renderer 已删除，copy button 通过 `MarkdownCopyButtons` hydration 绑定。
 - **rehype-shiki 替换**：原计划的 `rehype-shiki@0.0.9` 与 shiki@4 不兼容，改成内联 transformer 调用 `createHighlighter` + `codeToHast`。
 - **i18n 当前状态**：当前实现仍是单 locale；`SUPPORTED_LOCALES` 只代表数据模型预留，不代表站点已支持多语言。
 

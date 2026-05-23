@@ -160,6 +160,7 @@
 - [x] SEO 元信息 / robots.txt / 站点描述
 - [x] README + 部署文档
 - [x] **2026-05-23** public-launch-polish 主体：Markdown alerts + `.markdown-body` 阅读系统、首页项目叙事区、About Principles、管理侧边栏 light mode 对比度修复；i18n 当前限制记录为 KI-004，完整迁移进入 V3 独立 SDD
+- [x] **2026-05-23** public-ui-and-editor-overhaul M1：Markdown reading / editor source contract / editor preview parity 完成；编辑器切到 CodeMirror 6 source editor，Tiptap/lowlight 残留清零；预览走完整 `renderMarkdown` 管道并复用 copy button hydration；质量门 `typecheck` / `lint` / `test`（95 files / 529 passed / 1 skipped）/ `build` 四绿；editor route diff gzip 52.2 KiB < 90 KiB；浏览器审查截图归档到 `.claude/sdd/public-ui-and-editor-overhaul/audit/editor-final.png`
 
 ## V2 backlog（MVP 上线后，独立 SDD）
 
@@ -185,6 +186,7 @@ V2/V3 不属于本轮 prelaunch-readiness；涉及 DB/UI/API/邮件/路由结构
 - **2026-05-21** 前台 cover 用原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`，未走 `next/image`。原因：MinIO/local 双 storage driver 的 URL 模式动态切换，配 `next.config.ts#images.remotePatterns` 噪音大。未来如接 CDN 或决定单一 driver 时再换 `next/image`。
 - **2026-05-23** `prelaunch-readiness` 清理：Next proxy 入口、Prisma preview flag、About/TechStack 上线文案、README/AGENTS/CLAUDE/docs/memory-bank 当前事实已同步。后续若继续改编辑器底层实现，单开 editor-source-mode SDD。
 - **2026-05-23** KI-004 多语言当前仍是架构预留：schema 有 `*Translation` 子表和 `SUPPORTED_LOCALES`，但当前实现仍是单 locale；V3 需要独立 SDD 完成 route/dictionary/metadata/RSS/sitemap 全链路迁移。
+- **2026-05-23** public-ui-and-editor-overhaul M1 收口：CodeMirror 6 editor chunk 当前为 52.2 KiB gzip（`/admin/posts/new` minus `/admin`），低于 90 KiB 限制；后续 M2/M3 若增加 admin client 依赖，需继续复核 route diff 而不是只看 first-load shared chunks。
 
 
 ## 度量指标

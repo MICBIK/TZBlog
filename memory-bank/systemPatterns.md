@@ -171,9 +171,11 @@ content (Markdown 字符串)
 
 ## 14. 编辑器契约
 
-- 管理端编辑体验是 Markdown source editor + split preview；编辑区必须保留 Markdown 原文，预览区只做草稿态辅助。
+- 管理端编辑体验是 CodeMirror 6 Markdown source editor + split preview；编辑区必须保留 Markdown 原文，预览区走与发布态一致的完整 `renderMarkdown` 管道。
 - 存储格式永远是 Markdown 字符串；后端永远收 Markdown，不收 JSON。
-- 当前编辑层仍保留 Tiptap v3 + `tiptap-markdown` round-trip 依赖；如果要彻底替换为 textarea/source editor，必须单独 SDD 并覆盖工具栏、光标行为、有序列表和 heading 回归。
+- 禁止回退到 Tiptap / ProseMirror / WYSIWYG rich-text round-trip。工具栏只能插入或包裹 Markdown source，不允许隐藏 `#`、`###`、fence、list marker 等源码符号。
+- 右侧 preview 必须复用 `MarkdownCopyButtons` 绑定 code block copy 行为；任何 preview catch 都必须显示可见 error banner，不允许 silent failure 或空白失败。
+- 编辑器底层依赖变动必须单独 SDD，并覆盖 toolbar、selection API、Tab / list continuation / heading marker / paste as plain text / Mod-S / SSR safety / preview parity 回归。
 
 ## 15. Git 提交规范
 
