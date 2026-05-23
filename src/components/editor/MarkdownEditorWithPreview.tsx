@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { MarkdownCopyButtons } from "@/components/markdown/MarkdownCopyButtons";
 import type { MarkdownEditorProps } from "./MarkdownEditor";
 
 const MarkdownEditor = dynamic<MarkdownEditorProps>(
@@ -164,6 +165,7 @@ function MarkdownLivePreview({ value }: { value: string }) {
         className="markdown-body max-w-none"
         dangerouslySetInnerHTML={{ __html: html }}
       />
+      <MarkdownCopyButtons />
     </>
   );
 }

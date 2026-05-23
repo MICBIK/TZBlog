@@ -28,6 +28,7 @@ export function MarkdownCopyButtons() {
       try {
         await navigator.clipboard.writeText(code.textContent ?? "");
         button.dataset.state = "copied";
+        toast.success("代码已复制");
 
         const previousTimer = timers.get(button);
         if (previousTimer) window.clearTimeout(previousTimer);
