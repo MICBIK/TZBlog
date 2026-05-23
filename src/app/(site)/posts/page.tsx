@@ -7,8 +7,8 @@ import { getCurrentLocale } from "@/lib/i18n";
 import { PostCard } from "@/components/site/PostCard";
 
 export const metadata: Metadata = {
-  title: "Blog — TZBlog",
-  description: "All published writings",
+  title: "文章 — TZBlog",
+  description: "所有已发布文章",
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -37,7 +37,7 @@ export default async function PostsListPage({ searchParams }: Props) {
     <div className="space-y-12">
       <header>
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-          Blog
+          文章
         </h1>
         <p className="mt-3 text-base text-muted-fg">{total} 篇文章</p>
       </header>

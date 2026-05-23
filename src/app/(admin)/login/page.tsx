@@ -35,7 +35,7 @@ function LoginForm() {
       });
 
       if (!res || res.error) {
-        setFormError("Invalid email or password");
+        setFormError("邮箱或密码不正确");
         return;
       }
 
@@ -48,9 +48,9 @@ function LoginForm() {
 
   return (
     <div className="w-full max-w-sm rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--bg))] p-8 shadow-sm">
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight">Sign in</h1>
-      <p className="mb-6 text-sm text-[hsl(var(--muted))]">
-        Access the TZBlog admin dashboard.
+      <h1 className="mb-1 text-2xl font-semibold tracking-tight">登录</h1>
+      <p className="mb-6 text-sm text-[hsl(var(--muted-fg))]">
+        访问 TZBlog 后台管理。
       </p>
 
       <form
@@ -63,7 +63,7 @@ function LoginForm() {
             htmlFor="email"
             className="text-sm font-medium text-[hsl(var(--fg))]"
           >
-            Email
+            邮箱
           </label>
           <input
             id="email"
@@ -85,7 +85,7 @@ function LoginForm() {
             htmlFor="password"
             className="text-sm font-medium text-[hsl(var(--fg))]"
           >
-            Password
+            密码
           </label>
           <input
             id="password"
@@ -115,7 +115,7 @@ function LoginForm() {
           disabled={submitting}
           className="h-10 rounded-md bg-[hsl(var(--accent))] px-4 text-sm font-medium text-[hsl(var(--bg))] transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          {submitting ? "Signing in..." : "Sign in"}
+          {submitting ? "正在登录..." : "登录"}
         </button>
       </form>
     </div>
