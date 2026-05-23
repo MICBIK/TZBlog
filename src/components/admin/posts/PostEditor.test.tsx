@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -46,6 +46,29 @@ vi.mock("@/components/editor/MarkdownEditorWithPreview", () => ({
       />
       <button type="button" onClick={() => onSave?.()}>
         editor shortcut save
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("@/components/editor/NotionMarkdownEditor", () => ({
+  NotionMarkdownEditor: ({
+    value,
+    onChange,
+    onSave,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    onSave?: () => void;
+  }) => (
+    <div data-testid="notion-markdown-editor">
+      <textarea
+        aria-label="Notion editor content"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <button type="button" onClick={() => onSave?.()}>
+        notion editor shortcut save
       </button>
     </div>
   ),
@@ -176,7 +199,43 @@ describe("PostEditor", () => {
     ].join("\n");
     renderEditor({ mode: "edit", initial: initialPost({ id: "post-1", content }) });
 
-    await user.click(screen.getByRole("button", { name: "editor shortcut save" }));
+    await user.click(screen.getByRole("button", { name: "notion editor shortcut save" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    const [, init] = mocks.fetch.mock.calls[0];
+    expect(JSON.parse(init.body as string).translations[0].content).toBe(content);
+  });
+
+  it("savedNotionEditorContentPublishesThroughRenderMarkdown", async () => {
+    const user = userEvent.setup();
+    const content = [
+      "## Notion POC",
+      "",
+      "这是 **粗体** 和 `inline code`。",
+      "",
+      "> [!NOTE]",
+      "> 从 Notion-like editor 保存。",
+      "",
+      "| 功能 | 状态 |",
+      "| --- | --- |",
+      "| Markdown | 保留 |",
+      "",
+      "```ts",
+      "const saved = true;",
+      "```",
+      "",
+      "![架构图](/uploads/architecture.png)",
+    ].join("\n");
+
+    renderEditor({ mode: "edit", initial: initialPost({ id: "post-1" }) });
+
+    const editor = screen.getByRole("textbox", {
+      name: "Notion editor content",
+    });
+    fireEvent.change(editor, { target: { value: content } });
+    await user.click(screen.getByRole("button", { name: "notion editor shortcut save" }));
 
     await waitFor(() => {
       expect(mocks.fetch).toHaveBeenCalledTimes(1);
