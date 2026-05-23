@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import type { ComponentType } from "react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -66,7 +66,7 @@ describe("<HomeColumns />", () => {
 
 async function homeColumns() {
   const { HomeColumns } = (await vi.importActual(modulePath)) as {
-    HomeColumns: ComponentType;
+    HomeColumns: () => Promise<ReactNode>;
   };
-  return <HomeColumns />;
+  return HomeColumns();
 }
