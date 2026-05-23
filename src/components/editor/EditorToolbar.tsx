@@ -69,6 +69,12 @@ function runToolbarAction(source: MarkdownSourceApi | null, action: ToolbarActio
     return;
   }
 
+  if (action === "callout") {
+    const prefix = "> [!NOTE]\n> ";
+    source.insertSnippet(`${prefix}内容`, prefix.length, prefix.length + "内容".length);
+    return;
+  }
+
   source.focus();
 }
 

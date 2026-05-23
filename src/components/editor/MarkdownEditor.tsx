@@ -14,6 +14,7 @@ export interface MarkdownSourceApi {
   setSelection: (from: number, to: number) => void;
   wrapSelection: (prefix: string, suffix: string) => void;
   prependToLine: (prefix: string) => void;
+  insertSnippet: (snippet: string, selectFrom?: number, selectTo?: number) => void;
 }
 
 export interface MarkdownEditorProps {
@@ -151,6 +152,23 @@ export function MarkdownEditor({
           selection: {
             anchor: selection.anchor + prefix.length,
             head: selection.head + prefix.length,
+          },
+          scrollIntoView: true,
+        });
+        view.focus();
+      },
+      insertSnippet: (snippet, selectFrom = snippet.length, selectTo = selectFrom) => {
+        const selection = view.state.selection.main;
+
+        view.dispatch({
+          changes: {
+            from: selection.from,
+            to: selection.to,
+            insert: snippet,
+          },
+          selection: {
+            anchor: selection.from + selectFrom,
+            head: selection.from + selectTo,
           },
           scrollIntoView: true,
         });
