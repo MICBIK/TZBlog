@@ -18,6 +18,7 @@ const observerState = vi.hoisted(() => ({
   callback: null as IntersectionObserverCallback | null,
   disconnect: vi.fn(),
   observe: vi.fn(),
+  options: null as IntersectionObserverInit | undefined | null,
 }));
 
 async function loadPostToc(): Promise<PostTocModule> {
@@ -28,6 +29,7 @@ async function loadPostToc(): Promise<PostTocModule> {
 beforeEach(() => {
   vi.clearAllMocks();
   observerState.callback = null;
+  observerState.options = null;
 
   class MockIntersectionObserver {
     root = null;
@@ -38,8 +40,12 @@ beforeEach(() => {
     unobserve = vi.fn();
     takeRecords = vi.fn(() => []);
 
-    constructor(callback: IntersectionObserverCallback) {
+    constructor(
+      callback: IntersectionObserverCallback,
+      options?: IntersectionObserverInit,
+    ) {
       observerState.callback = callback;
+      observerState.options = options;
     }
   }
 
@@ -101,5 +107,61 @@ describe("PostToc", () => {
     unmount();
 
     expect(observerState.disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it("updatesTocAndProgressWithoutLayoutShift", async () => {
+    const { PostToc } = await loadPostToc();
+
+    render(<PostToc headings={headings} />);
+
+    const toc = screen.getByTestId("post-toc");
+    const progress = screen.getByRole("progressbar", { name: "阅读进度" });
+    const links = screen.getAllByRole("link");
+
+    expect(toc).toHaveAttribute("data-toc-stable-shell");
+    expect(toc).toHaveAttribute("data-reduced-motion-safe");
+    expect(toc).toHaveClass("space-y-4");
+    expect(observerState.options).toMatchObject({
+      rootMargin: "-80px 0px -50% 0px",
+    });
+    expect(progress).toHaveAttribute("aria-valuemin", "0");
+    expect(progress).toHaveAttribute("aria-valuemax", "100");
+    expect(progress).toHaveAttribute("aria-valuenow", "0");
+    expect(progress).toHaveStyle("--toc-progress: 0%");
+    expect(
+      links.every((link) =>
+        link.className.includes("grid-cols-[0.5rem_minmax(0,1fr)]"),
+      ),
+    ).toBe(true);
+    expect(links.every((link) => link.className.includes("font-medium"))).toBe(
+      true,
+    );
+
+    act(() => {
+      observerState.callback?.(
+        [
+          {
+            isIntersecting: true,
+            target: { id: "b" } as Element,
+          } as IntersectionObserverEntry,
+        ],
+        {} as IntersectionObserver,
+      );
+    });
+
+    expect(progress).toHaveAttribute("aria-valuenow", "100");
+    expect(progress).toHaveStyle("--toc-progress: 100%");
+    expect(screen.getByRole("link", { name: "B" })).toHaveAttribute(
+      "aria-current",
+      "location",
+    );
+    expect(screen.getByRole("link", { name: "B" })).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    expect(screen.getByRole("link", { name: "A" })).toHaveAttribute(
+      "data-active",
+      "false",
+    );
   });
 });
