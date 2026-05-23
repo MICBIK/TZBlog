@@ -78,6 +78,15 @@ describe("renderMarkdown", () => {
     expect(withoutTitle).not.toContain("code-block-filename");
   });
 
+  it("emits copy button stub with data-copy attribute", async () => {
+    const html = await renderMarkdown("```ts\nconst x = 1;\n```");
+
+    expect(html).toMatch(
+      /<button(?=[^>]*class="code-block-copy")(?=[^>]*data-copy)(?=[^>]*aria-label="复制代码")(?=[^>]*data-state="idle")[^>]*>/,
+    );
+    expect(html).toContain('class="code-block-copy-icon"');
+  });
+
   it("renders GFM tables", async () => {
     const md = ["| a | b |", "|---|---|", "| 1 | 2 |"].join("\n");
     const html = await renderMarkdown(md);
