@@ -462,13 +462,13 @@
   }
 
   .markdown-alert {
-    --alert-accent: hsl(var(--accent));
-    --alert-bg: hsl(var(--accent) / 0.08);
-    border: 1px solid color-mix(in oklab, var(--alert-accent) 36%, transparent);
-    border-left-width: 0.35rem;
+    --alert-accent: var(--callout-note-accent);
+    --alert-tint: var(--callout-note-tint);
+    border: 1px solid hsl(var(--alert-accent) / 0.28);
+    border-left: 0.35rem solid hsl(var(--alert-accent));
     border-radius: 1rem;
     background:
-      linear-gradient(135deg, var(--alert-bg), transparent 72%),
+      linear-gradient(135deg, hsl(var(--alert-tint)), transparent 72%),
       hsl(var(--card));
     box-shadow: 0 12px 32px hsl(var(--fg) / 0.06);
     padding: 1rem 1.1rem;
@@ -480,7 +480,7 @@
 
   .markdown-alert-title {
     align-items: center;
-    color: var(--alert-accent);
+    color: hsl(var(--alert-accent));
     display: flex;
     font-family: var(--font-mono);
     font-size: var(--text-label);
@@ -489,12 +489,14 @@
     letter-spacing: var(--tracking-label);
   }
 
-  .markdown-alert-title::before {
-    background: var(--alert-accent);
-    border-radius: 999px;
-    content: "";
-    height: 0.5rem;
-    width: 0.5rem;
+  .markdown-alert-icon {
+    flex: none;
+    height: 1.1em;
+    width: 1.1em;
+  }
+
+  .markdown-alert-label {
+    text-transform: uppercase;
   }
 
   .markdown-alert p {
@@ -502,33 +504,33 @@
   }
 
   .markdown-alert-note {
-    --alert-accent: hsl(220 70% 55%);
-    --alert-bg: hsl(220 70% 55% / 0.09);
+    --alert-accent: var(--callout-note-accent);
+    --alert-tint: var(--callout-note-tint);
   }
 
   .markdown-alert-tip {
-    --alert-accent: hsl(155 58% 36%);
-    --alert-bg: hsl(155 58% 36% / 0.1);
+    --alert-accent: var(--callout-tip-accent);
+    --alert-tint: var(--callout-tip-tint);
   }
 
   .markdown-alert-important {
-    --alert-accent: hsl(38 92% 42%);
-    --alert-bg: hsl(38 92% 42% / 0.11);
+    --alert-accent: var(--callout-important-accent);
+    --alert-tint: var(--callout-important-tint);
   }
 
   .markdown-alert-warning {
-    --alert-accent: hsl(25 95% 45%);
-    --alert-bg: hsl(25 95% 45% / 0.11);
+    --alert-accent: var(--callout-warning-accent);
+    --alert-tint: var(--callout-warning-tint);
   }
 
   .markdown-alert-caution {
-    --alert-accent: hsl(var(--destructive));
-    --alert-bg: hsl(var(--destructive) / 0.11);
+    --alert-accent: var(--callout-caution-accent);
+    --alert-tint: var(--callout-caution-tint);
   }
 
   .dark .markdown-alert {
     box-shadow:
-      inset 0 0 0 1px color-mix(in oklab, var(--alert-accent) 25%, transparent),
+      inset 0 0 0 1px hsl(var(--alert-accent) / 0.25),
       0 12px 32px hsl(var(--fg) / 0.14);
   }
 }
