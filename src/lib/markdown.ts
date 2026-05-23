@@ -384,6 +384,86 @@ function rehypeWrapTables() {
   };
 }
 
+function rehypeArticleImages() {
+  return (tree: HastRoot) => {
+    const paragraphs: Array<{
+      parent: HastParent;
+      index: number;
+      image: HastElement;
+    }> = [];
+
+    visit(tree as never, "element", (node: unknown, index: number | undefined, parent: unknown) => {
+      const el = node as HastElement;
+      if (el.tagName === "img") {
+        enhanceMarkdownImage(el);
+        return;
+      }
+
+      if (el.tagName !== "p" || typeof index !== "number" || !isHastParent(parent)) {
+        return;
+      }
+
+      const image = onlyImageChild(el);
+      if (!image) return;
+
+      enhanceMarkdownImage(image);
+      paragraphs.push({ parent, index, image });
+    });
+
+    for (const { parent, index, image } of paragraphs) {
+      parent.children[index] = {
+        type: "element",
+        tagName: "figure",
+        properties: { className: ["md-image-frame"] },
+        children: [image],
+      };
+    }
+  };
+}
+
+function onlyImageChild(paragraph: HastElement): HastElement | null {
+  let image: HastElement | null = null;
+
+  for (const child of paragraph.children) {
+    if (isTextNode(child) && child.value.trim() === "") {
+      continue;
+    }
+
+    if ((child as HastElement).type === "element" && (child as HastElement).tagName === "img" && !image) {
+      image = child as HastElement;
+      continue;
+    }
+
+    return null;
+  }
+
+  return image;
+}
+
+function enhanceMarkdownImage(image: HastElement): void {
+  const className = normalizeClassName(image.properties?.className);
+  if (!className.includes("md-image")) {
+    className.push("md-image");
+  }
+
+  image.properties = {
+    ...(image.properties ?? {}),
+    className,
+    decoding: image.properties?.decoding ?? "async",
+    loading: image.properties?.loading ?? "lazy",
+  };
+}
+
+function normalizeClassName(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  if (typeof value === "string") {
+    return value.split(/\s+/).filter(Boolean);
+  }
+  return [];
+}
+
 function rehypeCollectToc(headings: TocHeading[]) {
   return (tree: HastRoot) => {
     visit(tree as never, "element", (node: unknown) => {
@@ -577,6 +657,7 @@ const sanitizeSchema = {
     ...(defaultSchema.tagNames ?? []),
     "aside",
     "circle",
+    "figure",
     "line",
     "path",
     "kbd",
@@ -642,6 +723,16 @@ const sanitizeSchema = {
       ...((defaultSchema.attributes?.div ?? []) as unknown as string[]),
       "className",
     ],
+    figure: [
+      ...((defaultSchema.attributes?.figure ?? []) as unknown as string[]),
+      "className",
+    ],
+    img: [
+      ...((defaultSchema.attributes?.img ?? []) as unknown as string[]),
+      "className",
+      "decoding",
+      "loading",
+    ],
     aside: [
       ...((defaultSchema.attributes?.blockquote ?? []) as unknown as string[]),
       "className",
@@ -682,6 +773,7 @@ export async function renderMarkdown(
     .use(rehypeMarkdownAlerts)
     .use(rehypeWrapTables)
     .use(rehypeKeyboardShortcuts)
+    .use(rehypeArticleImages)
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(rehypeSanitize, sanitizeSchema)

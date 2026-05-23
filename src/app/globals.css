@@ -602,6 +602,21 @@
     padding: 0;
   }
 
+  .md-image-frame {
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    background: hsl(var(--card));
+    box-shadow: 0 16px 40px hsl(var(--fg) / 0.08);
+    margin-top: var(--space-stack);
+    overflow: hidden;
+  }
+
+  .md-image {
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+
   .dark .shiki,
   .dark .shiki span {
     background-color: var(--shiki-dark-bg) !important;
