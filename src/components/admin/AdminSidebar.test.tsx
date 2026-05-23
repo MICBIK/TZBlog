@@ -1,6 +1,21 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { AdminSidebar } from "./AdminSidebar";
+
+const mocks = vi.hoisted(() => ({
+  pathname: "/admin",
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => mocks.pathname,
+}));
+
+beforeEach(() => {
+  mocks.pathname = "/admin";
+});
 
 describe("AdminSidebar navigation", () => {
   const source = readFileSync(
@@ -32,5 +47,50 @@ describe("AdminSidebar navigation", () => {
 
       expect(existsSync(join(process.cwd(), routePath)), routePath).toBe(true);
     }
+  });
+
+  it("marks overview active only on the admin root", () => {
+    mocks.pathname = "/admin";
+
+    render(<AdminSidebar />);
+
+    expect(screen.getByRole("link", { name: "概览" })).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    expect(screen.getByRole("link", { name: "文章" })).toHaveAttribute(
+      "data-active",
+      "false",
+    );
+  });
+
+  it("marks posts active for nested post routes", () => {
+    mocks.pathname = "/admin/posts/new";
+
+    render(<AdminSidebar />);
+
+    expect(screen.getByRole("link", { name: "文章" })).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    expect(screen.getByRole("link", { name: "概览" })).toHaveAttribute(
+      "data-active",
+      "false",
+    );
+  });
+
+  it("marks media active by section prefix", () => {
+    mocks.pathname = "/admin/media";
+
+    render(<AdminSidebar />);
+
+    expect(screen.getByRole("link", { name: "媒体" })).toHaveAttribute(
+      "data-active",
+      "true",
+    );
+    expect(screen.getByRole("link", { name: "评论" })).toHaveAttribute(
+      "data-active",
+      "false",
+    );
   });
 });
