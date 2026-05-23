@@ -40,8 +40,47 @@ describe("PostCard tag links", () => {
   });
 });
 
+describe("PostCard layout stability", () => {
+  it("keepsCardLayoutStableAcrossCoverStates", () => {
+    const longTitle =
+      "这是一篇标题非常非常长的文章，用来验证文章卡片在移动端和桌面端都不会把发布时间、阅读时间、浏览、点赞、评论这些元信息挤出可读区域";
+    const { rerender, container } = render(
+      <PostCard post={post({ cover: "/uploads/cover.png", title: longTitle })} />,
+    );
+
+    const articleWithCover = screen.getByRole("article", { name: longTitle });
+    expect(articleWithCover).toHaveAttribute("data-cover-state", "with-cover");
+    expect(articleWithCover).toHaveClass("min-w-0", "max-w-full");
+    expect(container.querySelector("[data-post-cover]")).toHaveClass(
+      "aspect-[16/10]",
+      "w-32",
+      "shrink-0",
+      "md:w-44",
+    );
+    expect(screen.getByRole("link", { name: longTitle })).toHaveClass(
+      "break-words",
+      "hyphens-auto",
+    );
+    expect(screen.getByText("2026-05-21")).toBeInTheDocument();
+    expect(screen.getByText("1 分钟阅读")).toBeInTheDocument();
+    expect(screen.getByText("0 次浏览")).toBeInTheDocument();
+
+    rerender(<PostCard post={post({ cover: null, title: longTitle })} />);
+
+    const articleWithoutCover = screen.getByRole("article", { name: longTitle });
+    expect(articleWithoutCover).toHaveAttribute("data-cover-state", "no-cover");
+    expect(container.querySelector("[data-post-cover]")).not.toBeInTheDocument();
+    expect(screen.getByText("2026-05-21")).toBeInTheDocument();
+    expect(screen.getByText("0 条评论")).toBeInTheDocument();
+  });
+});
+
 function post(
-  overrides: { cover: string | null; tags?: Array<{ slug: string; name: string }> },
+  overrides: {
+    cover: string | null;
+    tags?: Array<{ slug: string; name: string }>;
+    title?: string;
+  },
 ): PostCardPost {
   return {
     slug: "cover-post",
