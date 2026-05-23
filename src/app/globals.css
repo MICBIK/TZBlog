@@ -537,6 +537,12 @@
     list-style: decimal;
   }
 
+  .markdown-body li input[type="checkbox"] {
+    accent-color: hsl(var(--accent));
+    margin-right: 0.5rem;
+    transform: translateY(0.08em);
+  }
+
   .markdown-body table {
     border-collapse: collapse;
     width: 100%;
