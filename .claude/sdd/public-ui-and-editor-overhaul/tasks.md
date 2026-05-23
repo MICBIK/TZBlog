@@ -95,256 +95,256 @@ Pre-flight evidence (2026-05-23):
 
 #### M1-A-5 [TEST-RED] MR-1.2 callout DOM 结构升级
 
-- [ ] 在 `src/lib/markdown.test.ts` 扩展 alert spec：断言 `aside.markdown-alert.markdown-alert-{type}[role=note][data-alert-type]` + `div.markdown-alert-title` + `svg.markdown-alert-icon` + `span.markdown-alert-label`
-- [ ] FAIL
+- [x] 在 `src/lib/markdown.test.ts` 扩展 alert spec：断言 `aside.markdown-alert.markdown-alert-{type}[role=note][data-alert-type]` + `div.markdown-alert-title` + `svg.markdown-alert-icon` + `span.markdown-alert-label`
+- [x] FAIL
 - commit: `test(markdown): MR-1.2 callout DOM`
 
 #### M1-A-6 [IMPL-GREEN] MR-1.2 visitor 升级
 
-- [ ] 在 `src/lib/markdown.ts` `rehypeMarkdownAlerts` visitor 升级 emit DOM
-- [ ] PASS
+- [x] 在 `src/lib/markdown.ts` `rehypeMarkdownAlerts` visitor 升级 emit DOM
+- [x] PASS
 - commit: `feat(markdown): MR-1.2 callout DOM`
 
 #### M1-A-7 [TEST-RED] MR-1.3 icon SVG 内联
 
-- [ ] 在 `src/lib/markdown.test.ts` 加 spec：每 type 内含正确 SVG path（NOTE=info / TIP=lightbulb / IMPORTANT=alert-circle / WARNING=alert-triangle / CAUTION=octagon-x）
-- [ ] FAIL
+- [x] 在 `src/lib/markdown.test.ts` 加 spec：每 type 内含正确 SVG path（NOTE=info / TIP=lightbulb / IMPORTANT=alert-circle / WARNING=alert-triangle / CAUTION=octagon-x）
+- [x] FAIL
 - commit: `test(markdown): MR-1.3 icon svg`
 
 #### M1-A-8 [IMPL-GREEN] MR-1.3 visitor 插入 SVG
 
-- [ ] visitor 按 type lookup 一个 inline SVG map
-- [ ] PASS
+- [x] visitor 按 type lookup 一个 inline SVG map
+- [x] PASS
 - commit: `feat(markdown): MR-1.3 icon svg`
 
 #### M1-A-9 [TEST-RED] MR-1.5 dark mode inner outline
 
-- [ ] `globals.test.ts` 加 spec：`.dark .markdown-alert` 含 box-shadow inset
-- [ ] FAIL
+- [x] `globals.test.ts` 加 spec：`.dark .markdown-alert` 含 box-shadow inset
+- [x] FAIL
 - commit: `test(markdown): MR-1.5 dark outline`
 
 #### M1-A-10 [IMPL-GREEN] MR-1.5 加 inset shadow
 
-- [ ] `globals.css` `.dark .markdown-alert { box-shadow: inset 0 0 0 1px hsl(var(--alert-accent) / 0.25); }`
-- [ ] PASS
+- [x] `globals.css` `.dark .markdown-alert { box-shadow: inset 0 0 0 1px hsl(var(--alert-accent) / 0.25); }`
+- [x] PASS
 - commit: `feat(markdown): MR-1.5 dark outline`
 
 #### M1-A-11 [TEST-RED] MR-1.2 callout CSS 重构到 token
 
-- [ ] `globals.test.ts` 加断言：`.markdown-alert-note` 等不再含硬编码 hsl 数字（grep 字符串 `hsl(220 70% 55%)` 不出现在 `.markdown-alert-*` 规则段）
-- [ ] FAIL
+- [x] `globals.test.ts` 加断言：`.markdown-alert-note` 等不再含硬编码 hsl 数字（grep 字符串 `hsl(220 70% 55%)` 不出现在 `.markdown-alert-*` 规则段）
+- [x] FAIL
 - commit: `test(markdown): MR-1.2 callout css refactor`
 
 #### M1-A-12 [IMPL-GREEN] MR-1.2 callout CSS 改 token
 
-- [ ] `globals.css` `.markdown-alert-note { --alert-accent: var(--callout-note-accent); --alert-tint: var(--callout-note-tint); }` 等
-- [ ] PASS
+- [x] `globals.css` `.markdown-alert-note { --alert-accent: var(--callout-note-accent); --alert-tint: var(--callout-note-tint); }` 等
+- [x] PASS
 - commit: `feat(markdown): MR-1.2 callout css refactor`
 
 #### M1-A-13 [TEST-RED] MR-2.1 shiki dual-theme 配置
 
-- [ ] `src/lib/markdown.test.ts` 加 spec：getOrCreateHighlighter 调用 themes: { light, dark }
-- [ ] FAIL
+- [x] `src/lib/markdown.test.ts` 加 spec：getOrCreateHighlighter 调用 themes: { light, dark }
+- [x] FAIL
 - commit: `test(markdown): MR-2.1 shiki dual-theme config`
 
 #### M1-A-14 [IMPL-GREEN] MR-2.1 shiki dual-theme
 
-- [ ] `src/lib/markdown.ts:52` 改成 `themes: { light: "github-light", dark: "github-dark-default" }`
-- [ ] highlighter init 同步
-- [ ] PASS
+- [x] `src/lib/markdown.ts:52` 改成 `themes: { light: "github-light", dark: "github-dark-default" }`
+- [x] highlighter init 同步
+- [x] PASS
 - commit: `feat(markdown): MR-2.1 shiki dual-theme`
 
 #### M1-A-15 [TEST-RED] MR-2.2 dual-theme HTML output
 
-- [ ] spec：渲染含 code block，断言输出含 CSS variable 或双套 token（具体 strategy 实施时定）
-- [ ] FAIL
+- [x] spec：渲染含 code block，断言输出含 CSS variable 或双套 token（具体 strategy 实施时定）
+- [x] FAIL
 - commit: `test(markdown): MR-2.2 shiki dual-theme output`
 
 #### M1-A-16 [IMPL-GREEN] MR-2.2 dual-theme transformer
 
-- [ ] visitor 内调用 `codeToHast` with multi-theme
-- [ ] CSS 加 `.shiki` selector 用 CSS variable / 双 wrapper
-- [ ] PASS
+- [x] visitor 内调用 `codeToHast` with multi-theme
+- [x] CSS 加 `.shiki` selector 用 CSS variable / 双 wrapper
+- [x] PASS
 - commit: `feat(markdown): MR-2.2 shiki dual-theme output`
 
 #### M1-A-17 [TEST-RED] MR-3.1 code-block figure wrapper
 
-- [ ] spec：渲染 ` ```ts code ``` ` 后含 `<figure class="code-block" data-language="ts">`
-- [ ] FAIL
+- [x] spec：渲染 ` ```ts code ``` ` 后含 `<figure class="code-block" data-language="ts">`
+- [x] FAIL
 - commit: `test(markdown): MR-3.1 code-block figure`
 
 #### M1-A-18 [IMPL-GREEN] MR-3.1 visitor 加 figure
 
-- [ ] visitor 把 shiki pre 包在 figure 中
-- [ ] PASS
+- [x] visitor 把 shiki pre 包在 figure 中
+- [x] PASS
 - commit: `feat(markdown): MR-3.1 code-block figure`
 
 #### M1-A-19 [TEST-RED] MR-3.2 filename meta parse
 
-- [ ] spec：` ```ts title="src/foo.ts" code ``` ` 输出含 `<span class="code-block-filename">src/foo.ts</span>`
-- [ ] 无 title 时不输出该 span
-- [ ] FAIL
+- [x] spec：` ```ts title="src/foo.ts" code ``` ` 输出含 `<span class="code-block-filename">src/foo.ts</span>`
+- [x] 无 title 时不输出该 span
+- [x] FAIL
 - commit: `test(markdown): MR-3.2 code-block filename`
 
 #### M1-A-20 [IMPL-GREEN] MR-3.2 fence meta parse
 
-- [ ] visitor 解析 fence meta 取 title="..."
-- [ ] PASS
+- [x] visitor 解析 fence meta 取 title="..."
+- [x] PASS
 - commit: `feat(markdown): MR-3.2 code-block filename`
 
 #### M1-A-21 [TEST-RED] MR-3.3 copy button stub
 
-- [ ] spec：每 code-block figure 末尾含 `<button class="code-block-copy" data-copy aria-label="复制代码">`
-- [ ] FAIL
+- [x] spec：每 code-block figure 末尾含 `<button class="code-block-copy" data-copy aria-label="复制代码">`
+- [x] FAIL
 - commit: `test(markdown): MR-3.3 copy button stub`
 
 #### M1-A-22 [IMPL-GREEN] MR-3.3 visitor 加 copy button
 
-- [ ] visitor 加 button stub（含 SVG icon）
-- [ ] PASS
+- [x] visitor 加 button stub（含 SVG icon）
+- [x] PASS
 - commit: `feat(markdown): MR-3.3 copy button stub`
 
 #### M1-A-23 [TEST-RED] MR-3.4 / MR-3.5 inline code 不被 figure 包
 
-- [ ] spec：inline `<code>` 不在 figure 内；inline code style 仍然有 border / bg
-- [ ] FAIL
+- [x] spec：inline `<code>` 不在 figure 内；inline code style 仍然有 border / bg
+- [x] FAIL
 - commit: `test(markdown): MR-3.5 inline code`
 
 #### M1-A-24 [IMPL-GREEN] MR-3.5 inline code 保留独立 CSS
 
-- [ ] visitor 只处理 `pre > code`；inline `code` 保持原渲染
-- [ ] PASS
+- [x] visitor 只处理 `pre > code`；inline `code` 保持原渲染
+- [x] PASS
 - commit: `feat(markdown): MR-3.5 inline code`
 
 #### M1-A-25 [TEST-RED] MR-3.4 MarkdownCopyButtons 客户端组件
 
-- [ ] 新建 `src/components/markdown/MarkdownCopyButtons.test.tsx`：mock clipboard，断言点击后 writeText 调用 + toast
-- [ ] FAIL（组件不存在）
+- [x] 新建 `src/components/markdown/MarkdownCopyButtons.test.tsx`：mock clipboard，断言点击后 writeText 调用 + toast
+- [x] FAIL（组件不存在）
 - commit: `test(markdown): MR-3.4 copy button client`
 
 #### M1-A-26 [IMPL-GREEN] MR-3.4 MarkdownCopyButtons 实现
 
-- [ ] 新建 `src/components/markdown/MarkdownCopyButtons.tsx`：客户端 `"use client"`，`useEffect` 扫 `[data-copy]`，绑定 click
-- [ ] 在详情页 `posts/[slug]/page.tsx` mount 此组件（在 article 内）
-- [ ] PASS
+- [x] 新建 `src/components/markdown/MarkdownCopyButtons.tsx`：客户端 `"use client"`，`useEffect` 扫 `[data-copy]`，绑定 click
+- [x] 在详情页 `posts/[slug]/page.tsx` mount 此组件（在 article 内）
+- [x] PASS
 - commit: `feat(markdown): MR-3.4 copy button client`
 
 #### M1-A-27 [TEST-RED] MR-3.6 chrome bar CSS token
 
-- [ ] `globals.test.ts` 加 spec：`.code-block-chrome` 含 `hsl(var(--code-chrome-bg))` 等
-- [ ] FAIL
+- [x] `globals.test.ts` 加 spec：`.code-block-chrome` 含 `hsl(var(--code-chrome-bg))` 等
+- [x] FAIL
 - commit: `test(markdown): MR-3.6 chrome bar css`
 
 #### M1-A-28 [IMPL-GREEN] MR-3.6 chrome bar CSS
 
-- [ ] `globals.css` 加完整 `.code-block` / `.code-block-chrome` / `.code-block-language` / `.code-block-filename` / `.code-block-copy` 样式
-- [ ] PASS
+- [x] `globals.css` 加完整 `.code-block` / `.code-block-chrome` / `.code-block-language` / `.code-block-filename` / `.code-block-copy` 样式
+- [x] PASS
 - commit: `feat(markdown): MR-3.6 chrome bar css`
 
 #### M1-A-29 [TEST-RED] MR-4.1 table responsive wrapper
 
-- [ ] `markdown.test.ts` 加 spec：渲染 table 后含 `<div class="md-table-scroll">` wrapper
-- [ ] FAIL
+- [x] `markdown.test.ts` 加 spec：渲染 table 后含 `<div class="md-table-scroll">` wrapper
+- [x] FAIL
 - commit: `test(markdown): MR-4.1 table scroll wrapper`
 
 #### M1-A-30 [IMPL-GREEN] MR-4.1 visitor 加 wrapper
 
-- [ ] visitor 处理 `<table>` 包在 `<div class="md-table-scroll">`
-- [ ] CSS 加 `.md-table-scroll { overflow-x: auto; }`
-- [ ] PASS
+- [x] visitor 处理 `<table>` 包在 `<div class="md-table-scroll">`
+- [x] CSS 加 `.md-table-scroll { overflow-x: auto; }`
+- [x] PASS
 - commit: `feat(markdown): MR-4.1 table scroll wrapper`
 
 #### M1-A-31 [TEST-RED] MR-4.2 zebra + th CSS
 
-- [ ] `globals.test.ts` 加 spec：`.markdown-body tbody tr:nth-child(odd)` 含 `hsl(var(--table-row-zebra))`；`.markdown-body th` 含 mono uppercase
-- [ ] FAIL
+- [x] `globals.test.ts` 加 spec：`.markdown-body tbody tr:nth-child(odd)` 含 `hsl(var(--table-row-zebra))`；`.markdown-body th` 含 mono uppercase
+- [x] FAIL
 - commit: `test(markdown): MR-4.2 table styles`
 
 #### M1-A-32 [IMPL-GREEN] MR-4.2 加 CSS
 
-- [ ] `globals.css` 加 table 样式 + 加 table tokens
-- [ ] PASS
+- [x] `globals.css` 加 table 样式 + 加 table tokens
+- [x] PASS
 - commit: `feat(markdown): MR-4.2 table styles`
 
 #### M1-A-33 [TEST-RED] MR-5.1 task list checkbox 视觉
 
-- [ ] `globals.test.ts` 加 spec：`.markdown-body li input[type="checkbox"]` 含 `accent-color: hsl(var(--accent))`
-- [ ] FAIL
+- [x] `globals.test.ts` 加 spec：`.markdown-body li input[type="checkbox"]` 含 `accent-color: hsl(var(--accent))`
+- [x] FAIL
 - commit: `test(markdown): MR-5.1 task list`
 
 #### M1-A-34 [IMPL-GREEN] MR-5.1 加 CSS
 
-- [ ] `globals.css` 加 task list checkbox 样式
-- [ ] PASS
+- [x] `globals.css` 加 task list checkbox 样式
+- [x] PASS
 - commit: `feat(markdown): MR-5.1 task list`
 
 #### M1-A-35 [TEST-RED] MR-6.1 kbd 样式
 
-- [ ] `globals.test.ts` 加 spec：`.markdown-body kbd` 含 token 引用
-- [ ] FAIL
+- [x] `globals.test.ts` 加 spec：`.markdown-body kbd` 含 token 引用
+- [x] FAIL
 - commit: `test(markdown): MR-6.1 kbd`
 
 #### M1-A-36 [IMPL-GREEN] MR-6.1 加 CSS + 加 kbd token
 
-- [ ] `globals.css` 加 `--kbd-*` token + `.markdown-body kbd { ... }` 样式
-- [ ] PASS
+- [x] `globals.css` 加 `--kbd-*` token + `.markdown-body kbd { ... }` 样式
+- [x] PASS
 - commit: `feat(markdown): MR-6.1 kbd`
 
 #### M1-A-37 [TEST-RED] MR-7.1 / MR-7.2 / MR-7.3 nested list / blockquote / hr
 
-- [ ] `markdown.test.ts` 加 3 个 spec
-- [ ] FAIL
+- [x] `markdown.test.ts` 加 3 个 spec
+- [x] FAIL
 - commit: `test(markdown): MR-7.* nested list / bq / hr`
 
 #### M1-A-38 [IMPL-GREEN] 调样式
 
-- [ ] `globals.css` 微调 nested list 缩进、blockquote multi-paragraph、hr 视觉
-- [ ] PASS
+- [x] `globals.css` 微调 nested list 缩进、blockquote multi-paragraph、hr 视觉
+- [x] PASS
 - commit: `feat(markdown): MR-7.* nested list / bq / hr`
 
 #### M1-A-39 [TEST-RED] MR-8.4 .markdown-body 覆盖率 sweep
 
-- [ ] `globals.test.ts` 加 spec：grep selector 字符串列表
-- [ ] FAIL（如有缺失）
+- [x] `globals.test.ts` 加 spec：grep selector 字符串列表
+- [x] FAIL（如有缺失）
 - commit: `test(markdown): MR-8.4 selectors sweep`
 
 #### M1-A-40 [IMPL-GREEN] 补缺 CSS
 
-- [ ] 按缺失项补
-- [ ] PASS
+- [x] 按缺失项补
+- [x] PASS
 - commit: `feat(markdown): MR-8.4 selectors`
 
 #### M1-A-41 [TEST-RED] MR-8.5 详情页完整 fixture
 
-- [ ] 创建 `src/lib/markdown/__fixtures__/full-syntax.md`
-- [ ] 扩展 `posts/[slug]/page.test.tsx`：用 fixture mock content，断言 DOM 含所有结构
-- [ ] FAIL
+- [x] 创建 `src/lib/markdown/__fixtures__/full-syntax.md`
+- [x] 扩展 `posts/[slug]/page.test.tsx`：用 fixture mock content，断言 DOM 含所有结构
+- [x] FAIL
 - commit: `test(markdown): MR-8.5 full syntax fixture`
 
 #### M1-A-42 [IMPL-GREEN] 全部 PASS
 
-- [ ] 上面 spec 已完整实施后此条自然通过
-- [ ] PASS
+- [x] 上面 spec 已完整实施后此条自然通过
+- [x] PASS
 - commit: `feat(markdown): MR-8.5 full syntax integration` *(如需调整 page 才加 commit；如已 PASS 可作为 no-op 跳过)*
 
 #### M1-A-43 [TEST-RED] MR-10 性能 baseline
 
-- [ ] 加 spec 测 large markdown render time ≤ 基线 × 1.3
-- [ ] FAIL or PASS（依实际情况）
+- [x] 加 spec 测 large markdown render time ≤ 基线 × 1.3
+- [x] FAIL or PASS（依实际情况）
 - commit: `test(markdown): MR-10 perf`
 
 #### M1-A-44 [IMPL-GREEN] 若不达标优化
 
-- [ ] highlighter 复用检查 / lazy load language grammars
-- [ ] PASS
+- [x] highlighter 复用检查 / lazy load language grammars
+- [x] PASS
 - commit: `feat(markdown): MR-10 perf` *(如基线已达标可跳过)*
 
 **M1-A 出口检查**：
 
-- [ ] `pnpm test` 全绿，测试通过数 = 基线 + N（N 见各 spec 新增数）
-- [ ] `pnpm typecheck && pnpm lint` 绿
-- [ ] `pnpm build` 绿
-- [ ] 浏览器手动渲染一篇 fixture markdown 文章；五个 callout / code block chrome / table 全部视觉正确
+- [x] `pnpm test` 全绿，测试通过数 = 基线 + N（N 见各 spec 新增数）
+- [x] `pnpm typecheck && pnpm lint` 绿
+- [x] `pnpm build` 绿
+- [x] 浏览器手动渲染一篇 fixture markdown 文章；五个 callout / code block chrome / table 全部视觉正确
 
 ---
 
@@ -354,74 +354,74 @@ Pre-flight evidence (2026-05-23):
 
 #### M1-B-1 [TEST-RED] EC-1.1 / EC-1.2 编辑区文字字面 + no prose
 
-- [ ] 新建 `src/components/editor/MarkdownEditor.test.tsx`：用 RTL render，断言 `cm-content` 文本字面是 markdown 字符 + 容器无 prose class
-- [ ] FAIL（组件还是 tiptap）
+- [x] 新建 `src/components/editor/MarkdownEditor.test.tsx`：用 RTL render，断言 `cm-content` 文本字面是 markdown 字符 + 容器无 prose class
+- [x] FAIL（组件还是 tiptap）
 - commit: `test(editor): EC-1.1 literal source`
 
 #### M1-B-2 [IMPL-GREEN] 安装 CodeMirror 6 依赖
 
-- [ ] `pnpm add codemirror @codemirror/state @codemirror/view @codemirror/lang-markdown @codemirror/language @codemirror/commands @codemirror/search`
-- [ ] commit: `chore(editor): add codemirror 6 deps [no-tdd]` *（chore 类，加 [no-tdd] 标）*
+- [x] `pnpm add codemirror @codemirror/state @codemirror/view @codemirror/lang-markdown @codemirror/language @codemirror/commands @codemirror/search`
+- [x] commit: `chore(editor): add codemirror 6 deps [no-tdd]` *（chore 类，加 [no-tdd] 标）*
 
 #### M1-B-3 [IMPL-GREEN] EC-1.1 重写 MarkdownEditor 用 CM6
 
-- [ ] 重写 `src/components/editor/MarkdownEditor.tsx`：useEffect + EditorState + EditorView + lang-markdown + lineNumbers + keymap + placeholder
-- [ ] dynamic import 仅在 client load
-- [ ] export props 保持 (value/onChange/placeholder/className/onReady)
-- [ ] PASS EC-1.1 / EC-1.2 测试
+- [x] 重写 `src/components/editor/MarkdownEditor.tsx`：useEffect + EditorState + EditorView + lang-markdown + lineNumbers + keymap + placeholder
+- [x] dynamic import 仅在 client load
+- [x] export props 保持 (value/onChange/placeholder/className/onReady)
+- [x] PASS EC-1.1 / EC-1.2 测试
 - commit: `feat(editor): EC-1.1 codemirror 6 source editor`
 
 #### M1-B-4 [TEST-RED] EC-2.1 round-trip 测试
 
-- [ ] 新建 `src/lib/editor/round-trip.test.ts`：fixture 5+ markdown 字符串，验证注入后导出字面相同
-- [ ] FAIL（CM6 set + emit 应该字面一致，但如果实现错也可能 FAIL）
+- [x] 新建 `src/lib/editor/round-trip.test.ts`：fixture 5+ markdown 字符串，验证注入后导出字面相同
+- [x] FAIL（CM6 set + emit 应该字面一致，但如果实现错也可能 FAIL）
 - commit: `test(editor): EC-2 round-trip`
 
 #### M1-B-5 [IMPL-GREEN] EC-2.x round-trip 确认
 
-- [ ] 验证 CM6 `state.doc.toString()` 不修改原文
-- [ ] PASS
+- [x] 验证 CM6 `state.doc.toString()` 不修改原文
+- [x] PASS
 - commit: `feat(editor): EC-2 round-trip` *(如已 PASS 可作 docs commit `chore(editor): EC-2 round-trip verified [no-tdd]`)*
 
 #### M1-B-6 [TEST-RED] EC-3.1 toolbar 按钮集
 
-- [ ] 新建 `src/components/editor/EditorToolbar.test.tsx`：断言含必备按钮（Bold / Italic / Code / H2 / H3 / UL / OL / Quote / Code Block / Link / Image / Table / Callout）
-- [ ] FAIL（toolbar 还是 tiptap 老 toolbar）
+- [x] 新建 `src/components/editor/EditorToolbar.test.tsx`：断言含必备按钮（Bold / Italic / Code / H2 / H3 / UL / OL / Quote / Code Block / Link / Image / Table / Callout）
+- [x] FAIL（toolbar 还是 tiptap 老 toolbar）
 - commit: `test(editor): EC-3.1 toolbar buttons`
 
 #### M1-B-7 [IMPL-GREEN] EC-3.1 重写 EditorToolbar
 
-- [ ] 重写 `src/components/editor/EditorToolbar.tsx`：接收 editorRef，按钮调用 `editorRef.insert(text)` API
-- [ ] PASS
+- [x] 重写 `src/components/editor/EditorToolbar.tsx`：接收 editorRef，按钮调用 `editorRef.insert(text)` API
+- [x] PASS
 - commit: `feat(editor): EC-3.1 toolbar buttons`
 
 #### M1-B-8 [TEST-RED] EC-3.2 Bold action 包裹
 
-- [ ] 加 spec：模拟选中文本 + click Bold，断言新文本含 `**...**`
-- [ ] FAIL
+- [x] 加 spec：模拟选中文本 + click Bold，断言新文本含 `**...**`
+- [x] FAIL
 - commit: `test(editor): EC-3.2 bold action`
 
 #### M1-B-9 [IMPL-GREEN] EC-3.2 wrap selection helper
 
-- [ ] 在 MarkdownEditor 暴露 `wrapSelection(prefix, suffix)` API；toolbar Bold 调用 `wrapSelection("**", "**")`
-- [ ] PASS
+- [x] 在 MarkdownEditor 暴露 `wrapSelection(prefix, suffix)` API；toolbar Bold 调用 `wrapSelection("**", "**")`
+- [x] PASS
 - commit: `feat(editor): EC-3.2 bold action`
 
 #### M1-B-10 [TEST-RED] EC-3.3 H2 行首插入
 
-- [ ] spec：H2 button → 行首插入 `## `
-- [ ] FAIL
+- [x] spec：H2 button → 行首插入 `## `
+- [x] FAIL
 - commit: `test(editor): EC-3.3 h2 action`
 
 #### M1-B-11 [IMPL-GREEN] EC-3.3 H2 action
 
-- [ ] toolbar H2 调用 `prependToLine("## ")`
-- [ ] PASS
+- [x] toolbar H2 调用 `prependToLine("## ")`
+- [x] PASS
 - commit: `feat(editor): EC-3.3 h2 action`
 
 #### M1-B-12..15 [TEST/IMPL pairs] EC-3.4 / EC-3.5 / EC-3.6 / EC-3.7 各 toolbar action
 
-- [ ] 每个 action 一对 RED / GREEN commit
+- [x] 每个 action 一对 RED / GREEN commit
 - commit pairs:
   - `test(editor): EC-3.4 code block action` / `feat(editor): EC-3.4 code block action`
   - `test(editor): EC-3.5 callout action` / `feat(editor): EC-3.5 callout action`
@@ -430,108 +430,108 @@ Pre-flight evidence (2026-05-23):
 
 #### M1-B-16 [TEST-RED] EC-4 quirks 组合（tab / list / line-num / placeholder / cmd+s / brackets）
 
-- [ ] 在 MarkdownEditor.test.tsx 加 6 个 spec（一次性 RED 多个）
-- [ ] FAIL
+- [x] 在 MarkdownEditor.test.tsx 加 6 个 spec（一次性 RED 多个）
+- [x] FAIL
 - commit: `test(editor): EC-4 quirks`
 
 #### M1-B-17 [IMPL-GREEN] EC-4 quirks 配置
 
-- [ ] CM6 extensions: closeBrackets, lineNumbers, placeholder, keymap.of([{ key: "Mod-s", run: onSave }, indentWithTab])
-- [ ] PASS
+- [x] CM6 extensions: closeBrackets, lineNumbers, placeholder, keymap.of([{ key: "Mod-s", run: onSave }, indentWithTab])
+- [x] PASS
 - commit: `feat(editor): EC-4 quirks`
 
 #### M1-B-18 [TEST-RED] EC-5.3 SSR 安全
 
-- [ ] 在 `posts/new/page.test.tsx` 加 spec：dynamic import 编辑器、render 不抛 hydration mismatch
-- [ ] FAIL or PASS（取决于现实现）
+- [x] 在 `posts/new/page.test.tsx` 加 spec：dynamic import 编辑器、render 不抛 hydration mismatch
+- [x] FAIL or PASS（取决于现实现）
 - commit: `test(editor): EC-5.3 ssr safety`
 
 #### M1-B-19 [IMPL-GREEN] dynamic import wrapper
 
-- [ ] 重写 `MarkdownEditorWithPreview` 把 MarkdownEditor 套 `dynamic(() => import("./MarkdownEditor"), { ssr: false })`
-- [ ] PASS
+- [x] 重写 `MarkdownEditorWithPreview` 把 MarkdownEditor 套 `dynamic(() => import("./MarkdownEditor"), { ssr: false })`
+- [x] PASS
 - commit: `feat(editor): EC-5.3 ssr safety`
 
 #### M1-B-20 [TEST-RED] EC-7.5 PostEditor unchanged content commit
 
-- [ ] 扩展 `PostEditor.test.tsx`：加载 fixture 后立即提交，断言 fetch payload content = fixture 字面
-- [ ] FAIL
+- [x] 扩展 `PostEditor.test.tsx`：加载 fixture 后立即提交，断言 fetch payload content = fixture 字面
+- [x] FAIL
 - commit: `test(editor): EC-7.5 unchanged content submit`
 
 #### M1-B-21 [IMPL-GREEN] PostEditor 接通新 MarkdownEditor
 
-- [ ] PostEditor 中 `<MarkdownEditorWithPreview>` 不变（外壳保留），内部接通新 source editor
-- [ ] PASS
+- [x] PostEditor 中 `<MarkdownEditorWithPreview>` 不变（外壳保留），内部接通新 source editor
+- [x] PASS
 - commit: `feat(editor): EC-7.5 postEditor wired`
 
 #### M1-B-22 [TEST-RED] EC-8.2 syntax highlight 轻染色
 
-- [ ] MarkdownEditor.test.tsx 加 spec：heading 行有 bold class 或 token style
-- [ ] FAIL
+- [x] MarkdownEditor.test.tsx 加 spec：heading 行有 bold class 或 token style
+- [x] FAIL
 - commit: `test(editor): EC-8.2 syntax highlight`
 
 #### M1-B-23 [IMPL-GREEN] CM6 markdown highlight 配置
 
-- [ ] 加 `syntaxHighlighting(defaultHighlightStyle, { fallback: true })` 或自定义 minimal style
-- [ ] PASS
+- [x] 加 `syntaxHighlighting(defaultHighlightStyle, { fallback: true })` 或自定义 minimal style
+- [x] PASS
 - commit: `feat(editor): EC-8.2 syntax highlight`
 
 #### M1-B-24 [TEST-RED] EC-8.3 light/dark theme 切换
 
-- [ ] MarkdownEditor.test.tsx 加 spec：documentElement.classList.add("dark") 后 editor 背景 / 前景颜色变化
-- [ ] FAIL
+- [x] MarkdownEditor.test.tsx 加 spec：documentElement.classList.add("dark") 后 editor 背景 / 前景颜色变化
+- [x] FAIL
 - commit: `test(editor): EC-8.3 theme toggle`
 
 #### M1-B-25 [IMPL-GREEN] EditorView theme 跟 html class
 
-- [ ] 自定义 theme extension，监听 documentElement class 变化用 `view.dispatch({ effects: themeCompartment.reconfigure(theme) })`
-- [ ] PASS
+- [x] 自定义 theme extension，监听 documentElement class 变化用 `view.dispatch({ effects: themeCompartment.reconfigure(theme) })`
+- [x] PASS
 - commit: `feat(editor): EC-8.3 theme toggle`
 
 #### M1-B-26 [TEST-RED] EC-9.3 / EC-9.4 paste 行为
 
-- [ ] MarkdownEditor.test.tsx 加 spec：paste HTML mime / markdown mime 都字面插入
-- [ ] FAIL
+- [x] MarkdownEditor.test.tsx 加 spec：paste HTML mime / markdown mime 都字面插入
+- [x] FAIL
 - commit: `test(editor): EC-9.3 paste plain text`
 
 #### M1-B-27 [IMPL-GREEN] paste handler
 
-- [ ] CM6 默认行为已是 plain text；如有需要加 paste 自定义 handler
-- [ ] PASS
+- [x] CM6 默认行为已是 plain text；如有需要加 paste 自定义 handler
+- [x] PASS
 - commit: `feat(editor): EC-9.3 paste plain text`
 
 #### M1-B-28 [TEST-RED] EC-6.3 tiptap 残留检查
 
-- [ ] 新建 `src/lib/editor/no-tiptap-residue.test.ts`（或 scripts/check）：grep `@tiptap\|prose-neutral` 在 src/、package.json
-- [ ] FAIL（tiptap 还在 package.json）
+- [x] 新建 `src/lib/editor/no-tiptap-residue.test.ts`（或 scripts/check）：grep `@tiptap\|prose-neutral` 在 src/、package.json
+- [x] FAIL（tiptap 还在 package.json）
 - commit: `test(editor): EC-6.3 no tiptap residue`
 
 #### M1-B-29 [IMPL-GREEN] 删 tiptap 依赖
 
-- [ ] `pnpm remove @tiptap/react @tiptap/starter-kit @tiptap/extension-link @tiptap/extension-image @tiptap/extension-code-block-lowlight tiptap-markdown lowlight`
-- [ ] 删 `src/components/editor/MarkdownEditor.tsx` 中所有 tiptap imports（已经替换为 CM6，应已 0 引用）
-- [ ] PASS
+- [x] `pnpm remove @tiptap/react @tiptap/starter-kit @tiptap/extension-link @tiptap/extension-image @tiptap/extension-code-block-lowlight tiptap-markdown lowlight`
+- [x] 删 `src/components/editor/MarkdownEditor.tsx` 中所有 tiptap imports（已经替换为 CM6，应已 0 引用）
+- [x] PASS
 - commit: `chore(editor): EC-6.3 remove tiptap deps`
 
 #### M1-B-30 [TEST-RED] EC-7.1 PostEditor 既有测试不退化
 
-- [ ] 跑 `pnpm test src/components/admin/posts/PostEditor.test.tsx`
-- [ ] 如有 FAIL，调整 mock 方式（仍允许 mock 为 textarea 等效，但不允许弱化断言）
+- [x] 跑 `pnpm test src/components/admin/posts/PostEditor.test.tsx`
+- [x] 如有 FAIL，调整 mock 方式（仍允许 mock 为 textarea 等效，但不允许弱化断言）
 - commit: `test(editor): EC-7.1 PostEditor existing tests`
 
 #### M1-B-31 [IMPL-GREEN] 调整 PostEditor 测试 mock
 
-- [ ] mock `MarkdownEditorWithPreview` 仍可用 textarea 替身（保持现有测试通过）
-- [ ] PASS
+- [x] mock `MarkdownEditorWithPreview` 仍可用 textarea 替身（保持现有测试通过）
+- [x] PASS
 - commit: `feat(editor): EC-7.1 PostEditor mock adjustment`
 
 **M1-B 出口检查**：
 
-- [ ] `pnpm test` 全绿
-- [ ] `pnpm typecheck` 绿
-- [ ] `pnpm build` 绿，admin chunk gzip ≤ 90kB（EC-6.2）
-- [ ] 浏览器手动验证 `/admin/posts/new` 与 `/admin/posts/[id]/edit`：左侧编辑区显示 markdown 字面、toolbar action 工作、ctrl+s 触发保存、tab 缩进
-- [ ] grep `tiptap` 在 src + package.json 无残留（EC-6.3）
+- [x] `pnpm test` 全绿
+- [x] `pnpm typecheck` 绿
+- [x] `pnpm build` 绿，admin chunk gzip ≤ 90kB（EC-6.2）
+- [x] 浏览器手动验证 `/admin/posts/new` 与 `/admin/posts/[id]/edit`：左侧编辑区显示 markdown 字面、toolbar action 工作、ctrl+s 触发保存、tab 缩进
+- [x] grep `tiptap` 在 src + package.json 无残留（EC-6.3）
 
 ---
 
@@ -539,75 +539,75 @@ Pre-flight evidence (2026-05-23):
 
 #### M1-C-1 [TEST-RED] EP-1.3 / EP-1.4 预览 wrapper + 无水印
 
-- [ ] 在新建 `src/components/editor/MarkdownEditorWithPreview.test.tsx`（重写）加 spec
-- [ ] FAIL
+- [x] 在新建 `src/components/editor/MarkdownEditorWithPreview.test.tsx`（重写）加 spec
+- [x] FAIL
 - commit: `test(preview): EP-1.3 wrapper and no watermark`
 
 #### M1-C-2 [IMPL-GREEN] 重写 preview wrapper
 
-- [ ] 改 `MarkdownEditorWithPreview.tsx`：预览容器 `<article class="markdown-body max-w-none">` 不含 footnote 段
-- [ ] PASS
+- [x] 改 `MarkdownEditorWithPreview.tsx`：预览容器 `<article class="markdown-body max-w-none">` 不含 footnote 段
+- [x] PASS
 - commit: `feat(preview): EP-1.3 wrapper and no watermark`
 
 #### M1-C-3 [TEST-RED] EP-1.1 / EP-1.2 与发布态一致
 
-- [ ] 新建 `src/components/editor/preview-parity.test.tsx`：fixture markdown → server `renderMarkdown` vs 客户端预览结果 → hash equal
-- [ ] FAIL（mini-renderer 不可能一致）
+- [x] 新建 `src/components/editor/preview-parity.test.tsx`：fixture markdown → server `renderMarkdown` vs 客户端预览结果 → hash equal
+- [x] FAIL（mini-renderer 不可能一致）
 - commit: `test(preview): EP-1.1 parity hash`
 
 #### M1-C-4 [IMPL-GREEN] 预览改走完整管道
 
-- [ ] `MarkdownLivePreview` 客户端组件：`dynamic import "@/lib/markdown"` + 调用 `renderMarkdown(value)` 后 setHtml + `dangerouslySetInnerHTML`
-- [ ] 在 `MarkdownEditorWithPreview` 用 `MarkdownLivePreview` 替换 mini-renderer
-- [ ] PASS
+- [x] `MarkdownLivePreview` 客户端组件：`dynamic import "@/lib/markdown"` + 调用 `renderMarkdown(value)` 后 setHtml + `dangerouslySetInnerHTML`
+- [x] 在 `MarkdownEditorWithPreview` 用 `MarkdownLivePreview` 替换 mini-renderer
+- [x] PASS
 - commit: `feat(preview): EP-1.1 full pipeline`
 
 #### M1-C-5 [TEST-RED] EP-2.1 debounce 200ms
 
-- [ ] preview test 加 spec：vi.useFakeTimers + 模拟连续输入，断言 debounce 后才更新
-- [ ] FAIL
+- [x] preview test 加 spec：vi.useFakeTimers + 模拟连续输入，断言 debounce 后才更新
+- [x] FAIL
 - commit: `test(preview): EP-2.1 debounce`
 
 #### M1-C-6 [IMPL-GREEN] debounce 200ms
 
-- [ ] 在 `MarkdownLivePreview` 内用 useDeferredValue or useDebounce(200) 触发渲染
-- [ ] PASS
+- [x] 在 `MarkdownLivePreview` 内用 useDeferredValue or useDebounce(200) 触发渲染
+- [x] PASS
 - commit: `feat(preview): EP-2.1 debounce`
 
 #### M1-C-7 [TEST-RED] EP-2.3 cancellation
 
-- [ ] 加 spec：连续 5 次修改只渲染最后一次（spy on render count）
-- [ ] FAIL
+- [x] 加 spec：连续 5 次修改只渲染最后一次（spy on render count）
+- [x] FAIL
 - commit: `test(preview): EP-2.3 cancellation`
 
 #### M1-C-8 [IMPL-GREEN] AbortController
 
-- [ ] debounce + 取消机制
-- [ ] PASS
+- [x] debounce + 取消机制
+- [x] PASS
 - commit: `feat(preview): EP-2.3 cancellation`
 
 #### M1-C-9 [TEST-RED] EP-3.1 错误 banner
 
-- [ ] preview test 加 spec：注入异常 markdown，断言 `<div role="alert">` 出现
-- [ ] FAIL
+- [x] preview test 加 spec：注入异常 markdown，断言 `<div role="alert">` 出现
+- [x] FAIL
 - commit: `test(preview): EP-3.1 error banner`
 
 #### M1-C-10 [IMPL-GREEN] try/catch + error banner
 
-- [ ] MarkdownLivePreview try { renderMarkdown(value) } catch { setError(e) }
-- [ ] PASS
+- [x] MarkdownLivePreview try { renderMarkdown(value) } catch { setError(e) }
+- [x] PASS
 - commit: `feat(preview): EP-3.1 error banner`
 
 #### M1-C-11 [TEST-RED] EP-3.2 shiki unknown lang fallback
 
-- [ ] `markdown.test.ts` 加 spec：` ```klingon ` 不抛错，降级 plain
-- [ ] FAIL
+- [x] `markdown.test.ts` 加 spec：` ```klingon ` 不抛错，降级 plain
+- [x] FAIL
 - commit: `test(preview): EP-3.2 shiki fallback`
 
 #### M1-C-12 [IMPL-GREEN] shiki try/catch
 
-- [ ] visitor 内对 shiki 调用包 try/catch；fallback 输出 plain `<pre><code>`
-- [ ] PASS
+- [x] visitor 内对 shiki 调用包 try/catch；fallback 输出 plain `<pre><code>`
+- [x] PASS
 - commit: `feat(preview): EP-3.2 shiki fallback`
 
 #### M1-C-13 [TEST-RED] EP-4.1 callout parity
