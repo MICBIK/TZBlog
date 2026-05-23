@@ -1,5 +1,9 @@
 # Progress — TZBlog
 
+## 当前焦点
+
+- **2026-05-23** 进入 `creative-blog-notion-editor` SDD：方向锁定为 Firefly/Fuwari/idealclover 的结构密度 + Rauno/Maggie/Maxime/samwho 的创意与微交互 + Notion-like editor POC。当前仅完成 proposal/spec/test-map/tasks 文档，不改应用代码。
+
 ## 已完成
 
 - [x] **2026-05-18** 旧版项目下线 — 远端 `MICBIK/TZBlog` 清空重建为单 empty commit `9d1370c`
