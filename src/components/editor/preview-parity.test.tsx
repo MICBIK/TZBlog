@@ -39,4 +39,34 @@ describe("Markdown editor preview parity", () => {
       { timeout: 5000 },
     );
   }, 10000);
+
+  it("matches published output for all callout types", async () => {
+    const markdown = [
+      "> [!NOTE]",
+      "> Note body.",
+      "",
+      "> [!TIP]",
+      "> Tip body.",
+      "",
+      "> [!IMPORTANT]",
+      "> Important body.",
+      "",
+      "> [!WARNING]",
+      "> Warning body.",
+      "",
+      "> [!CAUTION]",
+      "> Caution body.",
+    ].join("\n");
+    const expectedHtml = await renderMarkdown(markdown);
+
+    render(<MarkdownEditorWithPreview value={markdown} onChange={vi.fn()} />);
+
+    const article = screen.getByLabelText("Markdown preview").querySelector("article");
+    await waitFor(
+      () => {
+        expect(article?.innerHTML).toBe(expectedHtml);
+      },
+      { timeout: 5000 },
+    );
+  }, 10000);
 });
