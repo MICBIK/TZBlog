@@ -150,6 +150,18 @@ describe("globals.css editorial system", () => {
     expect(block).toContain("box-shadow: var(--shadow-inset-thin);");
   });
 
+  it("nested list, blockquote, and hr use structured spacing", () => {
+    const nested = cssBlock(css, ".markdown-body ul ul");
+    const blockquote = cssBlock(css, ".markdown-body blockquote");
+    const hr = cssBlock(css, ".markdown-body hr");
+
+    expect(nested).toContain("padding-left:");
+    expect(blockquote).toContain("font-family: var(--font-serif);");
+    expect(blockquote).toContain("font-style: italic;");
+    expect(hr).toContain("border-top: 1px solid hsl(var(--border));");
+    expect(hr).toContain("margin: var(--space-stack-lg) 0;");
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
