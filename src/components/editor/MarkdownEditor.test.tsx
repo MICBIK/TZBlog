@@ -1,6 +1,10 @@
 import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { MarkdownEditor } from "./MarkdownEditor";
+import { MarkdownEditor, type MarkdownEditorProps } from "./MarkdownEditor";
+
+interface MarkdownSourceApi {
+  getMarkdown: () => string;
+}
 
 describe("MarkdownEditor source contract", () => {
   it("displays raw markdown text in editor surface", async () => {
@@ -32,5 +36,43 @@ describe("MarkdownEditor source contract", () => {
 
     expect(container.querySelector(".prose")).not.toBeInTheDocument();
     expect(container.querySelector(".markdown-body")).not.toBeInTheDocument();
+  });
+
+  it("loads complex markdown literally and exposes it unchanged", async () => {
+    const source = [
+      "## 标题",
+      "",
+      "正文段 1。",
+      "",
+      "- item 1",
+      "- item 2",
+      "",
+      "> [!WARNING]",
+      "> 警告内容",
+      "",
+      "```ts",
+      "const x = 1;",
+      "```",
+      "",
+      "普通段。",
+    ].join("\n");
+    const onReady = vi.fn<(api: MarkdownSourceApi) => void>();
+    const props = {
+      value: source,
+      onChange: vi.fn(),
+      onReady,
+    } as MarkdownEditorProps & { onReady: (api: MarkdownSourceApi) => void };
+
+    const { container } = render(<MarkdownEditor {...props} />);
+
+    await waitFor(() => {
+      expect(container.querySelector(".cm-content")).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(onReady).toHaveBeenCalled();
+    });
+
+    expect(onReady.mock.calls[0]?.[0].getMarkdown()).toBe(source);
   });
 });
