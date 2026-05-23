@@ -129,4 +129,30 @@ describe("MarkdownEditor source contract", () => {
     expect(onChange).toHaveBeenCalledWith("## hello");
     expect(sourceApiRef.current?.getMarkdown()).toBe("## hello");
   });
+
+  it("toolbar code block action inserts a fenced code block", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+
+    render(
+      <MarkdownEditor
+        value=""
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(0, 0);
+    await user.click(screen.getByRole("button", { name: /代码块.*Code Block/ }));
+
+    expect(onChange).toHaveBeenCalledWith("```\n\n```");
+    expect(sourceApiRef.current?.getMarkdown()).toBe("```\n\n```");
+  });
 });
