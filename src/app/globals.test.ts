@@ -118,6 +118,14 @@ describe("globals.css editorial system", () => {
     }
   });
 
+  it("code-block-chrome has expected token usage", () => {
+    const block = cssBlock(css, ".code-block-chrome");
+
+    expect(block).toContain("background: hsl(var(--code-chrome-bg));");
+    expect(block).toContain("color: hsl(var(--code-chrome-fg));");
+    expect(block).toContain("border-bottom: 1px solid hsl(var(--code-border));");
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
