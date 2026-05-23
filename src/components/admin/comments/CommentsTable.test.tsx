@@ -51,6 +51,14 @@ function makeItem(
 }
 
 describe("<CommentsTable /> SPEC-C-U-2 + U-3", () => {
+  it("renders the unified empty state", () => {
+    render(
+      <CommentsTable initialItems={[]} total={0} page={1} pageSize={20} />,
+    )
+
+    expect(screen.getByText("这个状态下还没有评论")).toBeInTheDocument()
+  })
+
   it("renders rows with authorName + content truncated + post info", () => {
     render(
       <CommentsTable

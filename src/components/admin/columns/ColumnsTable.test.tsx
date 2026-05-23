@@ -52,6 +52,14 @@ beforeEach(() => {
 });
 
 describe("ColumnsTable", () => {
+  it("renders the unified empty state", () => {
+    renderTable({ columns: [] });
+
+    expect(
+      screen.getByText("还没有专栏 · 创建一个开始整理"),
+    ).toBeInTheDocument();
+  });
+
   it("renders inside the shared admin table surface", () => {
     const { container } = renderTable();
 

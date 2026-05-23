@@ -62,7 +62,9 @@ describe("PostsTable", () => {
   it("renders the empty placeholder", () => {
     renderTable({ items: [] });
 
-    expect(screen.getByText(/暂无文章/)).toBeInTheDocument();
+    expect(
+      screen.getByText("暂无文章 · 点击「新建文章」开始创建"),
+    ).toBeInTheDocument();
   });
 
   it("renders inside the shared admin table surface", () => {
