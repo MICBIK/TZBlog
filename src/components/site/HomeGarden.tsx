@@ -1,14 +1,22 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+type HomeModuleState = {
+  state: "loading" | "empty" | "error";
+  title: string;
+  detail: string;
+};
+
+type HomeModuleContent = ReactNode | HomeModuleState;
+
 export interface HomeGardenProps {
   hero: ReactNode;
-  featuredAndRecent: ReactNode;
-  columns: ReactNode;
+  featuredAndRecent: HomeModuleContent;
+  columns: HomeModuleContent;
   principles: ReactNode;
   techStack: ReactNode;
-  github: ReactNode;
-  stats: ReactNode;
+  github: HomeModuleContent;
+  stats: HomeModuleContent;
 }
 
 const stackItems = ["Next.js", "Prisma", "PostgreSQL", "Markdown", "Shiki"];
@@ -91,8 +99,8 @@ export function HomeGarden({
           className="min-w-0 space-y-[var(--space-section)]"
         >
           {hero}
-          {featuredAndRecent}
-          {columns}
+          {renderHomeModule("文章", featuredAndRecent)}
+          {renderHomeModule("项目", columns)}
           {principles}
           {techStack}
         </div>
@@ -102,11 +110,46 @@ export function HomeGarden({
           data-home-context-rail
           className="space-y-6 xl:sticky xl:top-24 xl:h-fit"
         >
-          {github}
-          {stats}
+          {renderHomeModule("GitHub", github)}
+          {renderHomeModule("统计", stats)}
         </aside>
       </div>
     </div>
+  );
+}
+
+function renderHomeModule(label: string, content: HomeModuleContent) {
+  if (!isHomeModuleState(content)) return content;
+
+  const role = content.state === "error" ? "alert" : "status";
+
+  return (
+    <section
+      role={role}
+      aria-label={`${label}模块状态`}
+      data-home-module-state={content.state}
+      className="launch-panel space-y-3 p-5"
+    >
+      <p className="font-mono text-label tracking-label uppercase text-muted-fg">
+        {content.state}
+      </p>
+      <h2 className="font-serif text-lead leading-display tracking-tight text-fg">
+        {content.title}
+      </h2>
+      <p className="text-sm leading-body text-muted-fg">
+        {content.detail}
+      </p>
+    </section>
+  );
+}
+
+function isHomeModuleState(content: HomeModuleContent): content is HomeModuleState {
+  return (
+    typeof content === "object" &&
+    content !== null &&
+    "state" in content &&
+    "title" in content &&
+    "detail" in content
   );
 }
 
