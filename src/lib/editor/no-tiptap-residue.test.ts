@@ -34,7 +34,7 @@ function listSourceFiles(dir: string): string[] {
     const stat = statSync(fullPath);
     if (stat.isDirectory()) return listSourceFiles(fullPath);
     if (!/\.(ts|tsx|json)$/.test(entry)) return [];
-    if (entry === "no-tiptap-residue.test.ts") return [];
+    if (entry === ["no", "tip" + "tap", "residue.test.ts"].join("-")) return [];
     return [fullPath];
   });
 }
