@@ -3,7 +3,7 @@
 # 规则：
 #   1) feat: commit 前 5 个 commit 必须有同 scope 的 test:
 #   2) [no-tdd] 标签仅在 staged 改动只涉及白名单文件时放行（防伪造逃生口）
-# 白名单：纯样式 (*.css/*.scss/*.sass/*.less)、文档 (*.md/*.mdx/*.txt/*.rst / LICENSE)
+# 白名单：纯样式 (*.css/*.scss/*.sass/*.less/*.postcss)、文档 (*.md/*.mdx/*.txt/*.rst / LICENSE)
 
 new_msg=$(cat "$1" 2>/dev/null || cat .git/COMMIT_EDITMSG 2>/dev/null || echo "")
 
@@ -15,7 +15,6 @@ esac
 
 # 2) [no-tdd] 标签：白名单文件级二次验证
 if echo "$new_msg" | grep -q '\[no-tdd\]'; then
-  # 取 staged 文件清单
   staged_files=$(git diff --cached --name-only 2>/dev/null)
 
   if [ -z "$staged_files" ]; then
@@ -23,7 +22,6 @@ if echo "$new_msg" | grep -q '\[no-tdd\]'; then
     exit 0
   fi
 
-  # 检查每个 staged 文件是否在白名单
   violating_files=""
   while IFS= read -r f; do
     case "$f" in
@@ -68,7 +66,7 @@ scope=$(echo "$new_msg" | sed -nE 's/^feat\(([^)]+)\):.*/\1/p')
 
 # 5) feat 无 scope → 拒绝
 if [ -z "$scope" ]; then
-  echo "✘ TDD 违规：feat: 必须带 scope，如 feat(cms-post): xxx"
+  echo "✘ TDD 违规：feat: 必须带 scope，如 feat(<module>): xxx"
   echo "  补救：1) 改 commit message 加 scope"
   echo "       2) 或加 [no-tdd] 标签（仅 css/scss/md 等白名单文件）"
   exit 1
