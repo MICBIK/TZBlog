@@ -407,6 +407,12 @@
     padding: 0;
   }
 
+  .dark .shiki,
+  .dark .shiki span {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
+  }
+
   .markdown-body blockquote {
     border-left: 3px solid hsl(var(--border));
     color: hsl(var(--muted-fg));

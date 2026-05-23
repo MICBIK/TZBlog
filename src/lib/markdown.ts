@@ -128,7 +128,8 @@ function rehypeShiki(options: RehypeShikiOptions) {
       try {
         const hast = highlighter.codeToHast(code, {
           lang: useLang,
-          theme: themes.dark,
+          themes,
+          defaultColor: "light",
         }) as unknown as HastRoot;
         // codeToHast returns a root containing the <pre> element. Replace the
         // current <pre> in-place with shiki's <pre>.
