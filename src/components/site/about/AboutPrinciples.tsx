@@ -31,13 +31,16 @@ export function AboutPrinciples({ intro, items }: AboutPrinciplesProps) {
         {intro}
       </p>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {items.map((item) => (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item, index) => (
           <article key={item.label} className="launch-panel space-y-3 p-5">
-            <h3 className="font-mono text-label tracking-label uppercase text-muted-fg">
+            <p className="font-mono text-label tracking-label text-muted-fg">
+              {String(index + 1).padStart(2, "0")}
+            </p>
+            <h3 className="font-serif text-h3 leading-display tracking-tight text-fg">
               {item.label}
             </h3>
-            <p className="font-serif text-base leading-body text-fg">
+            <p className="font-serif text-base leading-body text-muted-fg">
               {item.detail}
             </p>
           </article>
