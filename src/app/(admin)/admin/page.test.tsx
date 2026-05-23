@@ -75,16 +75,27 @@ beforeEach(() => {
 })
 
 describe("<AdminDashboardPage />", () => {
-  it("AdminDashboardPage renders all 7 widgets", async () => {
+  it("rendersChineseDashboardChrome", async () => {
     await renderDashboard()
 
+    expect(screen.getByRole("heading", { name: "仪表盘" })).toBeInTheDocument()
+    expect(
+      screen.getByText("公开访问数据概览，每 60 秒刷新一次。"),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText("流量统计总览")).toBeInTheDocument()
     expect(screen.getAllByTestId("metric-card")).toHaveLength(3)
-    expect(screen.getByText("Top Paths")).toBeInTheDocument()
-    expect(screen.getByText("Top Referrers")).toBeInTheDocument()
-    expect(screen.getByText("Devices")).toBeInTheDocument()
-    expect(screen.getByText("Browsers")).toBeInTheDocument()
+    expect(screen.getByText("今日")).toBeInTheDocument()
+    expect(screen.getByText("近 7 天")).toBeInTheDocument()
+    expect(screen.getByText("近 30 天")).toBeInTheDocument()
+    expect(screen.getByText("访问趋势")).toBeInTheDocument()
+    expect(screen.getByText("热门路径")).toBeInTheDocument()
+    expect(screen.getByText("来源页面")).toBeInTheDocument()
+    expect(screen.getByText("设备分布")).toBeInTheDocument()
+    expect(screen.getByText("浏览器分布")).toBeInTheDocument()
     expect(screen.getByTestId("trend-chart")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "7d" })).toHaveAttribute(
+    expect(screen.queryByText("Top Paths")).not.toBeInTheDocument()
+    expect(screen.queryByText("Devices")).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "7 天" })).toHaveAttribute(
       "aria-current",
       "page",
     )
@@ -112,19 +123,20 @@ describe("<AdminDashboardPage />", () => {
   it("RangeSelector renders 4 options + active state", async () => {
     await renderDashboard({ range: "all" })
 
-    expect(screen.getByRole("link", { name: "Today" })).toHaveAttribute(
+    expect(screen.getByRole("navigation", { name: "数据范围" })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "今天" })).toHaveAttribute(
       "href",
       expect.stringContaining("range=today"),
     )
-    expect(screen.getByRole("link", { name: "7d" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "7 天" })).toHaveAttribute(
       "href",
       expect.stringContaining("range=7d"),
     )
-    expect(screen.getByRole("link", { name: "30d" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "30 天" })).toHaveAttribute(
       "href",
       expect.stringContaining("range=30d"),
     )
-    expect(screen.getByRole("link", { name: "All" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "全部" })).toHaveAttribute(
       "aria-current",
       "page",
     )
@@ -135,8 +147,8 @@ describe("<AdminDashboardPage />", () => {
 
     await renderDashboard()
 
-    expect(screen.getByText("Failed to load Top Paths")).toBeInTheDocument()
+    expect(screen.getByText("加载失败：热门路径")).toBeInTheDocument()
     expect(screen.getAllByTestId("metric-card")).toHaveLength(3)
-    expect(screen.getByText("Top Referrers")).toBeInTheDocument()
+    expect(screen.getByText("来源页面")).toBeInTheDocument()
   })
 })
