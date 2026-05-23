@@ -294,6 +294,13 @@ describe("globals.css editorial system", () => {
     expect(block).toContain("hsl(var(--accent) / 0.08)");
   });
 
+  it("AboutHero keeps reduced launch-surface strength in dark mode", () => {
+    const block = cssBlock(css, ".dark .about-hero-surface");
+
+    expect(block).toContain("hsl(var(--accent) / 0.06)");
+    expect(block).toContain("hsl(var(--fg) / 0.16)");
+  });
+
   it("site components use generated theme utilities instead of unresolved var arbitrary classes", () => {
     const files = [
       "src/components/site/HeroEditorial.tsx",
@@ -302,8 +309,11 @@ describe("globals.css editorial system", () => {
       "src/components/site/LaunchNarrative.tsx",
       "src/components/site/about/AboutHero.tsx",
       "src/components/site/about/AboutNow.tsx",
-      "src/components/site/about/AboutStory.tsx",
+      "src/components/site/about/AboutProjectIntent.tsx",
+      "src/components/site/about/AboutTechStack.tsx",
+      "src/components/site/about/AboutImplementationApproach.tsx",
       "src/components/site/about/AboutPrinciples.tsx",
+      "src/components/site/about/AboutFutureRoadmap.tsx",
       "src/components/site/about/AboutContact.tsx",
       "src/app/(site)/tags/page.tsx",
       "src/app/(site)/tags/[slug]/page.tsx",
