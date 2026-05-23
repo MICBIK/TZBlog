@@ -15,6 +15,8 @@
   3.1.b [IMPL-GREEN] localize tags index chrome
   3.2.a [TEST-RED] write failing component test for public-index-002
   3.2.b [IMPL-GREEN] render column cover frame
+  3.3.a [TEST-RED] write failing page test for public-index-003
+  3.3.b [IMPL-GREEN] localize tag detail chrome
 
 4. finish
   4.1 [no-tdd] run full quality gate and browser smoke

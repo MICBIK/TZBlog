@@ -7,5 +7,6 @@
 | route-polish-001 | component | src/app/(admin)/admin/_editor-demo/page.test.tsx | editorDemoRouteReturnsNotFound | Keeps file route but no demo UI |
 | public-index-001 | page | src/app/(site)/tags/page.test.tsx | rendersChineseSingleLocaleTagsIndex | Existing tags page test upgraded |
 | public-index-002 | component | src/components/site/ColumnCard.test.tsx | rendersStableCoverFrameWhenCoverExists | New cover rendering contract |
+| public-index-003 | page | src/app/(site)/tags/[slug]/page.test.tsx | rendersChineseSingleLocaleTagDetail | Tag detail chrome and metadata |
 
 <!-- Draft auto-generated from explore. Review before use. Generated: 2026-05-24T00:00:00+08:00 -->
