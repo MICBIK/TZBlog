@@ -122,6 +122,13 @@ export function MarkdownEditor({
 
               return false;
             },
+            paste: (event, view) => {
+              const text = getPlainTextFromPaste(event);
+              if (text === null) return false;
+
+              event.preventDefault();
+              return insertAtSelection(view, text);
+            },
           }),
           EditorView.updateListener.of((update) => {
             if (!update.docChanged) return;
@@ -308,6 +315,24 @@ function insertAtSelection(
     scrollIntoView: true,
   });
   return true;
+}
+
+function getPlainTextFromPaste(event: ClipboardEvent): string | null {
+  const clipboard = event.clipboardData;
+  if (!clipboard) return null;
+
+  const plainText = clipboard.getData("text/plain");
+  if (plainText) return plainText;
+
+  const html = clipboard.getData("text/html");
+  if (!html) return null;
+
+  if (typeof DOMParser !== "undefined") {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent ?? "";
+  }
+
+  return html.replace(/<[^>]*>/g, "");
 }
 
 const markdownSourceHighlight = ViewPlugin.fromClass(
