@@ -41,10 +41,7 @@ describe("renderMarkdown", () => {
 
     expect(createHighlighter).toHaveBeenCalledWith(
       expect.objectContaining({
-        themes: {
-          light: "github-light",
-          dark: "github-dark-default",
-        },
+        themes: expect.arrayContaining(["github-light", "github-dark-default"]),
       }),
     );
 

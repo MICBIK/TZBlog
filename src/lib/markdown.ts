@@ -49,7 +49,12 @@ export type TocHeading = {
  * against user-supplied raw HTML (XSS).
  */
 
-const DEFAULT_THEME: BundledTheme = "github-dark-default";
+type ShikiThemeSet = Record<"light" | "dark", BundledTheme>;
+
+const DEFAULT_THEMES: ShikiThemeSet = {
+  light: "github-light",
+  dark: "github-dark-default",
+};
 
 const DEFAULT_LANGS: BundledLanguage[] = [
   "typescript",
@@ -67,19 +72,21 @@ const DEFAULT_LANGS: BundledLanguage[] = [
 // Lazily created and shared singleton — shiki highlighter init is expensive.
 const highlighterCache = new Map<string, Promise<Highlighter>>();
 
-function getHighlighter(theme: BundledTheme): Promise<Highlighter> {
-  const cached = highlighterCache.get(theme);
+function getHighlighter(themes: ShikiThemeSet): Promise<Highlighter> {
+  const cacheKey = `${themes.light}|${themes.dark}`;
+  const cached = highlighterCache.get(cacheKey);
   if (cached) return cached;
+  const themeList = Array.from(new Set(Object.values(themes)));
   const created = createHighlighter({
-    themes: [theme],
+    themes: themeList,
     langs: DEFAULT_LANGS,
   });
-  highlighterCache.set(theme, created);
+  highlighterCache.set(cacheKey, created);
   return created;
 }
 
 interface RehypeShikiOptions {
-  theme: BundledTheme;
+  themes: ShikiThemeSet;
 }
 
 /**
@@ -91,9 +98,9 @@ interface RehypeShikiOptions {
  * that strict tsc keeps the broader `unified()` chain happy across versions.
  */
 function rehypeShiki(options: RehypeShikiOptions) {
-  const { theme } = options;
+  const { themes } = options;
   return async (tree: HastRoot) => {
-    const highlighter = await getHighlighter(theme);
+    const highlighter = await getHighlighter(themes);
     const loadedLangs = new Set(highlighter.getLoadedLanguages());
 
     const codeBlocks: Array<{ parent: HastElement; lang: string | null; code: string }> = [];
@@ -121,7 +128,7 @@ function rehypeShiki(options: RehypeShikiOptions) {
       try {
         const hast = highlighter.codeToHast(code, {
           lang: useLang,
-          theme,
+          theme: themes.dark,
         }) as unknown as HastRoot;
         // codeToHast returns a root containing the <pre> element. Replace the
         // current <pre> in-place with shiki's <pre>.
@@ -433,7 +440,9 @@ export async function renderMarkdown(
   opts: RenderMarkdownOptions = {},
 ): Promise<string> {
   if (!content) return "";
-  const theme = opts.theme ?? DEFAULT_THEME;
+  const themes: ShikiThemeSet = opts.theme
+    ? { light: opts.theme, dark: opts.theme }
+    : DEFAULT_THEMES;
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -442,7 +451,7 @@ export async function renderMarkdown(
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(rehypeSanitize, sanitizeSchema)
-    .use(rehypeShiki, { theme })
+    .use(rehypeShiki, { themes })
     .use(rehypeStringify)
     .process(content);
   return String(file);
