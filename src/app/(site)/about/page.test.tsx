@@ -95,7 +95,9 @@ describe("AboutPage", () => {
 
     expect(screen.getByText(/中文单语言/)).toBeInTheDocument();
     expect(screen.getByText(/数据模型预留/)).toBeInTheDocument();
-    expect(screen.getByText(/V3/)).toBeInTheDocument();
+    expect(screen.getByText(aboutContent.futureRoadmap.i18nDisclosure)).toHaveTextContent(
+      "V3",
+    );
     expect(getAboutPrinciples()).toHaveLength(8);
     expect(screen.getByText("Visible failure")).toBeInTheDocument();
   });
