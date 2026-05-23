@@ -32,15 +32,22 @@ vi.mock("@/components/editor/MarkdownEditorWithPreview", () => ({
   MarkdownEditorWithPreview: ({
     value,
     onChange,
+    onSave,
   }: {
     value: string;
     onChange: (value: string) => void;
+    onSave?: () => void;
   }) => (
-    <textarea
-      aria-label="正文"
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-    />
+    <div>
+      <textarea
+        aria-label="正文"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <button type="button" onClick={() => onSave?.()}>
+        editor shortcut save
+      </button>
+    </div>
   ),
 }));
 
@@ -146,6 +153,36 @@ describe("PostEditor", () => {
     expect(init.method).toBe("PATCH");
     expect(JSON.parse(init.body as string).status).toBe("DRAFT");
     expect(mocks.toastSuccess).toHaveBeenCalledWith("已保存草稿");
+  });
+
+  it("submits unchanged complex markdown content from editor save", async () => {
+    const user = userEvent.setup();
+    const content = [
+      "## 标题",
+      "",
+      "正文段 1。",
+      "",
+      "- item 1",
+      "- item 2",
+      "",
+      "> [!WARNING]",
+      "> 警告内容",
+      "",
+      "```ts",
+      "const x = 1;",
+      "```",
+      "",
+      "<kbd>⌘</kbd> + <kbd>K</kbd>",
+    ].join("\n");
+    renderEditor({ mode: "edit", initial: initialPost({ id: "post-1", content }) });
+
+    await user.click(screen.getByRole("button", { name: "editor shortcut save" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    const [, init] = mocks.fetch.mock.calls[0];
+    expect(JSON.parse(init.body as string).translations[0].content).toBe(content);
   });
 
   it("rejects an empty title without calling fetch", async () => {
