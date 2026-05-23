@@ -101,4 +101,53 @@ describe("PostsListPage article discovery", () => {
       "/tags/design",
     );
   });
+
+  it("syncsDiscoveryFiltersWithUrl", async () => {
+    mocks.listPosts.mockResolvedValue({
+      items: [],
+      total: 25,
+      page: 2,
+      pageSize: 12,
+    });
+
+    render(
+      await PostsListPage({
+        searchParams: Promise.resolve({
+          q: "notion",
+          tag: "nextjs",
+          columnId: "column-1",
+          page: "2",
+        }),
+      }),
+    );
+
+    expect(mocks.listPosts).toHaveBeenCalledWith(
+      {
+        page: 2,
+        pageSize: 12,
+        status: "PUBLISHED",
+        tag: "nextjs",
+        columnId: "column-1",
+        q: "notion",
+      },
+      "zh",
+    );
+    expect(screen.getByRole("search", { name: "文章筛选" })).toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "搜索文章" })).toHaveValue("notion");
+    expect(screen.getByText("关键词：notion")).toBeInTheDocument();
+    expect(screen.getByText("标签：nextjs")).toBeInTheDocument();
+    expect(screen.getByText("专栏：column-1")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "清除筛选" })).toHaveAttribute(
+      "href",
+      "/posts",
+    );
+    expect(screen.getByRole("link", { name: "← 上一页" })).toHaveAttribute(
+      "href",
+      "/posts?q=notion&tag=nextjs&columnId=column-1&page=1",
+    );
+    expect(screen.getByRole("link", { name: "下一页 →" })).toHaveAttribute(
+      "href",
+      "/posts?q=notion&tag=nextjs&columnId=column-1&page=3",
+    );
+  });
 });
