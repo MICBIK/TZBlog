@@ -9,13 +9,20 @@ import {
 } from "../../../tests/helpers/db"
 
 type StatsModule = {
-  getSiteStats: () => Promise<{ views: number; posts: number; comments: number }>
+  getSiteStats: () => Promise<{
+    views: number
+    viewsInLast7Days: number
+    posts: number
+    comments: number
+    lastShippedAt: Date | null
+  }>
 }
 
 let authorId: string
 
 beforeEach(async () => {
   await resetAll()
+  await testDb.pageView.deleteMany()
   authorId = await ensureTestUser()
 })
 
@@ -33,6 +40,12 @@ describe("getSiteStats", () => {
       seedPublishedPost("second", 20),
       seedPublishedPost("third", 30),
     ])
+    await Promise.all([
+      seedPageView("recent-public-1", "/", daysAgo(1)),
+      seedPageView("recent-public-2", "/posts/first", daysAgo(2)),
+      seedPageView("old-public", "/posts/old", daysAgo(8)),
+      seedPageView("recent-admin", "/admin", daysAgo(1)),
+    ])
     await testDb.comment.createMany({
       data: [
         comment(posts[0].id, "APPROVED", "approved-1"),
@@ -43,18 +56,45 @@ describe("getSiteStats", () => {
 
     await expect(getSiteStats()).resolves.toEqual({
       views: 60,
+      viewsInLast7Days: 2,
       posts: 3,
       comments: 2,
+      lastShippedAt: new Date("2026-05-21T00:00:00Z"),
+    })
+  })
+
+  it("returns last-shipped date when posts exist", async () => {
+    const modulePath = "./stats"
+    const { getSiteStats } = (await import(modulePath)) as StatsModule
+
+    await seedPublishedPost("older", 7, new Date("2026-05-10T00:00:00Z"))
+    await seedPublishedPost("newer", 5, new Date("2026-05-22T00:00:00Z"))
+    await seedPageView("recent-public", "/posts/newer", daysAgo(1))
+    await seedPageView("old-public", "/posts/older", daysAgo(8))
+
+    await expect(getSiteStats()).resolves.toMatchObject({
+      viewsInLast7Days: 1,
+      lastShippedAt: new Date("2026-05-22T00:00:00Z"),
     })
   })
 })
 
-async function seedPublishedPost(slug: string, viewCount: number) {
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * DAY_MS)
+}
+
+async function seedPublishedPost(
+  slug: string,
+  viewCount: number,
+  publishedAt = new Date("2026-05-21T00:00:00Z"),
+) {
   return testDb.post.create({
     data: {
       slug,
       status: "PUBLISHED",
-      publishedAt: new Date("2026-05-21T00:00:00Z"),
+      publishedAt,
       authorId,
       viewCount,
       translations: {
@@ -64,6 +104,21 @@ async function seedPublishedPost(slug: string, viewCount: number) {
           content: `${slug} content`,
         },
       },
+    },
+  })
+}
+
+async function seedPageView(
+  visitorHash: string,
+  path: string,
+  createdAt: Date,
+) {
+  await testDb.pageView.create({
+    data: {
+      path,
+      visitorHash,
+      createdAt,
+      userAgent: "vitest",
     },
   })
 }
