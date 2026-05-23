@@ -20,10 +20,6 @@ export async function HomeColumns() {
     .filter((column) => column.postCount > 0)
     .slice(0, 6);
 
-  if (visibleColumns.length === 0) {
-    return null;
-  }
-
   return (
     <section
       aria-labelledby="home-columns-heading"
@@ -49,32 +45,38 @@ export async function HomeColumns() {
         </Link>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {visibleColumns.map((column) => (
-          <Link
-            key={column.id}
-            href={`/columns/${column.slug}`}
-            className="launch-panel group block space-y-4 p-5"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-2">
-                <h3 className="font-serif text-lead leading-display tracking-tight text-fg">
-                  {column.name}
-                </h3>
-                {column.description ? (
-                  <p className="line-clamp-2 font-serif text-sm leading-body text-muted-fg">
-                    {column.description}
-                  </p>
-                ) : null}
+      {visibleColumns.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {visibleColumns.map((column) => (
+            <Link
+              key={column.id}
+              href={`/columns/${column.slug}`}
+              className="launch-panel group block space-y-4 p-5"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 space-y-2">
+                  <h3 className="font-serif text-lead leading-display tracking-tight text-fg">
+                    {column.name}
+                  </h3>
+                  {column.description ? (
+                    <p className="line-clamp-2 font-serif text-sm leading-body text-muted-fg">
+                      {column.description}
+                    </p>
+                  ) : null}
+                </div>
+                <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-fg transition-colors group-hover:text-fg" />
               </div>
-              <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-fg transition-colors group-hover:text-fg" />
-            </div>
-            <p className="font-mono text-label tracking-label text-muted-fg">
-              {column.postCount} articles
-            </p>
-          </Link>
-        ))}
-      </div>
+              <p className="font-mono text-label tracking-label text-muted-fg">
+                {column.postCount} articles
+              </p>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed border-border px-6 py-10 text-sm text-muted-fg">
+          还没有可展示的专栏。
+        </div>
+      )}
     </section>
   );
 }
