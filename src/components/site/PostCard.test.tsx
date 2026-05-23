@@ -75,6 +75,28 @@ describe("PostCard layout stability", () => {
   });
 });
 
+describe("PostCard interaction states", () => {
+  it("exposesKeyboardFocusEquivalentToHover", () => {
+    render(<PostCard post={post({ cover: null })} />);
+
+    const article = screen.getByRole("article", { name: "Cover Title" });
+    const titleLink = screen.getByRole("link", { name: "Cover Title" });
+
+    expect(article).toHaveAttribute("data-interactive-surface", "post-card");
+    expect(article).toHaveClass(
+      "hover:border-accent/40",
+      "focus-within:border-accent/40",
+      "hover:bg-muted/30",
+      "focus-within:bg-muted/30",
+    );
+    expect(titleLink).toHaveClass(
+      "focus-visible:outline-none",
+      "focus-visible:ring-2",
+      "focus-visible:ring-ring",
+    );
+  });
+});
+
 function post(
   overrides: {
     cover: string | null;
