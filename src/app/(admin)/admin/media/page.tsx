@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { EmptyState } from "@/components/admin/EmptyState";
 import { MediaCard } from "@/components/admin/media/MediaCard";
 import { MediaUploadDropzone } from "@/components/admin/media/MediaUploadDropzone";
 import { Button } from "@/components/ui/button";
@@ -37,16 +38,18 @@ export default async function MediaAdminPage({
       <MediaUploadDropzone />
 
       {items.length === 0 ? (
-        <div className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--bg))] px-6 py-12 text-center">
-          <h2 className="text-lg font-semibold text-[hsl(var(--fg))]">
-            {total === 0 ? "还没有媒体" : "这一页没有媒体"}
-          </h2>
-          <p className="mt-2 text-sm text-[hsl(var(--muted))]">
-            {total === 0
-              ? "从文章封面或编辑器里上传图片后，会自动出现在这里。"
-              : "可以返回上一页继续查看。"}
-          </p>
-        </div>
+        <EmptyState
+          title={
+            total === 0
+              ? "还没有媒体 · 在文章里上传图片自动归档"
+              : "这一页没有媒体"
+          }
+          description={
+            total === 0
+              ? "上传后可在文章封面和 Markdown 图片中复用。"
+              : "可以返回上一页继续查看。"
+          }
+        />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
           {items.map((media) => (

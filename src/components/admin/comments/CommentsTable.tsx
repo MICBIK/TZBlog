@@ -5,6 +5,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import type { CommentStatus } from "@prisma/client"
 
+import { EmptyState } from "@/components/admin/EmptyState"
 import type { AdminCommentListItem } from "@/lib/services/comments"
 import {
   AlertDialog,
@@ -203,8 +204,8 @@ export function CommentsTable({
           <tbody>
             {items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-muted-fg">
-                  暂无评论
+                <td colSpan={7} className="p-0">
+                  <EmptyState title="这个状态下还没有评论" />
                 </td>
               </tr>
             )}

@@ -8,6 +8,7 @@ import type { PostStatus } from "@prisma/client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/admin/EmptyState";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -151,9 +152,12 @@ export function PostsTable({
               <TableRow>
                 <TableCell
                   colSpan={7}
-                  className="h-24 text-center text-sm text-muted-foreground"
+                  className="p-0"
                 >
-                  暂无文章。点击右上角「新建文章」开始创建。
+                  <EmptyState
+                    title="暂无文章 · 点击「新建文章」开始创建"
+                    action={{ label: "新建文章", href: "/admin/posts/new" }}
+                  />
                 </TableCell>
               </TableRow>
             ) : (

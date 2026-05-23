@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ColumnFormDialog } from "@/components/admin/columns/ColumnFormDialog";
 import { ColumnReorderControls } from "@/components/admin/columns/ColumnReorderControls";
 import { ColumnRowActions } from "@/components/admin/columns/ColumnRowActions";
+import { EmptyState } from "@/components/admin/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -201,9 +202,12 @@ export function ColumnsTable({ initialColumns }: ColumnsTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="h-24 text-center text-sm text-muted-foreground"
+                  className="p-0"
                 >
-                  暂无专栏。点击右上角「新建专栏」开始创建。
+                  <EmptyState
+                    title="还没有专栏 · 创建一个开始整理"
+                    action={{ label: "新建专栏", onClick: openCreate }}
+                  />
                 </TableCell>
               </TableRow>
             ) : (
