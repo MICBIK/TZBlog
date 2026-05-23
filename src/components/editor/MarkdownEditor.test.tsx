@@ -1,9 +1,11 @@
-import { render, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MarkdownEditor, type MarkdownEditorProps } from "./MarkdownEditor";
 
 interface MarkdownSourceApi {
   getMarkdown: () => string;
+  setSelection?: (from: number, to: number) => void;
 }
 
 describe("MarkdownEditor source contract", () => {
@@ -74,5 +76,31 @@ describe("MarkdownEditor source contract", () => {
     });
 
     expect(onReady.mock.calls[0]?.[0].getMarkdown()).toBe(source);
+  });
+
+  it("toolbar bold action wraps selection with **", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+
+    render(
+      <MarkdownEditor
+        value="hello world"
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(6, 11);
+    await user.click(screen.getByRole("button", { name: /加粗.*Bold.*⌘B/ }));
+
+    expect(onChange).toHaveBeenCalledWith("hello **world**");
+    expect(sourceApiRef.current?.getMarkdown()).toBe("hello **world**");
   });
 });
