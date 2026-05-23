@@ -5,8 +5,8 @@ import { getCurrentLocale } from "@/lib/i18n";
 import { listAllTagsWithCount } from "@/lib/services/tags-public";
 
 export const metadata: Metadata = {
-  title: "Tags",
-  description: "All tags on TZBlog",
+  title: "标签 — TZBlog",
+  description: "所有文章标签",
 };
 
 export default async function TagsPage() {
@@ -17,17 +17,20 @@ export default async function TagsPage() {
     <article className="space-y-[var(--space-section)]">
       <header className="space-y-3">
         <p className="font-mono text-label tracking-label uppercase text-muted-fg">
-          TAGS · INDEX
+          标签 · 索引
         </p>
         <div className="h-px w-12 border-t border-border" aria-hidden="true" />
         <h1 className="font-serif text-h1 leading-display tracking-tight text-fg">
-          Tags
+          标签
         </h1>
+        <p className="max-w-[56ch] font-serif text-base leading-body text-muted-fg">
+          按主题浏览所有已发布文章。
+        </p>
       </header>
 
       {tags.length === 0 ? (
         <p className="font-serif text-base leading-body text-muted-fg">
-          No tags yet.
+          还没有标签。
         </p>
       ) : (
         <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
