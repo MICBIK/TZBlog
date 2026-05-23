@@ -143,6 +143,25 @@ describe("globals.css editorial system", () => {
     }
   });
 
+  it("defines status badge tokens with accessible contrast", () => {
+    const themeBlocks = [
+      [":root", cssBlock(css, ":root")],
+      [".dark", cssBlock(css, ".dark")],
+    ] as const;
+
+    for (const [selector, block] of themeBlocks) {
+      for (const status of ["pending", "approved", "spam", "rejected"]) {
+        const bg = parseHslTriplet(cssToken(block, `--status-${status}-bg`));
+        const fg = parseHslTriplet(cssToken(block, `--status-${status}-fg`));
+
+        expect(
+          contrastRatio(fg, bg),
+          `${selector} ${status} badge contrast`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
   it("callout has inner outline in dark mode", () => {
     expect(css).toMatch(
       /\.dark\s+\.markdown-alert\s*\{[\s\S]*box-shadow:\s*inset/,

@@ -65,6 +65,36 @@ describe("<CommentsTable /> SPEC-C-U-2 + U-3", () => {
     expect(screen.getByRole("link", { name: "你好" })).toBeInTheDocument()
   })
 
+  it("renders status badges through token-driven data-status styles", () => {
+    render(
+      <CommentsTable
+        initialItems={[
+          makeItem("c1", "PENDING"),
+          makeItem("c2", "APPROVED", "Bob"),
+          makeItem("c3", "SPAM", "Carol"),
+          makeItem("c4", "REJECTED", "Dave"),
+        ]}
+        total={4}
+        page={1}
+        pageSize={20}
+      />,
+    )
+
+    const badges = [
+      ["待审", "pending"],
+      ["已通过", "approved"],
+      ["垃圾", "spam"],
+      ["已拒", "rejected"],
+    ] as const
+
+    for (const [label, status] of badges) {
+      const badge = screen.getByText(label)
+
+      expect(badge).toHaveAttribute("data-status", status)
+      expect(badge.className).not.toMatch(/amber|green|rose|zinc/)
+    }
+  })
+
   it("inline 通过 button fires PATCH + optimistic status change + toast.success", async () => {
     let resolveFetch!: (value: Response) => void
     mocks.fetch.mockReturnValueOnce(
