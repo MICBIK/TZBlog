@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderMarkdown } from "./markdown";
 
 describe("renderMarkdown", () => {
@@ -25,6 +25,31 @@ describe("renderMarkdown", () => {
     expect(html).toMatch(/<pre[^>]*class="[^"]*shiki/);
     // Shiki wraps tokens in <span style="color:..."> — assert at least one is present.
     expect(html).toMatch(/<span style="color:/);
+  });
+
+  it("highlighter is configured with light and dark themes", async () => {
+    vi.resetModules();
+    const createHighlighter = vi.fn(async () => ({
+      codeToHast: () => ({ type: "root", children: [] }),
+      getLoadedLanguages: () => ["ts"],
+    }));
+    vi.doMock("shiki", () => ({ createHighlighter }));
+
+    const { renderMarkdown: renderMarkdownWithMock } = await import("./markdown");
+
+    await renderMarkdownWithMock("```ts\nconst x = 1;\n```");
+
+    expect(createHighlighter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        themes: {
+          light: "github-light",
+          dark: "github-dark-default",
+        },
+      }),
+    );
+
+    vi.doUnmock("shiki");
+    vi.resetModules();
   });
 
   it("renders GFM tables", async () => {
