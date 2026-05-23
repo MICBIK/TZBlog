@@ -22,6 +22,42 @@ export interface NotionEditorCandidateSelection {
   rationale: string;
 }
 
+export interface NotionEditorCandidateEvaluationInput {
+  candidate: NotionEditorCandidateName;
+  priority: number;
+  notionLikeScore: number;
+  markdownSafetyScore: number;
+  markdown: string;
+  roundTripMarkdown: (markdown: string) => string | Promise<string>;
+  renderMarkdown: (markdown: string) => string | Promise<string>;
+}
+
+export async function evaluateNotionEditorCandidate({
+  candidate,
+  priority,
+  notionLikeScore,
+  markdownSafetyScore,
+  markdown,
+  roundTripMarkdown,
+  renderMarkdown,
+}: NotionEditorCandidateEvaluationInput): Promise<NotionEditorCandidateEvaluation> {
+  void markdown;
+  void roundTripMarkdown;
+  void renderMarkdown;
+
+  return {
+    candidate,
+    priority,
+    notionLikeScore,
+    markdownSafetyScore,
+    evidence: {
+      markdownImportExport: "unknown",
+      renderMarkdownParity: "unknown",
+      unsupportedMarkdownFeatures: [],
+    },
+  };
+}
+
 export function selectNotionEditorCandidate(
   evaluations: NotionEditorCandidateEvaluation[],
 ): NotionEditorCandidateSelection | null {
