@@ -530,7 +530,11 @@
 
   .markdown-body table {
     border-collapse: collapse;
-    display: block;
+    width: 100%;
+  }
+
+  .md-table-scroll {
+    margin-top: var(--space-stack);
     overflow-x: auto;
     width: 100%;
   }

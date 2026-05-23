@@ -286,6 +286,34 @@ function codeFilename(node: HastElement): string | null {
   return match?.[1] ?? match?.[2] ?? match?.[3] ?? null;
 }
 
+function rehypeWrapTables() {
+  return (tree: HastRoot) => {
+    const tables: Array<{
+      parent: HastParent;
+      index: number;
+      table: HastElement;
+    }> = [];
+
+    visit(tree as never, "element", (node: unknown, index: number | undefined, parent: unknown) => {
+      const el = node as HastElement;
+      if (el.tagName !== "table" || typeof index !== "number" || !isHastParent(parent)) {
+        return;
+      }
+
+      tables.push({ parent, index, table: el });
+    });
+
+    for (const { parent, index, table } of tables) {
+      parent.children[index] = {
+        type: "element",
+        tagName: "div",
+        properties: { className: ["md-table-scroll"] },
+        children: [table],
+      };
+    }
+  };
+}
+
 function rehypeCollectToc(headings: TocHeading[]) {
   return (tree: HastRoot) => {
     visit(tree as never, "element", (node: unknown) => {
@@ -577,6 +605,7 @@ export async function renderMarkdown(
     .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: false })
     .use(rehypeMarkdownAlerts)
+    .use(rehypeWrapTables)
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(rehypeSanitize, sanitizeSchema)
