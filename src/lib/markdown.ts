@@ -190,7 +190,24 @@ function rehypeMarkdownAlerts() {
           type: "element",
           tagName: "div",
           properties: { className: ["markdown-alert-title"] },
-          children: [{ type: "text", value: match.type }],
+          children: [
+            {
+              type: "element",
+              tagName: "svg",
+              properties: {
+                ariaHidden: "true",
+                className: ["markdown-alert-icon"],
+                viewBox: "0 0 24 24",
+              },
+              children: [],
+            },
+            {
+              type: "element",
+              tagName: "span",
+              properties: { className: ["markdown-alert-label"] },
+              children: [{ type: "text", value: formatAlertLabel(match.type) }],
+            },
+          ],
         },
         ...el.children,
       ];
@@ -235,13 +252,17 @@ function extractAlertMarker(
   return { type };
 }
 
+function formatAlertLabel(type: MarkdownAlertType): string {
+  return `${type[0]}${type.slice(1).toLowerCase()}`;
+}
+
 // Sanitize schema extension — allow attributes shiki and our anchor plugins emit.
 // `clobberPrefix: ""` disables the default `user-content-` id rewrite so heading
 // slugs stay aligned with the autolink hrefs emitted by `rehype-autolink-headings`.
 const sanitizeSchema = {
   ...defaultSchema,
   clobberPrefix: "",
-  tagNames: [...(defaultSchema.tagNames ?? []), "aside"],
+  tagNames: [...(defaultSchema.tagNames ?? []), "aside", "svg"],
   attributes: {
     ...(defaultSchema.attributes ?? {}),
     "*": [
@@ -259,6 +280,12 @@ const sanitizeSchema = {
       ...((defaultSchema.attributes?.span ?? []) as unknown as string[]),
       "className",
       "style",
+    ],
+    svg: [
+      ...((defaultSchema.attributes?.svg ?? []) as unknown as string[]),
+      "ariaHidden",
+      "className",
+      "viewBox",
     ],
     pre: [
       ...((defaultSchema.attributes?.pre ?? []) as unknown as string[]),

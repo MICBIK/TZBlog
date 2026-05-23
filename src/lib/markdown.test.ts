@@ -61,7 +61,7 @@ describe("renderMarkdown", () => {
       expect(html).toContain(`data-alert-type="${type}"`);
     }
     expect(html).toContain("markdown-alert-title");
-    expect(html).toContain("NOTE");
+    expect(html).toContain('class="markdown-alert-label">Note</span>');
     expect(html).toContain("<code>code</code>");
     expect(html).not.toContain("[!NOTE]");
   });
