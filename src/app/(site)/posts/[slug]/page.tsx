@@ -113,9 +113,9 @@ export default async function PostDetailPage({ params }: Props) {
           </h1>
           {tr.excerpt && <p className="text-lg text-muted-fg">{tr.excerpt}</p>}
           <div className="flex items-center gap-4 pt-2 font-mono text-xs text-muted-fg">
-            <span>views {post.viewCount}</span>
+            <span>{post.viewCount} 次浏览</span>
             <LikeButton slug={post.slug} initialLikeCount={post.likeCount} />
-            <span>comments {post.commentCount}</span>
+            <span>{post.commentCount} 条评论</span>
           </div>
         </header>
 

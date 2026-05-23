@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 const navLinks = [
-  { href: "/posts", label: "Blog" },
-  { href: "/columns", label: "Columns" },
-  { href: "/about", label: "About" },
+  { href: "/posts", label: "文章" },
+  { href: "/columns", label: "专栏" },
+  { href: "/about", label: "关于" },
 ];
 
 export function SiteHeader() {
