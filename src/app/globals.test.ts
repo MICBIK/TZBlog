@@ -99,6 +99,50 @@ describe("globals.css editorial system", () => {
     expect(failures).toEqual([]);
   });
 
+  it("admin muted foreground tokens meet readability contrast targets", () => {
+    const light = cssBlock(css, ":root");
+    const dark = cssBlock(css, ".dark");
+
+    expect(
+      contrastRatio(
+        parseHslTriplet(cssToken(light, "--muted-fg")),
+        parseHslTriplet(cssToken(light, "--bg")),
+      ),
+    ).toBeGreaterThanOrEqual(5.5);
+    expect(
+      contrastRatio(
+        parseHslTriplet(cssToken(dark, "--muted-fg")),
+        parseHslTriplet(cssToken(dark, "--bg")),
+      ),
+    ).toBeGreaterThanOrEqual(5);
+  });
+
+  it("defines admin sidebar readability tokens for light and dark themes", () => {
+    const themeBlocks = [
+      [":root", cssBlock(css, ":root")],
+      [".dark", cssBlock(css, ".dark")],
+    ] as const;
+    const tokens = [
+      "--muted-fg-strong",
+      "--surface-subtle",
+      "--surface-raised",
+      "--ring-soft",
+      "--sidebar-fg",
+      "--sidebar-fg-hover",
+      "--sidebar-bg-hover",
+      "--sidebar-bg-active",
+      "--sidebar-indicator-active",
+    ];
+
+    for (const [selector, block] of themeBlocks) {
+      for (const token of tokens) {
+        expect(block, `${selector} defines ${token}`).toMatch(
+          new RegExp(`${token}:\\s*[^;]+;`),
+        );
+      }
+    }
+  });
+
   it("callout has inner outline in dark mode", () => {
     expect(css).toMatch(
       /\.dark\s+\.markdown-alert\s*\{[\s\S]*box-shadow:\s*inset/,
