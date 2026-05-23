@@ -68,6 +68,18 @@
   --destructive: 0 72% 51%;
   --destructive-fg: 0 0% 100%;
 
+  /* Callouts */
+  --callout-note-accent: 220 70% 55%;
+  --callout-note-tint: 220 80% 96%;
+  --callout-tip-accent: 155 58% 36%;
+  --callout-tip-tint: 155 60% 95%;
+  --callout-important-accent: 270 65% 55%;
+  --callout-important-tint: 270 70% 96%;
+  --callout-warning-accent: 38 92% 42%;
+  --callout-warning-tint: 38 92% 94%;
+  --callout-caution-accent: 0 72% 50%;
+  --callout-caution-tint: 0 72% 96%;
+
   /* Lines / inputs / focus */
   --border: 220 13% 91%;
   --input: 220 13% 91%;
@@ -111,6 +123,17 @@
 
   --destructive: 0 63% 45%;
   --destructive-fg: 0 0% 98%;
+
+  --callout-note-accent: 220 75% 65%;
+  --callout-note-tint: 220 50% 14%;
+  --callout-tip-accent: 155 50% 50%;
+  --callout-tip-tint: 155 40% 12%;
+  --callout-important-accent: 270 65% 70%;
+  --callout-important-tint: 270 40% 14%;
+  --callout-warning-accent: 38 92% 60%;
+  --callout-warning-tint: 38 50% 14%;
+  --callout-caution-accent: 0 75% 65%;
+  --callout-caution-tint: 0 50% 14%;
 
   --border: 240 4% 16%;
   --input: 240 4% 16%;
