@@ -50,14 +50,14 @@ beforeEach(() => {
 });
 
 describe("TagDetailPage", () => {
-  it("TagDetailPage renders tag header + posts list", async () => {
+  it("rendersChineseSingleLocaleTagDetail", async () => {
     const { TagDetailPage } = await loadTagDetailPage();
 
     render(await TagDetailPage(pageProps("foo")));
 
-    expect(screen.getByText("TAG")).toBeInTheDocument();
+    expect(screen.getByText("标签 · 详情")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1, name: "Foo" })).toBeInTheDocument();
-    expect(screen.getByText("2 posts")).toBeInTheDocument();
+    expect(screen.getByText("2 篇文章")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Post One" })).toBeInTheDocument();
   });
 
@@ -98,13 +98,13 @@ describe("TagDetailPage", () => {
     const { generateMetadata } = await loadTagDetailPage();
 
     await expect(generateMetadata(pageProps("foo"))).resolves.toMatchObject({
-      title: "Foo — Tag",
-      description: "Posts tagged with Foo",
+      title: "Foo — 标签 — TZBlog",
+      description: "浏览 Foo 标签下的所有文章",
     });
 
     mocks.getTagBySlug.mockResolvedValue(null);
     await expect(generateMetadata(pageProps("missing"))).resolves.toMatchObject({
-      title: "Tag not found",
+      title: "标签不存在 — TZBlog",
     });
   });
 
@@ -120,7 +120,7 @@ describe("TagDetailPage", () => {
     render(await TagDetailPage(pageProps("foo")));
 
     expect(screen.getByRole("heading", { level: 1, name: "Foo" })).toBeInTheDocument();
-    expect(screen.getByText("No posts in this tag yet.")).toBeInTheDocument();
+    expect(screen.getByText("这个标签下还没有发布文章。")).toBeInTheDocument();
   });
 });
 
