@@ -37,8 +37,9 @@ export function PostCard({ post }: PostCardProps) {
     <article
       aria-labelledby={headingId}
       data-cover-state={cover ? "with-cover" : "no-cover"}
+      data-interactive-surface="post-card"
       data-post-card="dense"
-      className="group flex min-w-0 max-w-full gap-4 py-6 transition md:gap-6"
+      className="group flex min-w-0 max-w-full gap-4 rounded-lg border border-transparent px-3 py-6 transition hover:border-accent/40 hover:bg-muted/30 focus-within:border-accent/40 focus-within:bg-muted/30 md:gap-6"
     >
       {cover ? (
         <div
@@ -70,7 +71,7 @@ export function PostCard({ post }: PostCardProps) {
         >
           <Link
             href={`/posts/${post.slug}`}
-            className="break-words hyphens-auto transition group-hover:underline"
+            className="break-words hyphens-auto transition group-hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             {post.title}
           </Link>
