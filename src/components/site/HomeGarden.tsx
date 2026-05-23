@@ -39,7 +39,8 @@ export function HomeGarden({
         <aside
           aria-label="作者身份"
           data-home-identity-rail
-          className="launch-panel h-fit space-y-6 p-5 lg:sticky lg:top-24"
+          data-home-mobile-profile-summary
+          className="launch-panel order-1 h-fit min-w-0 max-w-full space-y-6 p-5 lg:sticky lg:top-24"
         >
           <header className="space-y-3">
             <p className="font-mono text-label tracking-label uppercase text-muted-fg">
@@ -96,7 +97,7 @@ export function HomeGarden({
           role="main"
           aria-label="首页内容流"
           data-home-content-stream
-          className="min-w-0 space-y-[var(--space-section)]"
+          className="order-2 min-w-0 max-w-full space-y-[var(--space-section)]"
         >
           {hero}
           {renderHomeModule("文章", featuredAndRecent)}
@@ -108,7 +109,7 @@ export function HomeGarden({
         <aside
           aria-label="首页上下文"
           data-home-context-rail
-          className="space-y-6 xl:sticky xl:top-24 xl:h-fit"
+          className="order-3 min-w-0 max-w-full space-y-6 xl:sticky xl:top-24 xl:h-fit"
         >
           {renderHomeModule("GitHub", github)}
           {renderHomeModule("统计", stats)}
