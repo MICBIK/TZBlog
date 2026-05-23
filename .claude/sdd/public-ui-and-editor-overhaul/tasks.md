@@ -1110,11 +1110,11 @@ M1-C evidence (2026-05-23):
 
 #### M3-D-4 memory-bank 同步
 
-- [ ] 更新 `memory-bank/activeContext.md` 当前焦点：本轮完成
-- [ ] 更新 `memory-bank/progress.md` 已完成段 + V2 / V3 backlog 同步
-- [ ] 更新 `memory-bank/knownIssues.md` 关闭 / 维持的 issue
-- [ ] 更新 `memory-bank/systemPatterns.md` §13 (markdown pipeline) + §14 (编辑器契约) 按实际更新
-- [ ] commit: `docs(memory): sync after public-ui-and-editor-overhaul [no-tdd]`
+- [x] 更新 `memory-bank/activeContext.md` 当前焦点：本轮完成
+- [x] 更新 `memory-bank/progress.md` 已完成段 + V2 / V3 backlog 同步
+- [x] 更新 `memory-bank/knownIssues.md` 关闭 / 维持的 issue
+- [x] 更新 `memory-bank/systemPatterns.md` §13 (markdown pipeline) + §14 (编辑器契约) 按实际更新
+- [x] commit: `docs(memory): sync after public-ui-and-editor-overhaul [no-tdd]`
 
 #### M3-D-5 SDD 归档
 

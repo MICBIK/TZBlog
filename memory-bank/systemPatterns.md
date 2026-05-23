@@ -159,15 +159,22 @@ content (Markdown 字符串)
   → remark-parse
   → remark-gfm（GitHub 风味）
   → remark-rehype
+  → rehypeMarkdownAlerts（GitHub alert callout → tokenized aside）
+  → rehypeWrapTables（table → responsive scroll wrapper）
+  → rehypeKeyboardShortcuts（允许安全 `<kbd>` 语义）
   → rehype-slug（标题加 id）
   → rehype-autolink-headings（标题 anchor）
-  → rehype-shiki（代码高亮，主题与站点主题联动）
+  → rehype-sanitize（扩展 schema，保留安全 class/style/svg/kbd attrs）
+  → inline Shiki v4 transformer（github-light + github-dark-default 双主题）
   → rehype-stringify
   → HTML 字符串 → dangerouslySetInnerHTML 渲染
 ```
 
-- 渲染结果用 React Server Component 缓存（`unstable_cache`），key = postId + locale + updatedAt
-- 用户提交的 Markdown 永远先经 sanitize（rehype-sanitize），防 XSS
+- `renderMarkdown` 是发布态和后台 split preview 的唯一渲染来源；禁止再引入 `miniRenderMarkdown` 或与发布态分叉的客户端简化 renderer。
+- `rehype-sanitize` 必须保留在 Shiki 前面；当前 schema 显式允许 Shiki 和本项目 Markdown UI 需要的安全 `className` / `style` / `svg` / `kbd` 属性。
+- 代码块输出必须是 `figure.code-block` + `figcaption.code-block-chrome` + language badge + optional filename + `[data-copy]` copy button；copy 行为由 `MarkdownCopyButtons` hydration 绑定。
+- Alert callout 使用 `.markdown-alert-{note|tip|important|warning|caution}` 与 CSS token，不允许回退到硬编码颜色。
+- 表格必须包在 `.md-table-scroll`，避免移动端横向溢出。
 
 ## 14. 编辑器契约
 
@@ -176,6 +183,7 @@ content (Markdown 字符串)
 - 禁止回退到 Tiptap / ProseMirror / WYSIWYG rich-text round-trip。工具栏只能插入或包裹 Markdown source，不允许隐藏 `#`、`###`、fence、list marker 等源码符号。
 - 右侧 preview 必须复用 `MarkdownCopyButtons` 绑定 code block copy 行为；任何 preview catch 都必须显示可见 error banner，不允许 silent failure 或空白失败。
 - 编辑器底层依赖变动必须单独 SDD，并覆盖 toolbar、selection API、Tab / list continuation / heading marker / paste as plain text / Mod-S / SSR safety / preview parity 回归。
+- CodeMirror 必须通过 dynamic import 只加载在编辑器路由；后续新增 admin client 依赖时，用 route-specific client gzip delta 复核 EC-6.2，而不是只看全局 first-load shared chunks。
 
 ## 15. Git 提交规范
 

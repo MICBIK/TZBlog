@@ -14,8 +14,8 @@
 | 数据库 | PostgreSQL | 16 | Docker 容器 `postgres:16-alpine` |
 | ORM | Prisma | 7.8.0 | `@prisma/client` + `prisma` CLI + `@prisma/adapter-pg` |
 | 认证 | Auth.js | 5.x (beta) | Credentials provider，单管理员 |
-| 编辑器 | Markdown source editor + split preview | current | 存储格式 Markdown；编辑层仍保留 Tiptap v3 + `tiptap-markdown` round-trip 依赖 |
-| MD 渲染 | remark + rehype + Shiki | latest / Shiki 4.x | 服务端 Markdown 渲染、slug/anchor、代码高亮 |
+| 编辑器 | CodeMirror 6 Markdown source editor + split preview | current | 存储格式 Markdown；编辑区显示原始 Markdown，预览走完整 `renderMarkdown` 管道 |
+| MD 渲染 | remark + rehype + Shiki | latest / Shiki 4.x | 服务端/编辑器预览共用 Markdown 渲染、slug/anchor、双主题代码高亮 |
 | 表单 | react-hook-form + zod | latest | API 与表单共享 schema |
 | 媒体 | MinIO | latest | S3 协议，与 VPS 同栈 |
 | MinIO 客户端 | minio (npm) | latest | 上传 / 签名 URL |

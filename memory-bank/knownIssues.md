@@ -35,3 +35,11 @@
 - **影响范围**：不能宣称站点已支持 zh/en 多语言；英文内容、SEO alternate links、RSS/sitemap、canonical、分享图都会停留在 zh 单一路径语义。
 - **临时解法**：MVP 继续作为中文单语言站点上线，数据模型保留 en 翻译能力但不暴露伪多语言入口。
 - **永久解法**：V3 独立 SDD，按 Next.js App Router locale routing 迁移 public route tree（建议 `app/[lang]`），引入 dictionary，改 `getCurrentLocale()` 从 route params / proxy negotiation / cookies 注入，补齐 metadata / RSS / sitemap / canonical / alternate links，逐页回归服务端数据查询 locale 来源。
+
+## KI-005 `pg@9` deprecation warning during tests
+
+- **首次发现**：2026-05-21（全量 Vitest 运行期间）
+- **现象**：测试运行期间多次输出 `Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0`。
+- **影响范围**：当前项目依赖 `pg@8.21.0`，不影响 `pnpm test` / `pnpm build` 通过；最终 public-ui-and-editor-overhaul 质量门仍为 116 files / 601 passed / 1 skipped。
+- **临时解法**：继续保留 warning 记录，升级 `pg@9` 前不作为发布阻塞。
+- **永久解法**：升级到 `pg@9` 或更高版本前，检查 Prisma driver adapter 与测试 DB helper 的并发 query 调用，必要时改成显式 async flow control 或独立 client。

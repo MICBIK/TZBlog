@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**public-ui-and-editor-overhaul 已完成 M1 基础重做；当前入口是 M2：admin readability、首页 redesign、About redesign。**
+**public-ui-and-editor-overhaul 已完成 M1/M2/M3，当前入口是 SDD 归档与下一阶段 P3 部署上线。**
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -21,13 +21,14 @@
 - **2026-05-23** i18n 限制明确记录为 KI-004：当前实现仍是单 locale，V3 独立 SDD 才做 Next.js App Router locale routing、dictionary、metadata / RSS / sitemap 全链路迁移。
 - **2026-05-23** 最终质量门通过：`pnpm typecheck` ✓、`pnpm lint` ✓、`pnpm test` ✓（85 files / 460 passed / 1 skipped）、`pnpm build` ✓。旧 Next middleware / Prisma preview warning 已消失；测试仍有已记录的 `pg@9` deprecation warning。
 - **2026-05-23** public-ui-and-editor-overhaul M1 完成：Markdown reading / editor source contract / editor preview parity 已完成；编辑器切到 CodeMirror 6 source editor，删除 Tiptap/lowlight；右侧 preview 改走完整 `renderMarkdown` 管道并复用 copy button hydration。质量门：`pnpm typecheck` ✓、`pnpm lint` ✓、`pnpm test` ✓（95 files / 529 passed / 1 skipped）、`pnpm build` ✓；editor route diff gzip 52.2 KiB < 90 KiB；浏览器截图归档到 `.claude/sdd/public-ui-and-editor-overhaul/audit/editor-final.png`。
+- **2026-05-23** public-ui-and-editor-overhaul 全量完成：M2 admin readability / home redesign / about redesign 与 M3 incomplete pages / i18n docs / browser audit / completion report 已完成。最终质量门：`pnpm typecheck` ✓、`pnpm lint` ✓、`pnpm test` ✓（116 files / 601 passed / 1 skipped）、`pnpm build` ✓；editor route client gzip delta 15.0 KiB < 90 KiB；浏览器审查 12 route × light/dark 截图归档，`audit-report.json` 24 entries，P0=0；completion report 已写入 SDD。
 
 ## 下一步计划
 
-1. **M2-A admin readability**：按 SDD 微循环修 admin token 对比度、AdminSidebar 接入、死链删除、active state。
-2. **M2-B/M2-C public UI redesign**：首页七段重组、About 八段重组，并保持中文单语言声明。
-3. **M3 收口**：incomplete pages inventory、i18n current-state docs、light/dark 12 路由浏览器审查、completion-report、archive。
-4. **P3 部署上线**：补 `Dockerfile`、生产 smoke、备份脚本、VPS/域名配置、灰度上线。
+1. **归档 SDD**：将 `.claude/sdd/public-ui-and-editor-overhaul` 归档到 `.claude/sdd/archive/2026-05-23-public-ui-and-editor-overhaul`。
+2. **P3 部署上线**：补 `Dockerfile`、生产 smoke、备份脚本、VPS/域名配置、灰度上线。
+3. **V2 独立 SDD**：主题 GUI、详细 Analytics、评论邮件、编辑器增强、Lighthouse 与展示资产 polish。
+4. **V3 独立 SDD**：`i18n-locale-routing-v3`，做真正 locale routing / dictionary / SEO-feed 全链路迁移。
 
 ## 待办池 / 已知问题
 
@@ -55,6 +56,7 @@
 - **Next.js 16 request guard**：当前使用 `src/proxy.ts` 守 `/admin/*` 与 `/api/admin/*`。
 - **Markdown preview pipeline**：`MarkdownEditorWithPreview` 客户端预览已改走与发布态相同的 `renderMarkdown` unified + Shiki 管道；mini-renderer 已删除，copy button 通过 `MarkdownCopyButtons` hydration 绑定。
 - **rehype-shiki 替换**：原计划的 `rehype-shiki@0.0.9` 与 shiki@4 不兼容，改成内联 transformer 调用 `createHighlighter` + `codeToHast`。
+- **编辑器契约**：当前编辑器是 CodeMirror 6 source editor，禁止回退到 Tiptap / ProseMirror / WYSIWYG；工具栏只能改 Markdown source。
 - **i18n 当前状态**：当前实现仍是单 locale；`SUPPORTED_LOCALES` 只代表数据模型预留，不代表站点已支持多语言。
 
 ## 待用户决策（不阻塞 P1）
