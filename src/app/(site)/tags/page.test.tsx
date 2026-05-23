@@ -27,13 +27,14 @@ beforeEach(() => {
 });
 
 describe("TagsPage", () => {
-  it("TagsPage renders all tags with count + Link to /tags/{slug}", async () => {
+  it("rendersChineseSingleLocaleTagsIndex", async () => {
     const { TagsPage } = await loadTagsPage();
 
     render(await TagsPage({}));
 
-    expect(screen.getByText("TAGS · INDEX")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: "Tags" })).toBeInTheDocument();
+    expect(screen.getByText("标签 · 索引")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "标签" })).toBeInTheDocument();
+    expect(screen.getByText("按主题浏览所有已发布文章。")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Foo/ })).toHaveAttribute(
       "href",
       "/tags/foo",
@@ -53,15 +54,15 @@ describe("TagsPage", () => {
 
     render(await TagsPage({}));
 
-    expect(screen.getByRole("heading", { level: 1, name: "Tags" })).toBeInTheDocument();
-    expect(screen.getByText("No tags yet.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "标签" })).toBeInTheDocument();
+    expect(screen.getByText("还没有标签。")).toBeInTheDocument();
   });
 
   it("TagsPage exports metadata", async () => {
     const { metadata } = await loadTagsPage();
 
-    expect(metadata.title).toBe("Tags");
-    expect(metadata.description).toBeTruthy();
+    expect(metadata.title).toBe("标签 — TZBlog");
+    expect(metadata.description).toBe("所有文章标签");
   });
 });
 
