@@ -105,6 +105,19 @@ describe("globals.css editorial system", () => {
     );
   });
 
+  it("callout variants resolve colors through callout tokens", () => {
+    for (const type of ["note", "tip", "important", "warning", "caution"]) {
+      const block = cssBlock(css, `.markdown-alert-${type}`);
+
+      expect(block).toContain(`--alert-accent: var(--callout-${type}-accent);`);
+      expect(block).toContain(`--alert-tint: var(--callout-${type}-tint);`);
+      expect(
+        block,
+        `.markdown-alert-${type} avoids hardcoded HSL triplets`,
+      ).not.toMatch(/hsl\(\s*-?\d/);
+    }
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
@@ -157,7 +170,9 @@ function unresolvedVarClassToken(kind: string): string {
 
 function cssBlock(css: string, selector: string): string {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = css.match(new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\n\\}`));
+  const match = css.match(
+    new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\n\\s*\\}`),
+  );
 
   if (!match) {
     throw new Error(`Missing ${selector} block in globals.css`);
