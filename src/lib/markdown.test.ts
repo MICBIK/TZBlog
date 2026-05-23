@@ -66,6 +66,18 @@ describe("renderMarkdown", () => {
     );
   });
 
+  it("emits filename span when title meta present", async () => {
+    const withTitle = await renderMarkdown(
+      '```ts title="src/foo.ts"\nconst x = 1;\n```',
+    );
+    const withoutTitle = await renderMarkdown("```ts\nconst x = 1;\n```");
+
+    expect(withTitle).toContain(
+      '<span class="code-block-filename">src/foo.ts</span>',
+    );
+    expect(withoutTitle).not.toContain("code-block-filename");
+  });
+
   it("renders GFM tables", async () => {
     const md = ["| a | b |", "|---|---|", "| 1 | 2 |"].join("\n");
     const html = await renderMarkdown(md);
