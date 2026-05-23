@@ -41,15 +41,19 @@ export const aboutContent = {
     items: [
       {
         label: "Shipping",
-        detail: "TZBlog from scratch with Next.js 16, Prisma 7, PostgreSQL, MinIO, and Caddy.",
+        detail: "TZBlog from scratch with Next.js 16, targeting a VPS launch in June 2026.",
       },
       {
         label: "Writing",
-        detail: "Implementation notes on CMS architecture, self-hosted deployment, observability, and product polish.",
+        detail: "Essays on type-driven design, Markdown-as-source, and the tradeoffs behind self-hosted tools.",
+      },
+      {
+        label: "Reading",
+        detail: "Designing Data-Intensive Apps and TLA+ Specifications, with notes folded back into TZBlog decisions.",
       },
       {
         label: "Hardening",
-        detail: "Pre-launch quality gates, backups, Lighthouse fixes, and a practical V2/V3 roadmap.",
+        detail: "Postgres pg_dump pipeline, Caddy auto-renew, quality gates, and a practical V2/V3 roadmap.",
       },
     ],
   },
