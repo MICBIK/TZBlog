@@ -26,14 +26,14 @@ export function TechStack() {
 
       <div className="space-y-[var(--space-stack-lg)]">
         {techStackCategories.map((category, index) => {
-          const headingId = `ts-${category.label
+          const headingId = `ts-${category.category
             .toLowerCase()
             .replace(/[^a-z]+/g, "-")
             .replace(/^-|-$/g, "")}`;
 
           return (
             <section
-              key={category.label}
+              key={category.category}
               aria-labelledby={headingId}
               className="space-y-4"
             >
@@ -41,7 +41,7 @@ export function TechStack() {
                 id={headingId}
                 className="font-mono text-label tracking-label uppercase text-muted-fg"
               >
-                {category.label.toUpperCase()}
+                {category.category.toUpperCase()}
               </h3>
 
               <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">

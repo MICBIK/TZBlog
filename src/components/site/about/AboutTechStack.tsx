@@ -23,8 +23,8 @@ export function AboutTechStack() {
       <div className="space-y-[var(--space-stack-lg)]">
         {techStackCategories.map((category) => (
           <section
-            key={category.label}
-            aria-labelledby={`about-tech-stack-${slugify(category.label)}`}
+            key={category.category}
+            aria-labelledby={`about-tech-stack-${slugify(category.category)}`}
             className="launch-panel space-y-5 p-5 sm:p-6"
           >
             <header className="space-y-2">
@@ -32,10 +32,10 @@ export function AboutTechStack() {
                 {String(category.items.length).padStart(2, "0")} decisions
               </p>
               <h3
-                id={`about-tech-stack-${slugify(category.label)}`}
+                id={`about-tech-stack-${slugify(category.category)}`}
                 className="font-serif text-h3 leading-display tracking-tight text-fg"
               >
-                {category.label}
+                {category.category}
               </h3>
             </header>
 

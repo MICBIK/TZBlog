@@ -4,13 +4,13 @@ export interface TechStackItem {
 }
 
 export interface TechStackCategory {
-  label: string;
+  category: string;
   items: TechStackItem[];
 }
 
 export const techStackCategories: TechStackCategory[] = [
   {
-    label: "Frontend",
+    category: "Frontend",
     items: [
       { name: "Next.js 16", rationale: "App Router + RSC + Server Actions" },
       { name: "React 19", rationale: "Strict mode, async RSC, modern rendering model" },
@@ -22,7 +22,7 @@ export const techStackCategories: TechStackCategory[] = [
     ],
   },
   {
-    label: "Content & Editor",
+    category: "Content & Editor",
     items: [
       {
         name: "Markdown source editor",
@@ -37,7 +37,7 @@ export const techStackCategories: TechStackCategory[] = [
     ],
   },
   {
-    label: "Backend & Data",
+    category: "Backend & Data",
     items: [
       { name: "PostgreSQL 16", rationale: "Primary relational source of truth" },
       { name: "Prisma 7", rationale: "@prisma/adapter-pg driver adapter mode" },
@@ -49,7 +49,7 @@ export const techStackCategories: TechStackCategory[] = [
     ],
   },
   {
-    label: "Infra",
+    category: "Infra",
     items: [
       { name: "Docker Compose", rationale: "App, Postgres, MinIO, and Caddy as one deploy unit" },
       { name: "Caddy", rationale: "Automatic HTTPS and reverse proxy on the VPS" },
@@ -60,7 +60,7 @@ export const techStackCategories: TechStackCategory[] = [
     ],
   },
   {
-    label: "Tooling",
+    category: "Tooling",
     items: [
       { name: "pnpm", rationale: "Fast installs with deterministic lockfile behavior" },
       { name: "Vitest", rationale: "Unit and integration coverage for services and RSC" },
