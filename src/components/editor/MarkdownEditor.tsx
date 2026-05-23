@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { basicSetup } from "codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { indentUnit } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
-import { EditorView, placeholder as cmPlaceholder } from "@codemirror/view";
+import { EditorState, Prec } from "@codemirror/state";
+import { EditorView, keymap, placeholder as cmPlaceholder } from "@codemirror/view";
 import { EditorToolbar } from "./EditorToolbar";
 
 export interface MarkdownSourceApi {
@@ -22,6 +22,8 @@ export interface MarkdownEditorProps {
   value: string;
   /** Fired with the latest Markdown after each edit. */
   onChange: (markdown: string) => void;
+  /** Optional save callback used by Mod-S inside the editor surface. */
+  onSave?: () => void;
   /** Exposes the literal source document for toolbar and round-trip checks. */
   onReady?: (api: MarkdownSourceApi) => void;
   /** Placeholder shown when the document is empty. */
@@ -40,6 +42,7 @@ export interface MarkdownEditorProps {
 export function MarkdownEditor({
   value,
   onChange,
+  onSave,
   onReady,
   placeholder,
   className,
@@ -48,6 +51,7 @@ export function MarkdownEditor({
   const viewRef = useRef<EditorView | null>(null);
   const valueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const onSaveRef = useRef(onSave);
   const onReadyRef = useRef(onReady);
   const applyingExternalChangeRef = useRef(false);
   const [sourceApi, setSourceApi] = useState<MarkdownSourceApi | null>(null);
@@ -55,6 +59,10 @@ export function MarkdownEditor({
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
 
   useEffect(() => {
     onReadyRef.current = onReady;
@@ -68,11 +76,44 @@ export function MarkdownEditor({
       state: EditorState.create({
         doc: valueRef.current,
         extensions: [
+          Prec.high(
+            keymap.of([
+              {
+                key: "Tab",
+                preventDefault: true,
+                run: (view) => insertAtSelection(view, "  "),
+              },
+              {
+                key: "Mod-s",
+                preventDefault: true,
+                run: () => {
+                  onSaveRef.current?.();
+                  return true;
+                },
+              },
+              {
+                key: "[",
+                preventDefault: true,
+                run: (view) => insertAtSelection(view, "[]", 1),
+              },
+            ]),
+          ),
           basicSetup,
           markdown(),
           indentUnit.of("  "),
           cmPlaceholder(placeholder ?? "在这里写 Markdown..."),
           EditorView.lineWrapping,
+          EditorView.domEventHandlers({
+            keydown: (event) => {
+              if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+                event.preventDefault();
+                onSaveRef.current?.();
+                return true;
+              }
+
+              return false;
+            },
+          }),
           EditorView.updateListener.of((update) => {
             if (!update.docChanged) return;
 
@@ -215,6 +256,27 @@ export function MarkdownEditor({
 
 function clampDocPosition(position: number, docLength: number): number {
   return Math.max(0, Math.min(position, docLength));
+}
+
+function insertAtSelection(
+  view: EditorView,
+  insert: string,
+  cursorOffset = insert.length,
+): boolean {
+  const selection = view.state.selection.main;
+
+  view.dispatch({
+    changes: {
+      from: selection.from,
+      to: selection.to,
+      insert,
+    },
+    selection: {
+      anchor: selection.from + cursorOffset,
+    },
+    scrollIntoView: true,
+  });
+  return true;
 }
 
 export default MarkdownEditor;
