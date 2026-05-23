@@ -27,6 +27,14 @@ describe("renderMarkdown", () => {
     expect(html).toMatch(/<span style="color:/);
   });
 
+  it("falls back to plain code block markup for unknown languages", async () => {
+    const html = await renderMarkdown("```klingon\nQapla'\n```");
+
+    expect(html).toContain('<figure class="code-block" data-language="klingon">');
+    expect(html).not.toMatch(/<pre[^>]*class="[^"]*shiki/);
+    expect(html).toContain("<code>Qapla'");
+  });
+
   it("highlighter is configured with light and dark themes", async () => {
     vi.resetModules();
     const createHighlighter = vi.fn(async () => ({
