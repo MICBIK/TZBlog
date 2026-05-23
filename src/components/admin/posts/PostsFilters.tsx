@@ -86,6 +86,9 @@ export function PostsFilters({
   const statusValue = currentFilter.status ?? ALL_VALUE;
   const columnValue = currentFilter.columnId ?? ALL_VALUE;
   const tagValue = currentFilter.tag ?? ALL_VALUE;
+  const hasActiveFilters = Boolean(
+    q || currentFilter.status || currentFilter.columnId || currentFilter.tag,
+  );
 
   const sortedTags = useMemo(
     () => [...tags].sort((a, b) => a.name.localeCompare(b.name)),
@@ -164,9 +167,11 @@ export function PostsFilters({
         </Select>
       </div>
 
-      <Button variant="ghost" onClick={reset} className="text-muted-foreground">
-        重置
-      </Button>
+      {hasActiveFilters ? (
+        <Button variant="ghost" onClick={reset} className="text-muted-foreground">
+          重置
+        </Button>
+      ) : null}
     </div>
   );
 }
