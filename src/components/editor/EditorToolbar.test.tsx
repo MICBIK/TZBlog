@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 import { EditorToolbar } from "./EditorToolbar";
 
 describe("EditorToolbar source actions", () => {
@@ -27,5 +28,32 @@ describe("EditorToolbar source actions", () => {
     ].forEach((titlePattern) => {
       expect(screen.getByRole("button", { name: titlePattern })).toBeInTheDocument();
     });
+  });
+
+  it("opens a link dialog and wraps the selection after URL confirmation", async () => {
+    const user = userEvent.setup();
+    const wrapSelection = vi.fn();
+    const props = {
+      source: {
+        getMarkdown: () => "click here",
+        focus: vi.fn(),
+        setSelection: vi.fn(),
+        wrapSelection,
+        prependToLine: vi.fn(),
+        insertSnippet: vi.fn(),
+      },
+    } as unknown as React.ComponentProps<typeof EditorToolbar>;
+
+    render(<EditorToolbar {...props} />);
+
+    await user.click(screen.getByRole("button", { name: /链接.*Link.*⌘K/ }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/URL/), "https://example.com");
+    await user.click(screen.getByRole("button", { name: /插入链接|Insert link/ }));
+
+    expect(wrapSelection).toHaveBeenCalledWith("[", "](https://example.com)");
   });
 });
