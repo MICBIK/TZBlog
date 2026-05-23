@@ -12,7 +12,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-6 md:px-8">
         <Link
           href="/"
-          className="text-base font-semibold tracking-tight text-fg hover:opacity-80 transition-opacity"
+          className="text-base font-semibold tracking-tight text-fg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
         >
           TZBlog
         </Link>
@@ -21,7 +21,7 @@ export function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-fg hover:text-fg transition-colors"
+              className="text-sm text-muted-fg transition-colors hover:text-fg focus-visible:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               {link.label}
             </Link>

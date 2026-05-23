@@ -80,7 +80,7 @@ export function LikeButton({ slug, initialLikeCount }: LikeButtonProps) {
       onClick={handleClick}
       disabled={liked || submitting}
       aria-pressed={liked}
-      className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 font-mono text-xs text-muted-fg transition hover:text-fg aria-pressed:border-fg aria-pressed:text-fg disabled:cursor-not-allowed"
+      className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 font-mono text-xs text-muted-fg transition hover:text-fg focus-visible:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg aria-pressed:border-fg aria-pressed:text-fg disabled:cursor-not-allowed"
     >
       <span aria-hidden>♥</span>
       <span>{count}</span>
