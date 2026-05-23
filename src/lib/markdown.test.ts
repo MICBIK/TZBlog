@@ -49,6 +49,14 @@ describe("renderMarkdown", () => {
     vi.resetModules();
   });
 
+  it("emits dual-theme markup for code blocks", async () => {
+    const md = "```ts\nconst x: number = 1;\n```";
+    const html = await renderMarkdown(md);
+
+    expect(html).toContain("--shiki-dark:");
+    expect(html.match(/<pre\b/g) ?? []).toHaveLength(1);
+  });
+
   it("renders GFM tables", async () => {
     const md = ["| a | b |", "|---|---|", "| 1 | 2 |"].join("\n");
     const html = await renderMarkdown(md);
