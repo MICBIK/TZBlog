@@ -314,6 +314,45 @@ describe("renderMarkdown", () => {
     expect(html).not.toContain("<script");
     expect(html).not.toContain("alert(");
   });
+
+  it("keepsMarkdownElementsCompatibleWithArticleShell", async () => {
+    const md = [
+      "> [!TIP]",
+      "> 这是一条发布态 callout，包含 `inline` code。",
+      "",
+      "```ts title=\"src/article.ts\"",
+      "const shell = \"editorial\";",
+      "```",
+      "",
+      "![Article diagram](/uploads/2026/05/diagram.png)",
+      "",
+      "| 元素 | 状态 |",
+      "|---|---|",
+      "| table | responsive |",
+      "",
+      "> 第一段引用。",
+      ">",
+      "> 第二段引用。",
+      "",
+      "- 第一层",
+      "  - 第二层",
+      "",
+      "正文里的 `inline` code 继续可读。",
+    ].join("\n");
+
+    const html = await renderMarkdown(md);
+
+    expect(html).toContain("markdown-alert markdown-alert-tip");
+    expect(html).toContain('<figure class="code-block" data-language="ts">');
+    expect(html).toContain('<span class="code-block-filename">src/article.ts</span>');
+    expect(html).toContain('<div class="md-table-scroll">');
+    expect(html).toContain("<blockquote>");
+    expect(html).toContain("<ul>");
+    expect(html).toContain("<code>inline</code>");
+    expect(html).toMatch(
+      /<figure class="md-image-frame">[\s\S]*<img(?=[^>]*src="\/uploads\/2026\/05\/diagram\.png")(?=[^>]*alt="Article diagram")(?=[^>]*loading="lazy")(?=[^>]*class="md-image")[^>]*>[\s\S]*<\/figure>/,
+    );
+  });
 });
 
 type MarkdownModule = {
