@@ -103,4 +103,30 @@ describe("MarkdownEditor source contract", () => {
     expect(onChange).toHaveBeenCalledWith("hello **world**");
     expect(sourceApiRef.current?.getMarkdown()).toBe("hello **world**");
   });
+
+  it("toolbar H2 action prepends ## to the current line", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+
+    render(
+      <MarkdownEditor
+        value="hello"
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(2, 2);
+    await user.click(screen.getByRole("button", { name: /二级标题.*H2.*⌘⌥2/ }));
+
+    expect(onChange).toHaveBeenCalledWith("## hello");
+    expect(sourceApiRef.current?.getMarkdown()).toBe("## hello");
+  });
 });
