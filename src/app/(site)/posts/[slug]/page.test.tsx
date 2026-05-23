@@ -1,4 +1,6 @@
 import { render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { PostWithRelations } from "@/lib/services/posts";
@@ -156,6 +158,38 @@ describe("PostDetailPage markdown reading system", () => {
     expect(articleBody?.className).toContain("max-w-none");
     expect(articleBody?.className).not.toContain("prose");
   });
+
+  it("renders complex markdown with callouts, code, table, lists, blockquote, kbd", async () => {
+    vi.doUnmock("@/lib/markdown");
+    vi.resetModules();
+    const { default: PostDetailPageWithRealMarkdown } = await import("./page");
+    const fixture = readFileSync(
+      join(process.cwd(), "src/lib/markdown/__fixtures__/full-syntax.md"),
+      "utf-8",
+    );
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null, content: fixture }));
+
+    const { container } = render(
+      await PostDetailPageWithRealMarkdown({
+        params: Promise.resolve({ slug: "detail" }),
+      }),
+    );
+
+    const articleBody = container.querySelector(".markdown-body");
+    expect(articleBody).toBeInTheDocument();
+    expect(articleBody?.querySelector(".markdown-alert-warning")).toBeInTheDocument();
+    expect(articleBody?.querySelector(".markdown-alert-icon")).toBeInTheDocument();
+    expect(articleBody?.querySelector('figure.code-block[data-language="ts"]')).toBeInTheDocument();
+    expect(articleBody?.querySelector(".code-block-filename")?.textContent).toBe(
+      "src/example.ts",
+    );
+    expect(articleBody?.querySelector(".code-block-copy[data-copy]")).toBeInTheDocument();
+    expect(articleBody?.querySelector(".md-table-scroll table")).toBeInTheDocument();
+    expect(articleBody?.querySelector("ul ul ul")).toBeInTheDocument();
+    expect(articleBody?.querySelector("blockquote p + p")).toBeInTheDocument();
+    expect(articleBody?.querySelector("kbd")?.textContent).toBe("⌘K");
+    expect(articleBody?.querySelector(".prose")).not.toBeInTheDocument();
+  });
 });
 
 describe("PostDetailPage tag links", () => {
@@ -184,9 +218,11 @@ describe("PostDetailPage tag links", () => {
 
 function post({
   cover,
+  content = "Detail content",
   tags = [],
 }: {
   cover: string | null;
+  content?: string;
   tags?: PostWithRelations["tags"];
 }): PostWithRelations {
   return {
@@ -209,7 +245,7 @@ function post({
         locale: "zh",
         title: "Detail Title",
         excerpt: "Detail excerpt",
-        content: "Detail content",
+        content,
       },
     ],
     column: null,
