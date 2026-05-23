@@ -7,8 +7,8 @@ const FORBIDDEN_TERMS = [
   "@tip" + "tap",
   "tip" + "tap-markdown",
   "low" + "light",
-  "prose-neutral",
-  "prose-invert",
+  "prose-" + "neutral",
+  "prose-" + "invert",
 ];
 
 describe("editor dependency residue", () => {
