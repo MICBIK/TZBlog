@@ -1,7 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
-import { MarkdownEditor } from "./MarkdownEditor";
+import type { MarkdownEditorProps } from "./MarkdownEditor";
+
+const MarkdownEditor = dynamic<MarkdownEditorProps>(
+  () => import("./MarkdownEditor").then((mod) => mod.MarkdownEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[24rem] items-center justify-center rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--bg))] text-sm text-[hsl(var(--muted-fg))]">
+        正在加载编辑器...
+      </div>
+    ),
+  },
+);
 
 export interface MarkdownEditorWithPreviewProps {
   value: string;
