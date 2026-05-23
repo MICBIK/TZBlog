@@ -194,16 +194,16 @@ export function PostEditor({
 
   return (
     <div className="mx-auto flex max-w-[1400px] flex-col gap-6">
-      <div className="sticky top-0 z-20 -mx-6 flex items-center justify-between gap-4 border-b border-[hsl(var(--border))] bg-[hsl(var(--bg))] px-6 py-3">
-        <nav className="text-sm text-[hsl(var(--muted))]">
+      <div className="sticky top-0 z-20 -mx-6 flex items-center justify-between gap-4 border-b border-border bg-bg px-6 py-3">
+        <nav className="text-sm text-muted-fg">
           <Link
             href="/admin/posts"
-            className="transition-colors hover:text-[hsl(var(--fg))]"
+            className="transition-colors hover:text-fg"
           >
             文章
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-[hsl(var(--fg))]">
+          <span className="text-fg">
             {isEdit ? "编辑" : "新建"}
           </span>
         </nav>
@@ -253,7 +253,7 @@ export function PostEditor({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="文章标题"
             aria-label="文章标题"
-            className="h-16 border-0 px-0 text-3xl font-semibold shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="h-16 border-0 px-0 text-3xl font-semibold shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           <Textarea
             value={excerpt}

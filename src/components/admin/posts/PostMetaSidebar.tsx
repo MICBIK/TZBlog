@@ -49,6 +49,8 @@ const STATUS_VARIANT: Record<
 };
 
 const NO_COLUMN_VALUE = "__none__";
+const labelClassName = "text-sm font-medium text-fg";
+const helperClassName = "text-sm text-muted-fg";
 
 /**
  * Right-hand sidebar for the post editor: surfaces all non-content metadata
@@ -69,9 +71,9 @@ export function PostMetaSidebar({
   };
 
   return (
-    <aside className="flex flex-col gap-6 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--bg))] p-5">
+    <aside className="flex flex-col gap-6 rounded-lg border border-border bg-bg p-5">
       <section className="space-y-2">
-        <Label className="text-xs uppercase tracking-wide text-[hsl(var(--muted))]">
+        <Label className={`${labelClassName} uppercase tracking-wide`}>
           状态
         </Label>
         <div>
@@ -79,7 +81,7 @@ export function PostMetaSidebar({
             {STATUS_LABEL[meta.status]}
           </Badge>
         </div>
-        <p className="text-xs text-[hsl(var(--muted))]">
+        <p className={helperClassName}>
           状态由顶部按钮决定：保存草稿 / 发布 / 归档。
         </p>
       </section>
@@ -87,7 +89,9 @@ export function PostMetaSidebar({
       <Separator />
 
       <section className="space-y-2">
-        <Label htmlFor="post-slug">slug</Label>
+        <Label htmlFor="post-slug" className={labelClassName}>
+          slug
+        </Label>
         <Input
           id="post-slug"
           value={meta.slug}
@@ -96,7 +100,7 @@ export function PostMetaSidebar({
           onChange={(e) => update("slug", e.target.value)}
           placeholder="my-first-post"
         />
-        <p className="text-xs text-[hsl(var(--muted))]">
+        <p className={helperClassName}>
           仅能包含小写字母、数字和连字符。
         </p>
       </section>
@@ -104,7 +108,9 @@ export function PostMetaSidebar({
       <Separator />
 
       <section className="space-y-2">
-        <Label htmlFor="post-column">专栏</Label>
+        <Label htmlFor="post-column" className={labelClassName}>
+          专栏
+        </Label>
         <Select
           value={meta.columnId ?? NO_COLUMN_VALUE}
           onValueChange={(v) =>
@@ -123,7 +129,7 @@ export function PostMetaSidebar({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-[hsl(var(--muted))]">
+        <p className={helperClassName}>
           可选。文章会出现在所选专栏下。
         </p>
       </section>
@@ -131,13 +137,13 @@ export function PostMetaSidebar({
       <Separator />
 
       <section className="space-y-2">
-        <Label>标签</Label>
+        <Label className={labelClassName}>标签</Label>
         <TagsInput
           value={meta.tags}
           onChange={(next) => update("tags", next)}
           suggestions={allTags}
         />
-        <p className="text-xs text-[hsl(var(--muted))]">
+        <p className={helperClassName}>
           回车或逗号确认。已存在的标签会被复用。
         </p>
       </section>
@@ -145,12 +151,12 @@ export function PostMetaSidebar({
       <Separator />
 
       <section className="space-y-2">
-        <Label>封面</Label>
+        <Label className={labelClassName}>封面</Label>
         <CoverUploader
           value={meta.cover || null}
           onChange={(url) => update("cover", url ?? "")}
         />
-        <p className="text-xs text-[hsl(var(--muted))]">
+        <p className={helperClassName}>
           可选。出现在列表卡片和 OG 图。
         </p>
       </section>
@@ -159,7 +165,9 @@ export function PostMetaSidebar({
         <>
           <Separator />
           <section className="space-y-2">
-            <Label htmlFor="post-published-at">发布时间</Label>
+            <Label htmlFor="post-published-at" className={labelClassName}>
+              发布时间
+            </Label>
             <Input
               id="post-published-at"
               type="datetime-local"
@@ -168,7 +176,7 @@ export function PostMetaSidebar({
                 update("publishedAt", fromLocalDatetime(e.target.value))
               }
             />
-            <p className="text-xs text-[hsl(var(--muted))]">
+            <p className={helperClassName}>
               留空则使用首次发布时间。
             </p>
           </section>

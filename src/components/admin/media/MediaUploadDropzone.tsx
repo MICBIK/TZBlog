@@ -111,29 +111,29 @@ export function MediaUploadDropzone() {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "flex min-h-36 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--bg))] px-6 py-8 text-center transition-colors",
-          "outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--bg))]",
-          "hover:bg-[hsl(var(--muted))]",
-          isDragging && "border-[hsl(var(--accent))] bg-[hsl(var(--muted))]",
+          "flex min-h-36 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-bg px-6 py-8 text-center transition-colors",
+          "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+          "hover:bg-muted",
+          isDragging && "border-accent bg-muted",
           isUploading && "pointer-events-none cursor-not-allowed opacity-70",
         )}
       >
         {isUploading ? (
-          <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--fg))]" />
+          <Loader2 className="h-6 w-6 animate-spin text-fg" />
         ) : (
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--bg))] text-[hsl(var(--fg))]">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border bg-bg text-fg">
             <Upload className="h-5 w-5" />
           </div>
         )}
         <div className="space-y-1">
-          <p className="text-sm font-medium text-[hsl(var(--fg))]">
+          <p className="text-sm font-medium text-fg">
             {isUploading ? "上传中..." : "拖拽图片到这里，或点击上传"}
           </p>
-          <p className="text-xs text-[hsl(var(--muted))]">
+          <p className="text-xs text-muted-fg">
             支持 PNG、JPEG、WEBP、GIF，可一次选择多个文件，单文件 5MB 以内
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 text-xs text-[hsl(var(--muted))]">
+        <span className="inline-flex items-center gap-2 text-xs text-muted-fg">
           <ImagePlus className="h-4 w-4" />
           上传后会自动刷新媒体库
         </span>

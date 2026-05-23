@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
 
 /**
  * <CommentsTable> — admin 评论审核表格。
@@ -163,27 +164,30 @@ export function CommentsTable({
           className="flex items-center gap-3 rounded-md border border-border bg-muted/40 px-4 py-2 text-sm"
         >
           <span className="font-mono">已选 {selected.size} 条</span>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => bulkUpdate("APPROVED")}
-            className="rounded border border-border px-3 py-1 hover:bg-muted"
           >
             批量通过
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => bulkUpdate("SPAM")}
-            className="rounded border border-border px-3 py-1 hover:bg-muted"
           >
             批量标垃圾
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => bulkUpdate("REJECTED")}
-            className="rounded border border-border px-3 py-1 hover:bg-muted"
           >
             批量拒绝
-          </button>
+          </Button>
         </div>
       )}
 
@@ -257,38 +261,46 @@ export function CommentsTable({
                   </td>
                   <td className="px-3 py-3 text-right">
                     <div className="flex flex-wrap justify-end gap-1">
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         disabled={isPending}
                         onClick={() => patchStatus(item.id, "APPROVED")}
-                        className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted disabled:opacity-50"
+                        className="h-7 px-2 text-xs"
                       >
                         通过
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         disabled={isPending}
                         onClick={() => patchStatus(item.id, "SPAM")}
-                        className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted disabled:opacity-50"
+                        className="h-7 px-2 text-xs"
                       >
                         垃圾
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         disabled={isPending}
                         onClick={() => patchStatus(item.id, "REJECTED")}
-                        className="rounded border border-border px-2 py-0.5 text-xs hover:bg-muted disabled:opacity-50"
+                        className="h-7 px-2 text-xs"
                       >
                         拒绝
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         disabled={isPending}
                         onClick={() => setPendingDelete(item)}
-                        className="rounded border border-border px-2 py-0.5 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
+                        className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:bg-destructive/10 focus-visible:text-destructive"
                       >
                         删除
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>

@@ -47,7 +47,7 @@ export function ColumnRowActions({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="text-destructive focus:text-destructive"
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
           onSelect={(e) => handleSelect(e, onDelete)}
         >
           <Trash2 className="h-4 w-4" />
