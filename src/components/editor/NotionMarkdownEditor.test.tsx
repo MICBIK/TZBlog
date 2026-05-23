@@ -73,3 +73,38 @@ describe("NotionMarkdownEditor bubble formatting", () => {
     }
   });
 });
+
+describe("NotionMarkdownEditor media insertion", () => {
+  it("imageCommandUsesMediaLibraryUrl", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <NotionMarkdownEditor
+        value=""
+        onChange={onChange}
+        mediaItems={[
+          {
+            id: "media-1",
+            alt: "架构图",
+            url: "/uploads/architecture.png",
+          },
+        ]}
+      />,
+    );
+
+    const editor = screen.getByRole("textbox", { name: "文章内容" });
+    await user.click(editor);
+    await user.keyboard("/");
+
+    const menu = screen.getByRole("menu", { name: "Block commands" });
+    await user.click(within(menu).getByRole("menuitem", { name: "Image" }));
+
+    const dialog = screen.getByRole("dialog", { name: "选择媒体" });
+    await user.click(within(dialog).getByRole("button", { name: "架构图" }));
+
+    expect(onChange).toHaveBeenLastCalledWith("![架构图](/uploads/architecture.png)");
+    expect(onChange).not.toHaveBeenCalledWith(expect.stringContaining("blob:"));
+    expect(onChange).not.toHaveBeenCalledWith(expect.stringContaining("data:"));
+    expect(editor).toHaveFocus();
+  });
+});

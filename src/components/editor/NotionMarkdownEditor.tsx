@@ -5,6 +5,11 @@ import { useRef, useState } from "react";
 export interface NotionMarkdownEditorProps {
   value: string;
   onChange: (markdown: string) => void;
+  mediaItems?: Array<{
+    id: string;
+    alt: string;
+    url: string;
+  }>;
 }
 
 const slashCommands = [
