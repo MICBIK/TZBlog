@@ -199,6 +199,18 @@ describe("globals.css editorial system", () => {
     expect(header).toContain("letter-spacing: var(--tracking-label);");
   });
 
+  it("admin table styles use table tokens", () => {
+    const zebra = cssBlock(css, ".admin-table tbody tr:nth-child(odd)");
+    const hover = cssBlock(css, ".admin-table tbody tr:hover");
+    const header = cssBlock(css, ".admin-table th");
+
+    expect(zebra).toContain("background: hsl(var(--table-row-zebra));");
+    expect(hover).toContain("background: hsl(var(--table-row-hover));");
+    expect(header).toContain("background: hsl(var(--table-th-bg));");
+    expect(header).toContain("text-transform: uppercase;");
+    expect(header).toContain("letter-spacing: var(--tracking-label);");
+  });
+
   it("task list checkbox uses accent color", () => {
     const block = cssBlock(css, '.markdown-body li input[type="checkbox"]');
 

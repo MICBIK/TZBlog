@@ -52,6 +52,14 @@ beforeEach(() => {
 });
 
 describe("ColumnsTable", () => {
+  it("renders inside the shared admin table surface", () => {
+    const { container } = renderTable();
+
+    expect(
+      container.querySelector(".rounded-md.border.bg-card.overflow-hidden .admin-table"),
+    ).toBeInTheDocument();
+  });
+
   it("inline delete: click 删除 opens AlertDialog without firing DELETE", async () => {
     const user = userEvent.setup();
     renderTable({

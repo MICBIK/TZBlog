@@ -65,6 +65,14 @@ describe("PostsTable", () => {
     expect(screen.getByText(/暂无文章/)).toBeInTheDocument();
   });
 
+  it("renders inside the shared admin table surface", () => {
+    const { container } = renderTable();
+
+    expect(
+      container.querySelector(".rounded-md.border.bg-card.overflow-hidden .admin-table"),
+    ).toBeInTheDocument();
+  });
+
   it("renders status badges for DRAFT, PUBLISHED, and ARCHIVED", () => {
     renderTable({
       items: [

@@ -65,6 +65,21 @@ describe("<CommentsTable /> SPEC-C-U-2 + U-3", () => {
     expect(screen.getByRole("link", { name: "你好" })).toBeInTheDocument()
   })
 
+  it("renders inside the shared admin table surface", () => {
+    const { container } = render(
+      <CommentsTable
+        initialItems={[makeItem("c1", "PENDING")]}
+        total={1}
+        page={1}
+        pageSize={20}
+      />,
+    )
+
+    expect(
+      container.querySelector(".rounded-md.border.bg-card.overflow-hidden .admin-table"),
+    ).toBeInTheDocument()
+  })
+
   it("renders status badges through token-driven data-status styles", () => {
     render(
       <CommentsTable
