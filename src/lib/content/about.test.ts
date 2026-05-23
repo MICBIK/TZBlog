@@ -94,6 +94,42 @@ describe("aboutContent", () => {
       "Designing Data-Intensive Apps",
     );
   });
+
+  it("content is source of truth for about narrative sections", async () => {
+    const { aboutContent } = (await loadAboutContent()) as unknown as {
+      aboutContent: {
+        projectIntent?: {
+          sections: Array<{ heading: string; body: string }>;
+        };
+        implementationApproach?: {
+          entries: Array<{ heading: string; body: string; code?: string }>;
+        };
+        futureRoadmap?: {
+          columns: Array<{
+            phase: string;
+            items: Array<{ label: string; description: string }>;
+          }>;
+          i18nDisclosure: string;
+        };
+      };
+    };
+    const fileContent = await readFile(
+      join(process.cwd(), "src/lib/content/about.ts"),
+      "utf-8",
+    );
+
+    expect(aboutContent.projectIntent?.sections).toHaveLength(3);
+    expect(aboutContent.implementationApproach?.entries).toHaveLength(4);
+    expect(aboutContent.futureRoadmap?.columns.map((column) => column.phase)).toEqual([
+      "Current",
+      "V2",
+      "V3",
+    ]);
+    expect(aboutContent.futureRoadmap?.i18nDisclosure).toContain("中文单语言");
+    expect(fileContent).toContain("export interface AboutProjectIntentSection");
+    expect(fileContent).toContain("export interface ImplementationApproachEntry");
+    expect(fileContent).toContain("export interface RoadmapColumn");
+  });
 });
 
 const aboutModulePath = "./about";
