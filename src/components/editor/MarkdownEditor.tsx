@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { basicSetup } from "codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { indentUnit } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView, placeholder as cmPlaceholder } from "@codemirror/view";
+import { EditorToolbar } from "./EditorToolbar";
 
 export interface MarkdownSourceApi {
   getMarkdown: () => string;
@@ -45,6 +46,7 @@ export function MarkdownEditor({
   const onChangeRef = useRef(onChange);
   const onReadyRef = useRef(onReady);
   const applyingExternalChangeRef = useRef(false);
+  const [sourceApi, setSourceApi] = useState<MarkdownSourceApi | null>(null);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -106,10 +108,12 @@ export function MarkdownEditor({
     });
 
     viewRef.current = view;
-    onReadyRef.current?.({
+    const api = {
       getMarkdown: () => view.state.doc.toString(),
       focus: () => view.focus(),
-    });
+    };
+    setSourceApi(api);
+    onReadyRef.current?.(api);
 
     return () => {
       view.destroy();
@@ -140,6 +144,7 @@ export function MarkdownEditor({
       ].join(" ")}
       data-editor="markdown-source"
     >
+      <EditorToolbar source={sourceApi} />
       <div ref={mountRef} className="min-h-0 flex-1" />
     </div>
   );
