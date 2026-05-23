@@ -140,10 +140,13 @@ function MarkdownLivePreview({ value }: { value: string }) {
       }
     }
 
-    void renderPreview();
+    const timer = window.setTimeout(() => {
+      void renderPreview();
+    }, 200);
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
     };
   }, [value]);
 
