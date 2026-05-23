@@ -30,9 +30,11 @@ const slashCommands = [
 export function NotionMarkdownEditor({
   value,
   onChange,
+  mediaItems = [],
 }: NotionMarkdownEditorProps) {
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
   const [selection, setSelection] = useState<{ from: number; to: number } | null>(
     null,
   );
@@ -40,6 +42,24 @@ export function NotionMarkdownEditor({
   const insertCommand = (markdown: string) => {
     onChange(markdown);
     setMenuOpen(false);
+    editorRef.current?.focus();
+  };
+
+  const handleCommand = (command: { label: string; markdown: string }) => {
+    if (command.label === "Image" && mediaItems.length > 0) {
+      setMediaDialogOpen(true);
+      setMenuOpen(false);
+      return;
+    }
+
+    insertCommand(command.markdown);
+  };
+
+  const insertMedia = (item: { alt: string; url: string }) => {
+    if (isUnsafeMediaUrl(item.url)) return;
+
+    onChange(`![${item.alt}](${item.url})`);
+    setMediaDialogOpen(false);
     editorRef.current?.focus();
   };
 
@@ -131,13 +151,39 @@ export function NotionMarkdownEditor({
               type="button"
               role="menuitem"
               className="rounded px-2 py-1 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-              onClick={() => insertCommand(command.markdown)}
+              onClick={() => handleCommand(command)}
             >
               {command.label}
             </button>
           ))}
         </div>
       ) : null}
+
+      {mediaDialogOpen ? (
+        <div
+          role="dialog"
+          aria-label="选择媒体"
+          className="absolute z-20 mt-2 w-72 rounded-md border border-border bg-bg p-2 shadow-soft"
+        >
+          <div className="mb-2 text-xs font-medium text-muted-fg">选择媒体</div>
+          <div className="flex flex-col gap-1">
+            {mediaItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="rounded px-2 py-1 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                onClick={() => insertMedia(item)}
+              >
+                {item.alt}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function isUnsafeMediaUrl(url: string): boolean {
+  return url.startsWith("blob:") || url.startsWith("data:");
 }
