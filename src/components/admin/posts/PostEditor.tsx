@@ -267,6 +267,7 @@ export function PostEditor({
             <MarkdownEditorWithPreview
               value={content}
               onChange={setContent}
+              onSave={() => submit("DRAFT")}
               placeholder="开始写作..."
             />
           </div>

@@ -19,6 +19,7 @@ const MarkdownEditor = dynamic<MarkdownEditorProps>(
 export interface MarkdownEditorWithPreviewProps {
   value: string;
   onChange: (markdown: string) => void;
+  onSave?: () => void;
   placeholder?: string;
 }
 
@@ -36,6 +37,7 @@ type Tab = "editor" | "preview";
 export function MarkdownEditorWithPreview({
   value,
   onChange,
+  onSave,
   placeholder,
 }: MarkdownEditorWithPreviewProps) {
   const [tab, setTab] = useState<Tab>("editor");
@@ -68,6 +70,7 @@ export function MarkdownEditorWithPreview({
           <MarkdownEditor
             value={value}
             onChange={onChange}
+            onSave={onSave}
             placeholder={placeholder}
             className="h-full"
           />
