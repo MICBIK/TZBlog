@@ -1,7 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditorToolbar } from "./EditorToolbar";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("EditorToolbar source actions", () => {
   it("renders all required markdown source toolbar buttons", () => {
@@ -55,5 +59,42 @@ describe("EditorToolbar source actions", () => {
     await user.click(screen.getByRole("button", { name: /插入链接|Insert link/ }));
 
     expect(wrapSelection).toHaveBeenCalledWith("[", "](https://example.com)");
+  });
+
+  it("opens a media dialog and inserts selected image markdown", async () => {
+    const user = userEvent.setup();
+    const insertSnippet = vi.fn();
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [
+          {
+            id: "media-1",
+            filename: "hero.png",
+            url: "/uploads/hero.png",
+          },
+        ],
+      }),
+    } as Response);
+    const props = {
+      source: {
+        getMarkdown: () => "",
+        focus: vi.fn(),
+        setSelection: vi.fn(),
+        wrapSelection: vi.fn(),
+        prependToLine: vi.fn(),
+        insertSnippet,
+      },
+    } as unknown as React.ComponentProps<typeof EditorToolbar>;
+
+    render(<EditorToolbar {...props} />);
+
+    await user.click(screen.getByRole("button", { name: /图片.*Image/ }));
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: /hero\.png/ }));
+
+    expect(fetch).toHaveBeenCalledWith("/api/admin/media?pageSize=24");
+    expect(insertSnippet).toHaveBeenCalledWith("![hero.png](/uploads/hero.png)");
   });
 });
