@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { contrastRatio, parseHslTriplet } from "../lib/visual/contrast";
 
 describe("globals.css editorial system", () => {
   const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf-8");
@@ -73,6 +74,31 @@ describe("globals.css editorial system", () => {
     }
   });
 
+  it("callout accent/tint pairs meet WCAG AA contrast", () => {
+    const themeBlocks = [
+      [":root", cssBlock(css, ":root")],
+      [".dark", cssBlock(css, ".dark")],
+    ] as const;
+    const calloutTypes = ["note", "tip", "important", "warning", "caution"];
+    const failures: string[] = [];
+
+    for (const [selector, block] of themeBlocks) {
+      for (const type of calloutTypes) {
+        const accent = parseHslTriplet(
+          cssToken(block, `--callout-${type}-accent`),
+        );
+        const tint = parseHslTriplet(cssToken(block, `--callout-${type}-tint`));
+        const ratio = contrastRatio(accent, tint);
+
+        if (ratio < 4.5) {
+          failures.push(`${selector} ${type} ${ratio.toFixed(2)}:1`);
+        }
+      }
+    }
+
+    expect(failures).toEqual([]);
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
@@ -132,4 +158,14 @@ function cssBlock(css: string, selector: string): string {
   }
 
   return match[1];
+}
+
+function cssToken(block: string, token: string): string {
+  const match = block.match(new RegExp(`${token}:\\s*([^;]+);`));
+
+  if (!match) {
+    throw new Error(`Missing CSS token ${token}`);
+  }
+
+  return match[1].trim();
 }
