@@ -694,147 +694,147 @@ M1-C evidence (2026-05-23):
 
 #### M2-A-1 [TEST-RED] AR-3.1 / AR-3.2 muted-fg 对比度
 
-- [ ] 在 `globals.test.ts` 加对比度 spec（光照 helper 已在 M1-A-3 建立）
-- [ ] FAIL
+- [x] 在 `globals.test.ts` 加对比度 spec（光照 helper 已在 M1-A-3 建立）
+- [x] FAIL
 - commit: `test(admin): AR-3 muted-fg contrast`
 
 #### M2-A-2 [IMPL-GREEN] 调整 muted-fg token
 
-- [ ] `globals.css` `:root` `--muted-fg: 220 13% 36%;`；`.dark` `--muted-fg: 240 5% 70%;`
-- [ ] 加 `--muted-fg-strong`、`--surface-subtle`、`--surface-raised`、`--ring-soft` 等 design-notes §2.1 token
-- [ ] PASS
+- [x] `globals.css` `:root` `--muted-fg: 220 13% 36%;`；`.dark` `--muted-fg: 240 5% 70%;`
+- [x] 加 `--muted-fg-strong`、`--surface-subtle`、`--surface-raised`、`--ring-soft` 等 design-notes §2.1 token
+- [x] PASS
 - commit: `feat(admin): AR-3 muted-fg contrast`
 
 #### M2-A-3 [TEST-RED] AR-1.1 / AR-1.2 sidebar 用 AdminSidebar + 删 link
 
-- [ ] 新建 / 扩展 `src/app/(admin)/admin/layout.test.tsx`：断言 layout 含 `<AdminSidebar>` 组件 + NAV_ITEMS 不含 analytics/settings
-- [ ] FAIL（当前 layout 内联，且含两条死链）
+- [x] 新建 / 扩展 `src/app/(admin)/admin/layout.test.tsx`：断言 layout 含 `<AdminSidebar>` 组件 + NAV_ITEMS 不含 analytics/settings
+- [x] FAIL（当前 layout 内联，且含两条死链）
 - commit: `test(admin): AR-1 sidebar component + clean nav`
 
 #### M2-A-4 [IMPL-GREEN] AR-1.1 / AR-1.2 layout 用 AdminSidebar
 
-- [ ] 把 layout.tsx 内联 aside 改为 `<AdminSidebar />`
-- [ ] `AdminSidebar.tsx` 中 NAV_ITEMS 删 analytics / settings
-- [ ] PASS
+- [x] 把 layout.tsx 内联 aside 改为 `<AdminSidebar />`
+- [x] `AdminSidebar.tsx` 中 NAV_ITEMS 删 analytics / settings
+- [x] PASS
 - commit: `feat(admin): AR-1 sidebar component + clean nav`
 
 #### M2-A-5 [TEST-RED] AR-1.3 nav href 存在性
 
-- [ ] `AdminSidebar.test.tsx` 加 spec：每个 href 对应 file 存在（fs.existsSync helper）
-- [ ] FAIL or PASS
+- [x] `AdminSidebar.test.tsx` 加 spec：每个 href 对应 file 存在（fs.existsSync helper）
+- [x] FAIL or PASS
 - commit: `test(admin): AR-1.3 nav existence`
 
 #### M2-A-6 [IMPL-GREEN] AR-1.3 fs helper + 确认
 
-- [ ] 加 test helper（不入 prod）
-- [ ] PASS
+- [x] 加 test helper（不入 prod）
+- [x] PASS
 - commit: `feat(admin): AR-1.3 nav existence`
 
 #### M2-A-7 [TEST-RED] AR-2.1 / AR-2.2 / AR-2.3 active state
 
-- [ ] `AdminSidebar.test.tsx` 加 3 个 spec（mock usePathname）
-- [ ] FAIL
+- [x] `AdminSidebar.test.tsx` 加 3 个 spec（mock usePathname）
+- [x] FAIL
 - commit: `test(admin): AR-2 active state`
 
 #### M2-A-8 [IMPL-GREEN] AR-2 active 实现
 
-- [ ] AdminSidebar 用 `usePathname()` + startsWith 计算 `data-active`
-- [ ] CSS 加 `[data-active="true"]` 样式（design-notes §2.1 token）
-- [ ] PASS
+- [x] AdminSidebar 用 `usePathname()` + startsWith 计算 `data-active`
+- [x] CSS 加 `[data-active="true"]` 样式（design-notes §2.1 token）
+- [x] PASS
 - commit: `feat(admin): AR-2 active state`
 
 #### M2-A-9 [TEST-RED] AR-5.1 / AR-5.2 status badge token
 
-- [ ] `globals.test.ts` 加 4 个 status token spec + 对比度
-- [ ] `CommentsTable.test.tsx` 扩展：断言 Badge 不含 hardcoded class
-- [ ] FAIL
+- [x] `globals.test.ts` 加 4 个 status token spec + 对比度
+- [x] `CommentsTable.test.tsx` 扩展：断言 Badge 不含 hardcoded class
+- [x] FAIL
 - commit: `test(admin): AR-5 status badge tokens`
 
 #### M2-A-10 [IMPL-GREEN] AR-5 status badge token + CommentsTable
 
-- [ ] `globals.css` 加 `--status-pending-*` / `-approved-*` / `-spam-*` / `-rejected-*` token（light + dark）
-- [ ] `CommentsTable.tsx` Badge 改 token-driven（用 data-status + CSS 或 style prop）
-- [ ] PASS
+- [x] `globals.css` 加 `--status-pending-*` / `-approved-*` / `-spam-*` / `-rejected-*` token（light + dark）
+- [x] `CommentsTable.tsx` Badge 改 token-driven（用 data-status + CSS 或 style prop）
+- [x] PASS
 - commit: `feat(admin): AR-5 status badge tokens`
 
 #### M2-A-11 [TEST-RED] AR-6.1 / AR-6.2 / AR-6.3 表格 zebra + th + 圆角
 
-- [ ] `globals.test.ts` + `PostsTable.test.tsx` + `ColumnsTable.test.tsx` + `CommentsTable.test.tsx` 加 spec
-- [ ] FAIL
+- [x] `globals.test.ts` + `PostsTable.test.tsx` + `ColumnsTable.test.tsx` + `CommentsTable.test.tsx` 加 spec
+- [x] FAIL
 - commit: `test(admin): AR-6 table styles`
 
 #### M2-A-12 [IMPL-GREEN] AR-6 表格样式
 
-- [ ] `globals.css` 加 `.admin-table` 系列
-- [ ] 各 admin 表格容器加 `admin-table` class（或同等 mechanism）
-- [ ] PASS
+- [x] `globals.css` 加 `.admin-table` 系列
+- [x] 各 admin 表格容器加 `admin-table` class（或同等 mechanism）
+- [x] PASS
 - commit: `feat(admin): AR-6 table styles`
 
 #### M2-A-13 [TEST-RED] AR-6.4 PostsFilters Reset
 
-- [ ] `PostsFilters.test.tsx` 加 spec：filters 激活时显示 Reset 按钮
-- [ ] FAIL
+- [x] `PostsFilters.test.tsx` 加 spec：filters 激活时显示 Reset 按钮
+- [x] FAIL
 - commit: `test(admin): AR-6.4 reset button`
 
 #### M2-A-14 [IMPL-GREEN] AR-6.4 Reset 按钮
 
-- [ ] `PostsFilters.tsx` 加 Reset 按钮 + 点击清空所有 query params
-- [ ] PASS
+- [x] `PostsFilters.tsx` 加 Reset 按钮 + 点击清空所有 query params
+- [x] PASS
 - commit: `feat(admin): AR-6.4 reset button`
 
 #### M2-A-15 [TEST-RED] AR-8.1 EmptyState 组件
 
-- [ ] 新建 `src/components/admin/EmptyState.test.tsx`
-- [ ] FAIL
+- [x] 新建 `src/components/admin/EmptyState.test.tsx`
+- [x] FAIL
 - commit: `test(admin): AR-8 EmptyState`
 
 #### M2-A-16 [IMPL-GREEN] AR-8.1 EmptyState 实现
 
-- [ ] 新建 `src/components/admin/EmptyState.tsx`
-- [ ] PASS
+- [x] 新建 `src/components/admin/EmptyState.tsx`
+- [x] PASS
 - commit: `feat(admin): AR-8 EmptyState`
 
 #### M2-A-17 [TEST-RED] AR-8.2 各 list page 用 EmptyState
 
-- [ ] 扩展各 list test：断言空时渲染 EmptyState
-- [ ] FAIL
+- [x] 扩展各 list test：断言空时渲染 EmptyState
+- [x] FAIL
 - commit: `test(admin): AR-8.2 list pages use EmptyState`
 
 #### M2-A-18 [IMPL-GREEN] PostsTable / CommentsTable / ColumnsTable / MediaPage 用 EmptyState
 
-- [ ] 替换各空状态片段
-- [ ] PASS
+- [x] 替换各空状态片段
+- [x] PASS
 - commit: `feat(admin): AR-8.2 list pages use EmptyState`
 
 #### M2-A-19 [TEST-RED] AR-7.1 / AR-7.2 header breadcrumb + dropdown（可选 / 推荐做）
 
-- [ ] 新建 `src/components/admin/AdminHeader.test.tsx`
-- [ ] FAIL
+- [x] 新建 `src/components/admin/AdminHeader.test.tsx`
+- [x] FAIL
 - commit: `test(admin): AR-7 header upgrades`
 
 #### M2-A-20 [IMPL-GREEN] AdminHeader 实现
 
-- [ ] 新建 `src/components/admin/AdminHeader.tsx`：breadcrumb（usePathname 解析）+ DropdownMenu trigger（shadcn）
-- [ ] layout.tsx 引用 `<AdminHeader>`
-- [ ] PASS
+- [x] 新建 `src/components/admin/AdminHeader.tsx`：breadcrumb（usePathname 解析）+ DropdownMenu trigger（shadcn）
+- [x] layout.tsx 引用 `<AdminHeader>`
+- [x] PASS
 - commit: `feat(admin): AR-7 header upgrades`
 
 #### M2-A-21 [TEST-RED] AR-4 button / form helper / focus 统一
 
-- [ ] grep / visual spec
-- [ ] FAIL or PASS
+- [x] grep / visual spec
+- [x] FAIL or PASS
 - commit: `test(admin): AR-4 buttons forms focus`
 
 #### M2-A-22 [IMPL-GREEN] AR-4 微调
 
-- [ ] 各 admin 页 button class 用 shadcn variant；form helper / error text 用 muted-fg / destructive
-- [ ] PASS
+- [x] 各 admin 页 button class 用 shadcn variant；form helper / error text 用 muted-fg / destructive
+- [x] PASS
 - commit: `feat(admin): AR-4 buttons forms focus`
 
 **M2-A 出口检查**：
 
-- [ ] `pnpm test` 全绿
-- [ ] 浏览器手动审查所有 admin 页面 light + dark mode；按 `browser-audit-checklist.md` 填表
+- [x] `pnpm test` 全绿
+- [x] 浏览器手动审查所有 admin 页面 light + dark mode；按 `browser-audit-checklist.md` 填表
 
 ---
 
@@ -844,111 +844,111 @@ M1-C evidence (2026-05-23):
 
 #### M2-B-1 [TEST-RED] H-2.1 / H-2.2 / H-2.3 / H-2.4 HomeHero
 
-- [ ] 新建 `src/components/site/HomeHero.test.tsx`：4 个 spec
-- [ ] FAIL
+- [x] 新建 `src/components/site/HomeHero.test.tsx`：4 个 spec
+- [x] FAIL
 - commit: `test(home): H-2 HomeHero`
 
 #### M2-B-2 [IMPL-GREEN] HomeHero 实现
 
-- [ ] 新建 `src/components/site/HomeHero.tsx`：eyebrow + h1 + lede + dual CTA + Now badge + reveal classes
-- [ ] `globals.css` 加 dot-grid / grain noise CSS
-- [ ] PASS
+- [x] 新建 `src/components/site/HomeHero.tsx`：eyebrow + h1 + lede + dual CTA + Now badge + reveal classes
+- [x] `globals.css` 加 dot-grid / grain noise CSS
+- [x] PASS
 - commit: `feat(home): H-2 HomeHero`
 
 #### M2-B-3 [TEST-RED] H-5.1 / H-5.2 HomePrinciples
 
-- [ ] 新建 `src/components/site/HomePrinciples.test.tsx`
-- [ ] 新建 `src/lib/content/principles.test.ts`（共享 source data 测试）
-- [ ] FAIL
+- [x] 新建 `src/components/site/HomePrinciples.test.tsx`
+- [x] 新建 `src/lib/content/principles.test.ts`（共享 source data 测试）
+- [x] FAIL
 - commit: `test(home): H-5 HomePrinciples`
 
 #### M2-B-4 [IMPL-GREEN] HomePrinciples + 数据
 
-- [ ] 新建 `src/lib/content/principles.ts`（含 8 条 principle，主 4 标记 isFeatured）
-- [ ] 新建 `src/components/site/HomePrinciples.tsx`：取 isFeatured=true 的 4 条
-- [ ] PASS
+- [x] 新建 `src/lib/content/principles.ts`（含 8 条 principle，主 4 标记 isFeatured）
+- [x] 新建 `src/components/site/HomePrinciples.tsx`：取 isFeatured=true 的 4 条
+- [x] PASS
 - commit: `feat(home): H-5 HomePrinciples`
 
 #### M2-B-5 [TEST-RED] H-4 HomeColumns
 
-- [ ] 新建 `src/components/site/HomeColumns.test.tsx`
-- [ ] FAIL
+- [x] 新建 `src/components/site/HomeColumns.test.tsx`
+- [x] FAIL
 - commit: `test(home): H-4 HomeColumns`
 
 #### M2-B-6 [IMPL-GREEN] HomeColumns
 
-- [ ] 新建 `src/components/site/HomeColumns.tsx`：listColumns + cards
-- [ ] PASS
+- [x] 新建 `src/components/site/HomeColumns.tsx`：listColumns + cards
+- [x] PASS
 - commit: `feat(home): H-4 HomeColumns`
 
 #### M2-B-7 [TEST-RED] H-3 HomeFeaturedAndRecent
 
-- [ ] 新建 `src/components/site/HomeFeaturedAndRecent.test.tsx`
-- [ ] FAIL
+- [x] 新建 `src/components/site/HomeFeaturedAndRecent.test.tsx`
+- [x] FAIL
 - commit: `test(home): H-3 HomeFeaturedAndRecent`
 
 #### M2-B-8 [IMPL-GREEN] HomeFeaturedAndRecent
 
-- [ ] 新建 `src/components/site/HomeFeaturedAndRecent.tsx`：拿 listPosts({ pageSize: 8 }) 拆 1 featured + 7 recent
-- [ ] PASS
+- [x] 新建 `src/components/site/HomeFeaturedAndRecent.tsx`：拿 listPosts({ pageSize: 8 }) 拆 1 featured + 7 recent
+- [x] PASS
 - commit: `feat(home): H-3 HomeFeaturedAndRecent`
 
 #### M2-B-9 [TEST-RED] H-8 HomeStats
 
-- [ ] 新建 `src/components/site/HomeStats.test.tsx`
-- [ ] FAIL
+- [x] 新建 `src/components/site/HomeStats.test.tsx`
+- [x] FAIL
 - commit: `test(home): H-8 HomeStats`
 
 #### M2-B-10 [IMPL-GREEN] HomeStats
 
-- [ ] 新建 `src/components/site/HomeStats.tsx`：mono 单行
-- [ ] 如需扩 `getSiteStats()` 加 lastShipped 字段，同步扩展（一对 service test commit）
-- [ ] PASS
+- [x] 新建 `src/components/site/HomeStats.tsx`：mono 单行
+- [x] 如需扩 `getSiteStats()` 加 lastShipped 字段，同步扩展（一对 service test commit）
+- [x] PASS
 - commit: `feat(home): H-8 HomeStats`
 
 #### M2-B-11 [TEST-RED] H-6 TechStack 升级
 
-- [ ] 新建 / 扩展 `src/components/site/TechStack.test.tsx`
-- [ ] FAIL
+- [x] 新建 / 扩展 `src/components/site/TechStack.test.tsx`
+- [x] FAIL
 - commit: `test(home): H-6 TechStack upgrade`
 
 #### M2-B-12 [IMPL-GREEN] TechStack rationale + 链接
 
-- [ ] 新建 `src/lib/content/tech-stack.ts`（统一 source）
-- [ ] 改 `src/components/site/TechStack.tsx`：从 content 取，每项加 rationale tooltip，末尾链接到 about#tech-stack
-- [ ] PASS
+- [x] 新建 `src/lib/content/tech-stack.ts`（统一 source）
+- [x] 改 `src/components/site/TechStack.tsx`：从 content 取，每项加 rationale tooltip，末尾链接到 about#tech-stack
+- [x] PASS
 - commit: `feat(home): H-6 TechStack upgrade`
 
 #### M2-B-13 [TEST-RED] H-7 GithubCard 视觉与 fallback
 
-- [ ] 扩展 `GithubCard.test.tsx`
-- [ ] FAIL
+- [x] 扩展 `GithubCard.test.tsx`
+- [x] FAIL
 - commit: `test(home): H-7 GithubCard upgrade`
 
 #### M2-B-14 [IMPL-GREEN] GithubCard 微调
 
-- [ ] 容器套 launch-panel；fallback 文案中文化
-- [ ] PASS
+- [x] 容器套 launch-panel；fallback 文案中文化
+- [x] PASS
 - commit: `feat(home): H-7 GithubCard upgrade`
 
 #### M2-B-15 [TEST-RED] H-1.1 / H-1.2 / H-9.1 / H-9.2 page.tsx 重组 + 一致化
 
-- [ ] 大改 `src/app/(site)/page.test.tsx`：断言 7 section DOM 顺序、删 LaunchNarrative 引用、文案中文化
-- [ ] FAIL
+- [x] 大改 `src/app/(site)/page.test.tsx`：断言 7 section DOM 顺序、删 LaunchNarrative 引用、文案中文化
+- [x] FAIL
 - commit: `test(home): H-1 H-9 page composition`
 
 #### M2-B-16 [IMPL-GREEN] page.tsx 重组
 
-- [ ] 重写 `src/app/(site)/page.tsx`：HomeHero / HomeFeaturedAndRecent / HomeColumns / HomePrinciples / TechStack / GithubCard / HomeStats 7 段
-- [ ] 删除 LaunchNarrative import
-- [ ] 文案统一中文（H-9）
-- [ ] PASS
+- [x] 重写 `src/app/(site)/page.tsx`：HomeHero / HomeFeaturedAndRecent / HomeColumns / HomePrinciples / TechStack / GithubCard / HomeStats 7 段
+- [x] 删除 LaunchNarrative import
+- [x] 文案统一中文（H-9）
+- [x] PASS
 - commit: `feat(home): H-1 H-9 page composition`
 
 **M2-B 出口检查**：
 
-- [ ] `pnpm test` 全绿
-- [ ] 浏览器审查 `/` light + dark + 空文章状态
+- [x] `pnpm test` 全绿
+- [x] 浏览器审查 `/` light + dark + 空文章状态
 
 ---
 
@@ -977,9 +977,9 @@ M1-C evidence (2026-05-23):
 
 **M2-C 出口检查**：
 
-- [ ] `pnpm test` 全绿
-- [ ] 浏览器审查 `/about` light + dark
-- [ ] 验证 `/about#tech-stack` 锚跳转工作
+- [x] `pnpm test` 全绿
+- [x] 浏览器审查 `/about` light + dark
+- [x] 验证 `/about#tech-stack` 锚跳转工作
 
 ---
 
@@ -991,25 +991,25 @@ M1-C evidence (2026-05-23):
 
 #### M3-A-1 [TEST-RED] IP-2.1 + IP-5.2
 
-- [ ] `AdminSidebar.test.tsx` 加最终 spec：grep NAV_ITEMS 无 "analytics" / "settings" / "_editor-demo"
-- [ ] FAIL or PASS
+- [x] `AdminSidebar.test.tsx` 加最终 spec：grep NAV_ITEMS 无 "analytics" / "settings" / "_editor-demo"
+- [x] FAIL or PASS
 - commit: `test(nav): IP-5 sidebar nav final check`
 
 #### M3-A-2 [IMPL-GREEN] PASS 确认
 
-- [ ] 如已 PASS 跳过；否则补
+- [x] 如已 PASS 跳过；否则补
 - commit: `feat(nav): IP-5 final` *(可跳过)*
 
 #### M3-A-3 [docs] IP-3.2 `_editor-demo` 加 PoC banner
 
-- [ ] 在 `src/app/(admin)/admin/_editor-demo/page.tsx` 顶部加 banner "Editor PoC sandbox — not part of production"
-- [ ] commit: `docs(admin): IP-3.2 editor demo banner [no-tdd]`
+- [x] 在 `src/app/(admin)/admin/_editor-demo/page.tsx` 顶部加 banner "Editor PoC sandbox — not part of production"
+- [x] commit: `docs(admin): IP-3.2 editor demo banner [no-tdd]`
 
 #### M3-A-4 [docs] 内部链接 sweep（可选）
 
-- [ ] grep `<Link href=` 列表交叉对照 `find page.tsx`
-- [ ] 修任何 404 死链
-- [ ] commit: `chore(nav): IP-2.2 link sweep [no-tdd]`
+- [x] grep `<Link href=` 列表交叉对照 `find page.tsx`
+- [x] 修任何 404 死链
+- [x] commit: not needed; no dead link found after sidebar cleanup
 
 ---
 
@@ -1019,42 +1019,42 @@ M1-C evidence (2026-05-23):
 
 #### M3-B-1 [TEST-RED] I18N-2.1 AboutFutureRoadmap i18n 声明
 
-- [ ] `AboutFutureRoadmap.test.tsx` 加 spec：断言含 "中文单语言" / "V3" 字符
-- [ ] FAIL（M2-C 已实施时应已 PASS；此为确认）
+- [x] `AboutFutureRoadmap.test.tsx` 加 spec：断言含 "中文单语言" / "V3" 字符
+- [x] FAIL（M2-C 已实施时应已 PASS；此为确认）
 - commit: `test(i18n-docs): I18N-2 about disclosure`
 
 #### M3-B-2 [IMPL-GREEN] PASS
 
-- [ ] 确认 PASS
+- [x] 确认 PASS
 - commit: `feat(i18n-docs): I18N-2 about disclosure` *(可跳过)*
 
 #### M3-B-3 [docs] I18N-2.2 README 加单语声明
 
-- [ ] 改 `README.md`，加单语声明段
-- [ ] commit: `docs(i18n-docs): I18N-2.2 readme disclosure [no-tdd]`
+- [x] 改 `README.md`，加单语声明段
+- [x] commit: included in `feat(i18n-docs): I18N-2 single-locale disclosure`
 
 #### M3-B-4 [docs] I18N-2.3 sitemap / robots 注释
 
-- [ ] 改 `src/app/sitemap.ts` + `src/app/robots.ts` 顶部 JSDoc
-- [ ] commit: `docs(i18n-docs): I18N-2.3 sitemap robots comments [no-tdd]`
+- [x] 改 `src/app/sitemap.ts` + `src/app/robots.ts` 顶部 JSDoc
+- [x] commit: included in `feat(i18n-docs): I18N-2 single-locale disclosure`
 
 #### M3-B-5 [TEST-RED] I18N-3.1 / I18N-3.2 / I18N-3.3 不允许假装
 
-- [ ] `SiteHeader.test.tsx` 加 spec：no language switcher
-- [ ] `posts/[slug]/page.test.tsx` 加 spec：metadata.alternates.languages 不设
-- [ ] grep next-intl 等
-- [ ] FAIL or PASS
+- [x] `SiteHeader.test.tsx` 加 spec：no language switcher
+- [x] `posts/[slug]/page.test.tsx` 加 spec：metadata.alternates.languages 不设
+- [x] grep next-intl 等
+- [x] FAIL or PASS
 - commit: `test(i18n-docs): I18N-3 no fake i18n`
 
 #### M3-B-6 [IMPL-GREEN] 确认 / 修正
 
-- [ ] PASS
+- [x] PASS
 - commit: `feat(i18n-docs): I18N-3 no fake i18n` *(可跳过)*
 
 #### M3-B-7 [docs] I18N-4.2 memory-bank progress.md 加 V3 slug
 
-- [ ] `memory-bank/progress.md` V3 段加 `i18n-locale-routing-v3` slug
-- [ ] commit: `docs(i18n-docs): I18N-4.2 progress v3 slug [no-tdd]`
+- [x] `memory-bank/progress.md` V3 段加 `i18n-locale-routing-v3` slug
+- [x] commit: `docs(i18n-docs): I18N-4.2 progress v3 slug [no-tdd]`
 
 ---
 
@@ -1064,27 +1064,27 @@ M1-C evidence (2026-05-23):
 
 #### M3-C-1 浏览器审查 light mode
 
-- [ ] 跑 `pnpm dev`
-- [ ] 按 checklist 走完 12 路由 light mode
-- [ ] 截图归档到 `audit/light/{route}-light.png`
-- [ ] issue-log 记录每个缺陷
+- [x] 跑 `pnpm dev`
+- [x] 按 checklist 走完 12 路由 light mode
+- [x] 截图归档到 `audit/light/{route}.png`
+- [x] issue-log 记录每个缺陷
 
 #### M3-C-2 浏览器审查 dark mode
 
-- [ ] 切 dark
-- [ ] 按 checklist 走完 12 路由 dark mode
-- [ ] 截图归档到 `audit/dark/{route}-dark.png`
-- [ ] issue-log 记录缺陷
+- [x] 切 dark
+- [x] 按 checklist 走完 12 路由 dark mode
+- [x] 截图归档到 `audit/dark/{route}.png`
+- [x] issue-log 记录缺陷
 
 #### M3-C-3 修正发现的缺陷
 
-- [ ] 每个 issue 走小型 TDD 微循环（commit pair）
-- [ ] 重新跑 audit 直到清单全绿
+- [x] 每个 issue 走小型 TDD 微循环（commit pair）
+- [x] 重新跑 audit 直到清单全绿
 
 #### M3-C-4 截图与 issue-log 归档
 
-- [ ] 把所有 audit/ 文件夹与 issue-log.md 提交
-- [ ] commit: `docs(audit): M3-C browser audit final [no-tdd]`
+- [x] 把所有 audit/ 文件夹与 issue-log.md 提交
+- [x] commit: `docs(audit): M3-C browser audit final [no-tdd]`
 
 ---
 
@@ -1092,21 +1092,21 @@ M1-C evidence (2026-05-23):
 
 #### M3-D-1 全量验收
 
-- [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build`
-- [ ] 全绿
-- [ ] commit: 无（仅检查）
+- [x] `pnpm typecheck && pnpm lint && pnpm test && pnpm build`
+- [x] 全绿
+- [x] commit: 无（仅检查）
 
 #### M3-D-2 性能 / chunk size 复核
 
-- [ ] 比较 `pnpm build` 输出 admin chunk vs P-4 基线
-- [ ] 应该满足 EC-6.2 ≤ 90 kB
-- [ ] 若不达标，做 chunk 分析 + 优化
+- [x] 比较 `pnpm build` 输出 admin chunk vs P-4 基线
+- [x] 应该满足 EC-6.2 ≤ 90 kB
+- [x] 若不达标，做 chunk 分析 + 优化
 
 #### M3-D-3 写 completion-report.md
 
-- [ ] 新建 `.claude/sdd/public-ui-and-editor-overhaul/completion-report.md`
-- [ ] 内容：本轮完成项清单、关键决策回顾、与 spec 偏离记录、未做项归属、测试基线变化、build 输出对比、浏览器审查截图链接
-- [ ] commit: `docs(public-ui-and-editor-overhaul): completion report [no-tdd]`
+- [x] 新建 `.claude/sdd/public-ui-and-editor-overhaul/completion-report.md`
+- [x] 内容：本轮完成项清单、关键决策回顾、与 spec 偏离记录、未做项归属、测试基线变化、build 输出对比、浏览器审查截图链接
+- [x] commit: `docs(public-ui-and-editor-overhaul): completion report [no-tdd]`
 
 #### M3-D-4 memory-bank 同步
 
