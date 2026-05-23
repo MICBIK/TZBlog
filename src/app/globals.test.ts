@@ -286,6 +286,14 @@ describe("globals.css editorial system", () => {
     expect(css).toContain("animation: none");
   });
 
+  it("AboutHero uses launch-surface with reduced visual strength", () => {
+    const block = cssBlock(css, ".about-hero-surface");
+
+    expect(block).toContain("box-shadow:");
+    expect(block).toContain("hsl(var(--fg) / 0.04)");
+    expect(block).toContain("hsl(var(--accent) / 0.08)");
+  });
+
   it("site components use generated theme utilities instead of unresolved var arbitrary classes", () => {
     const files = [
       "src/components/site/HeroEditorial.tsx",
