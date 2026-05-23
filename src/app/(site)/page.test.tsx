@@ -126,6 +126,30 @@ beforeEach(() => {
 });
 
 describe("HomePage composition", () => {
+  it("rendersIdentityRailAndContentStream", async () => {
+    render(await HomePage());
+
+    const identityRail = screen.getByRole("complementary", {
+      name: "作者身份",
+    });
+    const contentStream = screen.getByRole("main", {
+      name: "首页内容流",
+    });
+
+    expect(identityRail).toHaveAttribute("data-home-identity-rail");
+    expect(contentStream).toHaveAttribute("data-home-content-stream");
+    expect(screen.getByText("当前状态")).toBeInTheDocument();
+    expect(screen.getByTestId("home-featured-recent-section")).toBeInTheDocument();
+    expect(screen.getByTestId("home-columns-section")).toBeInTheDocument();
+    expect(screen.getByTestId("github-card-section")).toBeInTheDocument();
+    expect(screen.getByTestId("home-stats-section")).toBeInTheDocument();
+
+    expect(
+      identityRail.compareDocumentPosition(contentStream) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("renders 7 sections in order", async () => {
     render(await HomePage());
 
