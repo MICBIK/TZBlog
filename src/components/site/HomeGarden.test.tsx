@@ -92,6 +92,55 @@ describe("<HomeGarden />", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
+
+  it("usesMotionTokensAndReducedMotionFallback", () => {
+    const { container } = render(
+      <HomeGarden
+        hero={<section>Hero ready</section>}
+        featuredAndRecent={moduleState(
+          "loading",
+          "文章加载中",
+          "正在读取最新文章。",
+        )}
+        columns={<section>Projects ready</section>}
+        principles={<section>Principles ready</section>}
+        techStack={<section>Tech stack ready</section>}
+        github={moduleState(
+          "error",
+          "GitHub 数据暂不可用",
+          "外部数据失败时首页仍要可读。",
+        )}
+        stats={<section>Stats ready</section>}
+      />,
+    );
+
+    const garden = container.querySelector("[data-home-garden]");
+    const identityRail = screen.getByRole("complementary", {
+      name: "作者身份",
+    });
+    const contentStream = screen.getByRole("main", {
+      name: "首页内容流",
+    });
+    const contextRail = screen.getByRole("complementary", {
+      name: "首页上下文",
+    });
+    const moduleStates = Array.from(
+      container.querySelectorAll("[data-home-module-state]"),
+    );
+
+    expect(garden).toHaveAttribute("data-home-motion-scope");
+    expect(garden).toHaveAttribute("data-reduced-motion-safe");
+    expect(identityRail).toHaveAttribute("data-reveal");
+    expect(identityRail).toHaveStyle("--reveal-delay: 0ms");
+    expect(contentStream).toHaveAttribute("data-home-motion-stagger");
+    expect(contentStream).toHaveStyle("--reveal-delay: 80ms");
+    expect(contextRail).toHaveAttribute("data-reveal");
+    expect(contextRail).toHaveStyle("--reveal-delay: 160ms");
+    expect(moduleStates.length).toBeGreaterThan(0);
+    expect(
+      moduleStates.every((moduleStateEl) => moduleStateEl.hasAttribute("data-reveal")),
+    ).toBe(true);
+  });
 });
 
 function moduleState(
