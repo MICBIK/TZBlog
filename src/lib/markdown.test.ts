@@ -96,6 +96,15 @@ describe("renderMarkdown", () => {
     expect(html).toContain("<td>1</td>");
   });
 
+  it("wraps tables in md-table-scroll div", async () => {
+    const md = ["| a | b |", "|---|---|", "| 1 | 2 |"].join("\n");
+    const html = await renderMarkdown(md);
+
+    expect(html).toMatch(
+      /<div class="md-table-scroll">[\s\S]*<table>[\s\S]*<\/table>[\s\S]*<\/div>/,
+    );
+  });
+
   it("renders GitHub-style alerts as semantic callouts", async () => {
     const md = [
       "> [!NOTE]",
