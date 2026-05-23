@@ -36,11 +36,15 @@ export function PostCard({ post }: PostCardProps) {
   return (
     <article
       aria-labelledby={headingId}
+      data-cover-state={cover ? "with-cover" : "no-cover"}
       data-post-card="dense"
-      className="group flex gap-4 py-6 transition md:gap-6"
+      className="group flex min-w-0 max-w-full gap-4 py-6 transition md:gap-6"
     >
       {cover ? (
-        <div className="aspect-[16/10] w-32 shrink-0 overflow-hidden rounded-md md:w-44">
+        <div
+          data-post-cover
+          className="aspect-[16/10] w-32 shrink-0 overflow-hidden rounded-md md:w-44"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={cover}
@@ -66,7 +70,7 @@ export function PostCard({ post }: PostCardProps) {
         >
           <Link
             href={`/posts/${post.slug}`}
-            className="transition group-hover:underline"
+            className="break-words hyphens-auto transition group-hover:underline"
           >
             {post.title}
           </Link>
