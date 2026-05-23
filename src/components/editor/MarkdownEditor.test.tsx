@@ -337,4 +337,61 @@ describe("MarkdownEditor source contract", () => {
 
     document.documentElement.classList.remove("dark");
   });
+
+  it("pastes rich HTML as plain text", async () => {
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+    const { container } = render(
+      <MarkdownEditor
+        value=""
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(0, 0);
+    fireEvent.paste(container.querySelector(".cm-content") as HTMLElement, {
+      clipboardData: {
+        types: ["text/html"],
+        getData: (type: string) =>
+          type === "text/html" ? "<strong>bold</strong><em> text</em>" : "",
+      },
+    });
+
+    expect(onChange).toHaveBeenCalledWith("bold text");
+  });
+
+  it("pastes markdown text literally", async () => {
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+    const { container } = render(
+      <MarkdownEditor
+        value=""
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(0, 0);
+    fireEvent.paste(container.querySelector(".cm-content") as HTMLElement, {
+      clipboardData: {
+        types: ["text/plain"],
+        getData: (type: string) => (type === "text/plain" ? "## pasted" : ""),
+      },
+    });
+
+    expect(onChange).toHaveBeenCalledWith("## pasted");
+  });
 });
