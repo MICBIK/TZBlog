@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   FileText,
   Image as ImageIcon,
@@ -23,6 +26,8 @@ const adminLinks: AdminLink[] = [
 ];
 
 export function AdminSidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="flex h-full w-60 flex-col border-r border-border bg-bg">
       <div className="border-b border-border px-6 py-5">
@@ -40,7 +45,8 @@ export function AdminSidebar() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-fg hover:bg-muted hover:text-fg transition-colors"
+              data-active={isActivePath(pathname, link.href) ? "true" : "false"}
+              className="admin-sidebar-link flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Icon className="h-4 w-4" />
               <span>{link.label}</span>
@@ -50,4 +56,10 @@ export function AdminSidebar() {
       </nav>
     </aside>
   );
+}
+
+function isActivePath(pathname: string, href: string): boolean {
+  if (href === "/admin") return pathname === href;
+
+  return pathname === href || pathname.startsWith(`${href}/`);
 }

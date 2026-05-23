@@ -269,6 +269,23 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  .admin-sidebar-link {
+    border-left: 2px solid transparent;
+    color: hsl(var(--sidebar-fg));
+  }
+
+  .admin-sidebar-link:hover {
+    background: hsl(var(--sidebar-bg-hover));
+    color: hsl(var(--sidebar-fg-hover));
+  }
+
+  .admin-sidebar-link[data-active="true"] {
+    border-left-color: hsl(var(--sidebar-indicator-active));
+    background: hsl(var(--sidebar-bg-active));
+    color: hsl(var(--sidebar-fg-hover));
+    font-weight: 500;
+  }
+
   ::selection {
     background-color: hsl(var(--accent) / 0.2);
     color: hsl(var(--fg));
