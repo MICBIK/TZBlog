@@ -16,6 +16,7 @@ interface HastElement {
   type: "element";
   tagName: string;
   properties?: Record<string, unknown>;
+  data?: Record<string, unknown>;
   children: HastNode[];
 }
 interface HastText {
@@ -109,6 +110,7 @@ function rehypeShiki(options: RehypeShikiOptions) {
       index: number;
       pre: HastElement;
       lang: string | null;
+      filename: string | null;
       code: string;
     }> = [];
 
@@ -129,11 +131,12 @@ function rehypeShiki(options: RehypeShikiOptions) {
         index,
         pre: el,
         lang: codeLanguage(code),
+        filename: codeFilename(code),
         code: hastToString(code as never),
       });
     });
 
-    for (const { parent, index, pre, lang, code } of codeBlocks) {
+    for (const { parent, index, pre, lang, filename, code } of codeBlocks) {
       const useLang = lang && loadedLangs.has(lang) ? lang : "text";
       let highlightedPre = pre;
 
@@ -155,7 +158,7 @@ function rehypeShiki(options: RehypeShikiOptions) {
         // Fall through and leave the node untouched on failure.
       }
 
-      parent.children[index] = createCodeBlockFigure(highlightedPre, lang);
+      parent.children[index] = createCodeBlockFigure(highlightedPre, lang, filename);
     }
   };
 }
@@ -168,8 +171,29 @@ function isHastParent(node: unknown): node is HastParent {
   );
 }
 
-function createCodeBlockFigure(pre: HastElement, lang: string | null): HastElement {
+function createCodeBlockFigure(
+  pre: HastElement,
+  lang: string | null,
+  filename: string | null,
+): HastElement {
   const language = lang ?? "text";
+  const captionChildren: HastNode[] = [
+    {
+      type: "element",
+      tagName: "span",
+      properties: { className: ["code-block-language"] },
+      children: [{ type: "text", value: language.toUpperCase() }],
+    },
+  ];
+
+  if (filename) {
+    captionChildren.push({
+      type: "element",
+      tagName: "span",
+      properties: { className: ["code-block-filename"] },
+      children: [{ type: "text", value: filename }],
+    });
+  }
 
   return {
     type: "element",
@@ -183,14 +207,7 @@ function createCodeBlockFigure(pre: HastElement, lang: string | null): HastEleme
         type: "element",
         tagName: "figcaption",
         properties: { className: ["code-block-chrome"] },
-        children: [
-          {
-            type: "element",
-            tagName: "span",
-            properties: { className: ["code-block-language"] },
-            children: [{ type: "text", value: language.toUpperCase() }],
-          },
-        ],
+        children: captionChildren,
       },
       pre,
     ],
@@ -205,6 +222,14 @@ function codeLanguage(node: HastElement): string | null {
     }
   }
   return null;
+}
+
+function codeFilename(node: HastElement): string | null {
+  const meta = node.data?.meta;
+  if (typeof meta !== "string") return null;
+
+  const match = /(?:^|\s)title=(?:"([^"]+)"|'([^']+)'|([^\s]+))/.exec(meta);
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? null;
 }
 
 function rehypeCollectToc(headings: TocHeading[]) {
