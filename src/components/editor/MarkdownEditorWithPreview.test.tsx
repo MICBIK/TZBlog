@@ -39,4 +39,19 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
     );
     expect(screen.getByTestId("dynamic-markdown-editor")).toHaveTextContent("# hi");
   });
+
+  it("uses markdown-body preview wrapper without preview-only watermark", async () => {
+    const { MarkdownEditorWithPreview } = await import("./MarkdownEditorWithPreview");
+
+    render(<MarkdownEditorWithPreview value="## Preview" onChange={vi.fn()} />);
+
+    const preview = screen.getByLabelText("Markdown preview");
+    const article = preview.querySelector("article");
+    expect(article).toHaveClass("markdown-body");
+    expect(article).toHaveClass("max-w-none");
+    expect(article?.className).not.toContain("prose");
+    expect(
+      screen.queryByText(/Lightweight in-browser preview|published page uses/i),
+    ).not.toBeInTheDocument();
+  });
 });
