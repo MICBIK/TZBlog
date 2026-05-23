@@ -27,13 +27,10 @@ export interface MarkdownEditorWithPreviewProps {
 type Tab = "editor" | "preview";
 
 /**
- * Side-by-side editor + live preview.
+ * Side-by-side Markdown source editor + live preview.
  *
- * The full server pipeline (remark + rehype + shiki) is too heavy for in-browser
- * keystroke rendering, so we use a deliberately tiny client-side renderer here.
- * It covers the ~80% of Markdown that authors check while drafting; the
- * authoritative render happens server-side via `MarkdownPreview` / the post
- * service. TODO: swap in `marked` + `DOMPurify` when those land.
+ * The preview uses the same full renderMarkdown pipeline as published posts,
+ * with a debounce so typing stays responsive.
  */
 export function MarkdownEditorWithPreview({
   value,
