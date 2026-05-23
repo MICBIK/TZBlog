@@ -27,6 +27,7 @@ interface HastRoot {
   type: "root";
   children: HastNode[];
 }
+type HastParent = HastRoot | HastElement;
 
 type MarkdownAlertType = "NOTE" | "TIP" | "IMPORTANT" | "WARNING" | "CAUTION";
 
@@ -103,28 +104,39 @@ function rehypeShiki(options: RehypeShikiOptions) {
     const highlighter = await getHighlighter(themes);
     const loadedLangs = new Set(highlighter.getLoadedLanguages());
 
-    const codeBlocks: Array<{ parent: HastElement; lang: string | null; code: string }> = [];
+    const codeBlocks: Array<{
+      parent: HastParent;
+      index: number;
+      pre: HastElement;
+      lang: string | null;
+      code: string;
+    }> = [];
 
-    visit(tree as never, "element", (node: unknown, _index: number | undefined, parent: unknown) => {
+    visit(tree as never, "element", (node: unknown, index: number | undefined, parent: unknown) => {
       const el = node as HastElement;
-      const par = parent as HastElement | null;
-      if (
-        el.tagName !== "code" ||
-        !par ||
-        par.type !== "element" ||
-        par.tagName !== "pre"
-      ) {
+      if (el.tagName !== "pre" || typeof index !== "number" || !isHastParent(parent)) {
         return;
       }
+      const code = el.children.find(
+        (child): child is HastElement =>
+          (child as HastElement).type === "element" &&
+          (child as HastElement).tagName === "code",
+      );
+      if (!code) return;
+
       codeBlocks.push({
-        parent: par,
-        lang: codeLanguage(el),
-        code: hastToString(el as never),
+        parent,
+        index,
+        pre: el,
+        lang: codeLanguage(code),
+        code: hastToString(code as never),
       });
     });
 
-    for (const { parent, lang, code } of codeBlocks) {
+    for (const { parent, index, pre, lang, code } of codeBlocks) {
       const useLang = lang && loadedLangs.has(lang) ? lang : "text";
+      let highlightedPre = pre;
+
       try {
         const hast = highlighter.codeToHast(code, {
           lang: useLang,
@@ -137,14 +149,51 @@ function rehypeShiki(options: RehypeShikiOptions) {
           (c): c is HastElement => (c as HastElement).type === "element" && (c as HastElement).tagName === "pre",
         );
         if (shikiPre) {
-          parent.tagName = shikiPre.tagName;
-          parent.properties = { ...(shikiPre.properties ?? {}) };
-          parent.children = shikiPre.children;
+          highlightedPre = shikiPre;
         }
       } catch {
         // Fall through and leave the node untouched on failure.
       }
+
+      parent.children[index] = createCodeBlockFigure(highlightedPre, lang);
     }
+  };
+}
+
+function isHastParent(node: unknown): node is HastParent {
+  return (
+    typeof node === "object" &&
+    node !== null &&
+    Array.isArray((node as HastParent).children)
+  );
+}
+
+function createCodeBlockFigure(pre: HastElement, lang: string | null): HastElement {
+  const language = lang ?? "text";
+
+  return {
+    type: "element",
+    tagName: "figure",
+    properties: {
+      className: ["code-block"],
+      dataLanguage: language,
+    },
+    children: [
+      {
+        type: "element",
+        tagName: "figcaption",
+        properties: { className: ["code-block-chrome"] },
+        children: [
+          {
+            type: "element",
+            tagName: "span",
+            properties: { className: ["code-block-language"] },
+            children: [{ type: "text", value: language.toUpperCase() }],
+          },
+        ],
+      },
+      pre,
+    ],
   };
 }
 
