@@ -1,5 +1,16 @@
 "use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import type { MarkdownSourceApi } from "./MarkdownEditor";
 
 interface EditorToolbarProps {
@@ -32,22 +43,76 @@ const TOOLBAR_ITEMS = [
 type ToolbarAction = (typeof TOOLBAR_ITEMS)[number]["action"];
 
 export function EditorToolbar({ source }: EditorToolbarProps) {
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+
+  const submitLink = () => {
+    const url = linkUrl.trim();
+    if (!source || !url) return;
+
+    source.wrapSelection("[", `](${url})`);
+    setLinkUrl("");
+    setLinkDialogOpen(false);
+  };
+
   return (
-    <div
-      role="toolbar"
-      aria-label="Markdown source toolbar"
-      className="flex flex-wrap items-center gap-1 border-b border-[hsl(var(--border))] bg-[hsl(var(--bg))] p-2"
-    >
-      {TOOLBAR_ITEMS.map((item) => (
-        <ToolButton
-          key={item.label}
-          label={item.label}
-          marker={item.marker}
-          disabled={!source}
-          onClick={() => runToolbarAction(source, item.action)}
-        />
-      ))}
-    </div>
+    <>
+      <div
+        role="toolbar"
+        aria-label="Markdown source toolbar"
+        className="flex flex-wrap items-center gap-1 border-b border-[hsl(var(--border))] bg-[hsl(var(--bg))] p-2"
+      >
+        {TOOLBAR_ITEMS.map((item) => (
+          <ToolButton
+            key={item.label}
+            label={item.label}
+            marker={item.marker}
+            disabled={!source}
+            onClick={() => {
+              if (item.action === "link") {
+                setLinkDialogOpen(true);
+                return;
+              }
+
+              runToolbarAction(source, item.action);
+            }}
+          />
+        ))}
+      </div>
+
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>插入链接</DialogTitle>
+            <DialogDescription>
+              输入 URL 后会用 Markdown link 语法包裹当前选中文本。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label
+              htmlFor="markdown-link-url"
+              className="text-sm font-medium text-[hsl(var(--fg))]"
+            >
+              URL
+            </label>
+            <Input
+              id="markdown-link-url"
+              value={linkUrl}
+              onChange={(event) => setLinkUrl(event.target.value)}
+              placeholder="https://example.com"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setLinkDialogOpen(false)}>
+              取消
+            </Button>
+            <Button type="button" onClick={submitLink}>
+              插入链接 / Insert link
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
