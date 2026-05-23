@@ -126,6 +126,16 @@ describe("globals.css editorial system", () => {
     expect(block).toContain("border-bottom: 1px solid hsl(var(--code-border));");
   });
 
+  it("table zebra and th use table tokens", () => {
+    const zebra = cssBlock(css, ".markdown-body tbody tr:nth-child(odd)");
+    const header = cssBlock(css, ".markdown-body th");
+
+    expect(zebra).toContain("background: hsl(var(--table-row-zebra));");
+    expect(header).toContain("background: hsl(var(--table-th-bg));");
+    expect(header).toContain("text-transform: uppercase;");
+    expect(header).toContain("letter-spacing: var(--tracking-label);");
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
