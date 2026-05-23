@@ -64,6 +64,11 @@ function runToolbarAction(source: MarkdownSourceApi | null, action: ToolbarActio
     return;
   }
 
+  if (action === "codeBlock") {
+    source.wrapSelection("```\n", "\n```");
+    return;
+  }
+
   source.focus();
 }
 
