@@ -162,6 +162,45 @@ describe("globals.css editorial system", () => {
     expect(hr).toContain("margin: var(--space-stack-lg) 0;");
   });
 
+  it("globals.css contains all new markdown tokens and selectors", () => {
+    const tokens = [
+      "--muted-fg-strong:",
+      "--surface-subtle:",
+      "--surface-raised:",
+      "--ring-soft:",
+      "--space-block-tight:",
+      "--space-block:",
+      "--space-block-loose:",
+      "--space-inline:",
+      "--callout-note-accent:",
+      "--callout-caution-tint:",
+      "--code-surface:",
+      "--code-chrome-bg:",
+      "--table-th-bg:",
+      "--table-row-zebra:",
+      "--kbd-bg:",
+      "--shadow-inset-thin:",
+    ];
+    const selectors = [
+      ".markdown-alert-icon",
+      ".markdown-alert-label",
+      ".code-block",
+      ".code-block-chrome",
+      ".code-block-copy",
+      ".md-table-scroll",
+      '.markdown-body li input[type="checkbox"]',
+      ".markdown-body kbd",
+      ".markdown-body tbody tr:nth-child(odd)",
+    ];
+
+    for (const token of tokens) {
+      expect(css, `missing token ${token}`).toContain(token);
+    }
+    for (const selector of selectors) {
+      expect(css, `missing selector ${selector}`).toContain(selector);
+    }
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
