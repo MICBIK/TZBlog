@@ -11,7 +11,10 @@ interface AboutContactProps {
 
 export function AboutContact({ email, links }: AboutContactProps) {
   return (
-    <section aria-labelledby="about-contact-heading" className="space-y-6">
+    <section
+      aria-labelledby="about-contact-heading"
+      className="launch-panel space-y-6 p-5 sm:p-6"
+    >
       <header className="space-y-3">
         <p className="font-mono text-label tracking-label uppercase text-muted-fg">
           CONTACT
