@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 type HomeModuleState = {
   state: "loading" | "empty" | "error";
@@ -21,6 +21,10 @@ export interface HomeGardenProps {
 
 const stackItems = ["Next.js", "Prisma", "PostgreSQL", "Markdown", "Shiki"];
 
+function revealStyle(delay: string): CSSProperties {
+  return { "--reveal-delay": delay } as CSSProperties;
+}
+
 export function HomeGarden({
   hero,
   featuredAndRecent,
@@ -33,6 +37,8 @@ export function HomeGarden({
   return (
     <div
       data-home-garden
+      data-home-motion-scope
+      data-reduced-motion-safe
       className="mx-[calc(50%-50vw)] w-screen px-6 sm:px-8 lg:px-10"
     >
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(220px,280px)_minmax(0,1fr)] xl:grid-cols-[minmax(240px,300px)_minmax(0,1fr)_minmax(220px,280px)]">
@@ -40,6 +46,8 @@ export function HomeGarden({
           aria-label="作者身份"
           data-home-identity-rail
           data-home-mobile-profile-summary
+          data-reveal
+          style={revealStyle("0ms")}
           className="launch-panel order-1 h-fit min-w-0 max-w-full space-y-6 p-5 lg:sticky lg:top-24"
         >
           <header className="space-y-3">
@@ -97,6 +105,8 @@ export function HomeGarden({
           role="main"
           aria-label="首页内容流"
           data-home-content-stream
+          data-home-motion-stagger
+          style={revealStyle("80ms")}
           className="order-2 min-w-0 max-w-full space-y-[var(--space-section)]"
         >
           {hero}
@@ -109,6 +119,8 @@ export function HomeGarden({
         <aside
           aria-label="首页上下文"
           data-home-context-rail
+          data-reveal
+          style={revealStyle("160ms")}
           className="order-3 min-w-0 max-w-full space-y-6 xl:sticky xl:top-24 xl:h-fit"
         >
           {renderHomeModule("GitHub", github)}
@@ -129,6 +141,7 @@ function renderHomeModule(label: string, content: HomeModuleContent) {
       role={role}
       aria-label={`${label}模块状态`}
       data-home-module-state={content.state}
+      data-reveal
       className="launch-panel space-y-3 p-5"
     >
       <p className="font-mono text-label tracking-label uppercase text-muted-fg">
