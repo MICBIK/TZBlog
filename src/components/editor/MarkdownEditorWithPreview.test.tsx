@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ComponentType } from "react";
 
@@ -22,6 +23,8 @@ const mocks = vi.hoisted(() => ({
     },
   ),
   renderMarkdown: vi.fn(),
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
 }));
 
 vi.mock("next/dynamic", () => ({
@@ -30,6 +33,13 @@ vi.mock("next/dynamic", () => ({
 
 vi.mock("@/lib/markdown", () => ({
   renderMarkdown: mocks.renderMarkdown,
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: mocks.toastError,
+    success: mocks.toastSuccess,
+  },
 }));
 
 beforeEach(() => {
@@ -157,5 +167,33 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
     expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
       "<p>last good</p>",
     );
+  });
+
+  it("binds copy buttons inside the live preview", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    mocks.renderMarkdown.mockResolvedValue(
+      [
+        '<figure class="code-block" data-language="ts">',
+        '<figcaption class="code-block-chrome">',
+        '<button class="code-block-copy" data-copy data-state="idle" aria-label="复制代码" type="button"></button>',
+        "</figcaption>",
+        "<pre><code>const answer = 42;</code></pre>",
+        "</figure>",
+      ].join(""),
+    );
+    const { MarkdownEditorWithPreview } = await import("./MarkdownEditorWithPreview");
+
+    render(<MarkdownEditorWithPreview value="```ts\nconst answer = 42;\n```" onChange={vi.fn()} />);
+
+    await screen.findByRole("button", { name: "复制代码" });
+    await user.click(screen.getByRole("button", { name: "复制代码" }));
+
+    expect(writeText).toHaveBeenCalledWith("const answer = 42;");
+    expect(mocks.toastSuccess).toHaveBeenCalledWith("代码已复制");
   });
 });
