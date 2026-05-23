@@ -54,13 +54,14 @@ describe("showcase seed", () => {
     expect(comments.length).toBeGreaterThanOrEqual(2)
 
     for (const post of posts) {
-      expect(post.cover).toMatch(/^\/uploads\/audit-cover-\d+\.png$/)
+      expect(post.cover).toMatch(/^\/showcase\/cover-[\w-]+\.png$/)
+      expect(assetExists(post.cover)).toBe(true)
       expect(post.publishedAt).toBeInstanceOf(Date)
       expect(post.translations).toHaveLength(1)
       expect(post.translations[0].locale).toBe("zh")
       expect(post.translations[0].title).not.toEqual("(untitled)")
       expect(post.translations[0].content).toContain("```ts")
-      expect(post.translations[0].content).toContain("![](/uploads/audit-image-")
+      expect(post.translations[0].content).toContain("![](/showcase/article-")
       expect(post.column?.translations[0]?.name).toBeTruthy()
       expect(post.tags.length).toBeGreaterThanOrEqual(2)
     }

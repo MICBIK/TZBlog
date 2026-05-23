@@ -25,14 +25,14 @@ const publishedAtBase = new Date("2026-05-24T08:00:00.000Z");
 const showcaseColumns = [
   {
     slug: "engineering-notes",
-    cover: "/uploads/audit-cover-1.png",
+    cover: "/showcase/cover-engineering.png",
     order: 0,
     name: "工程札记",
     description: "记录从需求、架构、测试到部署的完整工程取舍。",
   },
   {
     slug: "writing-system",
-    cover: "/uploads/audit-cover-2.png",
+    cover: "/showcase/cover-writing.png",
     order: 1,
     name: "写作系统",
     description: "围绕 Markdown、编辑器体验和个人知识发布系统的长期实验。",
@@ -43,7 +43,7 @@ const showcasePosts = [
   {
     slug: "designing-a-technical-garden",
     columnSlug: "engineering-notes",
-    cover: "/uploads/audit-cover-3.png",
+    cover: "/showcase/cover-garden.png",
     title: "把技术博客设计成可以长期生长的花园",
     excerpt:
       "一次围绕首页、文章索引和阅读页的信息架构重组：减少模板感，保留工程密度。",
@@ -71,7 +71,7 @@ const showcasePosts = [
 
 ## 细节
 
-![](/uploads/audit-image-1.png)
+![](/showcase/article-garden.png)
 
 \`\`\`ts
 const layout = ["identity", "content", "context"] as const;
@@ -84,7 +84,7 @@ const density = layout.includes("content") ? "readable" : "empty";
   {
     slug: "notion-like-markdown-workflow",
     columnSlug: "writing-system",
-    cover: "/uploads/audit-cover-4.png",
+    cover: "/showcase/cover-editor.png",
     title: "Notion-like 交互和 Markdown 存储可以同时存在吗",
     excerpt:
       "编辑器可以更像 Notion，但后端仍然只保存 Markdown 字符串，这是当前版本的核心边界。",
@@ -104,7 +104,7 @@ const density = layout.includes("content") ? "readable" : "empty";
 - 媒体插入必须保存安全 URL。
 - 发布态仍然走同一个 \`renderMarkdown\` 管道。
 
-![](/uploads/audit-image-2.png)
+![](/showcase/article-editor.png)
 
 \`\`\`ts
 interface EditorContract {
@@ -121,7 +121,7 @@ interface EditorContract {
   {
     slug: "self-hosted-nextjs-observability",
     columnSlug: "engineering-notes",
-    cover: "/uploads/audit-cover-5.png",
+    cover: "/showcase/cover-observability.png",
     title: "自部署 Next.js 博客需要哪些最小可观测性",
     excerpt:
       "从访问上报、RSS、sitemap 到后台统计，用自研链路替代第三方分析工具的 MVP 版本。",
@@ -141,7 +141,18 @@ interface EditorContract {
 3. 点赞与评论计数。
 4. RSS / sitemap / OG 图持续可用。
 
-![](/uploads/audit-image-3.png)
+> [!WARNING]
+> 如果展示内容只依赖本地上传目录，干净环境的 smoke 会看到破图，所以 seed 必须引用仓库内可追踪资产。
+
+### 交付前检查
+
+| 指标 | 交付标准 |
+| --- | --- |
+| 首页 | 有精选文章、专栏和统计模块 |
+| 详情页 | 有 TOC、代码块、图片和评论区 |
+| 索引页 | 文章、专栏、标签都能互相跳转 |
+
+![](/showcase/article-observability.png)
 
 \`\`\`ts
 const signal = {
