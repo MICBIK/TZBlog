@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { MarkdownEditor, type MarkdownEditorProps } from "./MarkdownEditor";
@@ -180,5 +180,124 @@ describe("MarkdownEditor source contract", () => {
 
     expect(onChange).toHaveBeenCalledWith("> [!NOTE]\n> 内容");
     expect(sourceApiRef.current?.getMarkdown()).toBe("> [!NOTE]\n> 内容");
+  });
+
+  it("tab inserts 2 spaces at the cursor", async () => {
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+    const { container } = render(
+      <MarkdownEditor
+        value=""
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(0, 0);
+    fireEvent.keyDown(container.querySelector(".cm-content") as HTMLElement, {
+      key: "Tab",
+      code: "Tab",
+    });
+
+    expect(onChange).toHaveBeenCalledWith("  ");
+  });
+
+  it("continues unordered list markup on Enter", async () => {
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+    const { container } = render(
+      <MarkdownEditor
+        value="- item 1"
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(8, 8);
+    fireEvent.keyDown(container.querySelector(".cm-content") as HTMLElement, {
+      key: "Enter",
+      code: "Enter",
+    });
+
+    expect(onChange).toHaveBeenCalledWith("- item 1\n- ");
+  });
+
+  it("renders line numbers and placeholder", async () => {
+    const { container } = render(
+      <MarkdownEditor
+        value=""
+        onChange={vi.fn()}
+        placeholder="在这里写 Markdown..."
+      />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".cm-lineNumbers")).toBeInTheDocument();
+    });
+
+    expect(container.querySelector(".cm-placeholder")).toHaveTextContent(
+      "在这里写 Markdown...",
+    );
+  });
+
+  it("mod+s triggers onSave without browser default", async () => {
+    const onSave = vi.fn();
+    const props = {
+      value: "",
+      onChange: vi.fn(),
+      onSave,
+    } as MarkdownEditorProps & { onSave: () => void };
+    const { container } = render(<MarkdownEditor {...props} />);
+
+    await waitFor(() => {
+      expect(container.querySelector(".cm-content")).toBeInTheDocument();
+    });
+
+    const prevented = !fireEvent.keyDown(container.querySelector(".cm-content") as HTMLElement, {
+      key: "s",
+      code: "KeyS",
+      metaKey: true,
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(prevented).toBe(true);
+  });
+
+  it("auto-pairs square brackets", async () => {
+    const onChange = vi.fn();
+    const sourceApiRef: { current: MarkdownSourceApi | null } = { current: null };
+    const { container } = render(
+      <MarkdownEditor
+        value=""
+        onChange={onChange}
+        onReady={(api) => {
+          sourceApiRef.current = api;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(sourceApiRef.current).not.toBeNull();
+    });
+
+    sourceApiRef.current?.setSelection?.(0, 0);
+    fireEvent.keyDown(container.querySelector(".cm-content") as HTMLElement, {
+      key: "[",
+      code: "BracketLeft",
+    });
+
+    expect(onChange).toHaveBeenCalledWith("[]");
   });
 });
