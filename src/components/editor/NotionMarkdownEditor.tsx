@@ -28,10 +28,43 @@ export function NotionMarkdownEditor({
 }: NotionMarkdownEditorProps) {
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selection, setSelection] = useState<{ from: number; to: number } | null>(
+    null,
+  );
 
   const insertCommand = (markdown: string) => {
     onChange(markdown);
     setMenuOpen(false);
+    editorRef.current?.focus();
+  };
+
+  const trackSelection = () => {
+    const editor = editorRef.current;
+    if (!editor || editor.selectionStart === editor.selectionEnd) {
+      setSelection(null);
+      return;
+    }
+
+    setSelection({ from: editor.selectionStart, to: editor.selectionEnd });
+  };
+
+  const formatSelection = (format: "bold" | "italic" | "code" | "link" | "h2") => {
+    if (!selection) return;
+
+    const selectedText = value.slice(selection.from, selection.to);
+    const formatted =
+      format === "bold"
+        ? `**${selectedText}**`
+        : format === "italic"
+          ? `*${selectedText}*`
+          : format === "code"
+            ? `\`${selectedText}\``
+            : format === "link"
+              ? `[${selectedText}](url)`
+              : `## ${selectedText}`;
+
+    onChange(`${value.slice(0, selection.from)}${formatted}${value.slice(selection.to)}`);
+    setSelection(null);
     editorRef.current?.focus();
   };
 
@@ -41,12 +74,45 @@ export function NotionMarkdownEditor({
         ref={editorRef}
         aria-label="文章内容"
         value={value}
+        onSelect={trackSelection}
+        onKeyUp={trackSelection}
+        onMouseUp={trackSelection}
         onChange={(event) => {
           const next = event.currentTarget.value;
           setMenuOpen(next.endsWith("/"));
           onChange(next);
         }}
       />
+
+      {selection ? (
+        <div
+          role="toolbar"
+          aria-label="Text formatting"
+          className="absolute -top-10 left-0 z-10 flex gap-1 rounded-md border border-border bg-bg p-1 shadow-soft"
+        >
+          {[
+            { label: "Bold", format: "bold" },
+            { label: "Italic", format: "italic" },
+            { label: "Inline Code", format: "code" },
+            { label: "Link", format: "link" },
+            { label: "Heading 2", format: "h2" },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              className="rounded px-2 py-1 text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() =>
+                formatSelection(
+                  item.format as "bold" | "italic" | "code" | "link" | "h2",
+                )
+              }
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {menuOpen ? (
         <div
