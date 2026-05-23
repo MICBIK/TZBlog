@@ -162,6 +162,7 @@ content (Markdown 字符串)
   → rehypeMarkdownAlerts（GitHub alert callout → tokenized aside）
   → rehypeWrapTables（table → responsive scroll wrapper）
   → rehypeKeyboardShortcuts（允许安全 `<kbd>` 语义）
+  → rehypeArticleImages（独立图片 → `.md-image-frame` + lazy `.md-image`）
   → rehype-slug（标题加 id）
   → rehype-autolink-headings（标题 anchor）
   → rehype-sanitize（扩展 schema，保留安全 class/style/svg/kbd attrs）
@@ -175,17 +176,27 @@ content (Markdown 字符串)
 - 代码块输出必须是 `figure.code-block` + `figcaption.code-block-chrome` + language badge + optional filename + `[data-copy]` copy button；copy 行为由 `MarkdownCopyButtons` hydration 绑定。
 - Alert callout 使用 `.markdown-alert-{note|tip|important|warning|caution}` 与 CSS token，不允许回退到硬编码颜色。
 - 表格必须包在 `.md-table-scroll`，避免移动端横向溢出。
+- 独立 Markdown 图片必须包在 `.md-image-frame`，图片本体带 `.md-image`、`loading="lazy"`、`decoding="async"`；避免文章正文里的裸 `<p><img>` 破坏 editorial article shell。
 
 ## 14. 编辑器契约
 
-- 管理端编辑体验是 CodeMirror 6 Markdown source editor + split preview；编辑区必须保留 Markdown 原文，预览区走与发布态一致的完整 `renderMarkdown` 管道。
+- 管理端文章内容编辑器当前入口是 `NotionMarkdownEditor`：提供 Notion-like shell（slash command、bubble formatting、媒体库图片插入、Mod-S 保存），但保存输出仍是 Markdown string。
 - 存储格式永远是 Markdown 字符串；后端永远收 Markdown，不收 JSON。
-- 禁止回退到 Tiptap / ProseMirror / WYSIWYG rich-text round-trip。工具栏只能插入或包裹 Markdown source，不允许隐藏 `#`、`###`、fence、list marker 等源码符号。
-- 右侧 preview 必须复用 `MarkdownCopyButtons` 绑定 code block copy 行为；任何 preview catch 都必须显示可见 error banner，不允许 silent failure 或空白失败。
-- 编辑器底层依赖变动必须单独 SDD，并覆盖 toolbar、selection API、Tab / list continuation / heading marker / paste as plain text / Mod-S / SSR safety / preview parity 回归。
-- CodeMirror 必须通过 dynamic import 只加载在编辑器路由；后续新增 admin client 依赖时，用 route-specific client gzip delta 复核 EC-6.2，而不是只看全局 first-load shared chunks。
+- 编辑体验不再强制“编辑区永远显示 Markdown 原文”，但任何候选 rich/block editor 必须先通过 `notionEditorAdapter` 的 Markdown import/export 和 `renderMarkdown` parity 证据门；未通过不得替换存储契约。
+- 禁止把后端存储切到 editor 私有 JSON/block schema，除非单独 SDD 证明 Markdown round-trip 不可持续并完成迁移方案。
+- 媒体图片插入只能使用媒体库 URL 或安全相对 URL；禁止保存 `blob:` / `data:` payload。
+- 任何预览/发布 parity 必须继续复用 `renderMarkdown` 管道；不得恢复 `miniRenderMarkdown` 或客户端简化 renderer。
+- 编辑器底层依赖变动必须单独 SDD，并覆盖 slash command、bubble menu、media image、selection API、Mod-S、SSR safety、preview/publish parity 回归。
 
-## 15. Git 提交规范
+## 15. 前台 motion system
+
+- 共享 motion token 来源为 `src/lib/motionTokens.ts`：`duration`、`distance`、`easing`、`stagger` 和 `revealStyle()`；新增动效不应在组件里散落未登记的魔法数。
+- `data-reveal` 内容必须 SSR 初始可见；禁止用 `opacity-0` / `hidden` / `invisible` 等等待 hydration 后才显示。
+- 前台 motion root 使用 `data-reduced-motion-safe`。`prefers-reduced-motion: reduce` 下必须关闭或降级 reveal、stagger、持续循环动画和大幅 transform；内容仍立即可见。
+- 交互表面必须具备 keyboard parity：hover、focus-visible、focus-within、active state 都要有可见反馈；不允许 hover-only 状态作为唯一反馈。
+- article TOC 进度条使用 `transform: scaleX(...)` 更新，link active state 使用固定 marker slot，避免滚动时 layout shift。
+
+## 16. Git 提交规范
 
 - 用 Conventional Commits：`feat:` / `fix:` / `chore:` / `docs:` / `refactor:` / `test:`
 - ECC TDD 流程中的 checkpoint：
@@ -194,20 +205,20 @@ content (Markdown 字符串)
   - `refactor: clean up <feature>` (REFACTOR)
 - 一个 SDD feature 一组 commit，不混 feature
 
-## 16. 文件命名
+## 17. 文件命名
 
 - 组件 PascalCase：`PostCard.tsx`
 - 普通文件 camelCase：`useDebounce.ts` / `markdown.ts`
 - 路由文件按 Next 约定：`page.tsx` / `layout.tsx` / `route.ts`
 - 测试文件 `*.test.ts` 与被测文件同目录
 
-## 17. SEO/feed 缓存策略
+## 18. SEO/feed 缓存策略
 
 - `/sitemap.xml` 与 `/rss.xml` 使用 `export const revalidate = 600`，以 10 分钟为基准缓存窗口。
 - 理由：搜索引擎与 RSS reader 不需要秒级实时性；10 分钟足够覆盖发布后可见性，同时避免爬虫高频访问时每次打 Postgres。
 - 文章发布/更新路径仍写 DB 为准；缓存过期后由 Next 重新生成，避免额外 cache invalidation 复杂度。
 
-## 18. async RSC 在 vitest 页面级集成测试
+## 19. async RSC 在 vitest 页面级集成测试
 
 ### 问题
 
@@ -245,7 +256,7 @@ vi.mock("@/components/site/Foo", () => ({
 
 ### 何时套用 / 何时不套用
 
-| 情形 | 套用 §18 |
+| 情形 | 套用 §19 |
 |---|---|
 | async RSC 嵌在另一个被 vitest 直接 render 的 RSC 里 | ✅ |
 | async RSC 是顶层、测试直接 `render(await Foo())` | ❌ 不需要，单元测试照常 |

@@ -2,7 +2,7 @@
 
 ## 当前焦点
 
-- **2026-05-23** 进入 `creative-blog-notion-editor` SDD：方向锁定为 Firefly/Fuwari/idealclover 的结构密度 + Rauno/Maggie/Maxime/samwho 的创意与微交互 + Notion-like editor POC。当前仅完成 proposal/spec/test-map/tasks 文档，不改应用代码。
+- **2026-05-24** `creative-blog-notion-editor` 主体实现已完成，当前进入 SDD 收尾质量门：memory-bank 同步、`typecheck` / `lint` / `test` / `build`、必要的浏览器 smoke。
 
 ## 已完成
 
@@ -165,13 +165,14 @@
 - [x] README + 部署文档
 - [x] **2026-05-23** public-launch-polish 主体：Markdown alerts + `.markdown-body` 阅读系统、首页项目叙事区、About Principles、管理侧边栏 light mode 对比度修复；i18n 当前限制记录为 KI-004，完整迁移进入 V3 独立 SDD
 - [x] **2026-05-23** public-ui-and-editor-overhaul 全量完成：Markdown reading / CodeMirror source editor / preview parity、admin readability、首页七段重组、About 八段重组、incomplete pages inventory、i18n single-locale disclosure、light/dark 12 路由浏览器审查、completion report 全部落地；Tiptap/lowlight/mini renderer 残留清零；最终质量门 `typecheck` / `lint` / `test`（116 files / 601 passed / 1 skipped）/ `build` 四绿；editor route client gzip delta 15.0 KiB < 90 KiB；`audit-report.json` 24 entries，P0=0，截图归档到 `.claude/sdd/public-ui-and-editor-overhaul/audit/{light,dark}`。
+- [x] **2026-05-24** creative-blog-notion-editor 主体完成：后台文章编辑器切到 `NotionMarkdownEditor` shell（slash command / bubble formatting / media image / Mod-S，保存 Markdown），首页重组为 identity rail + content stream + context rail，文章列表改为高密度 discovery，文章详情加入 editorial shell / right rail / Markdown image frame / `InteractiveExplainer` / TOC progress，前台 motion system 增加共享 tokens、reduced-motion 降级、focus parity 和 SSR 初始可见性契约；全程按 `.claude/sdd/creative-blog-notion-editor/test-map.md` RED/GREEN 微循环提交。
 
 ## V2 backlog（MVP 上线后，独立 SDD）
 
 - [ ] 主题系统 GUI（后台编辑色板 + 一键切换 + 多套预设主题）
 - [ ] 详细 Analytics（来源 / 设备 / 国家 / 对比 / 导出）
 - [ ] 评论邮件通知（被回复时邮件）
-- [ ] 编辑器增强：表格 / 脚注 / 数学公式 / 拖拽上传图片；保持 CodeMirror source editor + shared `renderMarkdown` preview 契约，不恢复 mini renderer 或 WYSIWYG round-trip
+- [ ] 编辑器增强：表格 / 脚注 / 数学公式 / 拖拽上传图片；保持 Markdown persistence + shared `renderMarkdown` publish/parity 契约，不恢复 mini renderer，不引入未通过 adapter 证据门的私有 JSON/block schema
 - [ ] 文章展示增强：真实示例内容、首页/文章页截图资产、OG 视觉统一、Lighthouse 后续微调
 
 ## V3 backlog（MVP 上线后，独立 SDD）
@@ -190,7 +191,7 @@ V2/V3 不属于本轮 prelaunch-readiness；涉及 DB/UI/API/邮件/路由结构
 - **2026-05-21** 前台 cover 用原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`，未走 `next/image`。原因：MinIO/local 双 storage driver 的 URL 模式动态切换，配 `next.config.ts#images.remotePatterns` 噪音大。未来如接 CDN 或决定单一 driver 时再换 `next/image`。
 - **2026-05-23** `prelaunch-readiness` 清理：Next proxy 入口、Prisma preview flag、About/TechStack 上线文案、README/AGENTS/CLAUDE/docs/memory-bank 当前事实已同步。后续若继续改编辑器底层实现，单开 editor-source-mode SDD。
 - **2026-05-23** KI-004 多语言当前仍是架构预留：schema 有 `*Translation` 子表和 `SUPPORTED_LOCALES`，但当前实现仍是单 locale；V3 需要独立 SDD 完成 route/dictionary/metadata/RSS/sitemap 全链路迁移。
-- **2026-05-23** public-ui-and-editor-overhaul 收口：CodeMirror 6 editor route 当前 client chunk delta 为 15.0 KiB gzip（`/admin/posts/new` minus `/admin`），低于 EC-6.2 的 90 KiB 限制；后续若增加 admin client 依赖，需继续复核 route-specific client delta 而不是只看 first-load shared chunks。
+- **2026-05-24** creative-blog-notion-editor 收口：`NotionMarkdownEditor` 当前是轻量 Markdown shell，不引入 Novel/Tiptap/MDXEditor runtime 依赖；后续若真正接入第三方 rich/block editor，必须先跑 `notionEditorAdapter` round-trip/parity 证据门，并复核 admin editor route-specific client delta。
 
 
 ## 度量指标
