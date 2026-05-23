@@ -531,9 +531,29 @@
     padding: 0.25rem 0 0.25rem 1rem;
   }
 
+  .markdown-body blockquote p + p {
+    margin-top: var(--space-paragraph);
+  }
+
   .markdown-body ul,
   .markdown-body ol {
     padding-left: 1.5rem;
+  }
+
+  .markdown-body ul ul {
+    padding-left: 1.25rem;
+  }
+
+  .markdown-body ol ol {
+    padding-left: 1.25rem;
+  }
+
+  .markdown-body ul ul ul {
+    padding-left: 1rem;
+  }
+
+  .markdown-body ol ol ol {
+    padding-left: 1rem;
   }
 
   .markdown-body li + li {
