@@ -30,7 +30,7 @@ describe("<HomeStats />", () => {
     expect(mocks.getSiteStats).toHaveBeenCalledTimes(1);
 
     const stats = screen.getByText(
-      "v0.x · 12 posts · 84 views in 7 days · last shipped May 2026",
+      "v0.x · 12 篇文章 · 近 7 天 84 次浏览 · 最近发布 2026-05",
     );
     expect(stats).toHaveClass(
       "font-mono",

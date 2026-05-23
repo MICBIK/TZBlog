@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { PostWithRelations } from "@/lib/services/posts";
-import PostDetailPage from "./page";
+import PostDetailPage, { generateMetadata } from "./page";
 
 const mocks = vi.hoisted(() => ({
   extractToc: vi.fn(),
@@ -142,6 +142,31 @@ describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
     const section = screen.getByTestId("mock-comment-section");
     expect(section).toHaveAttribute("data-post-id", "post-id");
     expect(section).toHaveAttribute("data-slug", "detail");
+  });
+
+  it("renders stats chrome in Chinese for the single-locale site", async () => {
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+
+    render(
+      await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }),
+    );
+
+    expect(screen.getByText("10 次浏览")).toBeInTheDocument();
+    expect(screen.getByText("1 条评论")).toBeInTheDocument();
+    expect(screen.queryByText(/^views 10$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^comments 1$/)).not.toBeInTheDocument();
+  });
+});
+
+describe("PostDetailPage metadata i18n current state", () => {
+  it("does not emit fake alternates.languages for missing locale routes", async () => {
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ slug: "detail" }),
+    });
+
+    expect(metadata.alternates).toBeUndefined();
   });
 });
 

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -6,6 +6,21 @@ import { aboutContent } from "@/lib/content/about";
 
 function readProjectFile(path: string): string {
   return readFileSync(join(process.cwd(), path), "utf-8");
+}
+
+function readSourceFiles(dir: string): string {
+  const absolute = join(process.cwd(), dir);
+  return readdirSync(absolute)
+    .flatMap((entry) => {
+      const path = join(absolute, entry);
+      if (statSync(path).isDirectory()) {
+        return readSourceFiles(join(dir, entry));
+      }
+      if (/\.(test|spec)\./.test(entry)) return [];
+      if (!/\.(ts|tsx|md|json)$/.test(entry)) return [];
+      return readFileSync(path, "utf-8");
+    })
+    .join("\n");
 }
 
 describe("i18n current-state disclosure", () => {
@@ -31,5 +46,13 @@ describe("i18n current-state disclosure", () => {
 
     expect(sitemap).toContain(disclosure);
     expect(robots).toContain(disclosure);
+  });
+
+  it("does not introduce fake i18n framework or dictionary facades", () => {
+    const scannedSource = `${readProjectFile("package.json")}\n${readSourceFiles("src")}`;
+
+    expect(scannedSource).not.toMatch(/next-intl|next-i18next/);
+    expect(scannedSource).not.toMatch(/from\s+["'].*dictionary["']/);
+    expect(scannedSource).not.toMatch(/alternates:\s*\{[\s\S]*languages/);
   });
 });
