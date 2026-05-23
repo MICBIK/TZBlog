@@ -40,6 +40,29 @@ describe("<AboutContact />", () => {
     );
     expect(container.querySelector("ul")).toBeInTheDocument();
   });
+
+  it("uses the shared panel container and accent hover links", async () => {
+    const { container } = render(
+      await aboutContact({
+        email: "hello@example.com",
+        links: [
+          {
+            label: "GitHub",
+            href: "https://github.com/ha1den",
+            kind: "github",
+          },
+        ],
+      }),
+    );
+
+    expect(container.querySelector("section.launch-panel")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "hello@example.com" })).toHaveClass(
+      "hover:text-accent",
+    );
+    expect(screen.getByRole("link", { name: "GitHub" })).toHaveClass(
+      "hover:text-accent",
+    );
+  });
 });
 
 async function aboutContact(props: {
