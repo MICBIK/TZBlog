@@ -156,6 +156,10 @@ export function MarkdownEditor({
               color: "hsl(var(--fg))",
               fontWeight: "700",
             },
+            "&.cm-editor-dark": {
+              backgroundColor: "hsl(var(--bg))",
+              color: "hsl(var(--fg))",
+            },
             "&.cm-focused": {
               outline: "2px solid hsl(var(--ring))",
               outlineOffset: "-2px",
@@ -166,6 +170,19 @@ export function MarkdownEditor({
     });
 
     viewRef.current = view;
+    const syncThemeClass = () => {
+      view.dom.classList.toggle(
+        "cm-editor-dark",
+        document.documentElement.classList.contains("dark"),
+      );
+    };
+    syncThemeClass();
+    const themeObserver = new MutationObserver(syncThemeClass);
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
     const api: MarkdownSourceApi = {
       getMarkdown: () => view.state.doc.toString(),
       focus: () => view.focus(),
@@ -233,6 +250,7 @@ export function MarkdownEditor({
     onReadyRef.current?.(api);
 
     return () => {
+      themeObserver.disconnect();
       view.destroy();
       viewRef.current = null;
     };
