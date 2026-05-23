@@ -99,6 +99,12 @@ describe("globals.css editorial system", () => {
     expect(failures).toEqual([]);
   });
 
+  it("callout has inner outline in dark mode", () => {
+    expect(css).toMatch(
+      /\.dark\s+\.markdown-alert\s*\{[\s\S]*box-shadow:\s*inset/,
+    );
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
