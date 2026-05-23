@@ -103,11 +103,15 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
       <MarkdownEditorWithPreview value="old" onChange={vi.fn()} />,
     );
 
-    await vi.advanceTimersByTimeAsync(200);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
     expect(mocks.renderMarkdown).toHaveBeenCalledWith("old");
 
     rerender(<MarkdownEditorWithPreview value="new" onChange={vi.fn()} />);
-    await vi.advanceTimersByTimeAsync(200);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
     expect(mocks.renderMarkdown).toHaveBeenCalledWith("new");
 
     await act(async () => {
@@ -124,6 +128,34 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
     });
     expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
       "<p>new</p>",
+    );
+  });
+
+  it("shows an error banner and keeps the last successful preview on render failure", async () => {
+    vi.useFakeTimers();
+    mocks.renderMarkdown
+      .mockResolvedValueOnce("<p>last good</p>")
+      .mockRejectedValueOnce(new Error("broken markdown"));
+    const { MarkdownEditorWithPreview } = await import("./MarkdownEditorWithPreview");
+    const { rerender } = render(
+      <MarkdownEditorWithPreview value="good" onChange={vi.fn()} />,
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
+    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+      "<p>last good</p>",
+    );
+
+    rerender(<MarkdownEditorWithPreview value="bad" onChange={vi.fn()} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent("broken markdown");
+    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+      "<p>last good</p>",
     );
   });
 });
