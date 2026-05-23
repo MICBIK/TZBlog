@@ -142,6 +142,14 @@ describe("globals.css editorial system", () => {
     expect(block).toContain("accent-color: hsl(var(--accent));");
   });
 
+  it("kbd element uses kbd tokens with inset shadow", () => {
+    const block = cssBlock(css, ".markdown-body kbd");
+
+    expect(block).toContain("background: hsl(var(--kbd-bg));");
+    expect(block).toContain("color: hsl(var(--kbd-fg));");
+    expect(block).toContain("box-shadow: var(--shadow-inset-thin);");
+  });
+
   it("defines launch-surface primitives with reduced-motion compatibility", () => {
     expect(css).toContain(".launch-surface");
     expect(css).toContain(".launch-panel");
