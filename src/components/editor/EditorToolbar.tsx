@@ -59,6 +59,11 @@ function runToolbarAction(source: MarkdownSourceApi | null, action: ToolbarActio
     return;
   }
 
+  if (action === "h2") {
+    source.prependToLine("## ");
+    return;
+  }
+
   source.focus();
 }
 

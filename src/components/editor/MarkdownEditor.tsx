@@ -13,6 +13,7 @@ export interface MarkdownSourceApi {
   focus: () => void;
   setSelection: (from: number, to: number) => void;
   wrapSelection: (prefix: string, suffix: string) => void;
+  prependToLine: (prefix: string) => void;
 }
 
 export interface MarkdownEditorProps {
@@ -137,6 +138,20 @@ export function MarkdownEditor({
             insert,
           },
           selection: { anchor, head },
+          scrollIntoView: true,
+        });
+        view.focus();
+      },
+      prependToLine: (prefix) => {
+        const selection = view.state.selection.main;
+        const line = view.state.doc.lineAt(selection.from);
+
+        view.dispatch({
+          changes: { from: line.from, insert: prefix },
+          selection: {
+            anchor: selection.anchor + prefix.length,
+            head: selection.head + prefix.length,
+          },
           scrollIntoView: true,
         });
         view.focus();
