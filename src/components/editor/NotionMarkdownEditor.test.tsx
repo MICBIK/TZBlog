@@ -23,7 +23,9 @@ describe("NotionMarkdownEditor slash commands", () => {
 
     for (const item of cases) {
       const onChange = vi.fn();
-      render(<NotionMarkdownEditor value="" onChange={onChange} />);
+      const { unmount } = render(
+        <NotionMarkdownEditor value="" onChange={onChange} />,
+      );
 
       const editor = screen.getByRole("textbox", { name: "文章内容" });
       await user.click(editor);
@@ -34,6 +36,7 @@ describe("NotionMarkdownEditor slash commands", () => {
 
       expect(onChange).toHaveBeenLastCalledWith(item.expected);
       expect(editor).toHaveFocus();
+      unmount();
     }
   });
 });
