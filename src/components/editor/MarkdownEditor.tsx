@@ -11,6 +11,8 @@ import { EditorToolbar } from "./EditorToolbar";
 export interface MarkdownSourceApi {
   getMarkdown: () => string;
   focus: () => void;
+  setSelection: (from: number, to: number) => void;
+  wrapSelection: (prefix: string, suffix: string) => void;
 }
 
 export interface MarkdownEditorProps {
@@ -108,9 +110,37 @@ export function MarkdownEditor({
     });
 
     viewRef.current = view;
-    const api = {
+    const api: MarkdownSourceApi = {
       getMarkdown: () => view.state.doc.toString(),
       focus: () => view.focus(),
+      setSelection: (from, to) => {
+        const docLength = view.state.doc.length;
+        view.dispatch({
+          selection: {
+            anchor: clampDocPosition(from, docLength),
+            head: clampDocPosition(to, docLength),
+          },
+          scrollIntoView: true,
+        });
+      },
+      wrapSelection: (prefix, suffix) => {
+        const selection = view.state.selection.main;
+        const selectedText = view.state.doc.sliceString(selection.from, selection.to);
+        const insert = `${prefix}${selectedText}${suffix}`;
+        const anchor = selection.from + prefix.length;
+        const head = anchor + selectedText.length;
+
+        view.dispatch({
+          changes: {
+            from: selection.from,
+            to: selection.to,
+            insert,
+          },
+          selection: { anchor, head },
+          scrollIntoView: true,
+        });
+        view.focus();
+      },
     };
     setSourceApi(api);
     onReadyRef.current?.(api);
@@ -148,6 +178,10 @@ export function MarkdownEditor({
       <div ref={mountRef} className="min-h-0 flex-1" />
     </div>
   );
+}
+
+function clampDocPosition(position: number, docLength: number): number {
+  return Math.max(0, Math.min(position, docLength));
 }
 
 export default MarkdownEditor;

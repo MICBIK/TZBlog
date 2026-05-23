@@ -14,20 +14,22 @@ interface ToolButtonProps {
 }
 
 const TOOLBAR_ITEMS = [
-  { label: "加粗 Bold ⌘B", marker: "B" },
-  { label: "斜体 Italic ⌘I", marker: "I" },
-  { label: "行内代码 Code ⌘E", marker: "`" },
-  { label: "二级标题 H2 ⌘⌥2", marker: "H2" },
-  { label: "三级标题 H3 ⌘⌥3", marker: "H3" },
-  { label: "无序列表 UL ⌘⇧8", marker: "UL" },
-  { label: "有序列表 OL ⌘⇧7", marker: "OL" },
-  { label: "引用 Quote", marker: ">" },
-  { label: "代码块 Code Block", marker: "{}" },
-  { label: "链接 Link ⌘K", marker: "[]" },
-  { label: "图片 Image", marker: "IMG" },
-  { label: "表格 Table", marker: "TBL" },
-  { label: "提示块 Callout NOTE", marker: "!" },
+  { action: "bold", label: "加粗 Bold ⌘B", marker: "B" },
+  { action: "italic", label: "斜体 Italic ⌘I", marker: "I" },
+  { action: "code", label: "行内代码 Code ⌘E", marker: "`" },
+  { action: "h2", label: "二级标题 H2 ⌘⌥2", marker: "H2" },
+  { action: "h3", label: "三级标题 H3 ⌘⌥3", marker: "H3" },
+  { action: "ul", label: "无序列表 UL ⌘⇧8", marker: "UL" },
+  { action: "ol", label: "有序列表 OL ⌘⇧7", marker: "OL" },
+  { action: "quote", label: "引用 Quote", marker: ">" },
+  { action: "codeBlock", label: "代码块 Code Block", marker: "{}" },
+  { action: "link", label: "链接 Link ⌘K", marker: "[]" },
+  { action: "image", label: "图片 Image", marker: "IMG" },
+  { action: "table", label: "表格 Table", marker: "TBL" },
+  { action: "callout", label: "提示块 Callout NOTE", marker: "!" },
 ] as const;
+
+type ToolbarAction = (typeof TOOLBAR_ITEMS)[number]["action"];
 
 export function EditorToolbar({ source }: EditorToolbarProps) {
   return (
@@ -42,11 +44,22 @@ export function EditorToolbar({ source }: EditorToolbarProps) {
           label={item.label}
           marker={item.marker}
           disabled={!source}
-          onClick={() => source?.focus()}
+          onClick={() => runToolbarAction(source, item.action)}
         />
       ))}
     </div>
   );
+}
+
+function runToolbarAction(source: MarkdownSourceApi | null, action: ToolbarAction) {
+  if (!source) return;
+
+  if (action === "bold") {
+    source.wrapSelection("**", "**");
+    return;
+  }
+
+  source.focus();
 }
 
 function ToolButton({ label, marker, disabled, onClick }: ToolButtonProps) {
