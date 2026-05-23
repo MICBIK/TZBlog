@@ -1,12 +1,17 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { ComponentType } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 const techStackModulePath = "./TechStack";
 
 describe("<TechStack />", () => {
-  it("TechStack renders all 5 category labels and items", async () => {
+  it("renders heading, intro, and all 5 category labels", async () => {
     render(await techStack());
+
+    expect(screen.getByRole("heading", { level: 2, name: "技术体系" })).toBeInTheDocument();
+    expect(
+      screen.getByText("5 areas, 30+ pieces, all self-hosted."),
+    ).toHaveClass("font-mono", "text-label", "tracking-label");
 
     expect(screen.getByText("FRONTEND")).toBeInTheDocument();
     expect(screen.getByText("CONTENT & EDITOR")).toBeInTheDocument();
@@ -36,15 +41,38 @@ describe("<TechStack />", () => {
     expect(screen.getByText("Playwright")).toBeInTheDocument();
   });
 
-  it("each item renders with name + note", async () => {
+  it("each item shows hover tooltip with rationale", async () => {
     render(await techStack());
 
-    const next = screen.getByText("Next.js 16").closest("div");
+    const next = screen.getByText("Next.js 16").closest("abbr");
     expect(next).not.toBeNull();
-    expect(within(next!).getByText("App Router + RSC + Server Actions")).toBeInTheDocument();
-    expect(screen.getByText("split source + preview")).toBeInTheDocument();
-    expect(screen.getByText("with strict mode")).toBeInTheDocument();
-    expect(screen.getByText("CSS-vars driven theming")).toBeInTheDocument();
+    expect(next).toHaveAttribute(
+      "title",
+      "Next.js 16 — App Router + RSC + Server Actions",
+    );
+    expect(screen.getByText("Markdown source editor").closest("abbr")).toHaveAttribute(
+      "title",
+      "Markdown source editor — Split source + preview, never WYSIWYG round-trip",
+    );
+    expect(screen.getByText("Tailwind CSS v4").closest("abbr")).toHaveAttribute(
+      "title",
+      "Tailwind CSS v4 — CSS-vars driven theming",
+    );
+
+    const itemNames = screen.getAllByTestId("tech-stack-item-name");
+    expect(itemNames.length).toBeGreaterThanOrEqual(30);
+    expect(itemNames.every((item) => item.tagName === "ABBR")).toBe(true);
+    expect(itemNames.every((item) => item.getAttribute("title")?.includes(" — "))).toBe(
+      true,
+    );
+  });
+
+  it("links to the About tech-stack section", async () => {
+    render(await techStack());
+
+    expect(
+      screen.getByRole("link", { name: "完整技术选型理由 →" }),
+    ).toHaveAttribute("href", "/about#tech-stack");
   });
 
   it("category labels have Editorial hairline styling", async () => {
