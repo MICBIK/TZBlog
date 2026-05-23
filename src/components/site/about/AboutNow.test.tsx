@@ -31,6 +31,41 @@ describe("<AboutNow />", () => {
     expect(container.querySelectorAll("dt")).toHaveLength(2);
     expect(container.querySelectorAll("dd")).toHaveLength(2);
   });
+
+  it("renders 4 columns: Shipping/Writing/Reading/Hardening", async () => {
+    const { container } = render(
+      await aboutNow({
+        intro: "As of May 2026.",
+        items: [
+          {
+            label: "Shipping",
+            detail: "TZBlog from scratch with Next.js 16.",
+          },
+          {
+            label: "Writing",
+            detail: "Essays on type-driven design.",
+          },
+          {
+            label: "Reading",
+            detail: "Designing Data-Intensive Apps.",
+          },
+          {
+            label: "Hardening",
+            detail: "Postgres pg_dump pipeline.",
+          },
+        ],
+      }),
+    );
+
+    expect(container.querySelectorAll("dt")).toHaveLength(4);
+    expect(container.querySelectorAll("dd")).toHaveLength(4);
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(4);
+    expect(screen.getByRole("heading", { level: 3, name: "Shipping" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Writing" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Reading" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Hardening" })).toBeInTheDocument();
+    expect(container.querySelector("dd > h3 + p")).toBeInTheDocument();
+  });
 });
 
 async function aboutNow(props: {
