@@ -23,7 +23,12 @@ interface HastText {
   type: "text";
   value: string;
 }
-type HastNode = HastElement | HastText | { type: string; [k: string]: unknown };
+interface HastRaw {
+  type: "raw";
+  value: string;
+  [k: string]: unknown;
+}
+type HastNode = HastElement | HastText | HastRaw | { type: string; [k: string]: unknown };
 interface HastRoot {
   type: "root";
   children: HastNode[];
@@ -286,6 +291,55 @@ function codeFilename(node: HastElement): string | null {
   return match?.[1] ?? match?.[2] ?? match?.[3] ?? null;
 }
 
+function rehypeKeyboardShortcuts() {
+  return (tree: HastRoot) => {
+    transformKeyboardShortcuts(tree);
+  };
+}
+
+function transformKeyboardShortcuts(parent: HastParent): void {
+  for (const child of parent.children) {
+    if ((child as HastElement).type === "element") {
+      transformKeyboardShortcuts(child as HastElement);
+    }
+  }
+
+  for (let index = 0; index < parent.children.length - 2; index++) {
+    const start = parent.children[index];
+    const label = parent.children[index + 1];
+    const end = parent.children[index + 2];
+
+    if (!isRawKbdStart(start) || !isTextNode(label) || !isRawKbdEnd(end)) {
+      continue;
+    }
+
+    parent.children.splice(index, 3, {
+      type: "element",
+      tagName: "kbd",
+      properties: {},
+      children: [{ type: "text", value: label.value }],
+    });
+  }
+}
+
+function isTextNode(node: HastNode): node is HastText {
+  return (node as HastText).type === "text";
+}
+
+function isRawKbdStart(node: HastNode): node is HastRaw {
+  return (
+    (node as unknown as HastRaw).type === "raw" &&
+    /^<kbd>$/i.test((node as unknown as HastRaw).value)
+  );
+}
+
+function isRawKbdEnd(node: HastNode): node is HastRaw {
+  return (
+    (node as unknown as HastRaw).type === "raw" &&
+    /^<\/kbd>$/i.test((node as unknown as HastRaw).value)
+  );
+}
+
 function rehypeWrapTables() {
   return (tree: HastRoot) => {
     const tables: Array<{
@@ -509,6 +563,7 @@ const sanitizeSchema = {
     "circle",
     "line",
     "path",
+    "kbd",
     "svg",
   ],
   attributes: {
@@ -557,6 +612,10 @@ const sanitizeSchema = {
       ...((defaultSchema.attributes?.path ?? []) as unknown as string[]),
       "d",
     ],
+    kbd: [
+      ...((defaultSchema.attributes?.kbd ?? []) as unknown as string[]),
+      "className",
+    ],
     pre: [
       ...((defaultSchema.attributes?.pre ?? []) as unknown as string[]),
       "className",
@@ -603,9 +662,10 @@ export async function renderMarkdown(
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm)
-    .use(remarkRehype, { allowDangerousHtml: false })
+    .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeMarkdownAlerts)
     .use(rehypeWrapTables)
+    .use(rehypeKeyboardShortcuts)
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(rehypeSanitize, sanitizeSchema)
