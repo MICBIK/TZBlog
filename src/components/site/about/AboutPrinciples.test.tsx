@@ -32,6 +32,28 @@ describe("<AboutPrinciples />", () => {
     ).toBeInTheDocument();
     expect(container.querySelectorAll(".launch-panel")).toHaveLength(2);
   });
+
+  it("renders 6-8 principle cards", async () => {
+    const { container } = render(
+      await aboutPrinciples({
+        intro: "The project is built around visible engineering tradeoffs.",
+        items: Array.from({ length: 8 }, (_, index) => ({
+          label: `Principle ${index + 1}`,
+          detail: `Detail ${index + 1}`,
+        })),
+      }),
+    );
+
+    const cards = container.querySelectorAll(".launch-panel");
+    const grid = cards[0]?.parentElement;
+
+    expect(cards.length).toBeGreaterThanOrEqual(6);
+    expect(cards.length).toBeLessThanOrEqual(8);
+    expect(grid?.className).toContain("sm:grid-cols-2");
+    expect(grid?.className).toContain("lg:grid-cols-3");
+    expect(screen.getByText("01")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Principle 1" })).toBeInTheDocument();
+  });
 });
 
 async function aboutPrinciples(props: {
