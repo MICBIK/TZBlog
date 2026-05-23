@@ -80,6 +80,14 @@
   --callout-caution-accent: 0 72% 48%;
   --callout-caution-tint: 0 72% 96%;
 
+  /* Code blocks */
+  --code-surface: 220 14% 98%;
+  --code-border: 220 13% 91%;
+  --code-chrome-bg: 220 14% 96%;
+  --code-chrome-fg: 220 13% 36%;
+  --code-inline-bg: 220 14% 96%;
+  --code-inline-fg: 220 30% 18%;
+
   /* Lines / inputs / focus */
   --border: 220 13% 91%;
   --input: 220 13% 91%;
@@ -134,6 +142,13 @@
   --callout-warning-tint: 38 50% 14%;
   --callout-caution-accent: 0 75% 65%;
   --callout-caution-tint: 0 50% 14%;
+
+  --code-surface: 240 10% 7%;
+  --code-border: 240 10% 14%;
+  --code-chrome-bg: 240 10% 10%;
+  --code-chrome-fg: 240 5% 70%;
+  --code-inline-bg: 240 10% 12%;
+  --code-inline-fg: 210 20% 90%;
 
   --border: 240 4% 16%;
   --input: 240 4% 16%;
@@ -411,6 +426,80 @@
   .dark .shiki span {
     background-color: var(--shiki-dark-bg) !important;
     color: var(--shiki-dark) !important;
+  }
+
+  .code-block {
+    border: 1px solid hsl(var(--code-border));
+    border-radius: 1rem;
+    background: hsl(var(--code-surface));
+    margin-top: var(--space-stack);
+    overflow: hidden;
+  }
+
+  .code-block .shiki {
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .code-block-chrome {
+    align-items: center;
+    background: hsl(var(--code-chrome-bg));
+    border-bottom: 1px solid hsl(var(--code-border));
+    color: hsl(var(--code-chrome-fg));
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .code-block-language,
+  .code-block-filename {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+  }
+
+  .code-block-language {
+    color: hsl(var(--fg));
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .code-block-filename {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .code-block-copy {
+    align-items: center;
+    border: 1px solid hsl(var(--code-border));
+    border-radius: 999px;
+    color: hsl(var(--code-chrome-fg));
+    display: inline-flex;
+    height: 1.7rem;
+    justify-content: center;
+    margin-left: auto;
+    transition:
+      border-color var(--duration-fast) ease,
+      color var(--duration-fast) ease;
+    width: 1.7rem;
+  }
+
+  .code-block-copy:hover {
+    border-color: hsl(var(--accent) / 0.45);
+    color: hsl(var(--fg));
+  }
+
+  .code-block-copy[data-state="copied"] {
+    border-color: hsl(var(--accent) / 0.5);
+    color: hsl(var(--accent));
+  }
+
+  .code-block-copy-icon {
+    height: 0.9rem;
+    width: 0.9rem;
   }
 
   .markdown-body blockquote {
