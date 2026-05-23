@@ -315,4 +315,26 @@ describe("MarkdownEditor source contract", () => {
     );
     expect(container.querySelector("h2")).not.toBeInTheDocument();
   });
+
+  it("tracks html dark class on the CodeMirror editor", async () => {
+    document.documentElement.classList.remove("dark");
+    const { container } = render(
+      <MarkdownEditor value="content" onChange={vi.fn()} />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".cm-editor")).toBeInTheDocument();
+    });
+
+    const editor = container.querySelector(".cm-editor");
+    expect(editor).not.toHaveClass("cm-editor-dark");
+
+    document.documentElement.classList.add("dark");
+
+    await waitFor(() => {
+      expect(editor).toHaveClass("cm-editor-dark");
+    });
+
+    document.documentElement.classList.remove("dark");
+  });
 });
