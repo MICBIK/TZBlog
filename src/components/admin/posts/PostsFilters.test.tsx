@@ -130,6 +130,24 @@ describe("PostsFilters", () => {
     expect(mocks.refresh).toHaveBeenCalledTimes(1);
   });
 
+  it("only shows the reset button when a filter is active", () => {
+    const { rerender } = renderFilters({
+      currentFilter: { page: 1, pageSize: 20 },
+    });
+
+    expect(screen.queryByRole("button", { name: "重置" })).not.toBeInTheDocument();
+
+    rerender(
+      <PostsFilters
+        currentFilter={{ page: 1, pageSize: 20, q: "vitest" }}
+        columns={columns}
+        tags={tags}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
+  });
+
   it("removes status, column, and tag params when switching to all options", async () => {
     const user = userEvent.setup();
 
