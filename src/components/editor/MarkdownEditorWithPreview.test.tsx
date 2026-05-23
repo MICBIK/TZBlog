@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ComponentType } from "react";
 
 const mocks = vi.hoisted(() => ({
@@ -21,11 +21,25 @@ const mocks = vi.hoisted(() => ({
       };
     },
   ),
+  renderMarkdown: vi.fn(),
 }));
 
 vi.mock("next/dynamic", () => ({
   default: mocks.dynamic,
 }));
+
+vi.mock("@/lib/markdown", () => ({
+  renderMarkdown: mocks.renderMarkdown,
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.renderMarkdown.mockResolvedValue("<p>rendered</p>");
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("MarkdownEditorWithPreview SSR safety", () => {
   it("loads MarkdownEditor through next/dynamic with ssr disabled", async () => {
@@ -53,5 +67,23 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
     expect(
       screen.queryByText(/Lightweight in-browser preview|published page uses/i),
     ).not.toBeInTheDocument();
+  });
+
+  it("debounces preview rendering by 200ms and only renders the latest value", async () => {
+    vi.useFakeTimers();
+    const { MarkdownEditorWithPreview } = await import("./MarkdownEditorWithPreview");
+    const { rerender } = render(
+      <MarkdownEditorWithPreview value="a" onChange={vi.fn()} />,
+    );
+
+    rerender(<MarkdownEditorWithPreview value="ab" onChange={vi.fn()} />);
+    rerender(<MarkdownEditorWithPreview value="abc" onChange={vi.fn()} />);
+
+    await vi.advanceTimersByTimeAsync(199);
+    expect(mocks.renderMarkdown).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(mocks.renderMarkdown).toHaveBeenCalledTimes(1);
+    expect(mocks.renderMarkdown).toHaveBeenCalledWith("abc");
   });
 });
