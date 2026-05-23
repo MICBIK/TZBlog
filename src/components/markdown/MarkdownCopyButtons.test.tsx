@@ -44,6 +44,24 @@ describe("MarkdownCopyButtons", () => {
 
     expect(writeText).toHaveBeenCalledWith("const x = 1;");
   });
+
+  it("removes the document click listener on unmount", async () => {
+    const addEventListener = vi.spyOn(document, "addEventListener");
+    const removeEventListener = vi.spyOn(document, "removeEventListener");
+    const { MarkdownCopyButtons } = await loadMarkdownCopyButtons();
+
+    const { unmount } = render(<MarkdownCopyButtons />);
+    unmount();
+
+    const addCall = addEventListener.mock.calls.find(([eventName]) => eventName === "click");
+    const removeCall = removeEventListener.mock.calls.find(
+      ([eventName]) => eventName === "click",
+    );
+
+    expect(addCall).toBeDefined();
+    expect(removeCall).toBeDefined();
+    expect(removeCall?.[1]).toBe(addCall?.[1]);
+  });
 });
 
 async function loadMarkdownCopyButtons(): Promise<{
