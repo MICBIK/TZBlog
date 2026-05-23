@@ -62,6 +62,20 @@ describe("<HomeColumns />", () => {
     expect(screen.getByText("1 articles")).toBeInTheDocument();
     expect(screen.getByText("2 articles")).toBeInTheDocument();
   });
+
+  it("keeps the section shell when every column is empty", async () => {
+    mocks.countPostsInColumn.mockResolvedValue(0);
+
+    const { container } = render(await homeColumns());
+
+    expect(screen.getByRole("heading", { level: 2, name: "专栏" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "全部专栏 →" })).toHaveAttribute(
+      "href",
+      "/columns",
+    );
+    expect(container.querySelectorAll(".launch-panel")).toHaveLength(0);
+    expect(screen.getByText("还没有可展示的专栏。")).toBeInTheDocument();
+  });
 });
 
 async function homeColumns() {
