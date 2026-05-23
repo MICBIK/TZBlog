@@ -1,7 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PostListItem } from "@/lib/services/posts";
 import HomePage from "./page";
 
 const mocks = vi.hoisted(() => ({
@@ -22,10 +24,13 @@ vi.mock("@/lib/services/stats", () => ({
   getSiteStats: mocks.getSiteStats,
 }));
 
-vi.mock("@/components/site/GithubCard", () => ({
-  GithubCard: () => (
-    <section data-testid="github-card-stub">
-      <h2>GITHUB · DEVELOPMENT</h2>
+vi.mock("@/components/site/HeroEditorial", () => ({
+  HeroEditorial: () => (
+    <section data-testid="hero-editorial-stub">
+      <h1>Building things, one commit at a time.</h1>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a href="/posts">Read Blog →</a>
+      <a href="/about">About →</a>
     </section>
   ),
 }));
@@ -38,10 +43,80 @@ vi.mock("@/components/site/LaunchNarrative", () => ({
   ),
 }));
 
+vi.mock("@/components/site/HomeHero", () => ({
+  HomeHero: () => (
+    <section data-testid="home-hero-section">
+      <h1>个人写作，工程实现，克制表达。</h1>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a href="/posts">阅读文章</a>
+      <a href="/about">关于我</a>
+    </section>
+  ),
+}));
+
+vi.mock("@/components/site/HomeFeaturedAndRecent", () => ({
+  HomeFeaturedAndRecent: () => (
+    <section data-testid="home-featured-recent-section">
+      <h2>最新文章</h2>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a href="/posts">所有文章 →</a>
+    </section>
+  ),
+}));
+
+vi.mock("@/components/site/HomeColumns", () => ({
+  HomeColumns: () => (
+    <section data-testid="home-columns-section">
+      <h2>专栏</h2>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a href="/columns">全部专栏 →</a>
+    </section>
+  ),
+}));
+
+vi.mock("@/components/site/HomePrinciples", () => ({
+  HomePrinciples: () => (
+    <section data-testid="home-principles-section">
+      <h2>原则</h2>
+    </section>
+  ),
+}));
+
+vi.mock("@/components/site/TechStack", () => ({
+  TechStack: () => (
+    <section data-testid="home-tech-stack-section">
+      <h2>技术体系</h2>
+      <a href="/about#tech-stack">完整技术选型理由 →</a>
+    </section>
+  ),
+}));
+
+vi.mock("@/components/site/GithubCard", () => ({
+  GithubCard: () => (
+    <section data-testid="github-card-section">
+      <h2>GitHub Activity</h2>
+    </section>
+  ),
+}));
+
+vi.mock("@/components/site/HomeStats", () => ({
+  HomeStats: () => (
+    <section data-testid="home-stats-section">
+      v0.x · 12 posts · 84 views in 7 days · last shipped May 2026
+    </section>
+  ),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getCurrentLocale.mockReturnValue("zh");
-  mocks.getSiteStats.mockResolvedValue({ views: 0, posts: 0, comments: 0 });
+  mocks.getSiteStats.mockResolvedValue({
+    views: 0,
+    viewsInLast7Days: 0,
+    posts: 0,
+    comments: 0,
+    lastShippedAt: null,
+  });
   mocks.listPosts.mockResolvedValue({
     items: [],
     total: 0,
@@ -50,180 +125,76 @@ beforeEach(() => {
   });
 });
 
-describe("HomePage recent posts", () => {
-  it("renders HeroEditorial and keeps downstream homepage sections", async () => {
+describe("HomePage composition", () => {
+  it("renders 7 sections in order", async () => {
     render(await HomePage());
 
+    const orderedSections = [
+      screen.getByTestId("home-hero-section"),
+      screen.getByTestId("home-featured-recent-section"),
+      screen.getByTestId("home-columns-section"),
+      screen.getByTestId("home-principles-section"),
+      screen.getByTestId("home-tech-stack-section"),
+      screen.getByTestId("github-card-section"),
+      screen.getByTestId("home-stats-section"),
+    ];
+
+    for (let index = 0; index < orderedSections.length - 1; index += 1) {
+      expect(
+        orderedSections[index].compareDocumentPosition(orderedSections[index + 1]) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
+
+  it("does not import or render LaunchNarrative on home page", async () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/app/(site)/page.tsx"),
+      "utf8",
+    );
+
+    expect(source).not.toContain("LaunchNarrative");
+
+    render(await HomePage());
+
+    expect(screen.queryByTestId("launch-narrative-stub")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: /Building things,\s*one commit\s*at a time\./,
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { level: 1, name: "Hi, I'm HaiDen." }),
+      screen.queryByText("A self-hosted publishing system, built in public."),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Read Blog →" })).toHaveAttribute(
+  });
+
+  it("does not show English chrome text alongside Chinese", async () => {
+    render(await HomePage());
+
+    expect(screen.queryByText("View all")).not.toBeInTheDocument();
+    expect(screen.queryByText("Recent Posts")).not.toBeInTheDocument();
+    expect(screen.queryByText("Read Blog →")).not.toBeInTheDocument();
+    expect(screen.queryByText("About →")).not.toBeInTheDocument();
+  });
+
+  it("renders unified Chinese chrome labels", async () => {
+    render(await HomePage());
+
+    expect(screen.getByRole("link", { name: "阅读文章" })).toHaveAttribute(
       "href",
       "/posts",
     );
-    expect(screen.getByRole("link", { name: "About →" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "关于我" })).toHaveAttribute(
       "href",
       "/about",
     );
-    expect(screen.getByRole("heading", { level: 2, name: "Recent Posts" })).toBeInTheDocument();
-    expect(screen.getByText("0 views · 0 posts · 0 comments")).toBeInTheDocument();
-  });
-
-  it("renders TechStack between hero and recent posts", async () => {
-    render(await HomePage());
-
-    expect(screen.getByText("FRONTEND")).toBeInTheDocument();
-    expect(screen.getByText("CONTENT & EDITOR")).toBeInTheDocument();
-    expect(screen.getByText("Next.js 16")).toBeInTheDocument();
-    expect(screen.getByText("App Router + RSC + Server Actions")).toBeInTheDocument();
-    expect(screen.queryByText(/\$\s*whoami/)).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: "Recent Posts" })).toBeInTheDocument();
-    expect(screen.getByText("0 views · 0 posts · 0 comments")).toBeInTheDocument();
-  });
-
-  it("homepage renders GithubCard between TechStack and Recent Posts", async () => {
-    render(await HomePage());
-
-    const techStackLabel = screen.getByText("FRONTEND");
-    const githubCard = screen.getByTestId("github-card-stub");
-    const githubLabel = screen.getByText("GITHUB · DEVELOPMENT");
-    const recentHeading = screen.getByRole("heading", {
-      level: 2,
-      name: "Recent Posts",
-    });
-
-    expect(githubCard).toBeInTheDocument();
-    expect(githubLabel).toBeInTheDocument();
-    expect(
-      techStackLabel.compareDocumentPosition(githubCard) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(
-      githubCard.compareDocumentPosition(recentHeading) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
-  it("homepage renders launch narrative between hero and tech stack", async () => {
-    render(await HomePage());
-
-    const hero = screen.getByRole("heading", {
-      level: 1,
-      name: /Building things,\s*one commit\s*at a time\./,
-    });
-    const launchNarrative = screen.getByTestId("launch-narrative-stub");
-    const techStack = screen.getByText("FRONTEND");
-
-    expect(launchNarrative).toBeInTheDocument();
-    expect(screen.getByText("A self-hosted publishing system, built in public.")).toBeInTheDocument();
-    expect(
-      hero.compareDocumentPosition(launchNarrative) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(
-      launchNarrative.compareDocumentPosition(techStack) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
-  it("renders top 3 published posts in publishedAt desc", async () => {
-    mocks.listPosts.mockResolvedValue({
-      items: [
-        post({
-          id: "p1",
-          slug: "newest",
-          title: "最新文章",
-          excerpt: "最新摘要",
-          publishedAt: new Date("2026-05-21T00:00:00Z"),
-        }),
-        post({
-          id: "p2",
-          slug: "middle",
-          title: "中间文章",
-          excerpt: "中间摘要",
-          publishedAt: new Date("2026-05-20T00:00:00Z"),
-        }),
-        post({
-          id: "p3",
-          slug: "oldest",
-          title: "较早文章",
-          excerpt: "较早摘要",
-          publishedAt: new Date("2026-05-19T00:00:00Z"),
-        }),
-      ],
-      total: 5,
-      page: 1,
-      pageSize: 3,
-    });
-
-    render(await HomePage());
-
-    expect(mocks.listPosts).toHaveBeenCalledWith(
-      { page: 1, pageSize: 3, status: "PUBLISHED" },
-      "zh",
+    expect(screen.getByRole("link", { name: "所有文章 →" })).toHaveAttribute(
+      "href",
+      "/posts",
     );
-    const recent = screen.getByTestId("home-recent-posts");
+    expect(screen.getByRole("link", { name: "全部专栏 →" })).toHaveAttribute(
+      "href",
+      "/columns",
+    );
     expect(
-      within(recent).getAllByRole("link").map((link) => link.textContent),
-    ).toEqual([
-      expect.stringContaining("最新文章"),
-      expect.stringContaining("中间文章"),
-      expect.stringContaining("较早文章"),
-    ]);
-    expect(within(recent).getByText("最新摘要")).toBeInTheDocument();
-    expect(within(recent).getByText("中间摘要")).toBeInTheDocument();
-    expect(within(recent).getByText("较早摘要")).toBeInTheDocument();
-    expect(within(recent).getByText("2026-05-21")).toBeInTheDocument();
-    expect(within(recent).getByText("2026-05-20")).toBeInTheDocument();
-    expect(within(recent).getByText("2026-05-19")).toBeInTheDocument();
-  });
-
-  it("renders empty placeholder when no published posts", async () => {
-    render(await HomePage());
-
-    expect(screen.getByText("还没有发布的文章。")).toBeInTheDocument();
+      screen.getByRole("link", { name: "完整技术选型理由 →" }),
+    ).toHaveAttribute("href", "/about#tech-stack");
+    expect(screen.getByRole("heading", { level: 2, name: "原则" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "技术体系" })).toBeInTheDocument();
   });
 });
-
-describe("HomePage site stats", () => {
-  it("renders site stats from getSiteStats", async () => {
-    mocks.getSiteStats.mockResolvedValue({
-      views: 60,
-      posts: 3,
-      comments: 2,
-    });
-
-    render(await HomePage());
-
-    expect(mocks.getSiteStats).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("60 views · 3 posts · 2 comments")).toBeInTheDocument();
-  });
-});
-
-function post(overrides: Partial<PostListItem>): PostListItem {
-  return {
-    id: "post-id",
-    slug: "post",
-    cover: null,
-    status: "PUBLISHED",
-    publishedAt: new Date("2026-05-21T00:00:00Z"),
-    columnId: null,
-    columnName: null,
-    authorName: "作者",
-    title: "文章",
-    excerpt: "摘要",
-    tags: [],
-    viewCount: 0,
-    likeCount: 0,
-    commentCount: 0,
-    createdAt: new Date("2026-05-21T00:00:00Z"),
-    updatedAt: new Date("2026-05-21T00:00:00Z"),
-    ...overrides,
-  };
-}
