@@ -191,16 +191,7 @@ function rehypeMarkdownAlerts() {
           tagName: "div",
           properties: { className: ["markdown-alert-title"] },
           children: [
-            {
-              type: "element",
-              tagName: "svg",
-              properties: {
-                ariaHidden: "true",
-                className: ["markdown-alert-icon"],
-                viewBox: "0 0 24 24",
-              },
-              children: [],
-            },
+            createAlertIcon(match.type),
             {
               type: "element",
               tagName: "span",
@@ -256,13 +247,106 @@ function formatAlertLabel(type: MarkdownAlertType): string {
   return `${type[0]}${type.slice(1).toLowerCase()}`;
 }
 
+function createAlertIcon(type: MarkdownAlertType): HastElement {
+  return {
+    type: "element",
+    tagName: "svg",
+    properties: {
+      ariaHidden: "true",
+      className: ["markdown-alert-icon"],
+      fill: "none",
+      stroke: "currentColor",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      strokeWidth: "2",
+      viewBox: "0 0 24 24",
+    },
+    children: alertIconChildren(type),
+  };
+}
+
+function alertIconChildren(type: MarkdownAlertType): HastElement[] {
+  switch (type) {
+    case "NOTE":
+      return [
+        svgCircle({ cx: "12", cy: "12", r: "10" }),
+        svgPath("M12 16v-4"),
+        svgPath("M12 8h.01"),
+      ];
+    case "TIP":
+      return [
+        svgPath(
+          "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5",
+        ),
+        svgPath("M9 18h6"),
+        svgPath("M10 22h4"),
+      ];
+    case "IMPORTANT":
+      return [
+        svgCircle({ cx: "12", cy: "12", r: "10" }),
+        svgLine({ x1: "12", x2: "12", y1: "8", y2: "12" }),
+        svgLine({ x1: "12", x2: "12.01", y1: "16", y2: "16" }),
+      ];
+    case "WARNING":
+      return [
+        svgPath(
+          "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3",
+        ),
+        svgPath("M12 9v4"),
+        svgPath("M12 17h.01"),
+      ];
+    case "CAUTION":
+      return [
+        svgPath("m15 9-6 6"),
+        svgPath(
+          "M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z",
+        ),
+        svgPath("m9 9 6 6"),
+      ];
+  }
+}
+
+function svgPath(d: string): HastElement {
+  return {
+    type: "element",
+    tagName: "path",
+    properties: { d },
+    children: [],
+  };
+}
+
+function svgCircle(properties: Record<string, string>): HastElement {
+  return {
+    type: "element",
+    tagName: "circle",
+    properties,
+    children: [],
+  };
+}
+
+function svgLine(properties: Record<string, string>): HastElement {
+  return {
+    type: "element",
+    tagName: "line",
+    properties,
+    children: [],
+  };
+}
+
 // Sanitize schema extension — allow attributes shiki and our anchor plugins emit.
 // `clobberPrefix: ""` disables the default `user-content-` id rewrite so heading
 // slugs stay aligned with the autolink hrefs emitted by `rehype-autolink-headings`.
 const sanitizeSchema = {
   ...defaultSchema,
   clobberPrefix: "",
-  tagNames: [...(defaultSchema.tagNames ?? []), "aside", "svg"],
+  tagNames: [
+    ...(defaultSchema.tagNames ?? []),
+    "aside",
+    "circle",
+    "line",
+    "path",
+    "svg",
+  ],
   attributes: {
     ...(defaultSchema.attributes ?? {}),
     "*": [
@@ -285,7 +369,29 @@ const sanitizeSchema = {
       ...((defaultSchema.attributes?.svg ?? []) as unknown as string[]),
       "ariaHidden",
       "className",
+      "fill",
+      "stroke",
+      "strokeLinecap",
+      "strokeLinejoin",
+      "strokeWidth",
       "viewBox",
+    ],
+    circle: [
+      ...((defaultSchema.attributes?.circle ?? []) as unknown as string[]),
+      "cx",
+      "cy",
+      "r",
+    ],
+    line: [
+      ...((defaultSchema.attributes?.line ?? []) as unknown as string[]),
+      "x1",
+      "x2",
+      "y1",
+      "y2",
+    ],
+    path: [
+      ...((defaultSchema.attributes?.path ?? []) as unknown as string[]),
+      "d",
     ],
     pre: [
       ...((defaultSchema.attributes?.pre ?? []) as unknown as string[]),
