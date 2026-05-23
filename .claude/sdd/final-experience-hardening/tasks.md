@@ -18,8 +18,12 @@
   3.3.a [TEST-RED] write failing page test for public-index-003
   3.3.b [IMPL-GREEN] localize tag detail chrome
 
-4. finish
-  4.1 [no-tdd] run full quality gate and browser smoke
-  4.2 [no-tdd] update memory-bank progress with final verification
+4. admin-polish
+  4.1.a [TEST-RED] write failing component test for admin-polish-001
+  4.1.b [IMPL-GREEN] localize analytics helper empty states
+
+5. finish
+  5.1 [no-tdd] run full quality gate and browser smoke
+  5.2 [no-tdd] update memory-bank progress with final verification
 
 <!-- Draft auto-generated from explore. Review before use. Generated: 2026-05-24T00:00:00+08:00 -->
