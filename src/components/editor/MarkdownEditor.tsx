@@ -1,46 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { Markdown } from "tiptap-markdown";
-import { createLowlight, common } from "lowlight";
-import { EditorToolbar } from "./EditorToolbar";
-
-const lowlight = createLowlight(common);
-
-/**
- * `tiptap-markdown` augments `editor.storage` at runtime with a `markdown`
- * key, but the upstream Tiptap typings don't reflect it. This narrow accessor
- * isolates the cast so the rest of the codebase can stay strict.
- */
-function getEditorMarkdown(editor: Editor): string {
-  const storage = editor.storage as unknown as {
-    markdown?: { getMarkdown?: () => string };
-  };
-  return storage.markdown?.getMarkdown?.() ?? "";
-}
+import { useEffect, useRef } from "react";
+import { basicSetup } from "codemirror";
+import { markdown } from "@codemirror/lang-markdown";
+import { indentUnit } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
+import { EditorView, placeholder as cmPlaceholder } from "@codemirror/view";
 
 export interface MarkdownEditorProps {
   /** Current Markdown value (controlled). */
   value: string;
   /** Fired with the latest Markdown after each edit. */
   onChange: (markdown: string) => void;
-  /** Placeholder shown when the document is empty. (Visual only — Tiptap supplies this via Placeholder extension; we keep it here as a hint passthrough.) */
+  /** Placeholder shown when the document is empty. */
   placeholder?: string;
   /** Optional extra className on the outer wrapper. */
   className?: string;
 }
 
 /**
- * Editor adapter that exposes/consumes Markdown (per systemPatterns §14).
+ * CodeMirror-backed source editor.
  *
- * Internal ProseMirror state holds JSON, but the contract with the rest of the
- * app is Markdown — `onChange` always emits Markdown, and `value` always feeds
- * Markdown back in. `tiptap-markdown` does the round-trip serialization.
+ * The contract is intentionally literal: `value` is Markdown text, the editor
+ * displays Markdown text, and `onChange` emits Markdown text without
+ * serializing through rich-text state.
  */
 export function MarkdownEditor({
   value,
@@ -48,70 +31,99 @@ export function MarkdownEditor({
   placeholder,
   className,
 }: MarkdownEditorProps) {
-  const editor = useEditor({
-    // Avoid SSR mismatches; ProseMirror needs the DOM.
-    immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        // CodeBlockLowlight replaces the built-in CodeBlock node.
-        codeBlock: false,
-      }),
-      Link.configure({
-        autolink: true,
-        openOnClick: false,
-        HTMLAttributes: {
-          rel: "noopener noreferrer",
-          target: "_blank",
-        },
-      }),
-      Image,
-      CodeBlockLowlight.configure({ lowlight }),
-      Markdown.configure({
-        html: false,
-        linkify: true,
-        breaks: false,
-        transformPastedText: true,
-        transformCopiedText: true,
-      }),
-    ],
-    content: value || "",
-    editorProps: {
-      attributes: {
-        class: [
-          "ProseMirror",
-          "prose prose-neutral dark:prose-invert max-w-none",
-          "min-h-[24rem] px-4 py-3 focus:outline-none",
-        ].join(" "),
-        "data-placeholder": placeholder ?? "",
-      },
-    },
-    onUpdate: ({ editor }) => {
-      onChange(getEditorMarkdown(editor));
-    },
-  });
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const viewRef = useRef<EditorView | null>(null);
+  const valueRef = useRef(value);
+  const onChangeRef = useRef(onChange);
+  const applyingExternalChangeRef = useRef(false);
 
-  // Keep editor content in sync when `value` is changed externally
-  // (e.g. parent loads a draft from the server). Avoid feedback loops by
-  // only re-setting when the markdown round-trip differs.
   useEffect(() => {
-    if (!editor) return;
-    const current = getEditorMarkdown(editor);
-    if (value !== current) {
-      editor.commands.setContent(value || "", { emitUpdate: false });
-    }
-  }, [value, editor]);
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (!mountRef.current || viewRef.current) return;
+
+    const view = new EditorView({
+      parent: mountRef.current,
+      state: EditorState.create({
+        doc: valueRef.current,
+        extensions: [
+          basicSetup,
+          markdown(),
+          indentUnit.of("  "),
+          cmPlaceholder(placeholder ?? "在这里写 Markdown..."),
+          EditorView.lineWrapping,
+          EditorView.updateListener.of((update) => {
+            if (!update.docChanged) return;
+
+            const next = update.state.doc.toString();
+            valueRef.current = next;
+            if (applyingExternalChangeRef.current) return;
+            onChangeRef.current(next);
+          }),
+          EditorView.theme({
+            "&": {
+              backgroundColor: "hsl(var(--bg))",
+              color: "hsl(var(--fg))",
+              fontFamily: "var(--font-mono)",
+              fontSize: "var(--text-base)",
+              minHeight: "24rem",
+            },
+            ".cm-scroller": {
+              fontFamily: "var(--font-mono)",
+              lineHeight: "1.65",
+            },
+            ".cm-content": {
+              minHeight: "24rem",
+              padding: "0.875rem 1rem",
+            },
+            ".cm-gutters": {
+              backgroundColor: "hsl(var(--bg))",
+              borderColor: "hsl(var(--border))",
+              color: "hsl(var(--muted-fg))",
+            },
+            "&.cm-focused": {
+              outline: "2px solid hsl(var(--ring))",
+              outlineOffset: "-2px",
+            },
+          }),
+        ],
+      }),
+    });
+
+    viewRef.current = view;
+
+    return () => {
+      view.destroy();
+      viewRef.current = null;
+    };
+  }, [placeholder]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+
+    const current = view.state.doc.toString();
+    if (value === current) return;
+
+    valueRef.current = value;
+    applyingExternalChangeRef.current = true;
+    view.dispatch({
+      changes: { from: 0, to: current.length, insert: value },
+    });
+    applyingExternalChangeRef.current = false;
+  }, [value]);
 
   return (
     <div
       className={[
-        "flex flex-col rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--bg))]",
+        "flex min-h-[24rem] flex-col overflow-hidden rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--bg))]",
         className ?? "",
       ].join(" ")}
+      data-editor="markdown-source"
     >
-      <EditorToolbar editor={editor} />
-      <div className="flex-1 overflow-auto">
-        <EditorContent editor={editor} />
-      </div>
+      <div ref={mountRef} className="min-h-0 flex-1" />
     </div>
   );
 }
