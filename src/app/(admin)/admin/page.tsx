@@ -33,10 +33,10 @@ type SafeResult<T> = { ok: true; data: T } | { ok: false }
 const rangeSchema = z.enum(["today", "7d", "30d", "all"]).catch("7d")
 
 const RANGE_OPTIONS: Array<{ value: AnalyticsRange; label: string }> = [
-  { value: "today", label: "Today" },
-  { value: "7d", label: "7d" },
-  { value: "30d", label: "30d" },
-  { value: "all", label: "All" },
+  { value: "today", label: "今天" },
+  { value: "7d", label: "7 天" },
+  { value: "30d", label: "30 天" },
+  { value: "all", label: "全部" },
 ]
 
 export default async function AdminDashboardPage({ searchParams }: Props) {
@@ -53,14 +53,14 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
     devices,
     browsers,
   ] = await Promise.all([
-    safe("Today", () => getViewSummary("today")),
-    safe("Last 7 days", () => getViewSummary("7d")),
-    safe("Last 30 days", () => getViewSummary("30d")),
-    safe("Trend", () => getViewSummary(range)),
-    safe("Top Paths", () => getTopPaths(range, 10)),
-    safe("Top Referrers", () => getTopReferrers(range, 10)),
-    safe("Devices", () => getDeviceDistribution(range)),
-    safe("Browsers", () => getBrowserDistribution(range)),
+    safe("今日", () => getViewSummary("today")),
+    safe("近 7 天", () => getViewSummary("7d")),
+    safe("近 30 天", () => getViewSummary("30d")),
+    safe("访问趋势", () => getViewSummary(range)),
+    safe("热门路径", () => getTopPaths(range, 10)),
+    safe("来源页面", () => getTopReferrers(range, 10)),
+    safe("设备分布", () => getDeviceDistribution(range)),
+    safe("浏览器分布", () => getBrowserDistribution(range)),
   ])
 
   return (
@@ -68,84 +68,84 @@ export default async function AdminDashboardPage({ searchParams }: Props) {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-fg">
-            Dashboard
+            仪表盘
           </h1>
           <p className="mt-1 text-sm text-muted-fg">
-            Public traffic overview, refreshed every 60 seconds.
+            公开访问数据概览，每 60 秒刷新一次。
           </p>
         </div>
         <RangeSelector current={range} />
       </header>
 
       <section
-        aria-label="Traffic totals"
+        aria-label="流量统计总览"
         className="grid gap-4 md:grid-cols-3"
       >
-        <MetricWidget label="Today" result={todaySummary} />
-        <MetricWidget label="Last 7 days" result={sevenDaySummary} />
-        <MetricWidget label="Last 30 days" result={monthSummary} />
+        <MetricWidget label="今日" result={todaySummary} />
+        <MetricWidget label="近 7 天" result={sevenDaySummary} />
+        <MetricWidget label="近 30 天" result={monthSummary} />
       </section>
 
       {trendSummary.ok ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Trend</CardTitle>
+            <CardTitle className="text-base">访问趋势</CardTitle>
           </CardHeader>
           <CardContent>
             <TrendChart data={trendSummary.data.perDay} />
           </CardContent>
         </Card>
       ) : (
-        <FailedWidget name="Trend" />
+        <FailedWidget name="访问趋势" />
       )}
 
       <section className="grid gap-4 lg:grid-cols-2">
         {topPaths.ok ? (
           <TopList
-            title="Top Paths"
+            title="热门路径"
             items={topPaths.data.map((item) => ({
               label: item.path,
               count: item.count,
             }))}
           />
         ) : (
-          <FailedWidget name="Top Paths" />
+          <FailedWidget name="热门路径" />
         )}
         {topReferrers.ok ? (
           <TopList
-            title="Top Referrers"
+            title="来源页面"
             items={topReferrers.data.map((item) => ({
               label: item.referrer,
               count: item.count,
             }))}
           />
         ) : (
-          <FailedWidget name="Top Referrers" />
+          <FailedWidget name="来源页面" />
         )}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
         {devices.ok ? (
           <DistributionBar
-            title="Devices"
+            title="设备分布"
             items={devices.data.map((item) => ({
               label: item.device,
               count: item.count,
             }))}
           />
         ) : (
-          <FailedWidget name="Devices" />
+          <FailedWidget name="设备分布" />
         )}
         {browsers.ok ? (
           <DistributionBar
-            title="Browsers"
+            title="浏览器分布"
             items={browsers.data.map((item) => ({
               label: item.browser,
               count: item.count,
             }))}
           />
         ) : (
-          <FailedWidget name="Browsers" />
+          <FailedWidget name="浏览器分布" />
         )}
       </section>
     </div>
@@ -168,7 +168,7 @@ function MetricWidget({
 
 function RangeSelector({ current }: { current: AnalyticsRange }) {
   return (
-    <nav aria-label="Analytics range" className="flex flex-wrap gap-2">
+    <nav aria-label="数据范围" className="flex flex-wrap gap-2">
       {RANGE_OPTIONS.map((option) => {
         const isActive = option.value === current
         return (
@@ -195,7 +195,7 @@ function FailedWidget({ name }: { name: string }) {
   return (
     <Card role="alert">
       <CardContent className="p-6 text-sm text-muted-fg">
-        Failed to load {name}
+        加载失败：{name}
       </CardContent>
     </Card>
   )
