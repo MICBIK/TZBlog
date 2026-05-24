@@ -142,6 +142,17 @@ describe("Channel/Entry destructive migration", () => {
 
     expect(output).toContain("Database schema is up to date")
   })
+
+  it("rateLimitLogProbeInsertsOneRow", async () => {
+    const { insertRateLimitLogProbe } = await loadRateLimitLogProbe()
+
+    const count = await insertRateLimitLogProbe({
+      scope: "migration:mig-008",
+      key: `probe-${Date.now()}`,
+    })
+
+    expect(count).toBe(1)
+  })
 })
 
 async function listPublicTables(): Promise<string[]> {
@@ -225,6 +236,21 @@ async function loadMigrationStatus(): Promise<{
   const modulePath = join(process.cwd(), "src/lib/migrations/status.ts")
   return import(pathToFileURL(modulePath).href) as Promise<{
     assertMigrationStatusUpToDate: () => string
+  }>
+}
+
+async function loadRateLimitLogProbe(): Promise<{
+  insertRateLimitLogProbe: (input: {
+    scope: string
+    key: string
+  }) => Promise<number>
+}> {
+  const modulePath = join(process.cwd(), "src/lib/security/rateLimitLog.ts")
+  return import(pathToFileURL(modulePath).href) as Promise<{
+    insertRateLimitLogProbe: (input: {
+      scope: string
+      key: string
+    }) => Promise<number>
   }>
 }
 
