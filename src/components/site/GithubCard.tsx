@@ -162,16 +162,16 @@ function FallbackState({ reason }: { reason: UnavailableReason }) {
 function fallbackHint(reason: UnavailableReason): string {
   switch (reason) {
     case "missing_env":
-      return "Set GITHUB_USERNAME in your environment to surface live activity.";
+      return "配置 GitHub 用户名后，这里会显示最近的公开动态。";
     case "rate_limited":
-      return "GitHub API rate limit reached; data will refresh once the window resets.";
+      return "GitHub API 暂时达到限流，窗口重置后会自动刷新。";
     case "user_not_found":
-      return "Configured GitHub user could not be found.";
+      return "当前配置的 GitHub 用户不存在，请检查用户名。";
     case "upstream_error":
-      return "GitHub API returned an error; try again later.";
+      return "GitHub API 暂时返回错误，稍后会自动重试。";
     case "parse_error":
-      return "GitHub API response could not be parsed.";
+      return "GitHub API 响应解析失败，暂时保留降级展示。";
     case "network_error":
-      return "Could not reach GitHub.";
+      return "暂时无法连接 GitHub，稍后会自动重试。";
   }
 }
