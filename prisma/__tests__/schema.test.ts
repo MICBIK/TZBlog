@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { join, relative } from "node:path"
 
-import { testDb } from "../../tests/helpers/db"
+import { ensureTestUser, testDb } from "../../tests/helpers/db"
 
 describe("Channel/Entry Prisma schema", () => {
   it("generatesPrismaClientWithNewTypes", () => {
@@ -30,6 +30,71 @@ describe("Channel/Entry Prisma schema", () => {
     }
 
     expect(offenders).toEqual([])
+  })
+
+  it("entryFindFirstReturnsNestedChannelTagsTranslations", async () => {
+    const suffix = Date.now().toString(36)
+    const authorId = await ensureTestUser(`schema-${suffix}@tzblog.local`)
+    const tag = await testDb.tag.upsert({
+      where: { slug: `schema-${suffix}` },
+      create: { slug: `schema-${suffix}`, name: "schema" },
+      update: {},
+    })
+
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-channel-${suffix}`,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        order: 1,
+        translations: {
+          create: {
+            locale: "zh",
+            name: "Schema Channel",
+            description: "relation smoke",
+          },
+        },
+      },
+    })
+
+    await testDb.entry.create({
+      data: {
+        slug: `schema-entry-${suffix}`,
+        channelId: channel.id,
+        authorId,
+        kind: "ARTICLE",
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        body: "# Schema Entry\n\nbody",
+        metadata: { cover: "/showcase/schema.png", readingMinutes: 3 },
+        translations: {
+          create: {
+            locale: "zh",
+            title: "Schema Entry",
+            excerpt: "nested relation check",
+          },
+        },
+        tags: {
+          create: {
+            tagId: tag.id,
+          },
+        },
+      },
+    })
+
+    const found = await testDb.entry.findFirst({
+      where: { slug: `schema-entry-${suffix}` },
+      include: {
+        channel: { include: { translations: true } },
+        tags: { include: { tag: true } },
+        translations: true,
+      },
+    })
+
+    expect(found?.channel.slug).toBe(`schema-channel-${suffix}`)
+    expect(found?.channel.translations[0]?.name).toBe("Schema Channel")
+    expect(found?.tags[0]?.tag.slug).toBe(`schema-${suffix}`)
+    expect(found?.translations[0]?.title).toBe("Schema Entry")
   })
 })
 
