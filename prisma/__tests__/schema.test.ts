@@ -154,6 +154,61 @@ describe("Channel/Entry Prisma schema", () => {
     expect(parsed.data.readingMinutes).toBe(5)
     expect(parsed.data.toc).toBe(false)
   })
+
+  it("insertGuestbookChannelAllowsGuestbookThreadEntry", async () => {
+    const rulesModulePath = join(
+      process.cwd(),
+      "src/lib/schemas/channelEntryRules.ts",
+    )
+    expect(existsSync(rulesModulePath)).toBe(true)
+
+    const { getAllowedEntryKindsForChannelKind } = (await import(
+      pathToFileURL(rulesModulePath).href
+    )) as {
+      getAllowedEntryKindsForChannelKind: (
+        kind: "GUESTBOOK",
+      ) => ReadonlyArray<string>
+    }
+    expect(getAllowedEntryKindsForChannelKind("GUESTBOOK")).toEqual([
+      "GUESTBOOK_THREAD",
+    ])
+
+    const suffix = Date.now().toString(36)
+    const authorId = await ensureTestUser(
+      `schema-guestbook-${suffix}@tzblog.local`,
+    )
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-guestbook-${suffix}`,
+        kind: "GUESTBOOK",
+        layout: "FEED",
+        enabled: false,
+        translations: { create: { locale: "zh", name: "Guestbook" } },
+      },
+    })
+
+    const entry = await testDb.entry.create({
+      data: {
+        slug: `schema-guestbook-thread-${suffix}`,
+        channelId: channel.id,
+        authorId,
+        kind: "GUESTBOOK_THREAD",
+        status: "PUBLISHED",
+        body: "第一条私密留言",
+        metadata: {
+          visitorName: "Schema Visitor",
+          visibility: "PRIVATE_TO_AUTHOR",
+        },
+        translations: {
+          create: { locale: "zh", title: "Schema Visitor" },
+        },
+      },
+      include: { channel: true },
+    })
+
+    expect(entry.channel.kind).toBe("GUESTBOOK")
+    expect(entry.kind).toBe("GUESTBOOK_THREAD")
+  })
 })
 
 function listSourceFiles(dir: string): string[] {
