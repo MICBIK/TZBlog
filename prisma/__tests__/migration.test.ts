@@ -153,6 +153,21 @@ describe("Channel/Entry destructive migration", () => {
 
     expect(count).toBe(1)
   })
+
+  it("deleteChannelCascadesEntryChildren", async () => {
+    const { probeChannelCascadeDelete } = await loadChannelCascadeProbe()
+
+    const counts = await probeChannelCascadeDelete(`mig-009-${Date.now()}`)
+
+    expect(counts).toEqual({
+      channel: 0,
+      entries: 0,
+      entryTranslations: 0,
+      entryViews: 0,
+      entryLikes: 0,
+      comments: 0,
+    })
+  })
 })
 
 async function listPublicTables(): Promise<string[]> {
@@ -251,6 +266,29 @@ async function loadRateLimitLogProbe(): Promise<{
       scope: string
       key: string
     }) => Promise<number>
+  }>
+}
+
+async function loadChannelCascadeProbe(): Promise<{
+  probeChannelCascadeDelete: (slug: string) => Promise<{
+    channel: number
+    entries: number
+    entryTranslations: number
+    entryViews: number
+    entryLikes: number
+    comments: number
+  }>
+}> {
+  const modulePath = join(process.cwd(), "src/lib/migrations/cascadeProbe.ts")
+  return import(pathToFileURL(modulePath).href) as Promise<{
+    probeChannelCascadeDelete: (slug: string) => Promise<{
+      channel: number
+      entries: number
+      entryTranslations: number
+      entryViews: number
+      entryLikes: number
+      comments: number
+    }>
   }>
 }
 
