@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { HomeGarden } from "./HomeGarden";
+import { HomeShell } from "./HomeShell";
 import { InteractiveExplainer } from "./InteractiveExplainer";
 
 describe("site reduced motion system", () => {
@@ -12,7 +12,7 @@ describe("site reduced motion system", () => {
   it("disablesLargeMotionWhenReducedMotionIsPreferred", () => {
     const { container } = render(
       <>
-        <HomeGarden
+        <HomeShell
           hero={<section>Hero ready</section>}
           featuredAndRecent={<section>Posts ready</section>}
           columns={<section>Projects ready</section>}
@@ -36,7 +36,7 @@ describe("site reduced motion system", () => {
       </>,
     );
 
-    expect(container.querySelector("[data-home-garden]")).toHaveAttribute(
+    expect(container.querySelector("[data-home-shell]")).toHaveAttribute(
       "data-reduced-motion-safe",
     );
     expect(

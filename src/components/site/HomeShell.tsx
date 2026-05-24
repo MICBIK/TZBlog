@@ -9,7 +9,7 @@ type HomeModuleState = {
 
 type HomeModuleContent = ReactNode | HomeModuleState;
 
-export interface HomeGardenProps {
+export interface HomeShellProps {
   hero: ReactNode;
   featuredAndRecent: HomeModuleContent;
   columns: HomeModuleContent;
@@ -25,7 +25,7 @@ function revealStyle(delay: string): CSSProperties {
   return { "--reveal-delay": delay } as CSSProperties;
 }
 
-export function HomeGarden({
+export function HomeShell({
   hero,
   featuredAndRecent,
   columns,
@@ -33,10 +33,10 @@ export function HomeGarden({
   techStack,
   github,
   stats,
-}: HomeGardenProps) {
+}: HomeShellProps) {
   return (
     <div
-      data-home-garden
+      data-home-shell
       data-home-motion-scope
       data-reduced-motion-safe
       className="mx-[calc(50%-50vw)] w-screen px-6 sm:px-8 lg:px-10"
@@ -167,4 +167,4 @@ function isHomeModuleState(content: HomeModuleContent): content is HomeModuleSta
   );
 }
 
-export default HomeGarden;
+export default HomeShell;

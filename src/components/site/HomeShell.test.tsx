@@ -2,12 +2,12 @@ import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 
-import { HomeGarden } from "./HomeGarden";
+import { HomeShell } from "./HomeShell";
 
-describe("<HomeGarden />", () => {
+describe("<HomeShell />", () => {
   it("handlesLoadingEmptyAndErrorStates", () => {
     render(
-      <HomeGarden
+      <HomeShell
         hero={<section>Hero ready</section>}
         featuredAndRecent={moduleState(
           "loading",
@@ -57,7 +57,7 @@ describe("<HomeGarden />", () => {
 
   it("collapsesIdentityRailOnMobile", () => {
     render(
-      <HomeGarden
+      <HomeShell
         hero={<section>Hero ready</section>}
         featuredAndRecent={<section>Posts ready</section>}
         columns={<section>Projects ready</section>}
@@ -95,7 +95,7 @@ describe("<HomeGarden />", () => {
 
   it("usesMotionTokensAndReducedMotionFallback", () => {
     const { container } = render(
-      <HomeGarden
+      <HomeShell
         hero={<section>Hero ready</section>}
         featuredAndRecent={moduleState(
           "loading",
@@ -114,7 +114,7 @@ describe("<HomeGarden />", () => {
       />,
     );
 
-    const garden = container.querySelector("[data-home-garden]");
+    const shell = container.querySelector("[data-home-shell]");
     const identityRail = screen.getByRole("complementary", {
       name: "作者身份",
     });
@@ -128,8 +128,8 @@ describe("<HomeGarden />", () => {
       container.querySelectorAll("[data-home-module-state]"),
     );
 
-    expect(garden).toHaveAttribute("data-home-motion-scope");
-    expect(garden).toHaveAttribute("data-reduced-motion-safe");
+    expect(shell).toHaveAttribute("data-home-motion-scope");
+    expect(shell).toHaveAttribute("data-reduced-motion-safe");
     expect(identityRail).toHaveAttribute("data-reveal");
     expect(identityRail).toHaveStyle("--reveal-delay: 0ms");
     expect(contentStream).toHaveAttribute("data-home-motion-stagger");

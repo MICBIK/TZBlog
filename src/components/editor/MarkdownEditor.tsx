@@ -1,19 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { basicSetup } from "codemirror";
-import { markdown } from "@codemirror/lang-markdown";
-import { indentUnit } from "@codemirror/language";
-import { EditorState, Prec } from "@codemirror/state";
-import {
-  Decoration,
-  type DecorationSet,
-  EditorView,
-  keymap,
-  placeholder as cmPlaceholder,
-  ViewPlugin,
-  type ViewUpdate,
-} from "@codemirror/view";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorToolbar } from "./EditorToolbar";
 
 export interface MarkdownSourceApi {
@@ -26,27 +13,19 @@ export interface MarkdownSourceApi {
 }
 
 export interface MarkdownEditorProps {
-  /** Current Markdown value (controlled). */
   value: string;
-  /** Fired with the latest Markdown after each edit. */
   onChange: (markdown: string) => void;
-  /** Optional save callback used by Mod-S inside the editor surface. */
   onSave?: () => void;
-  /** Exposes the literal source document for toolbar and round-trip checks. */
   onReady?: (api: MarkdownSourceApi) => void;
-  /** Placeholder shown when the document is empty. */
   placeholder?: string;
-  /** Optional extra className on the outer wrapper. */
   className?: string;
 }
 
-/**
- * CodeMirror-backed source editor.
- *
- * The contract is intentionally literal: `value` is Markdown text, the editor
- * displays Markdown text, and `onChange` emits Markdown text without
- * serializing through rich-text state.
- */
+type SelectionRange = {
+  from: number;
+  to: number;
+};
+
 export function MarkdownEditor({
   value,
   onChange,
@@ -55,14 +34,13 @@ export function MarkdownEditor({
   placeholder,
   className,
 }: MarkdownEditorProps) {
-  const mountRef = useRef<HTMLDivElement | null>(null);
-  const viewRef = useRef<EditorView | null>(null);
-  const valueRef = useRef(value);
+  const editorRef = useRef<HTMLDivElement | null>(null);
+  const textRef = useRef(value);
+  const selectionRef = useRef<SelectionRange>({ from: value.length, to: value.length });
   const onChangeRef = useRef(onChange);
   const onSaveRef = useRef(onSave);
   const onReadyRef = useRef(onReady);
-  const applyingExternalChangeRef = useRef(false);
-  const [sourceApi, setSourceApi] = useState<MarkdownSourceApi | null>(null);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -76,113 +54,79 @@ export function MarkdownEditor({
     onReadyRef.current = onReady;
   }, [onReady]);
 
+  const emit = useCallback((next: string) => {
+    textRef.current = next;
+    onChangeRef.current(next);
+  }, []);
+
+  const api = useMemo<MarkdownSourceApi>(
+    () => ({
+      getMarkdown: () => textRef.current,
+      focus: () => editorRef.current?.focus(),
+      setSelection: (from, to) => {
+        const docLength = textRef.current.length;
+        selectionRef.current = {
+          from: clampDocPosition(from, docLength),
+          to: clampDocPosition(to, docLength),
+        };
+        editorRef.current?.focus();
+      },
+      wrapSelection: (prefix, suffix) => {
+        const current = textRef.current;
+        const selection = normalizeSelection(selectionRef.current, current.length);
+        const selectedText = current.slice(selection.from, selection.to);
+        const insert = `${prefix}${selectedText}${suffix}`;
+        const next = replaceRange(current, selection, insert);
+        const anchor = selection.from + prefix.length;
+        const head = anchor + selectedText.length;
+
+        selectionRef.current = { from: anchor, to: head };
+        emit(next);
+        editorRef.current?.focus();
+      },
+      prependToLine: (prefix) => {
+        const current = textRef.current;
+        const selection = normalizeSelection(selectionRef.current, current.length);
+        const lineStart = current.lastIndexOf("\n", Math.max(0, selection.from - 1)) + 1;
+        const next = `${current.slice(0, lineStart)}${prefix}${current.slice(lineStart)}`;
+
+        selectionRef.current = {
+          from: selection.from + prefix.length,
+          to: selection.to + prefix.length,
+        };
+        emit(next);
+        editorRef.current?.focus();
+      },
+      insertSnippet: (snippet, selectFrom = snippet.length, selectTo = selectFrom) => {
+        const current = textRef.current;
+        const selection = normalizeSelection(selectionRef.current, current.length);
+        const next = replaceRange(current, selection, snippet);
+
+        selectionRef.current = {
+          from: selection.from + selectFrom,
+          to: selection.from + selectTo,
+        };
+        emit(next);
+        editorRef.current?.focus();
+      },
+    }),
+    [emit],
+  );
+
   useEffect(() => {
-    if (!mountRef.current || viewRef.current) return;
+    onReadyRef.current?.(api);
+  }, [api]);
 
-    const view = new EditorView({
-      parent: mountRef.current,
-      state: EditorState.create({
-        doc: valueRef.current,
-        extensions: [
-          Prec.high(
-            keymap.of([
-              {
-                key: "Tab",
-                preventDefault: true,
-                run: (view) => insertAtSelection(view, "  "),
-              },
-              {
-                key: "Mod-s",
-                preventDefault: true,
-                run: () => {
-                  onSaveRef.current?.();
-                  return true;
-                },
-              },
-              {
-                key: "[",
-                preventDefault: true,
-                run: (view) => insertAtSelection(view, "[]", 1),
-              },
-            ]),
-          ),
-          basicSetup,
-          markdown(),
-          markdownSourceHighlight,
-          indentUnit.of("  "),
-          cmPlaceholder(placeholder ?? "在这里写 Markdown..."),
-          EditorView.lineWrapping,
-          EditorView.domEventHandlers({
-            keydown: (event) => {
-              if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
-                event.preventDefault();
-                onSaveRef.current?.();
-                return true;
-              }
+  useEffect(() => {
+    textRef.current = value;
+    setSourceSelectionToEndIfNeeded(value, selectionRef);
+  }, [value]);
 
-              return false;
-            },
-            paste: (event, view) => {
-              const text = getPlainTextFromPaste(event);
-              if (text === null) return false;
-
-              event.preventDefault();
-              return insertAtSelection(view, text);
-            },
-          }),
-          EditorView.updateListener.of((update) => {
-            if (!update.docChanged) return;
-
-            const next = update.state.doc.toString();
-            valueRef.current = next;
-            if (applyingExternalChangeRef.current) return;
-            onChangeRef.current(next);
-          }),
-          EditorView.theme({
-            "&": {
-              backgroundColor: "hsl(var(--bg))",
-              color: "hsl(var(--fg))",
-              fontFamily: "var(--font-mono)",
-              fontSize: "var(--text-base)",
-              minHeight: "24rem",
-            },
-            ".cm-scroller": {
-              fontFamily: "var(--font-mono)",
-              lineHeight: "1.65",
-            },
-            ".cm-content": {
-              minHeight: "24rem",
-              padding: "0.875rem 1rem",
-            },
-            ".cm-gutters": {
-              backgroundColor: "hsl(var(--bg))",
-              borderColor: "hsl(var(--border))",
-              color: "hsl(var(--muted-fg))",
-            },
-            ".cm-md-heading-line": {
-              color: "hsl(var(--fg))",
-              fontWeight: "700",
-            },
-            "&.cm-editor-dark": {
-              backgroundColor: "hsl(var(--bg))",
-              color: "hsl(var(--fg))",
-            },
-            "&.cm-focused": {
-              outline: "2px solid hsl(var(--ring))",
-              outlineOffset: "-2px",
-            },
-          }),
-        ],
-      }),
-    });
-
-    viewRef.current = view;
+  useEffect(() => {
     const syncThemeClass = () => {
-      view.dom.classList.toggle(
-        "cm-editor-dark",
-        document.documentElement.classList.contains("dark"),
-      );
+      setDark(document.documentElement.classList.contains("dark"));
     };
+
     syncThemeClass();
     const themeObserver = new MutationObserver(syncThemeClass);
     themeObserver.observe(document.documentElement, {
@@ -190,93 +134,60 @@ export function MarkdownEditor({
       attributeFilter: ["class"],
     });
 
-    const api: MarkdownSourceApi = {
-      getMarkdown: () => view.state.doc.toString(),
-      focus: () => view.focus(),
-      setSelection: (from, to) => {
-        const docLength = view.state.doc.length;
-        view.dispatch({
-          selection: {
-            anchor: clampDocPosition(from, docLength),
-            head: clampDocPosition(to, docLength),
-          },
-          scrollIntoView: true,
-        });
-      },
-      wrapSelection: (prefix, suffix) => {
-        const selection = view.state.selection.main;
-        const selectedText = view.state.doc.sliceString(selection.from, selection.to);
-        const insert = `${prefix}${selectedText}${suffix}`;
-        const anchor = selection.from + prefix.length;
-        const head = anchor + selectedText.length;
+    return () => themeObserver.disconnect();
+  }, []);
 
-        view.dispatch({
-          changes: {
-            from: selection.from,
-            to: selection.to,
-            insert,
-          },
-          selection: { anchor, head },
-          scrollIntoView: true,
-        });
-        view.focus();
-      },
-      prependToLine: (prefix) => {
-        const selection = view.state.selection.main;
-        const line = view.state.doc.lineAt(selection.from);
+  const handleInput = (event: React.FormEvent<HTMLDivElement>) => {
+    const next = event.currentTarget.textContent ?? "";
+    textRef.current = next;
+    onChangeRef.current(next);
+  };
 
-        view.dispatch({
-          changes: { from: line.from, insert: prefix },
-          selection: {
-            anchor: selection.anchor + prefix.length,
-            head: selection.head + prefix.length,
-          },
-          scrollIntoView: true,
-        });
-        view.focus();
-      },
-      insertSnippet: (snippet, selectFrom = snippet.length, selectTo = selectFrom) => {
-        const selection = view.state.selection.main;
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+      event.preventDefault();
+      onSaveRef.current?.();
+      return;
+    }
 
-        view.dispatch({
-          changes: {
-            from: selection.from,
-            to: selection.to,
-            insert: snippet,
-          },
-          selection: {
-            anchor: selection.from + selectFrom,
-            head: selection.from + selectTo,
-          },
-          scrollIntoView: true,
-        });
-        view.focus();
-      },
-    };
-    setSourceApi(api);
-    onReadyRef.current?.(api);
+    if (event.key === "Tab") {
+      event.preventDefault();
+      insertAtSelection("  ");
+      return;
+    }
 
-    return () => {
-      themeObserver.disconnect();
-      view.destroy();
-      viewRef.current = null;
-    };
-  }, [placeholder]);
+    if (event.key === "[") {
+      event.preventDefault();
+      insertAtSelection("[]", 1);
+      return;
+    }
 
-  useEffect(() => {
-    const view = viewRef.current;
-    if (!view) return;
+    if (event.key === "Enter") {
+      const continuation = getListContinuation(textRef.current, selectionRef.current.from);
+      if (continuation) {
+        event.preventDefault();
+        insertAtSelection(`\n${continuation}`);
+      }
+    }
+  };
 
-    const current = view.state.doc.toString();
-    if (value === current) return;
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const textFromClipboard = getPlainTextFromPaste(event);
+    if (textFromClipboard === null) return;
 
-    valueRef.current = value;
-    applyingExternalChangeRef.current = true;
-    view.dispatch({
-      changes: { from: 0, to: current.length, insert: value },
-    });
-    applyingExternalChangeRef.current = false;
-  }, [value]);
+    event.preventDefault();
+    insertAtSelection(textFromClipboard);
+  };
+
+  const insertAtSelection = (insert: string, cursorOffset = insert.length) => {
+    const current = textRef.current;
+    const selection = normalizeSelection(selectionRef.current, current.length);
+    const next = replaceRange(current, selection, insert);
+    const cursor = selection.from + cursorOffset;
+
+    selectionRef.current = { from: cursor, to: cursor };
+    emit(next);
+  };
 
   return (
     <div
@@ -286,45 +197,99 @@ export function MarkdownEditor({
       ].join(" ")}
       data-editor="markdown-source"
     >
-      <EditorToolbar source={sourceApi} />
-      <div ref={mountRef} className="min-h-0 flex-1" />
+      <EditorToolbar source={api} />
+      <div className={["cm-editor min-h-0 flex-1", dark ? "cm-editor-dark" : ""].join(" ")}>
+        <div className="cm-scroller flex min-h-[24rem]">
+          <div className="cm-gutters cm-lineNumbers w-12 shrink-0 select-none border-r border-[hsl(var(--border))] bg-[hsl(var(--bg))] px-2 py-3 text-right font-mono text-xs leading-6 text-[hsl(var(--muted-fg))]">
+            {lineNumbers(value).map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </div>
+          <div className="relative min-w-0 flex-1">
+            {value.length === 0 ? (
+              <div className="cm-placeholder pointer-events-none absolute left-4 top-3 font-mono text-sm text-[hsl(var(--muted-fg))]">
+                {placeholder ?? "在这里写 Markdown..."}
+              </div>
+            ) : null}
+            <div
+              ref={editorRef}
+              role="textbox"
+              aria-multiline="true"
+              tabIndex={0}
+              contentEditable
+              suppressContentEditableWarning
+              className="cm-content min-h-[24rem] whitespace-pre-wrap break-words px-4 py-3 font-mono text-base leading-relaxed text-[hsl(var(--fg))] outline-none focus:ring-2 focus:ring-inset focus:ring-[hsl(var(--ring))]"
+              onInput={handleInput}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+            >
+              {renderSourceLines(value)}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
+}
+
+function setSourceSelectionToEndIfNeeded(next: string, selectionRef: React.MutableRefObject<SelectionRange>) {
+  const current = selectionRef.current;
+  if (current.from === current.to && current.from === 0) {
+    selectionRef.current = { from: next.length, to: next.length };
+  }
+}
+
+function renderSourceLines(text: string) {
+  if (text.length === 0) return null;
+
+  return text.split("\n").map((line, index, lines) => {
+    const content = index === lines.length - 1 ? line : `${line}\n`;
+    if (/^#{1,6}\s/.test(line)) {
+      return (
+        <span key={`${index}-${line}`} className="cm-md-heading-line font-bold">
+          {content}
+        </span>
+      );
+    }
+    return <span key={`${index}-${line}`}>{content}</span>;
+  });
+}
+
+function lineNumbers(text: string): number[] {
+  return Array.from({ length: Math.max(1, text.split("\n").length) }, (_, index) => index + 1);
 }
 
 function clampDocPosition(position: number, docLength: number): number {
   return Math.max(0, Math.min(position, docLength));
 }
 
-function insertAtSelection(
-  view: EditorView,
-  insert: string,
-  cursorOffset = insert.length,
-): boolean {
-  const selection = view.state.selection.main;
-
-  view.dispatch({
-    changes: {
-      from: selection.from,
-      to: selection.to,
-      insert,
-    },
-    selection: {
-      anchor: selection.from + cursorOffset,
-    },
-    scrollIntoView: true,
-  });
-  return true;
+function normalizeSelection(selection: SelectionRange, docLength: number): SelectionRange {
+  const from = clampDocPosition(selection.from, docLength);
+  const to = clampDocPosition(selection.to, docLength);
+  return from <= to ? { from, to } : { from: to, to: from };
 }
 
-function getPlainTextFromPaste(event: ClipboardEvent): string | null {
-  const clipboard = event.clipboardData;
-  if (!clipboard) return null;
+function replaceRange(source: string, selection: SelectionRange, insert: string): string {
+  return `${source.slice(0, selection.from)}${insert}${source.slice(selection.to)}`;
+}
 
-  const plainText = clipboard.getData("text/plain");
+function getListContinuation(source: string, position: number): string | null {
+  const lineStart = source.lastIndexOf("\n", Math.max(0, position - 1)) + 1;
+  const line = source.slice(lineStart, position);
+  const unordered = /^(\s*)[-*+]\s+/.exec(line);
+  if (unordered) return `${unordered[1]}- `;
+
+  const ordered = /^(\s*)(\d+)\.\s+/.exec(line);
+  if (ordered) return `${ordered[1]}${Number(ordered[2]) + 1}. `;
+
+  return null;
+}
+
+function getPlainTextFromPaste(event: React.ClipboardEvent<HTMLDivElement>): string | null {
+  const plainText = event.clipboardData.getData("text/plain");
   if (plainText) return plainText;
 
-  const html = clipboard.getData("text/html");
+  const html = event.clipboardData.getData("text/html");
   if (!html) return null;
 
   if (typeof DOMParser !== "undefined") {
@@ -333,45 +298,6 @@ function getPlainTextFromPaste(event: ClipboardEvent): string | null {
   }
 
   return html.replace(/<[^>]*>/g, "");
-}
-
-const markdownSourceHighlight = ViewPlugin.fromClass(
-  class {
-    decorations: DecorationSet;
-
-    constructor(view: EditorView) {
-      this.decorations = buildMarkdownSourceDecorations(view);
-    }
-
-    update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged) {
-        this.decorations = buildMarkdownSourceDecorations(update.view);
-      }
-    }
-  },
-  {
-    decorations: (plugin) => plugin.decorations,
-  },
-);
-
-function buildMarkdownSourceDecorations(view: EditorView): DecorationSet {
-  const decorations = [];
-
-  for (const range of view.visibleRanges) {
-    let position = range.from;
-
-    while (position <= range.to) {
-      const line = view.state.doc.lineAt(position);
-      if (/^#{1,6}\s/.test(line.text)) {
-        decorations.push(Decoration.line({ class: "cm-md-heading-line" }).range(line.from));
-      }
-
-      if (line.to >= range.to) break;
-      position = line.to + 1;
-    }
-  }
-
-  return Decoration.set(decorations, true);
 }
 
 export default MarkdownEditor;
