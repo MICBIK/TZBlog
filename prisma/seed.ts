@@ -98,20 +98,19 @@ const showcaseChannels: ShowcaseChannel[] = [
 
 const showcaseEntries: ShowcaseEntry[] = [
   {
-    slug: "designing-a-technical-garden",
+    slug: "why-i-rewrote-my-blog",
     channelSlug: "articles",
     kind: "ARTICLE",
     status: "PUBLISHED",
-    title: "把技术博客设计成可以长期生长的花园",
-    excerpt:
-      "一次围绕首页、文章索引和阅读页的信息架构重组：减少模板感，保留工程密度。",
+    title: "为什么我重做了自己的博客",
+    excerpt: "从 4 板块到 Channel/Entry 元模型的重构记录",
     metadata: { cover: "/showcase/cover-garden.png", readingMinutes: 8, toc: true },
     tags: ["design", "nextjs", "writing"],
     viewCount: 128,
     likeCount: 12,
     commentCount: 1,
     publishedAt: addDays(publishedAtBase, -2),
-    body: `# 把技术博客设计成可以长期生长的花园
+    body: `# 为什么我重做了自己的博客
 
 一个个人技术博客真正难的地方，不是把文章列表渲染出来，而是让读者在第一页就知道这个系统为什么存在。
 
@@ -505,7 +504,7 @@ async function seedShowcaseContent(authorId: string) {
 async function seedShowcaseComments() {
   const commentSeeds = [
     {
-      entrySlug: "designing-a-technical-garden",
+      entrySlug: "why-i-rewrote-my-blog",
       authorName: "读者 A",
       authorEmail: "reader-a@example.com",
       content: "这个首页结构比传统 hero 更适合长期写作，尤其是 identity rail 的处理。",
