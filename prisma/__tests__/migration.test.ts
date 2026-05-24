@@ -1,6 +1,10 @@
 import { execFileSync } from "node:child_process"
+import { join } from "node:path"
+import { pathToFileURL } from "node:url"
+import type { ReactElement, ReactNode } from "react"
+import { isValidElement } from "react"
 
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { testDb } from "../../tests/helpers/db"
 
@@ -80,6 +84,22 @@ describe("Channel/Entry destructive migration", () => {
       ]),
     )
   })
+
+  it("seededArticleDetailPageRendersArticle", async () => {
+    execFileSync("pnpm", ["db:seed"], {
+      cwd: process.cwd(),
+      stdio: "pipe",
+    })
+
+    const PostDetailPage = await loadPostDetailPage()
+    const element = await PostDetailPage({
+      params: Promise.resolve({ slug: "why-i-rewrote-my-blog" }),
+    })
+
+    const text = collectText(element)
+    expect(text).toContain("为什么我重做了自己的博客")
+    expect(text).toContain("从 4 板块到 Channel/Entry 元模型的重构记录")
+  })
 })
 
 async function listPublicTables(): Promise<string[]> {
@@ -92,4 +112,58 @@ async function listPublicTables(): Promise<string[]> {
   `
 
   return rows.map((row) => row.table_name)
+}
+
+async function loadPostDetailPage(): Promise<
+  (props: { params: Promise<{ slug: string }> }) => Promise<ReactNode>
+> {
+  vi.doMock("next/navigation", () => ({
+    notFound: () => {
+      throw new Error("not found")
+    },
+  }))
+  vi.doMock("@/lib/markdown", () => ({
+    extractToc: vi.fn().mockResolvedValue([]),
+    renderMarkdown: vi.fn().mockResolvedValue("<p>article body</p>"),
+  }))
+  vi.doMock("@/components/site/PostViewBeacon", () => ({
+    PostViewBeacon: () => null,
+  }))
+  vi.doMock("@/components/site/LikeButton", () => ({
+    LikeButton: () => null,
+  }))
+  vi.doMock("@/components/site/CommentSection", () => ({
+    CommentSection: () => null,
+  }))
+  vi.doMock("@/components/markdown/MarkdownCopyButtons", () => ({
+    MarkdownCopyButtons: () => null,
+  }))
+
+  const pagePath = join(
+    process.cwd(),
+    "src/app/(site)/posts/[slug]/page.tsx",
+  )
+  const pageModule = (await import(pathToFileURL(pagePath).href)) as {
+    default: (props: {
+      params: Promise<{ slug: string }>
+    }) => Promise<ReactNode>
+  }
+  return pageModule.default
+}
+
+function collectText(node: ReactNode): string {
+  if (node === null || node === undefined || typeof node === "boolean") {
+    return ""
+  }
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node)
+  }
+  if (Array.isArray(node)) {
+    return node.map(collectText).join(" ")
+  }
+  if (isValidElement(node)) {
+    const element = node as ReactElement<{ children?: ReactNode }>
+    return collectText(element.props.children)
+  }
+  return ""
 }
