@@ -31,19 +31,19 @@ interface MediaPickerItem {
 }
 
 const TOOLBAR_ITEMS = [
-  { action: "bold", label: "加粗 Bold ⌘B", marker: "B" },
-  { action: "italic", label: "斜体 Italic ⌘I", marker: "I" },
-  { action: "code", label: "行内代码 Code ⌘E", marker: "`" },
+  { action: "bold", label: "加粗 ⌘B", marker: "B" },
+  { action: "italic", label: "斜体 ⌘I", marker: "I" },
+  { action: "code", label: "行内代码 ⌘E", marker: "`" },
   { action: "h2", label: "二级标题 H2 ⌘⌥2", marker: "H2" },
   { action: "h3", label: "三级标题 H3 ⌘⌥3", marker: "H3" },
-  { action: "ul", label: "无序列表 UL ⌘⇧8", marker: "UL" },
-  { action: "ol", label: "有序列表 OL ⌘⇧7", marker: "OL" },
-  { action: "quote", label: "引用 Quote", marker: ">" },
-  { action: "codeBlock", label: "代码块 Code Block", marker: "{}" },
-  { action: "link", label: "链接 Link ⌘K", marker: "[]" },
-  { action: "image", label: "图片 Image", marker: "IMG" },
-  { action: "table", label: "表格 Table", marker: "TBL" },
-  { action: "callout", label: "提示块 Callout NOTE", marker: "!" },
+  { action: "ul", label: "无序列表 ⌘⇧8", marker: "UL" },
+  { action: "ol", label: "有序列表 ⌘⇧7", marker: "OL" },
+  { action: "quote", label: "引用", marker: ">" },
+  { action: "codeBlock", label: "代码块", marker: "{}" },
+  { action: "link", label: "链接 ⌘K", marker: "[]" },
+  { action: "image", label: "图片", marker: "IMG" },
+  { action: "table", label: "表格", marker: "TBL" },
+  { action: "callout", label: "提示块 NOTE", marker: "!" },
 ] as const;
 
 type ToolbarAction = (typeof TOOLBAR_ITEMS)[number]["action"];
@@ -100,7 +100,7 @@ export function EditorToolbar({ source }: EditorToolbarProps) {
     <>
       <div
         role="toolbar"
-        aria-label="Markdown source toolbar"
+        aria-label="Markdown 源码工具栏"
         className="flex flex-wrap items-center gap-1 border-b border-[hsl(var(--border))] bg-[hsl(var(--bg))] p-2"
       >
         {TOOLBAR_ITEMS.map((item) => (
@@ -153,7 +153,7 @@ export function EditorToolbar({ source }: EditorToolbarProps) {
               取消
             </Button>
             <Button type="button" onClick={submitLink}>
-              插入链接 / Insert link
+              插入链接
             </Button>
           </DialogFooter>
         </DialogContent>

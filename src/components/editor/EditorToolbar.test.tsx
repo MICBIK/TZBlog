@@ -16,19 +16,19 @@ describe("EditorToolbar source actions", () => {
     render(<EditorToolbar {...props} />);
 
     [
-      /加粗.*Bold.*⌘B/,
-      /斜体.*Italic.*⌘I/,
-      /行内代码.*Code.*⌘E/,
+      /加粗.*⌘B/,
+      /斜体.*⌘I/,
+      /行内代码.*⌘E/,
       /二级标题.*H2.*⌘⌥2/,
       /三级标题.*H3.*⌘⌥3/,
-      /无序列表.*UL.*⌘⇧8/,
-      /有序列表.*OL.*⌘⇧7/,
-      /引用.*Quote/,
-      /代码块.*Code Block/,
-      /链接.*Link.*⌘K/,
-      /图片.*Image/,
-      /表格.*Table/,
-      /提示块.*Callout.*NOTE/,
+      /无序列表.*⌘⇧8/,
+      /有序列表.*⌘⇧7/,
+      /引用/,
+      /代码块/,
+      /链接.*⌘K/,
+      /图片/,
+      /表格/,
+      /提示块.*NOTE/,
     ].forEach((titlePattern) => {
       expect(screen.getByRole("button", { name: titlePattern })).toBeInTheDocument();
     });
@@ -50,13 +50,13 @@ describe("EditorToolbar source actions", () => {
 
     render(<EditorToolbar {...props} />);
 
-    await user.click(screen.getByRole("button", { name: /链接.*Link.*⌘K/ }));
+    await user.click(screen.getByRole("button", { name: /链接.*⌘K/ }));
 
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toBeInTheDocument();
 
     await user.type(screen.getByLabelText(/URL/), "https://example.com");
-    await user.click(screen.getByRole("button", { name: /插入链接|Insert link/ }));
+    await user.click(screen.getByRole("button", { name: "插入链接" }));
 
     expect(wrapSelection).toHaveBeenCalledWith("[", "](https://example.com)");
   });
@@ -89,7 +89,7 @@ describe("EditorToolbar source actions", () => {
 
     render(<EditorToolbar {...props} />);
 
-    await user.click(screen.getByRole("button", { name: /图片.*Image/ }));
+    await user.click(screen.getByRole("button", { name: "图片" }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     await user.click(await screen.findByRole("button", { name: /hero\.png/ }));

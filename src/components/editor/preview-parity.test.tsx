@@ -31,7 +31,7 @@ describe("Markdown editor preview parity", () => {
 
     render(<MarkdownEditorWithPreview value={markdown} onChange={vi.fn()} />);
 
-    const article = screen.getByLabelText("Markdown preview").querySelector("article");
+    const article = screen.getByLabelText("Markdown 预览").querySelector("article");
     await waitFor(
       () => {
         expect(article?.innerHTML).toBe(expectedHtml);
@@ -61,7 +61,7 @@ describe("Markdown editor preview parity", () => {
 
     render(<MarkdownEditorWithPreview value={markdown} onChange={vi.fn()} />);
 
-    const article = screen.getByLabelText("Markdown preview").querySelector("article");
+    const article = screen.getByLabelText("Markdown 预览").querySelector("article");
     await waitFor(
       () => {
         expect(article?.innerHTML).toBe(expectedHtml);
@@ -101,7 +101,7 @@ async function expectPreviewParity(markdown: string) {
 
   render(<MarkdownEditorWithPreview value={markdown} onChange={vi.fn()} />);
 
-  const article = screen.getByLabelText("Markdown preview").querySelector("article");
+  const article = screen.getByLabelText("Markdown 预览").querySelector("article");
   await waitFor(
     () => {
       expect(article?.innerHTML).toBe(expectedHtml);

@@ -45,14 +45,14 @@ export function MarkdownEditorWithPreview({
       {/* Mobile tabs */}
       <div
         role="tablist"
-        aria-label="Editor view"
+        aria-label="编辑视图"
         className="flex gap-1 self-start rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--bg))] p-1 lg:hidden"
       >
         <TabButton current={tab} value="editor" onClick={() => setTab("editor")}>
-          Editor
+          编辑
         </TabButton>
         <TabButton current={tab} value="preview" onClick={() => setTab("preview")}>
-          Preview
+          预览
         </TabButton>
       </div>
 
@@ -79,7 +79,7 @@ export function MarkdownEditorWithPreview({
             tab === "preview" ? "block" : "hidden",
             "lg:block",
           ].join(" ")}
-          aria-label="Markdown preview"
+          aria-label="Markdown 预览"
         >
           <MarkdownLivePreview value={value} />
         </div>
@@ -134,7 +134,7 @@ function MarkdownLivePreview({ value }: { value: string }) {
         setError(null);
       } catch (err) {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Markdown preview failed");
+        setError(err instanceof Error ? err.message : "Markdown 预览失败");
       }
     }
 

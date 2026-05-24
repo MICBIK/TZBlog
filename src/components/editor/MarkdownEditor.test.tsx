@@ -98,7 +98,7 @@ describe("MarkdownEditor source contract", () => {
     });
 
     sourceApiRef.current?.setSelection?.(6, 11);
-    await user.click(screen.getByRole("button", { name: /加粗.*Bold.*⌘B/ }));
+    await user.click(screen.getByRole("button", { name: /加粗.*⌘B/ }));
 
     expect(onChange).toHaveBeenCalledWith("hello **world**");
     expect(sourceApiRef.current?.getMarkdown()).toBe("hello **world**");
@@ -150,7 +150,7 @@ describe("MarkdownEditor source contract", () => {
     });
 
     sourceApiRef.current?.setSelection?.(0, 0);
-    await user.click(screen.getByRole("button", { name: /代码块.*Code Block/ }));
+    await user.click(screen.getByRole("button", { name: "代码块" }));
 
     expect(onChange).toHaveBeenCalledWith("```\n\n```");
     expect(sourceApiRef.current?.getMarkdown()).toBe("```\n\n```");
@@ -176,7 +176,7 @@ describe("MarkdownEditor source contract", () => {
     });
 
     sourceApiRef.current?.setSelection?.(0, 0);
-    await user.click(screen.getByRole("button", { name: /提示块.*Callout.*NOTE/ }));
+    await user.click(screen.getByRole("button", { name: /提示块.*NOTE/ }));
 
     expect(onChange).toHaveBeenCalledWith("> [!NOTE]\n> 内容");
     expect(sourceApiRef.current?.getMarkdown()).toBe("> [!NOTE]\n> 内容");

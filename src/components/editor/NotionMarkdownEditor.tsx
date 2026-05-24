@@ -14,18 +14,18 @@ export interface NotionMarkdownEditorProps {
 }
 
 const slashCommands = [
-  { label: "Paragraph", markdown: "段落" },
-  { label: "Heading 2", markdown: "## 标题" },
-  { label: "Bullet List", markdown: "- 列表项" },
-  { label: "Numbered List", markdown: "1. 列表项" },
-  { label: "Quote", markdown: "> 引用" },
-  { label: "Code Block", markdown: "```\n代码\n```" },
-  { label: "Image", markdown: "![alt](url)" },
+  { label: "段落", markdown: "段落" },
+  { label: "二级标题", markdown: "## 标题" },
+  { label: "无序列表", markdown: "- 列表项" },
+  { label: "有序列表", markdown: "1. 列表项" },
+  { label: "引用", markdown: "> 引用" },
+  { label: "代码块", markdown: "```\n代码\n```" },
+  { label: "图片", markdown: "![图片描述](url)", action: "image" },
   {
-    label: "Table",
+    label: "表格",
     markdown: "| 列 | 值 |\n| --- | --- |\n| 示例 | 内容 |",
   },
-  { label: "Callout", markdown: "> [!NOTE]\n> 内容" },
+  { label: "提示块", markdown: "> [!NOTE]\n> 内容" },
 ];
 
 export function NotionMarkdownEditor({
@@ -48,7 +48,7 @@ export function NotionMarkdownEditor({
   };
 
   const handleCommand = (command: { label: string; markdown: string }) => {
-    if (command.label === "Image" && mediaItems.length > 0) {
+    if ("action" in command && command.action === "image" && mediaItems.length > 0) {
       setMediaDialogOpen(true);
       setMenuOpen(false);
       return;
@@ -120,15 +120,15 @@ export function NotionMarkdownEditor({
       {selection ? (
         <div
           role="toolbar"
-          aria-label="Text formatting"
+          aria-label="文字格式"
           className="absolute -top-10 left-0 z-10 flex gap-1 rounded-md border border-border bg-bg p-1 shadow-soft"
         >
           {[
-            { label: "Bold", format: "bold" },
-            { label: "Italic", format: "italic" },
-            { label: "Inline Code", format: "code" },
-            { label: "Link", format: "link" },
-            { label: "Heading 2", format: "h2" },
+            { label: "加粗", format: "bold" },
+            { label: "斜体", format: "italic" },
+            { label: "行内代码", format: "code" },
+            { label: "链接", format: "link" },
+            { label: "二级标题", format: "h2" },
           ].map((item) => (
             <button
               key={item.label}
@@ -150,7 +150,7 @@ export function NotionMarkdownEditor({
       {menuOpen ? (
         <div
           role="menu"
-          aria-label="Block commands"
+          aria-label="块命令"
           className="absolute z-10 mt-2 flex w-56 flex-col rounded-md border border-border bg-bg p-1 shadow-soft"
         >
           {slashCommands.map((command) => (

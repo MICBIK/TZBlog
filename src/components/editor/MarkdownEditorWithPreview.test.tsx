@@ -69,7 +69,7 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
 
     render(<MarkdownEditorWithPreview value="## Preview" onChange={vi.fn()} />);
 
-    const preview = screen.getByLabelText("Markdown preview");
+    const preview = screen.getByLabelText("Markdown 预览");
     const article = preview.querySelector("article");
     expect(article).toHaveClass("markdown-body");
     expect(article).toHaveClass("max-w-none");
@@ -128,7 +128,7 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
       resolveNew?.("<p>new</p>");
       await Promise.resolve();
     });
-    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+    expect(screen.getByLabelText("Markdown 预览").querySelector("article")?.innerHTML).toBe(
       "<p>new</p>",
     );
 
@@ -136,7 +136,7 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
       resolveOld?.("<p>old</p>");
       await Promise.resolve();
     });
-    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+    expect(screen.getByLabelText("Markdown 预览").querySelector("article")?.innerHTML).toBe(
       "<p>new</p>",
     );
   });
@@ -154,7 +154,7 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(200);
     });
-    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+    expect(screen.getByLabelText("Markdown 预览").querySelector("article")?.innerHTML).toBe(
       "<p>last good</p>",
     );
 
@@ -164,7 +164,7 @@ describe("MarkdownEditorWithPreview SSR safety", () => {
     });
 
     expect(screen.getByRole("alert")).toHaveTextContent("broken markdown");
-    expect(screen.getByLabelText("Markdown preview").querySelector("article")?.innerHTML).toBe(
+    expect(screen.getByLabelText("Markdown 预览").querySelector("article")?.innerHTML).toBe(
       "<p>last good</p>",
     );
   });
