@@ -11,5 +11,6 @@
 | admin-polish-001 | component | src/components/admin/admin-dashboard-chrome.test.tsx | rendersChineseAnalyticsEmptyStates | Dashboard helper empty states |
 | admin-polish-002 | page | src/app/(admin)/admin/page.test.tsx | rendersChineseDashboardChrome | Dashboard page-level labels and fallbacks |
 | editor-polish-001 | component | src/components/editor/editor-chrome-locale.test.tsx | rendersChineseEditorChrome | Editor controls, preview labels, command menus, and shared dialog close chrome |
+| public-polish-001 | component | src/components/site/GithubCard.test.tsx | rendersChineseMissingGithubEnvFallback | Homepage GitHub fallback helper copy |
 
 <!-- Draft auto-generated from explore. Review before use. Generated: 2026-05-24T00:00:00+08:00 -->

@@ -28,8 +28,12 @@
   5.1.a [TEST-RED] write failing component test for editor-polish-001
   5.1.b [IMPL-GREEN] localize editor and shared dialog chrome
 
-6. finish
-  6.1 [no-tdd] run full quality gate and browser smoke
-  6.2 [no-tdd] update memory-bank progress with final verification
+6. public-polish
+  6.1.a [TEST-RED] write failing component test for public-polish-001
+  6.1.b [IMPL-GREEN] localize GitHub fallback helper copy
+
+7. finish
+  7.1 [no-tdd] run full quality gate and browser smoke
+  7.2 [no-tdd] update memory-bank progress with final verification
 
 <!-- Draft auto-generated from explore. Review before use. Generated: 2026-05-24T00:00:00+08:00 -->
