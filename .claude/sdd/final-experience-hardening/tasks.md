@@ -24,8 +24,12 @@
   4.2.a [TEST-RED] write failing page test for admin-polish-002
   4.2.b [IMPL-GREEN] localize dashboard page chrome and failure fallback
 
-5. finish
-  5.1 [no-tdd] run full quality gate and browser smoke
-  5.2 [no-tdd] update memory-bank progress with final verification
+5. editor-polish
+  5.1.a [TEST-RED] write failing component test for editor-polish-001
+  5.1.b [IMPL-GREEN] localize editor and shared dialog chrome
+
+6. finish
+  6.1 [no-tdd] run full quality gate and browser smoke
+  6.2 [no-tdd] update memory-bank progress with final verification
 
 <!-- Draft auto-generated from explore. Review before use. Generated: 2026-05-24T00:00:00+08:00 -->
