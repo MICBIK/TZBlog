@@ -1,4 +1,4 @@
-import type { CommentStatus, Prisma } from "@prisma/client"
+import type { CommentStatus, CommentVisibility, Prisma } from "@prisma/client"
 
 import { db } from "@/lib/db"
 import { AppError, errors } from "@/lib/errors"
@@ -38,6 +38,12 @@ export type CommentNode = {
   content: string
   createdAt: Date
   replies: CommentNode[]
+}
+
+export type CreatePrivateThreadCommentInput = {
+  entryId: string
+  authorUserId: string
+  content: string
 }
 
 export async function createComment(
@@ -83,6 +89,53 @@ export async function createComment(
   })
 
   return created
+}
+
+export async function createPrivateThreadComment(
+  input: CreatePrivateThreadCommentInput,
+): Promise<{
+  id: string
+  entryId: string | null
+  authorUserId: string | null
+  visibility: CommentVisibility
+}> {
+  const [entry, author] = await Promise.all([
+    db.entry.findFirst({
+      where: { id: input.entryId, kind: "GUESTBOOK_THREAD" },
+      select: { id: true },
+    }),
+    db.user.findUnique({
+      where: { id: input.authorUserId },
+      select: { id: true, email: true, name: true },
+    }),
+  ])
+  if (!entry) {
+    throw errors.notFound(`Guestbook thread ${input.entryId} not found`)
+  }
+  if (!author) {
+    throw errors.notFound(`User ${input.authorUserId} not found`)
+  }
+
+  return db.comment.create({
+    data: {
+      entryId: entry.id,
+      authorUserId: author.id,
+      authorName: author.name ?? author.email,
+      authorEmail: author.email,
+      content: input.content,
+      status: "APPROVED",
+      visibility: "PRIVATE_TO_THREAD",
+      visitorHash: `user:${author.id}`,
+      ipAddress: "authenticated-user",
+      userAgent: "guestbook-thread",
+    },
+    select: {
+      id: true,
+      entryId: true,
+      authorUserId: true,
+      visibility: true,
+    },
+  })
 }
 
 export async function listApprovedComments(
