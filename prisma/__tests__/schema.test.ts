@@ -302,6 +302,99 @@ describe("Channel/Entry Prisma schema", () => {
       testDb.comment.count({ where: { entryId: entry.id } }),
     ).resolves.toBe(0)
   })
+
+  it("seriesIndexAllowsSeriesOrderQuery", async () => {
+    const seriesServicePath = join(
+      process.cwd(),
+      "src/lib/services/series.ts",
+    )
+    expect(existsSync(seriesServicePath)).toBe(true)
+
+    const { listSeriesEntries } = (await import(
+      pathToFileURL(seriesServicePath).href
+    )) as {
+      listSeriesEntries: (
+        seriesId: string,
+      ) => Promise<Array<{ slug: string; seriesOrder: number | null }>>
+    }
+
+    const suffix = Date.now().toString(36)
+    const authorId = await ensureTestUser(`schema-series-${suffix}@tzblog.local`)
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-series-channel-${suffix}`,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: { create: { locale: "zh", name: "Series Channel" } },
+      },
+    })
+    const [targetSeries, otherSeries] = await Promise.all([
+      testDb.series.create({
+        data: {
+          slug: `schema-target-series-${suffix}`,
+          channelId: channel.id,
+          translations: { create: { locale: "zh", name: "Target Series" } },
+        },
+      }),
+      testDb.series.create({
+        data: {
+          slug: `schema-other-series-${suffix}`,
+          channelId: channel.id,
+          translations: { create: { locale: "zh", name: "Other Series" } },
+        },
+      }),
+    ])
+
+    await Promise.all([
+      testDb.entry.create({
+        data: {
+          slug: `schema-series-entry-2-${suffix}`,
+          channelId: channel.id,
+          authorId,
+          kind: "ARTICLE",
+          status: "PUBLISHED",
+          body: "second",
+          seriesId: targetSeries.id,
+          seriesOrder: 2,
+          translations: { create: { locale: "zh", title: "Second" } },
+        },
+      }),
+      testDb.entry.create({
+        data: {
+          slug: `schema-series-entry-1-${suffix}`,
+          channelId: channel.id,
+          authorId,
+          kind: "ARTICLE",
+          status: "PUBLISHED",
+          body: "first",
+          seriesId: targetSeries.id,
+          seriesOrder: 1,
+          translations: { create: { locale: "zh", title: "First" } },
+        },
+      }),
+      testDb.entry.create({
+        data: {
+          slug: `schema-other-series-entry-${suffix}`,
+          channelId: channel.id,
+          authorId,
+          kind: "ARTICLE",
+          status: "PUBLISHED",
+          body: "other",
+          seriesId: otherSeries.id,
+          seriesOrder: 1,
+          translations: { create: { locale: "zh", title: "Other" } },
+        },
+      }),
+    ])
+
+    const entries = await listSeriesEntries(targetSeries.id)
+
+    expect(entries.map((entry) => entry.slug)).toEqual([
+      `schema-series-entry-1-${suffix}`,
+      `schema-series-entry-2-${suffix}`,
+    ])
+    expect(entries.map((entry) => entry.seriesOrder)).toEqual([1, 2])
+  })
 })
 
 function listSourceFiles(dir: string): string[] {
