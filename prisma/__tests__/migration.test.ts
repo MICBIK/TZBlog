@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process"
+
 import { describe, expect, it } from "vitest"
 
 import { testDb } from "../../tests/helpers/db"
@@ -31,6 +33,52 @@ describe("Channel/Entry destructive migration", () => {
 
     expect(existingTables).not.toEqual(expect.arrayContaining(oldTables))
     expect(existingTables).toEqual(expect.arrayContaining(newTables))
+  })
+
+  it("seedCreatesAdminChannelsAndEntryKindCoverage", async () => {
+    execFileSync("pnpm", ["db:seed"], {
+      cwd: process.cwd(),
+      stdio: "pipe",
+    })
+
+    const adminCount = await testDb.user.count({
+      where: { role: "ADMIN" },
+    })
+    const channels = await testDb.channel.findMany({
+      orderBy: { order: "asc" },
+      select: { kind: true, slug: true },
+    })
+    const entryKindRows = await testDb.entry.groupBy({
+      by: ["kind"],
+      _count: { _all: true },
+    })
+
+    expect(adminCount).toBeGreaterThanOrEqual(1)
+    expect(channels).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "ARTICLES" }),
+        expect.objectContaining({ kind: "STREAM" }),
+        expect.objectContaining({ kind: "GUESTBOOK" }),
+      ]),
+    )
+    expect(channels.length).toBeGreaterThanOrEqual(3)
+    expect(
+      entryKindRows.reduce(
+        (sum, row) => sum + row._count._all,
+        0,
+      ),
+    ).toBeGreaterThanOrEqual(8)
+    expect(entryKindRows.map((row) => row.kind)).toEqual(
+      expect.arrayContaining([
+        "ARTICLE",
+        "NOTE",
+        "LINK",
+        "JOKE",
+        "HOT_TAKE",
+        "QUOTE",
+        "REVIEW",
+      ]),
+    )
   })
 })
 
