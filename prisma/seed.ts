@@ -6,6 +6,13 @@
  *
  * 运行：pnpm db:seed
  */
+import type {
+  ChannelKind,
+  ChannelLayout,
+  EntryKind,
+  EntryStatus,
+  Prisma,
+} from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
@@ -22,37 +29,89 @@ const prisma = new PrismaClient({
 
 const publishedAtBase = new Date("2026-05-24T08:00:00.000Z");
 
-const showcaseColumns = [
+interface ShowcaseChannel {
+  slug: string;
+  order: number;
+  enabled: boolean;
+  kind: ChannelKind;
+  layout: ChannelLayout;
+  icon: string;
+  accentColor?: string;
+  name: string;
+  description: string;
+  tagline: string;
+}
+
+interface ShowcaseEntry {
+  slug: string;
+  channelSlug: string;
+  kind: EntryKind;
+  status: EntryStatus;
+  publishedAt: Date;
+  title: string;
+  excerpt: string;
+  body: string;
+  metadata: Prisma.InputJsonValue;
+  tags: string[];
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+}
+
+const showcaseChannels: ShowcaseChannel[] = [
   {
-    slug: "engineering-notes",
-    cover: "/showcase/cover-engineering.png",
+    slug: "articles",
     order: 0,
-    name: "工程札记",
-    description: "记录从需求、架构、测试到部署的完整工程取舍。",
+    enabled: true,
+    kind: "ARTICLES",
+    layout: "CHRONICLE",
+    icon: "BookOpen",
+    accentColor: "var(--accent)",
+    name: "文章",
+    description: "长文、工程复盘与系统性思考。",
+    tagline: "在快的时代写慢一些的字",
   },
   {
-    slug: "writing-system",
-    cover: "/showcase/cover-writing.png",
+    slug: "stream",
     order: 1,
-    name: "写作系统",
-    description: "围绕 Markdown、编辑器体验和个人知识发布系统的长期实验。",
+    enabled: true,
+    kind: "STREAM",
+    layout: "GREP",
+    icon: "Terminal",
+    accentColor: "var(--term-phosphor)",
+    name: "日志流",
+    description: "链接、笔记、引语、笑话与短评。",
+    tagline: "grep my mind",
+  },
+  {
+    slug: "guestbook",
+    order: 99,
+    enabled: false,
+    kind: "GUESTBOOK",
+    layout: "FEED",
+    icon: "MessageCircle",
+    name: "留言板",
+    description: "私密留言和 threaded replies 的入口。",
+    tagline: "leave a trace",
   },
 ];
 
-const showcasePosts = [
+const showcaseEntries: ShowcaseEntry[] = [
   {
     slug: "designing-a-technical-garden",
-    columnSlug: "engineering-notes",
-    cover: "/showcase/cover-garden.png",
+    channelSlug: "articles",
+    kind: "ARTICLE",
+    status: "PUBLISHED",
     title: "把技术博客设计成可以长期生长的花园",
     excerpt:
       "一次围绕首页、文章索引和阅读页的信息架构重组：减少模板感，保留工程密度。",
+    metadata: { cover: "/showcase/cover-garden.png", readingMinutes: 8, toc: true },
     tags: ["design", "nextjs", "writing"],
     viewCount: 128,
     likeCount: 12,
     commentCount: 1,
     publishedAt: addDays(publishedAtBase, -2),
-    content: `# 把技术博客设计成可以长期生长的花园
+    body: `# 把技术博客设计成可以长期生长的花园
 
 一个个人技术博客真正难的地方，不是把文章列表渲染出来，而是让读者在第一页就知道这个系统为什么存在。
 
@@ -83,17 +142,19 @@ const density = layout.includes("content") ? "readable" : "empty";
   },
   {
     slug: "notion-like-markdown-workflow",
-    columnSlug: "writing-system",
-    cover: "/showcase/cover-editor.png",
+    channelSlug: "articles",
+    kind: "ARTICLE",
+    status: "PUBLISHED",
     title: "Notion-like 交互和 Markdown 存储可以同时存在吗",
     excerpt:
       "编辑器可以更像 Notion，但后端仍然只保存 Markdown 字符串，这是当前版本的核心边界。",
+    metadata: { cover: "/showcase/cover-editor.png", readingMinutes: 10, toc: true },
     tags: ["markdown", "editor", "notion"],
     viewCount: 96,
     likeCount: 18,
     commentCount: 1,
     publishedAt: addDays(publishedAtBase, -1),
-    content: `# Notion-like 交互和 Markdown 存储可以同时存在吗
+    body: `# Notion-like 交互和 Markdown 存储可以同时存在吗
 
 我愿意放弃"编辑区永远显示 Markdown 原文"这个硬约束，但不愿意把数据存成某个编辑器私有的 JSON。
 
@@ -120,17 +181,26 @@ interface EditorContract {
   },
   {
     slug: "self-hosted-nextjs-observability",
-    columnSlug: "engineering-notes",
-    cover: "/showcase/cover-observability.png",
+    channelSlug: "articles",
+    kind: "REVIEW",
+    status: "PUBLISHED",
     title: "自部署 Next.js 博客需要哪些最小可观测性",
     excerpt:
       "从访问上报、RSS、sitemap 到后台统计，用自研链路替代第三方分析工具的 MVP 版本。",
+    metadata: {
+      itemType: "system",
+      itemTitle: "TZBlog observability stack",
+      rating: 5,
+      cover: "/showcase/cover-observability.png",
+      readingMinutes: 9,
+      toc: true,
+    },
     tags: ["nextjs", "analytics", "self-hosting"],
     viewCount: 203,
     likeCount: 27,
     commentCount: 0,
     publishedAt: publishedAtBase,
-    content: `# 自部署 Next.js 博客需要哪些最小可观测性
+    body: `# 自部署 Next.js 博客需要哪些最小可观测性
 
 一个单人博客不需要从第一天开始就接入复杂的数据平台，但至少要知道今天有没有人访问、看了什么、哪些页面断了。
 
@@ -164,6 +234,100 @@ const signal = {
 
 这些数据不追求复杂，但必须足够稳定，能支撑上线后的每一次判断。
 `,
+  },
+  {
+    slug: "note-2026-05-23",
+    channelSlug: "stream",
+    kind: "NOTE",
+    status: "PUBLISHED",
+    title: "关于解决一类问题",
+    excerpt: "一条关于工程抽象边界的短笔记。",
+    metadata: { mood: "focused" },
+    tags: ["writing"],
+    viewCount: 44,
+    likeCount: 6,
+    commentCount: 0,
+    publishedAt: addDays(publishedAtBase, -3),
+    body: `今天读到一段："好的工程师只解决一个问题，伟大的工程师解决一类问题。"
+
+我更愿意把时间花在后者上：让下一次类似问题不再出现，而不是把同一块补丁贴十遍。`,
+  },
+  {
+    slug: "link-postgres-locks",
+    channelSlug: "stream",
+    kind: "LINK",
+    status: "PUBLISHED",
+    title: "Reading Postgres Locks",
+    excerpt: "一篇适合作为 Postgres lock 入门索引的外部文章。",
+    metadata: {
+      sourceUrl: "https://www.tbray.org/ongoing/When/202x/2026/05/15/Postgres-Locks",
+      sourceTitle: "Reading Postgres Locks",
+      sourceAuthor: "Tim Bray",
+      domain: "tbray.org",
+    },
+    tags: ["postgres", "systems"],
+    viewCount: 61,
+    likeCount: 9,
+    commentCount: 0,
+    publishedAt: addDays(publishedAtBase, -4),
+    body: "Tim Bray 写的 Postgres lock 导读很适合补齐事务隔离与锁等待的直觉。",
+  },
+  {
+    slug: "joke-bom-prod",
+    channelSlug: "stream",
+    kind: "JOKE",
+    status: "PUBLISHED",
+    title: "一个 BOM 引发的血案",
+    excerpt: "生产环境最怕看起来不像代码变更的代码变更。",
+    metadata: { category: "tech" },
+    tags: ["systems"],
+    viewCount: 73,
+    likeCount: 14,
+    commentCount: 0,
+    publishedAt: addDays(publishedAtBase, -5),
+    body: `> 同事：你昨天上的什么？
+> 我：一行 UTF-8 BOM。
+> 同事：。
+> （此后 prod 挂了 4 小时）`,
+  },
+  {
+    slug: "quote-didion",
+    channelSlug: "stream",
+    kind: "QUOTE",
+    status: "PUBLISHED",
+    title: "Joan Didion 的开篇",
+    excerpt: "一句关于叙事和生存的引语。",
+    metadata: {
+      author: "Joan Didion",
+      source: "The White Album",
+      language: "en",
+    },
+    tags: ["reading"],
+    viewCount: 52,
+    likeCount: 8,
+    commentCount: 0,
+    publishedAt: addDays(publishedAtBase, -6),
+    body: "\"We tell ourselves stories in order to live.\"",
+  },
+  {
+    slug: "hot-take-2026-05-22",
+    channelSlug: "stream",
+    kind: "HOT_TAKE",
+    status: "PUBLISHED",
+    title: "关于 demo 驱动发布",
+    excerpt: "一次关于 AI 产品发布节奏的短评。",
+    metadata: {
+      sourcePlatform: "weibo",
+      sourceUrl: "https://weibo.com/example",
+      sourceSnippet: "某 AI 公司发布通用模型 5.0",
+      capturedAt: "2026-05-22T10:00:00.000Z",
+    },
+    tags: ["ai", "tooling"],
+    viewCount: 89,
+    likeCount: 11,
+    commentCount: 0,
+    publishedAt: addDays(publishedAtBase, -2),
+    body: "demo 里的成功案例如果都被人工挑选过，那它最多证明发布会准备得不错，不证明产品已经稳定。",
   },
 ];
 
@@ -220,26 +384,31 @@ async function main() {
 async function seedShowcaseContent(authorId: string) {
   const channelsBySlug = new Map<string, { id: string }>();
 
-  for (const item of showcaseColumns) {
+  for (const item of showcaseChannels) {
     const channel = await prisma.channel.upsert({
       where: { slug: item.slug },
       update: {
         order: item.order,
-        kind: "ARTICLES",
-        layout: "CHRONICLE",
+        enabled: item.enabled,
+        kind: item.kind,
+        layout: item.layout,
+        icon: item.icon,
+        accentColor: item.accentColor ?? null,
       },
       create: {
         slug: item.slug,
         order: item.order,
-        enabled: true,
-        kind: "ARTICLES",
-        layout: "CHRONICLE",
-        icon: "BookOpen",
+        enabled: item.enabled,
+        kind: item.kind,
+        layout: item.layout,
+        icon: item.icon,
+        accentColor: item.accentColor,
         translations: {
           create: {
             locale: "zh",
             name: item.name,
             description: item.description,
+            tagline: item.tagline,
           },
         },
       },
@@ -253,19 +422,21 @@ async function seedShowcaseContent(authorId: string) {
         locale: "zh",
         name: item.name,
         description: item.description,
+        tagline: item.tagline,
       },
       update: {
         name: item.name,
         description: item.description,
+        tagline: item.tagline,
       },
     });
 
     channelsBySlug.set(channel.slug, { id: channel.id });
   }
 
-  for (const item of showcasePosts) {
-    const channel = channelsBySlug.get(item.columnSlug);
-    if (!channel) throw new Error(`Missing showcase channel: ${item.columnSlug}`);
+  for (const item of showcaseEntries) {
+    const channel = channelsBySlug.get(item.channelSlug);
+    if (!channel) throw new Error(`Missing showcase channel: ${item.channelSlug}`);
 
     const tagRows: Array<{ id: string }> = [];
     for (const slug of item.tags) {
@@ -280,26 +451,26 @@ async function seedShowcaseContent(authorId: string) {
     const entry = await prisma.entry.upsert({
       where: { slug: item.slug },
       update: {
-        kind: "ARTICLE",
-        status: "PUBLISHED",
+        kind: item.kind,
+        status: item.status,
         publishedAt: item.publishedAt,
         authorId,
         channelId: channel.id,
-        body: item.content,
-        metadata: { cover: item.cover, toc: true },
+        body: item.body,
+        metadata: item.metadata,
         viewCount: item.viewCount,
         likeCount: item.likeCount,
         commentCount: item.commentCount,
       },
       create: {
         slug: item.slug,
-        kind: "ARTICLE",
-        status: "PUBLISHED",
+        kind: item.kind,
+        status: item.status,
         publishedAt: item.publishedAt,
         authorId,
         channelId: channel.id,
-        body: item.content,
-        metadata: { cover: item.cover, toc: true },
+        body: item.body,
+        metadata: item.metadata,
         viewCount: item.viewCount,
         likeCount: item.likeCount,
         commentCount: item.commentCount,
@@ -334,14 +505,14 @@ async function seedShowcaseContent(authorId: string) {
 async function seedShowcaseComments() {
   const commentSeeds = [
     {
-      postSlug: "designing-a-technical-garden",
+      entrySlug: "designing-a-technical-garden",
       authorName: "读者 A",
       authorEmail: "reader-a@example.com",
       content: "这个首页结构比传统 hero 更适合长期写作，尤其是 identity rail 的处理。",
       visitorHash: "showcase-reader-a",
     },
     {
-      postSlug: "notion-like-markdown-workflow",
+      entrySlug: "notion-like-markdown-workflow",
       authorName: "读者 B",
       authorEmail: "reader-b@example.com",
       content: "Markdown 存储边界很清晰，后续接入第三方 editor 时也更容易回滚。",
@@ -351,7 +522,7 @@ async function seedShowcaseComments() {
 
   for (const item of commentSeeds) {
     const entry = await prisma.entry.findUnique({
-      where: { slug: item.postSlug },
+      where: { slug: item.entrySlug },
       select: { id: true },
     });
     if (!entry) continue;
@@ -379,12 +550,17 @@ async function seedShowcaseComments() {
 function tagName(slug: string): string {
   const names: Record<string, string> = {
     analytics: "Analytics",
+    ai: "AI",
     design: "Design",
     editor: "Editor",
     markdown: "Markdown",
     nextjs: "Next.js",
     notion: "Notion",
+    postgres: "Postgres",
+    reading: "Reading",
     "self-hosting": "Self-hosting",
+    systems: "Systems",
+    tooling: "Tooling",
     writing: "Writing",
   };
 
