@@ -118,6 +118,22 @@ describe("Channel/Entry destructive migration", () => {
     expect(text).toContain("Reading Postgres Locks")
     expect(hasPropValue(element, "data-channel-layout", "GREP")).toBe(true)
   })
+
+  it("guestbookPageShowsMagicLinkFormForAnonymousVisitor", async () => {
+    execFileSync("pnpm", ["db:seed"], {
+      cwd: process.cwd(),
+      stdio: "pipe",
+    })
+
+    const GuestbookPage = await loadGuestbookPage()
+    const element = await GuestbookPage()
+
+    const text = collectText(element)
+    expect(text).toContain("留言板")
+    expect(text).toContain("邮箱")
+    expect(text).toContain("发送登录链接")
+    expect(hasPropValue(element, "data-guestbook-auth", "magic-link")).toBe(true)
+  })
 })
 
 async function listPublicTables(): Promise<string[]> {
@@ -183,6 +199,14 @@ async function loadChannelDetailPage(): Promise<
     default: (props: {
       params: Promise<{ slug: string }>
     }) => Promise<ReactNode>
+  }
+  return pageModule.default
+}
+
+async function loadGuestbookPage(): Promise<() => Promise<ReactNode>> {
+  const pagePath = join(process.cwd(), "src/app/(site)/guestbook/page.tsx")
+  const pageModule = (await import(pathToFileURL(pagePath).href)) as {
+    default: () => Promise<ReactNode>
   }
   return pageModule.default
 }
