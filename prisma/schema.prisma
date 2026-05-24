@@ -327,7 +327,7 @@ model TagsOnEntries {
 
 model Comment {
   id            String        @id @default(cuid())
-  postId        String
+  postId        String?
   entryId       String?
   authorName    String
   authorEmail   String
@@ -344,7 +344,7 @@ model Comment {
   reviewedAt    DateTime?
   createdAt     DateTime      @default(now())
 
-  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post    Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
   entry   Entry?    @relation(fields: [entryId], references: [id], onDelete: Cascade)
   author  User?     @relation(fields: [authorUserId], references: [id])
   parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -518,5 +518,4 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-
 

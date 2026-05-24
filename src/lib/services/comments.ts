@@ -43,12 +43,12 @@ export type CommentNode = {
 export async function createComment(
   input: CreateCommentInput,
 ): Promise<{ id: string; status: CommentStatus }> {
-  const post = await db.post.findUnique({
-    where: { slug: input.slug },
+  const entry = await db.entry.findFirst({
+    where: { slug: input.slug, kind: "ARTICLE" },
     select: { id: true },
   })
-  if (!post) {
-    throw errors.notFound(`Post with slug "${input.slug}" not found`)
+  if (!entry) {
+    throw errors.notFound(`Entry with slug "${input.slug}" not found`)
   }
 
   if (input.parentId) {
@@ -68,7 +68,7 @@ export async function createComment(
 
   const created = await db.comment.create({
     data: {
-      postId: post.id,
+      entryId: entry.id,
       authorName: input.authorName,
       authorEmail: input.authorEmail,
       authorWebsite: input.authorWebsite ?? null,
@@ -86,10 +86,10 @@ export async function createComment(
 }
 
 export async function listApprovedComments(
-  postId: string,
+  entryId: string,
 ): Promise<CommentNode[]> {
   const rows = await db.comment.findMany({
-    where: { postId, status: "APPROVED" },
+    where: { entryId, status: "APPROVED" },
     orderBy: { createdAt: "asc" },
     select: {
       id: true,
@@ -174,7 +174,7 @@ export async function listCommentsForAdmin(
 }> {
   const where: Prisma.CommentWhereInput = {}
   if (filter.status) where.status = filter.status
-  if (filter.postId) where.postId = filter.postId
+  if (filter.postId) where.entryId = filter.postId
   if (filter.q && filter.q.trim()) {
     const q = filter.q.trim()
     where.OR = [
@@ -195,7 +195,7 @@ export async function listCommentsForAdmin(
       skip,
       take: pageSize,
       include: {
-        post: {
+        entry: {
           select: {
             slug: true,
             translations: {
@@ -224,8 +224,8 @@ export async function listCommentsForAdmin(
     reviewedAt: r.reviewedAt,
     createdAt: r.createdAt,
     post: {
-      slug: r.post.slug,
-      title: r.post.translations[0]?.title ?? r.post.slug,
+      slug: r.entry?.slug ?? "",
+      title: r.entry?.translations[0]?.title ?? r.entry?.slug ?? "",
     },
   }))
 
@@ -239,7 +239,7 @@ export async function updateCommentStatus(
 ): Promise<{ id: string; status: CommentStatus }> {
   const current = await db.comment.findUnique({
     where: { id },
-    select: { id: true, status: true, postId: true },
+    select: { id: true, status: true, entryId: true },
   })
   if (!current) {
     throw errors.notFound(`Comment ${id} not found`)
@@ -263,8 +263,11 @@ export async function updateCommentStatus(
       },
     })
     if (countDelta !== 0) {
-      await tx.post.update({
-        where: { id: current.postId },
+      if (!current.entryId) {
+        throw errors.validation(`Comment ${id} is not linked to an entry`)
+      }
+      await tx.entry.update({
+        where: { id: current.entryId },
         data: { commentCount: { increment: countDelta } },
       })
     }
@@ -294,7 +297,7 @@ export async function bulkUpdateCommentStatus(
 export async function deleteComment(id: string): Promise<void> {
   const current = await db.comment.findUnique({
     where: { id },
-    select: { id: true, status: true, postId: true, parentId: true },
+    select: { id: true, status: true, entryId: true, parentId: true },
   })
   if (!current) {
     throw errors.notFound(`Comment ${id} not found`)
@@ -319,8 +322,11 @@ export async function deleteComment(id: string): Promise<void> {
     }
     await tx.comment.delete({ where: { id } })
     if (totalDelta !== 0) {
-      await tx.post.update({
-        where: { id: current.postId },
+      if (!current.entryId) {
+        throw errors.validation(`Comment ${id} is not linked to an entry`)
+      }
+      await tx.entry.update({
+        where: { id: current.entryId },
         data: { commentCount: { increment: totalDelta } },
       })
     }

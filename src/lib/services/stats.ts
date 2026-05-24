@@ -14,8 +14,8 @@ export async function getSiteStats(): Promise<SiteStats> {
   const sevenDaysAgo = new Date(Date.now() - 7 * DAY_MS)
   const [postStats, comments, viewsInLast7Days, lastPublishedPost] =
     await Promise.all([
-    db.post.aggregate({
-      where: { status: "PUBLISHED" },
+    db.entry.aggregate({
+      where: { kind: "ARTICLE", status: "PUBLISHED" },
       _sum: { viewCount: true },
       _count: { _all: true },
     }),
@@ -29,8 +29,12 @@ export async function getSiteStats(): Promise<SiteStats> {
         ],
       },
     }),
-    db.post.findFirst({
-      where: { status: "PUBLISHED", publishedAt: { not: null } },
+    db.entry.findFirst({
+      where: {
+        kind: "ARTICLE",
+        status: "PUBLISHED",
+        publishedAt: { not: null },
+      },
       orderBy: [{ publishedAt: "desc" }],
       select: { publishedAt: true },
     }),

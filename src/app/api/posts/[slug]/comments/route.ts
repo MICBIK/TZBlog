@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 
 import { ok, withErrorHandler } from "@/lib/api-response"
-import { db } from "@/lib/db"
 import { errors } from "@/lib/errors"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { commentCreateSchema } from "@/lib/schemas/comment"
@@ -9,6 +8,7 @@ import {
   createComment,
   listApprovedComments,
 } from "@/lib/services/comments"
+import { getPostBySlug } from "@/lib/services/posts"
 import { getClientIp, getVisitorHash } from "@/lib/visitor"
 
 /**
@@ -55,10 +55,7 @@ export const POST = withErrorHandler(
 export const GET = withErrorHandler(
   async (_req: Request, ctx: RouteContext): Promise<NextResponse> => {
     const { slug } = await ctx.params
-    const post = await db.post.findUnique({
-      where: { slug },
-      select: { id: true },
-    })
+    const post = await getPostBySlug(slug)
     if (!post) {
       throw errors.notFound(`Post with slug "${slug}" not found`)
     }

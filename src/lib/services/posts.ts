@@ -1,9 +1,8 @@
 import type {
-  Column,
-  ColumnTranslation,
-  Post,
-  PostStatus,
-  PostTranslation,
+  Channel,
+  ChannelTranslation,
+  EntryStatus,
+  EntryTranslation,
   Prisma,
   Tag,
 } from "@prisma/client"
@@ -19,18 +18,29 @@ import type {
 } from "@/lib/schemas/post"
 import { upsertTagsBySlug } from "@/lib/services/tags"
 
-/**
- * Post service — owns the multi-table workflows for the Post +
- * PostTranslation + Tag + PostView pipeline (per systemPatterns §3 §7 §9 §10).
- *
- * Authoring stays here so route handlers don't reach into Prisma directly:
- * slug uniqueness, translation upserts, tag re-linking, publish-time
- * defaulting, and PostView de-duplication are all coordinated in one place.
- */
-
-export type PostWithRelations = Post & {
-  translations: PostTranslation[]
-  column: (Column & { translations: ColumnTranslation[] }) | null
+export type PostWithRelations = {
+  id: string
+  slug: string
+  cover: string | null
+  status: EntryStatus
+  publishedAt: Date | null
+  authorId: string
+  columnId: string | null
+  viewCount: number
+  likeCount: number
+  commentCount: number
+  createdAt: Date
+  updatedAt: Date
+  translations: Array<{
+    id: string
+    locale: string
+    title: string
+    excerpt: string | null
+    content: string
+    postId?: string
+    entryId?: string
+  }>
+  column: (Channel & { translations: ChannelTranslation[] }) | null
   tags: Array<{ tag: Tag }>
   author: { id: string; email: string; name: string | null }
 }
@@ -39,12 +49,12 @@ export type PostListItem = {
   id: string
   slug: string
   cover: string | null
-  status: PostStatus
+  status: EntryStatus
   publishedAt: Date | null
   columnId: string | null
-  columnName: string | null // resolved for the requested locale
+  columnName: string | null
   authorName: string | null
-  title: string // resolved for the requested locale
+  title: string
   excerpt: string | null
   tags: Array<{ slug: string; name: string }>
   viewCount: number
@@ -56,23 +66,15 @@ export type PostListItem = {
 
 const includeRelations = {
   translations: true,
-  column: { include: { translations: true } },
+  channel: { include: { translations: true } },
   tags: { include: { tag: true } },
   author: { select: { id: true, email: true, name: true } },
-} satisfies Prisma.PostInclude
+} satisfies Prisma.EntryInclude
 
-// ---------- queries ----------
+type EntryWithRelations = Prisma.EntryGetPayload<{
+  include: typeof includeRelations
+}>
 
-/**
- * Paginated admin list. The list view collapses translations down to one
- * row per locale; rows missing the requested locale fall back to the
- * project's `DEFAULT_LOCALE` so drafts authored in zh remain visible when
- * the admin viewer is set to en.
- *
- * Sort:
- *   - When `filter.status === "PUBLISHED"`, by `publishedAt desc` (nulls last).
- *   - Otherwise by `updatedAt desc` so freshly-edited drafts surface first.
- */
 export async function listPosts(
   filter: PostFilterInput,
   locale: Locale,
@@ -82,10 +84,10 @@ export async function listPosts(
   page: number
   pageSize: number
 }> {
-  const where: Prisma.PostWhereInput = {}
+  const where: Prisma.EntryWhereInput = { kind: "ARTICLE" }
 
   if (filter.status) where.status = filter.status
-  if (filter.columnId) where.columnId = filter.columnId
+  if (filter.columnId) where.channelId = filter.columnId
   if (filter.tag) {
     where.tags = { some: { tag: { slug: filter.tag } } }
   }
@@ -98,7 +100,7 @@ export async function listPosts(
     }
   }
 
-  const orderBy: Prisma.PostOrderByWithRelationInput[] =
+  const orderBy: Prisma.EntryOrderByWithRelationInput[] =
     filter.status === "PUBLISHED"
       ? [{ publishedAt: { sort: "desc", nulls: "last" } }]
       : [{ updatedAt: "desc" }]
@@ -108,68 +110,38 @@ export async function listPosts(
   const skip = (page - 1) * pageSize
 
   const [rows, total] = await Promise.all([
-    db.post.findMany({
+    db.entry.findMany({
       where,
       orderBy,
       skip,
       take: pageSize,
       include: includeRelations,
     }),
-    db.post.count({ where }),
+    db.entry.count({ where }),
   ])
 
-  // Resolve the column's localized name lazily — listPosts is the one place
-  // we don't pull ColumnTranslation in the include, so we do a single batched
-  // lookup keyed by the columnIds we actually saw.
-  const columnIds = Array.from(
-    new Set(
-      rows
-        .map((r) => r.columnId)
-        .filter((id): id is string => typeof id === "string"),
-    ),
-  )
+  const items: PostListItem[] = rows.map((entry) => {
+    const tr = pickTranslation(entry.translations, locale)
+    const metadata = readArticleMetadata(entry.metadata)
+    const channelTr = pickChannelTranslation(entry.channel.translations, locale)
 
-  const columnNameById = new Map<string, string>()
-  if (columnIds.length > 0) {
-    const tr = await db.columnTranslation.findMany({
-      where: { columnId: { in: columnIds }, locale },
-      select: { columnId: true, name: true },
-    })
-    for (const row of tr) columnNameById.set(row.columnId, row.name)
-
-    // Fill blanks with the default locale so admin rows don't show "—" just
-    // because someone hasn't translated a column yet.
-    if (locale !== DEFAULT_LOCALE) {
-      const missing = columnIds.filter((id) => !columnNameById.has(id))
-      if (missing.length > 0) {
-        const fallback = await db.columnTranslation.findMany({
-          where: { columnId: { in: missing }, locale: DEFAULT_LOCALE },
-          select: { columnId: true, name: true },
-        })
-        for (const row of fallback) columnNameById.set(row.columnId, row.name)
-      }
-    }
-  }
-
-  const items: PostListItem[] = rows.map((p) => {
-    const tr = pickTranslation(p.translations, locale)
     return {
-      id: p.id,
-      slug: p.slug,
-      cover: p.cover,
-      status: p.status,
-      publishedAt: p.publishedAt,
-      columnId: p.columnId,
-      columnName: p.columnId ? columnNameById.get(p.columnId) ?? null : null,
-      authorName: p.author.name,
+      id: entry.id,
+      slug: entry.slug,
+      cover: metadata.cover,
+      status: entry.status,
+      publishedAt: entry.publishedAt,
+      columnId: entry.channelId,
+      columnName: channelTr?.name ?? null,
+      authorName: entry.author.name,
       title: tr?.title ?? "(untitled)",
       excerpt: tr?.excerpt ?? null,
-      tags: p.tags.map((t) => ({ slug: t.tag.slug, name: t.tag.name })),
-      viewCount: p.viewCount,
-      likeCount: p.likeCount,
-      commentCount: p.commentCount,
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
+      tags: entry.tags.map((t) => ({ slug: t.tag.slug, name: t.tag.name })),
+      viewCount: entry.viewCount,
+      likeCount: entry.likeCount,
+      commentCount: entry.commentCount,
+      createdAt: entry.createdAt,
+      updatedAt: entry.updatedAt,
     }
   })
 
@@ -179,13 +151,21 @@ export async function listPosts(
 export async function getPostById(
   id: string,
 ): Promise<PostWithRelations | null> {
-  return db.post.findUnique({ where: { id }, include: includeRelations })
+  const row = await db.entry.findUnique({
+    where: { id },
+    include: includeRelations,
+  })
+  return row ? toPostCompat(row) : null
 }
 
 export async function getPostBySlug(
   slug: string,
 ): Promise<PostWithRelations | null> {
-  return db.post.findUnique({ where: { slug }, include: includeRelations })
+  const row = await db.entry.findFirst({
+    where: { slug, kind: "ARTICLE" },
+    include: includeRelations,
+  })
+  return row ? toPostCompat(row) : null
 }
 
 export async function listAllPublishedSlugs(): Promise<
@@ -195,8 +175,8 @@ export async function listAllPublishedSlugs(): Promise<
   const rows: Array<{ slug: string; updatedAt: Date }> = []
 
   for (let page = 0; ; page++) {
-    const batch = await db.post.findMany({
-      where: { status: "PUBLISHED" },
+    const batch = await db.entry.findMany({
+      where: { kind: "ARTICLE", status: "PUBLISHED" },
       orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }],
       skip: page * pageSize,
       take: pageSize,
@@ -210,96 +190,70 @@ export async function listAllPublishedSlugs(): Promise<
   return rows
 }
 
-// ---------- mutations ----------
-
-/**
- * Create a post + its translations + tag links inside a single transaction.
- *
- * Flow:
- *   1. Reject duplicate slug up front.
- *   2. Default `publishedAt` to `now()` when status is PUBLISHED but the
- *      caller didn't supply a date (matches the admin UX of "publish now").
- *   3. Upsert any `tags` (by slug) so the join table can connect by id.
- *   4. Inside the transaction: create the Post with nested translations and
- *      the TagsOnPosts links.
- */
 export async function createPost(
   input: CreatePostInput,
   authorId: string,
 ): Promise<PostWithRelations> {
   assertUniqueLocales(input.translations)
 
-  const existing = await db.post.findUnique({ where: { slug: input.slug } })
+  const existing = await db.entry.findUnique({ where: { slug: input.slug } })
   if (existing) {
-    throw errors.conflict(`Post with slug "${input.slug}" already exists`)
+    throw errors.conflict(`Entry with slug "${input.slug}" already exists`)
   }
 
+  const channelId =
+    input.columnId ?? (await ensureDefaultArticleChannel()).id
   const tagRows =
     input.tags.length > 0
       ? await upsertTagsBySlug(input.tags.map((slug) => ({ slug })))
       : []
-
   const publishedAt = resolvePublishedAt(
     input.status,
     input.publishedAt ?? null,
     null,
   )
 
-  const created = await db.post.create({
+  const created = await db.entry.create({
     data: {
       slug: input.slug,
-      cover: input.cover ?? null,
+      kind: "ARTICLE",
       status: input.status,
       publishedAt,
       authorId,
-      columnId: input.columnId ?? null,
+      channelId,
+      body: input.translations[0]?.content ?? "",
+      metadata: { cover: input.cover ?? null, toc: true },
       translations: {
         create: input.translations.map((t) => ({
           locale: t.locale,
           title: t.title,
           excerpt: t.excerpt ?? null,
-          content: t.content,
         })),
       },
       tags:
         tagRows.length > 0
-          ? {
-              create: tagRows.map((t) => ({ tagId: t.id })),
-            }
+          ? { create: tagRows.map((tag) => ({ tagId: tag.id })) }
           : undefined,
     },
     include: includeRelations,
   })
 
-  return created
+  return toPostCompat(created)
 }
 
-/**
- * Patch a post.
- *
- * - Fields in `input` other than `translations` / `tags` are written via
- *   `post.update`.
- * - When `translations` is provided, each entry is upserted by
- *   `(postId, locale)`. Locales not in the array are left untouched (parity
- *   with `updateColumn`).
- * - When `tags` is provided, the *full* set of tag links is replaced —
- *   missing slugs are removed, new slugs are upserted then linked.
- * - When status flips to PUBLISHED and `publishedAt` is still null (and the
- *   caller didn't provide one), we stamp `now()` on its behalf.
- */
 export async function updatePost(
   id: string,
   input: UpdatePostInput,
 ): Promise<PostWithRelations> {
-  const current = await db.post.findUnique({ where: { id } })
+  const current = await db.entry.findUnique({ where: { id } })
   if (!current) {
-    throw errors.notFound(`Post ${id} not found`)
+    throw errors.notFound(`Entry ${id} not found`)
   }
 
   if (input.slug && input.slug !== current.slug) {
-    const clash = await db.post.findUnique({ where: { slug: input.slug } })
+    const clash = await db.entry.findUnique({ where: { slug: input.slug } })
     if (clash) {
-      throw errors.conflict(`Post with slug "${input.slug}" already exists`)
+      throw errors.conflict(`Entry with slug "${input.slug}" already exists`)
     }
   }
 
@@ -307,8 +261,6 @@ export async function updatePost(
     assertUniqueLocales(input.translations)
   }
 
-  // Pre-resolve tag rows outside the transaction — upsertTagsBySlug runs its
-  // own writes that don't need to share a snapshot with the post update.
   const tagRows =
     input.tags !== undefined
       ? input.tags.length > 0
@@ -316,149 +268,155 @@ export async function updatePost(
         : []
       : null
 
-  const data: Prisma.PostUpdateInput = {}
+  const data: Prisma.EntryUpdateInput = {}
   if (input.slug !== undefined) data.slug = input.slug
-  if (input.cover !== undefined) data.cover = input.cover ?? null
   if (input.status !== undefined) data.status = input.status
   if (input.columnId !== undefined) {
-    data.column = input.columnId
+    data.channel = input.columnId
       ? { connect: { id: input.columnId } }
-      : { disconnect: true }
+      : { connect: { id: (await ensureDefaultArticleChannel()).id } }
   }
-
-  // publishedAt needs the resolved status to decide auto-stamping.
+  if (input.cover !== undefined) {
+    data.metadata = {
+      ...readArticleMetadata(current.metadata),
+      cover: input.cover ?? null,
+    }
+  }
+  if (input.translations?.[0]?.content !== undefined) {
+    data.body = input.translations[0].content
+  }
   if (input.publishedAt !== undefined || input.status !== undefined) {
     const nextStatus = input.status ?? current.status
-    const nextPublishedAt = resolvePublishedAt(
+    data.publishedAt = resolvePublishedAt(
       nextStatus,
       input.publishedAt === undefined
         ? current.publishedAt
         : input.publishedAt ?? null,
       current.publishedAt,
     )
-    data.publishedAt = nextPublishedAt
   }
 
   return db.$transaction(async (tx) => {
     if (Object.keys(data).length > 0) {
-      await tx.post.update({ where: { id }, data })
+      await tx.entry.update({ where: { id }, data })
     }
 
     if (input.translations) {
       for (const t of input.translations) {
-        await tx.postTranslation.upsert({
-          where: { postId_locale: { postId: id, locale: t.locale } },
+        await tx.entryTranslation.upsert({
+          where: { entryId_locale: { entryId: id, locale: t.locale } },
           create: {
-            postId: id,
+            entryId: id,
             locale: t.locale,
             title: t.title,
             excerpt: t.excerpt ?? null,
-            content: t.content,
           },
           update: {
             title: t.title,
             excerpt: t.excerpt ?? null,
-            content: t.content,
           },
         })
       }
     }
 
     if (tagRows !== null) {
-      // Replace the full link set: deleting first means we can blindly
-      // create the new ids without worrying about duplicates.
-      await tx.tagsOnPosts.deleteMany({ where: { postId: id } })
+      await tx.tagsOnEntries.deleteMany({ where: { entryId: id } })
       if (tagRows.length > 0) {
-        await tx.tagsOnPosts.createMany({
-          data: tagRows.map((t) => ({ postId: id, tagId: t.id })),
+        await tx.tagsOnEntries.createMany({
+          data: tagRows.map((tag) => ({ entryId: id, tagId: tag.id })),
           skipDuplicates: true,
         })
       }
     }
 
-    const updated = await tx.post.findUnique({
+    const updated = await tx.entry.findUnique({
       where: { id },
       include: includeRelations,
     })
     if (!updated) {
-      // Unreachable: we checked existence before the transaction.
-      throw errors.notFound(`Post ${id} not found`)
+      throw errors.notFound(`Entry ${id} not found`)
     }
-    return updated
+    return toPostCompat(updated)
   })
 }
 
-/**
- * Delete a post. PostTranslation / TagsOnPosts / PostView / PostLike /
- * Comment all cascade through the schema's `onDelete: Cascade`.
- */
 export async function deletePost(id: string): Promise<void> {
-  const current = await db.post.findUnique({ where: { id } })
+  const current = await db.entry.findUnique({ where: { id } })
   if (!current) {
-    throw errors.notFound(`Post ${id} not found`)
+    throw errors.notFound(`Entry ${id} not found`)
   }
-  await db.post.delete({ where: { id } })
+  await db.entry.delete({ where: { id } })
 }
 
-// ---------- view counter ----------
-
-/**
- * Record a view for the given slug, de-duped per `(postId, visitorHash, dayKey)`
- * (per systemPatterns §10).
- *
- * Returns:
- *   - `counted: true`  → first view this visitor+day, viewCount incremented.
- *   - `counted: false` → duplicate, no write to the counter.
- *
- * Throws `NOT_FOUND` if the slug doesn't resolve to a post. The unique
- * constraint on `PostView (postId, visitorHash, dayKey)` is the source of
- * truth for de-dup; we surface its `P2002` violation as "already counted".
- */
 export async function incrementPostView(
   slug: string,
   visitorHash: string,
   dayKey: string,
 ): Promise<{ counted: boolean; viewCount: number }> {
-  const post = await db.post.findUnique({
-    where: { slug },
+  const entry = await db.entry.findFirst({
+    where: { slug, kind: "ARTICLE" },
     select: { id: true, viewCount: true },
   })
-  if (!post) {
-    throw errors.notFound(`Post with slug "${slug}" not found`)
+  if (!entry) {
+    throw errors.notFound(`Entry with slug "${slug}" not found`)
   }
 
   try {
     const result = await db.$transaction(async (tx) => {
-      await tx.postView.create({
-        data: { postId: post.id, visitorHash, dayKey },
+      await tx.entryView.create({
+        data: { entryId: entry.id, visitorHash, dayKey },
       })
-      const updated = await tx.post.update({
-        where: { id: post.id },
+      const updated = await tx.entry.update({
+        where: { id: entry.id },
         data: { viewCount: { increment: 1 } },
         select: { viewCount: true },
       })
       return updated.viewCount
     })
     return { counted: true, viewCount: result }
-  } catch (e) {
-    if (isUniqueViolation(e)) {
-      // Duplicate within the same dayKey — no write, return current count.
-      return { counted: false, viewCount: post.viewCount }
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      return { counted: false, viewCount: entry.viewCount }
     }
-    throw e
+    throw error
   }
 }
 
-// ---------- internal helpers ----------
+function toPostCompat(entry: EntryWithRelations): PostWithRelations {
+  const metadata = readArticleMetadata(entry.metadata)
+  return {
+    ...entry,
+    cover: metadata.cover,
+    columnId: entry.channelId,
+    column: entry.channel,
+    translations: entry.translations.map((translation) => ({
+      ...translation,
+      content: entry.body,
+    })),
+  }
+}
 
 function pickTranslation(
-  rows: PostTranslation[],
+  rows: EntryTranslation[],
   locale: Locale,
-): PostTranslation | null {
-  const exact = rows.find((r) => r.locale === locale)
+): EntryTranslation | null {
+  const exact = rows.find((row) => row.locale === locale)
   if (exact) return exact
   if (locale !== DEFAULT_LOCALE) {
-    const fallback = rows.find((r) => r.locale === DEFAULT_LOCALE)
+    const fallback = rows.find((row) => row.locale === DEFAULT_LOCALE)
+    if (fallback) return fallback
+  }
+  return rows[0] ?? null
+}
+
+function pickChannelTranslation(
+  rows: ChannelTranslation[],
+  locale: Locale,
+): ChannelTranslation | null {
+  const exact = rows.find((row) => row.locale === locale)
+  if (exact) return exact
+  if (locale !== DEFAULT_LOCALE) {
+    const fallback = rows.find((row) => row.locale === DEFAULT_LOCALE)
     if (fallback) return fallback
   }
   return rows[0] ?? null
@@ -468,18 +426,18 @@ function assertUniqueLocales(
   translations: ReadonlyArray<{ locale: string }>,
 ): void {
   const seen = new Set<string>()
-  for (const t of translations) {
-    if (seen.has(t.locale)) {
+  for (const translation of translations) {
+    if (seen.has(translation.locale)) {
       throw errors.validation(
-        `Duplicate translation locale "${t.locale}" in payload`,
+        `Duplicate translation locale "${translation.locale}" in payload`,
       )
     }
-    seen.add(t.locale)
+    seen.add(translation.locale)
   }
 }
 
 function resolvePublishedAt(
-  status: PostStatus,
+  status: EntryStatus,
   incoming: Date | string | null,
   current: Date | null,
 ): Date | null {
@@ -491,18 +449,62 @@ function resolvePublishedAt(
         : new Date(incoming)
 
   if (status === "PUBLISHED") {
-    // Prefer caller-supplied date; otherwise keep what we already had; only
-    // stamp `now()` when neither side has one.
     return normalized ?? current ?? new Date()
   }
   return normalized ?? current
 }
 
-function isUniqueViolation(e: unknown): boolean {
+function readArticleMetadata(raw: Prisma.JsonValue): {
+  cover: string | null
+  toc?: boolean
+  readingMinutes?: number
+} {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return { cover: null }
+  }
+  const value = raw as Record<string, unknown>
+  return {
+    cover: typeof value.cover === "string" ? value.cover : null,
+    toc: typeof value.toc === "boolean" ? value.toc : undefined,
+    readingMinutes:
+      typeof value.readingMinutes === "number"
+        ? value.readingMinutes
+        : undefined,
+  }
+}
+
+async function ensureDefaultArticleChannel(): Promise<Pick<Channel, "id">> {
+  const existing = await db.channel.findFirst({
+    where: { kind: "ARTICLES" },
+    orderBy: [{ order: "asc" }],
+    select: { id: true },
+  })
+  if (existing) return existing
+
+  return db.channel.create({
+    data: {
+      slug: "articles",
+      order: 0,
+      enabled: true,
+      kind: "ARTICLES",
+      layout: "CHRONICLE",
+      translations: {
+        create: {
+          locale: DEFAULT_LOCALE,
+          name: "文章",
+          description: "长文与思考",
+        },
+      },
+    },
+    select: { id: true },
+  })
+}
+
+function isUniqueViolation(error: unknown): boolean {
   return (
-    typeof e === "object" &&
-    e !== null &&
-    "code" in e &&
-    (e as { code?: unknown }).code === "P2002"
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
   )
 }

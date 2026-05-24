@@ -3,9 +3,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { format } from "date-fns";
 
-import { db } from "@/lib/db";
 import { getColumnBySlug } from "@/lib/services/columns";
 import { getCurrentLocale } from "@/lib/i18n";
+import { listPosts } from "@/lib/services/posts";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -53,11 +53,15 @@ export default async function ColumnDetailPage({ params }: Props) {
   const name = tr?.name ?? slug;
   const description = tr?.description ?? null;
 
-  const posts = await db.post.findMany({
-    where: { columnId: col.id, status: "PUBLISHED" },
-    include: { translations: { where: { locale } } },
-    orderBy: { publishedAt: "desc" },
-  });
+  const { items: posts } = await listPosts(
+    {
+      columnId: col.id,
+      page: 1,
+      pageSize: 100,
+      status: "PUBLISHED",
+    },
+    locale,
+  );
 
   return (
     <article className="space-y-12">
@@ -87,16 +91,15 @@ export default async function ColumnDetailPage({ params }: Props) {
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {posts.map((p) => {
-            const ptr = p.translations?.[0];
             return (
               <li key={p.id} className="py-6">
                 <Link href={`/posts/${p.slug}`} className="group block">
                   <h3 className="text-xl font-semibold tracking-tight text-fg group-hover:underline">
-                    {ptr?.title ?? p.slug}
+                    {p.title}
                   </h3>
-                  {ptr?.excerpt && (
+                  {p.excerpt && (
                     <p className="mt-2 line-clamp-2 text-sm text-muted-fg">
-                      {ptr.excerpt}
+                      {p.excerpt}
                     </p>
                   )}
                   {p.publishedAt && (
