@@ -474,15 +474,16 @@ function readArticleMetadata(raw: Prisma.JsonValue): {
 }
 
 async function ensureDefaultArticleChannel(): Promise<Pick<Channel, "id">> {
-  const existing = await db.channel.findFirst({
-    where: { kind: "ARTICLES" },
-    orderBy: [{ order: "asc" }],
+  const existing = await db.channel.findUnique({
+    where: { slug: "articles" },
     select: { id: true },
   })
   if (existing) return existing
 
-  return db.channel.create({
-    data: {
+  return db.channel.upsert({
+    where: { slug: "articles" },
+    update: {},
+    create: {
       slug: "articles",
       order: 0,
       enabled: true,
