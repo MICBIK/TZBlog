@@ -134,6 +134,14 @@ describe("Channel/Entry destructive migration", () => {
     expect(text).toContain("发送登录链接")
     expect(hasPropValue(element, "data-guestbook-auth", "magic-link")).toBe(true)
   })
+
+  it("prismaMigrateStatusReportsUpToDate", async () => {
+    const { assertMigrationStatusUpToDate } = await loadMigrationStatus()
+
+    const output = assertMigrationStatusUpToDate()
+
+    expect(output).toContain("Database schema is up to date")
+  })
 })
 
 async function listPublicTables(): Promise<string[]> {
@@ -209,6 +217,15 @@ async function loadGuestbookPage(): Promise<() => Promise<ReactNode>> {
     default: () => Promise<ReactNode>
   }
   return pageModule.default
+}
+
+async function loadMigrationStatus(): Promise<{
+  assertMigrationStatusUpToDate: () => string
+}> {
+  const modulePath = join(process.cwd(), "src/lib/migrations/status.ts")
+  return import(pathToFileURL(modulePath).href) as Promise<{
+    assertMigrationStatusUpToDate: () => string
+  }>
 }
 
 function collectText(node: ReactNode): string {
