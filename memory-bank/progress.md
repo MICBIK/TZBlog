@@ -2,7 +2,7 @@
 
 ## 当前焦点
 
-- **2026-05-24** `creative-blog-notion-editor` 主体实现已完成，当前进入 SDD 收尾质量门：memory-bank 同步、`typecheck` / `lint` / `test` / `build`、必要的浏览器 smoke。
+- **2026-05-24** `final-experience-hardening` 已完成，当前可进入 P3 部署闭环与线上 Lighthouse / production smoke。
 
 ## 已完成
 
@@ -166,6 +166,11 @@
 - [x] **2026-05-23** public-launch-polish 主体：Markdown alerts + `.markdown-body` 阅读系统、首页项目叙事区、About Principles、管理侧边栏 light mode 对比度修复；i18n 当前限制记录为 KI-004，完整迁移进入 V3 独立 SDD
 - [x] **2026-05-23** public-ui-and-editor-overhaul 全量完成：Markdown reading / CodeMirror source editor / preview parity、admin readability、首页七段重组、About 八段重组、incomplete pages inventory、i18n single-locale disclosure、light/dark 12 路由浏览器审查、completion report 全部落地；Tiptap/lowlight/mini renderer 残留清零；最终质量门 `typecheck` / `lint` / `test`（116 files / 601 passed / 1 skipped）/ `build` 四绿；editor route client gzip delta 15.0 KiB < 90 KiB；`audit-report.json` 24 entries，P0=0，截图归档到 `.claude/sdd/public-ui-and-editor-overhaul/audit/{light,dark}`。
 - [x] **2026-05-24** creative-blog-notion-editor 主体完成：后台文章编辑器切到 `NotionMarkdownEditor` shell（slash command / bubble formatting / media image / Mod-S，保存 Markdown），首页重组为 identity rail + content stream + context rail，文章列表改为高密度 discovery，文章详情加入 editorial shell / right rail / Markdown image frame / `InteractiveExplainer` / TOC progress，前台 motion system 增加共享 tokens、reduced-motion 降级、focus parity 和 SSR 初始可见性契约；全程按 `.claude/sdd/creative-blog-notion-editor/test-map.md` RED/GREEN 微循环提交。
+- [x] **2026-05-24** final-experience-hardening 收口完成：
+  - seed 脚本写入 3 篇 showcase 文章、2 个专栏、标签、评论和仓库内可追踪展示图片，公开页 smoke 不再依赖 ignored uploads。
+  - `/admin/_editor-demo` 改为 `notFound()`；标签索引/详情、本地化后台 Dashboard、编辑器/弹窗 chrome、GitHub fallback 文案全部转为中文单语界面。
+  - 质量门：`pnpm typecheck` ✓ / `pnpm lint` ✓ / `pnpm test` ✓（127 files / 629 passed / 1 skipped，仍有已登记 `pg@9` warning）/ `pnpm build` ✓。
+  - 浏览器 smoke：seed 后验证 `/`、`/posts`、`/posts/self-hosted-nextjs-observability`、`/columns`、`/tags/nextjs` 的桌面/移动关键路径；无破图、无横向溢出，GitHub fallback 不再出现英文配置提示；截图保存在 `.claude/sdd/final-experience-hardening/smoke/`。
 
 ## V2 backlog（MVP 上线后，独立 SDD）
 
@@ -192,6 +197,7 @@ V2/V3 不属于本轮 prelaunch-readiness；涉及 DB/UI/API/邮件/路由结构
 - **2026-05-23** `prelaunch-readiness` 清理：Next proxy 入口、Prisma preview flag、About/TechStack 上线文案、README/AGENTS/CLAUDE/docs/memory-bank 当前事实已同步。后续若继续改编辑器底层实现，单开 editor-source-mode SDD。
 - **2026-05-23** KI-004 多语言当前仍是架构预留：schema 有 `*Translation` 子表和 `SUPPORTED_LOCALES`，但当前实现仍是单 locale；V3 需要独立 SDD 完成 route/dictionary/metadata/RSS/sitemap 全链路迁移。
 - **2026-05-24** creative-blog-notion-editor 收口：`NotionMarkdownEditor` 当前是轻量 Markdown shell，不引入 Novel/Tiptap/MDXEditor runtime 依赖；后续若真正接入第三方 rich/block editor，必须先跑 `notionEditorAdapter` round-trip/parity 证据门，并复核 admin editor route-specific client delta。
+- **2026-05-24** 展示 seed 策略：用于前台 smoke 的文章、专栏和 Markdown 图片必须引用仓库内可追踪资产（当前为 `public/showcase/*`），不要依赖 `.gitignore` 的 `public/uploads/*`，避免干净环境出现破图或空白首页。
 
 
 ## 度量指标

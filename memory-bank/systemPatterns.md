@@ -218,7 +218,13 @@ content (Markdown 字符串)
 - 理由：搜索引擎与 RSS reader 不需要秒级实时性；10 分钟足够覆盖发布后可见性，同时避免爬虫高频访问时每次打 Postgres。
 - 文章发布/更新路径仍写 DB 为准；缓存过期后由 Next 重新生成，避免额外 cache invalidation 复杂度。
 
-## 19. async RSC 在 vitest 页面级集成测试
+## 19. Showcase seed 和 smoke 资产
+
+- `prisma/seed.ts` 里的展示内容必须引用仓库内可追踪资产，例如 `public/showcase/*`。
+- 不要让 showcase post / column / Markdown body 依赖 `public/uploads/*`，因为 uploads 是本地运行产物且被 `.gitignore` 排除，干净环境会破图。
+- seed 内容需要覆盖首页、文章列表、文章详情、专栏、标签和评论区的完整 smoke 数据面；测试清库后做浏览器 smoke 前必须重新 `pnpm db:seed`。
+
+## 20. async RSC 在 vitest 页面级集成测试
 
 ### 问题
 
