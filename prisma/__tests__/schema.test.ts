@@ -209,6 +209,99 @@ describe("Channel/Entry Prisma schema", () => {
     expect(entry.channel.kind).toBe("GUESTBOOK")
     expect(entry.kind).toBe("GUESTBOOK_THREAD")
   })
+
+  it("deleteChannelCascadesToEntriesTranslationsSeries", async () => {
+    const channelsServicePath = join(
+      process.cwd(),
+      "src/lib/services/channels.ts",
+    )
+    expect(existsSync(channelsServicePath)).toBe(true)
+
+    const { deleteChannel } = (await import(
+      pathToFileURL(channelsServicePath).href
+    )) as { deleteChannel: (id: string) => Promise<void> }
+
+    const suffix = Date.now().toString(36)
+    const authorId = await ensureTestUser(
+      `schema-cascade-${suffix}@tzblog.local`,
+    )
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-cascade-${suffix}`,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: { create: { locale: "zh", name: "Cascade" } },
+      },
+    })
+    const series = await testDb.series.create({
+      data: {
+        slug: `schema-series-${suffix}`,
+        channelId: channel.id,
+        translations: { create: { locale: "zh", name: "Series" } },
+      },
+    })
+    const entry = await testDb.entry.create({
+      data: {
+        slug: `schema-cascade-entry-${suffix}`,
+        channelId: channel.id,
+        authorId,
+        kind: "ARTICLE",
+        status: "PUBLISHED",
+        body: "cascade body",
+        seriesId: series.id,
+        seriesOrder: 1,
+        translations: { create: { locale: "zh", title: "Cascade Entry" } },
+        views: {
+          create: { visitorHash: `vh-${suffix}`, dayKey: "2026-05-25" },
+        },
+        likes: {
+          create: { visitorHash: `vh-${suffix}` },
+        },
+        comments: {
+          create: {
+            authorName: "Visitor",
+            authorEmail: "visitor@example.com",
+            content: "comment",
+            status: "APPROVED",
+            visibility: "PUBLIC",
+            visitorHash: `vh-${suffix}`,
+            ipAddress: "127.0.0.1",
+            userAgent: "vitest",
+          },
+        },
+      },
+    })
+
+    await deleteChannel(channel.id)
+
+    await expect(
+      testDb.channel.findUnique({ where: { id: channel.id } }),
+    ).resolves.toBeNull()
+    await expect(
+      testDb.channelTranslation.count({ where: { channelId: channel.id } }),
+    ).resolves.toBe(0)
+    await expect(
+      testDb.entry.count({ where: { id: entry.id } }),
+    ).resolves.toBe(0)
+    await expect(
+      testDb.entryTranslation.count({ where: { entryId: entry.id } }),
+    ).resolves.toBe(0)
+    await expect(
+      testDb.series.count({ where: { id: series.id } }),
+    ).resolves.toBe(0)
+    await expect(
+      testDb.seriesTranslation.count({ where: { seriesId: series.id } }),
+    ).resolves.toBe(0)
+    await expect(
+      testDb.entryView.count({ where: { entryId: entry.id } }),
+    ).resolves.toBe(0)
+    await expect(
+      testDb.entryLike.count({ where: { entryId: entry.id } }),
+    ).resolves.toBe(0)
+    await expect(
+      testDb.comment.count({ where: { entryId: entry.id } }),
+    ).resolves.toBe(0)
+  })
 })
 
 function listSourceFiles(dir: string): string[] {
