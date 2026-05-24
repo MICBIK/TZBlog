@@ -395,7 +395,102 @@ describe("Channel/Entry Prisma schema", () => {
     ])
     expect(entries.map((entry) => entry.seriesOrder)).toEqual([1, 2])
   })
+
+  it("trendingScoreIndexSortsDesc", async () => {
+    const entriesServicePath = join(
+      process.cwd(),
+      "src/lib/services/entries.ts",
+    )
+    expect(existsSync(entriesServicePath)).toBe(true)
+
+    const { listTrendingEntries } = (await import(
+      pathToFileURL(entriesServicePath).href
+    )) as {
+      listTrendingEntries: (
+        limit: number,
+      ) => Promise<Array<{ slug: string; trendingScore: number }>>
+    }
+
+    const suffix = Date.now().toString(36)
+    const authorId = await ensureTestUser(`schema-trend-${suffix}@tzblog.local`)
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-trend-channel-${suffix}`,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: { create: { locale: "zh", name: "Trending Channel" } },
+      },
+    })
+
+    await Promise.all([
+      createScoredEntry({
+        suffix,
+        slug: "low",
+        channelId: channel.id,
+        authorId,
+        score: 1.25,
+        status: "PUBLISHED",
+      }),
+      createScoredEntry({
+        suffix,
+        slug: "high",
+        channelId: channel.id,
+        authorId,
+        score: 99.5,
+        status: "PUBLISHED",
+      }),
+      createScoredEntry({
+        suffix,
+        slug: "draft",
+        channelId: channel.id,
+        authorId,
+        score: 120,
+        status: "DRAFT",
+      }),
+    ])
+
+    const entries = await listTrendingEntries(10)
+    const relevant = entries.filter((entry) =>
+      entry.slug.includes(`schema-trend-`) && entry.slug.endsWith(`-${suffix}`),
+    )
+
+    expect(relevant.map((entry) => entry.slug)).toEqual([
+      `schema-trend-high-${suffix}`,
+      `schema-trend-low-${suffix}`,
+    ])
+    expect(relevant.map((entry) => entry.trendingScore)).toEqual([99.5, 1.25])
+  })
 })
+
+function createScoredEntry({
+  suffix,
+  slug,
+  channelId,
+  authorId,
+  score,
+  status,
+}: {
+  suffix: string
+  slug: string
+  channelId: string
+  authorId: string
+  score: number
+  status: "DRAFT" | "PUBLISHED"
+}) {
+  return testDb.entry.create({
+    data: {
+      slug: `schema-trend-${slug}-${suffix}`,
+      channelId,
+      authorId,
+      kind: "ARTICLE",
+      status,
+      publishedAt: status === "PUBLISHED" ? new Date() : null,
+      body: `${slug} trend body`,
+      trendingScore: score,
+      translations: { create: { locale: "zh", title: slug } },
+    },
+  })
+}
 
 function listSourceFiles(dir: string): string[] {
   const result: string[] = []
