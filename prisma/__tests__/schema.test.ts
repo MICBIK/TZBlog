@@ -507,6 +507,60 @@ describe("Channel/Entry Prisma schema", () => {
       code: "P2002",
     })
   })
+
+  it("insertCommentWithPrivateVisibilityAndAuthorUserId", async () => {
+    const commentsServicePath = join(
+      process.cwd(),
+      "src/lib/services/comments.ts",
+    )
+    const service = (await import(pathToFileURL(commentsServicePath).href)) as {
+      createPrivateThreadComment?: (input: {
+        entryId: string
+        authorUserId: string
+        content: string
+      }) => Promise<{
+        id: string
+        entryId: string | null
+        authorUserId: string | null
+        visibility: "PRIVATE_TO_THREAD"
+      }>
+    }
+    expect(typeof service.createPrivateThreadComment).toBe("function")
+
+    const suffix = Date.now().toString(36)
+    const visitorId = await ensureTestUser(
+      `schema-thread-author-${suffix}@tzblog.local`,
+    )
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-thread-channel-${suffix}`,
+        kind: "GUESTBOOK",
+        layout: "FEED",
+        translations: { create: { locale: "zh", name: "Thread Channel" } },
+      },
+    })
+    const thread = await testDb.entry.create({
+      data: {
+        slug: `schema-thread-entry-${suffix}`,
+        channelId: channel.id,
+        authorId: visitorId,
+        kind: "GUESTBOOK_THREAD",
+        status: "PUBLISHED",
+        body: "private thread",
+        translations: { create: { locale: "zh", title: "Private Thread" } },
+      },
+    })
+
+    const comment = await service.createPrivateThreadComment!({
+      entryId: thread.id,
+      authorUserId: visitorId,
+      content: "private schema comment",
+    })
+
+    expect(comment.entryId).toBe(thread.id)
+    expect(comment.authorUserId).toBe(visitorId)
+    expect(comment.visibility).toBe("PRIVATE_TO_THREAD")
+  })
 })
 
 function createScoredEntry({
