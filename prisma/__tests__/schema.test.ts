@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { readdirSync, readFileSync, statSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { join, relative } from "node:path"
+import { pathToFileURL } from "node:url"
 
 import { ensureTestUser, testDb } from "../../tests/helpers/db"
 
@@ -95,6 +96,63 @@ describe("Channel/Entry Prisma schema", () => {
     expect(found?.channel.translations[0]?.name).toBe("Schema Channel")
     expect(found?.tags[0]?.tag.slug).toBe(`schema-${suffix}`)
     expect(found?.translations[0]?.title).toBe("Schema Entry")
+  })
+
+  it("insertArticleMetadataStoresJsonbCorrectly", async () => {
+    const schemaModulePath = join(
+      process.cwd(),
+      "src/lib/schemas/entryMetadata.ts",
+    )
+    expect(existsSync(schemaModulePath)).toBe(true)
+
+    const { parseEntryMetadata } = (await import(
+      pathToFileURL(schemaModulePath).href
+    )) as {
+      parseEntryMetadata: (
+        kind: "ARTICLE",
+        raw: unknown,
+      ) => { data: { cover?: string; readingMinutes?: number; toc: boolean } }
+    }
+
+    const suffix = Date.now().toString(36)
+    const authorId = await ensureTestUser(`schema-meta-${suffix}@tzblog.local`)
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-meta-channel-${suffix}`,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: { create: { locale: "zh", name: "Meta Channel" } },
+      },
+    })
+
+    await testDb.entry.create({
+      data: {
+        slug: `schema-meta-entry-${suffix}`,
+        channelId: channel.id,
+        authorId,
+        kind: "ARTICLE",
+        status: "PUBLISHED",
+        body: "metadata body",
+        metadata: {
+          cover: "/showcase/meta.png",
+          readingMinutes: 5,
+          toc: false,
+        },
+        translations: {
+          create: { locale: "zh", title: "Metadata Entry" },
+        },
+      },
+    })
+
+    const found = await testDb.entry.findUniqueOrThrow({
+      where: { slug: `schema-meta-entry-${suffix}` },
+      select: { kind: true, metadata: true },
+    })
+    const parsed = parseEntryMetadata("ARTICLE", found.metadata)
+
+    expect(parsed.data.cover).toBe("/showcase/meta.png")
+    expect(parsed.data.readingMinutes).toBe(5)
+    expect(parsed.data.toc).toBe(false)
   })
 })
 
