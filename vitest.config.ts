@@ -14,7 +14,11 @@ export default defineConfig({
         test: {
           name: "node",
           environment: "node",
-          include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
+          include: [
+            "src/**/*.test.ts",
+            "tests/**/*.test.ts",
+            "prisma/**/*.test.ts",
+          ],
           // DB 测试共享同一个 Postgres，必须串行避免互相 truncate
           fileParallelism: false,
         },
