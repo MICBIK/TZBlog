@@ -7,6 +7,12 @@ export type TrendingEntryListItem = {
   publishedAt: Date | null
 }
 
+export type CreateEntryViewRecordInput = {
+  entryId: string
+  visitorHash: string
+  dayKey: string
+}
+
 export async function listTrendingEntries(
   limit: number,
 ): Promise<TrendingEntryListItem[]> {
@@ -20,5 +26,14 @@ export async function listTrendingEntries(
       trendingScore: true,
       publishedAt: true,
     },
+  })
+}
+
+export async function createEntryViewRecord(
+  input: CreateEntryViewRecordInput,
+): Promise<{ id: string }> {
+  return db.entryView.create({
+    data: input,
+    select: { id: true },
   })
 }
