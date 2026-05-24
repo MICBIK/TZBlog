@@ -48,28 +48,44 @@ describe("showcase seed", () => {
       title: "TZBlog",
       description: expect.stringContaining("技术博客"),
     })
-    expect(posts).toHaveLength(3)
-    expect(columns).toHaveLength(2)
-    expect(tags.length).toBeGreaterThanOrEqual(5)
+    expect(posts).toHaveLength(8)
+    expect(columns).toHaveLength(3)
+    expect(tags.length).toBeGreaterThanOrEqual(12)
     expect(comments.length).toBeGreaterThanOrEqual(2)
 
     for (const post of posts) {
-      expect(post.cover).toMatch(/^\/showcase\/cover-[\w-]+\.png$/)
-      expect(assetExists(post.cover)).toBe(true)
       expect(post.publishedAt).toBeInstanceOf(Date)
       expect(post.translations).toHaveLength(1)
       expect(post.translations[0].locale).toBe("zh")
       expect(post.translations[0].title).not.toEqual("(untitled)")
-      expect(post.translations[0].content).toContain("```ts")
-      expect(post.translations[0].content).toContain("![](/showcase/article-")
       expect(post.column?.translations[0]?.name).toBeTruthy()
-      expect(post.tags.length).toBeGreaterThanOrEqual(2)
+      expect(post.tags.length).toBeGreaterThanOrEqual(1)
+    }
+
+    const entriesWithCover = posts.filter((post) => post.cover)
+    expect(entriesWithCover.length).toBeGreaterThanOrEqual(3)
+    for (const entry of entriesWithCover) {
+      expect(entry.cover).toMatch(/^\/showcase\/cover-[\w-]+\.png$/)
+      expect(assetExists(entry.cover)).toBe(true)
+    }
+
+    const articleEntries = posts.filter((post) =>
+      ["notion-like-markdown-workflow", "self-hosted-nextjs-observability", "why-i-rewrote-my-blog"].includes(post.slug),
+    )
+    for (const entry of articleEntries) {
+      expect(entry.translations[0].content).toContain("```ts")
+      expect(entry.translations[0].content).toContain("![](/showcase/article-")
     }
 
     expect(posts.map((post) => post.slug)).toEqual([
-      "designing-a-technical-garden",
+      "hot-take-2026-05-22",
+      "joke-bom-prod",
+      "link-postgres-locks",
+      "note-2026-05-23",
       "notion-like-markdown-workflow",
+      "quote-didion",
       "self-hosted-nextjs-observability",
+      "why-i-rewrote-my-blog",
     ])
   })
 
@@ -113,7 +129,7 @@ describe("showcase seed", () => {
       "![](/showcase/article-observability.png)",
     )
     expect(assetExists("/showcase/article-observability.png")).toBe(true)
-    expect(latestPost?.column?.translations[0].name).toBe("工程札记")
+    expect(latestPost?.column?.translations[0].name).toBe("文章")
     expect(
       latestPost?.tags
         .map((row: { tag: { slug: string } }) => row.tag.slug)
@@ -124,8 +140,15 @@ describe("showcase seed", () => {
       "self-hosting",
     ])
 
-    expect(columns).toHaveLength(2)
-    expect(columns.every((column) => column.posts.length > 0)).toBe(true)
+    expect(columns).toHaveLength(3)
+    expect(columns.map((column) => column.slug).sort()).toEqual([
+      "articles",
+      "guestbook",
+      "stream",
+    ])
+    const enabledChannels = columns.filter((column) => column.enabled)
+    expect(enabledChannels).toHaveLength(2)
+    expect(enabledChannels.every((column) => column.posts.length > 0)).toBe(true)
     expect(columns.every((column) => assetExists(column.cover))).toBe(true)
     expect(tags.length).toBeGreaterThanOrEqual(6)
     expect(tags.every((tag) => tag.posts.length > 0)).toBe(true)
