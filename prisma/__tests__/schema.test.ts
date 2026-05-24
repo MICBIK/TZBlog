@@ -460,6 +460,53 @@ describe("Channel/Entry Prisma schema", () => {
     ])
     expect(relevant.map((entry) => entry.trendingScore)).toEqual([99.5, 1.25])
   })
+
+  it("duplicateEntryViewTriggersUniqueConstraint", async () => {
+    const entriesServicePath = join(
+      process.cwd(),
+      "src/lib/services/entries.ts",
+    )
+    const service = (await import(pathToFileURL(entriesServicePath).href)) as {
+      createEntryViewRecord?: (input: {
+        entryId: string
+        visitorHash: string
+        dayKey: string
+      }) => Promise<{ id: string }>
+    }
+    expect(typeof service.createEntryViewRecord).toBe("function")
+
+    const suffix = Date.now().toString(36)
+    const authorId = await ensureTestUser(`schema-view-${suffix}@tzblog.local`)
+    const channel = await testDb.channel.create({
+      data: {
+        slug: `schema-view-channel-${suffix}`,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: { create: { locale: "zh", name: "Views Channel" } },
+      },
+    })
+    const entry = await createScoredEntry({
+      suffix,
+      slug: "viewed",
+      channelId: channel.id,
+      authorId,
+      score: 0,
+      status: "PUBLISHED",
+    })
+
+    const input = {
+      entryId: entry.id,
+      visitorHash: `visitor-${suffix}`,
+      dayKey: "2026-05-25",
+    }
+
+    await expect(service.createEntryViewRecord!(input)).resolves.toEqual({
+      id: expect.any(String),
+    })
+    await expect(service.createEntryViewRecord!(input)).rejects.toMatchObject({
+      code: "P2002",
+    })
+  })
 })
 
 function createScoredEntry({
