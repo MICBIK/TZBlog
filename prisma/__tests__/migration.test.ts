@@ -100,6 +100,24 @@ describe("Channel/Entry destructive migration", () => {
     expect(text).toContain("为什么我重做了自己的博客")
     expect(text).toContain("从 4 板块到 Channel/Entry 元模型的重构记录")
   })
+
+  it("seededStreamChannelPageRendersGrepLayout", async () => {
+    execFileSync("pnpm", ["db:seed"], {
+      cwd: process.cwd(),
+      stdio: "pipe",
+    })
+
+    const ChannelDetailPage = await loadChannelDetailPage()
+    const element = await ChannelDetailPage({
+      params: Promise.resolve({ slug: "stream" }),
+    })
+
+    const text = collectText(element)
+    expect(text).toContain("日志流")
+    expect(text).toContain("grep my mind")
+    expect(text).toContain("Reading Postgres Locks")
+    expect(hasPropValue(element, "data-channel-layout", "GREP")).toBe(true)
+  })
 })
 
 async function listPublicTables(): Promise<string[]> {
@@ -151,6 +169,24 @@ async function loadPostDetailPage(): Promise<
   return pageModule.default
 }
 
+async function loadChannelDetailPage(): Promise<
+  (props: { params: Promise<{ slug: string }> }) => Promise<ReactNode>
+> {
+  vi.doMock("next/navigation", () => ({
+    notFound: () => {
+      throw new Error("not found")
+    },
+  }))
+
+  const pagePath = join(process.cwd(), "src/app/(site)/c/[slug]/page.tsx")
+  const pageModule = (await import(pathToFileURL(pagePath).href)) as {
+    default: (props: {
+      params: Promise<{ slug: string }>
+    }) => Promise<ReactNode>
+  }
+  return pageModule.default
+}
+
 function collectText(node: ReactNode): string {
   if (node === null || node === undefined || typeof node === "boolean") {
     return ""
@@ -166,4 +202,28 @@ function collectText(node: ReactNode): string {
     return collectText(element.props.children)
   }
   return ""
+}
+
+function hasPropValue(
+  node: ReactNode,
+  propName: string,
+  expected: string,
+): boolean {
+  if (node === null || node === undefined || typeof node === "boolean") {
+    return false
+  }
+  if (typeof node === "string" || typeof node === "number") {
+    return false
+  }
+  if (Array.isArray(node)) {
+    return node.some((child) => hasPropValue(child, propName, expected))
+  }
+  if (isValidElement(node)) {
+    const element = node as ReactElement<
+      Record<string, unknown> & { children?: ReactNode }
+    >
+    if (element.props[propName] === expected) return true
+    return hasPropValue(element.props.children, propName, expected)
+  }
+  return false
 }
