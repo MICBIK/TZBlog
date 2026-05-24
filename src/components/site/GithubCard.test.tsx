@@ -33,7 +33,7 @@ describe("<GithubCard />", () => {
     expect(screen.getAllByRole("link")).toHaveLength(4);
   });
 
-  it("GithubCard fallback state renders gracefully", async () => {
+  it("rendersChineseMissingGithubEnvFallback", async () => {
     vi.mocked(getGithubData).mockResolvedValue({
       status: "unavailable",
       reason: "missing_env",
@@ -44,7 +44,10 @@ describe("<GithubCard />", () => {
     expect(screen.getByRole("heading", { level: 2, name: "GitHub Activity" })).toBeInTheDocument();
     expect(screen.getByText("GitHub 数据暂不可用")).toBeInTheDocument();
     expect(screen.getByTestId("github-fallback-icon")).toBeInTheDocument();
-    expect(screen.getByText(/Set GITHUB_USERNAME/)).toBeInTheDocument();
+    expect(
+      screen.getByText("配置 GitHub 用户名后，这里会显示最近的公开动态。"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Set GITHUB_USERNAME/)).not.toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
