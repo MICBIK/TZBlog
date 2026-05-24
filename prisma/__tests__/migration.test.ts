@@ -168,6 +168,29 @@ describe("Channel/Entry destructive migration", () => {
       comments: 0,
     })
   })
+
+  it("recomputeAllTrendingUpdatesPublishedEntryScores", async () => {
+    execFileSync("pnpm", ["db:seed"], {
+      cwd: process.cwd(),
+      stdio: "pipe",
+    })
+    await testDb.entry.updateMany({
+      where: { status: "PUBLISHED" },
+      data: { trendingScore: 0 },
+    })
+
+    const { recomputeAllTrending } = await loadRecomputeTrending()
+
+    await recomputeAllTrending()
+
+    const scores = await testDb.entry.findMany({
+      where: { status: "PUBLISHED" },
+      select: { trendingScore: true },
+    })
+    expect(scores.length).toBeGreaterThan(0)
+    expect(scores.some((row) => row.trendingScore > 0)).toBe(true)
+    expect(scores.every((row) => row.trendingScore >= 0)).toBe(true)
+  })
 })
 
 async function listPublicTables(): Promise<string[]> {
@@ -289,6 +312,15 @@ async function loadChannelCascadeProbe(): Promise<{
       entryLikes: number
       comments: number
     }>
+  }>
+}
+
+async function loadRecomputeTrending(): Promise<{
+  recomputeAllTrending: () => Promise<void>
+}> {
+  const modulePath = join(process.cwd(), "src/lib/jobs/recomputeTrending.ts")
+  return import(pathToFileURL(modulePath).href) as Promise<{
+    recomputeAllTrending: () => Promise<void>
   }>
 }
 
