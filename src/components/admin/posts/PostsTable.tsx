@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { PostStatus } from "@prisma/client";
+import type { EntryStatus } from "@prisma/client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,14 +42,14 @@ export interface PostsTableProps {
   currentFilter: PostsFilter;
 }
 
-const STATUS_LABEL: Record<PostStatus, string> = {
+const STATUS_LABEL: Record<EntryStatus, string> = {
   DRAFT: "草稿",
   PUBLISHED: "已发布",
   ARCHIVED: "已归档",
 };
 
 const STATUS_VARIANT: Record<
-  PostStatus,
+  EntryStatus,
   "default" | "secondary" | "outline" | "destructive"
 > = {
   DRAFT: "secondary",
@@ -102,7 +102,7 @@ export function PostsTable({
   }
 
   async function handlePublishToggle(post: PostListItem) {
-    const nextStatus: PostStatus =
+    const nextStatus: EntryStatus =
       post.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
     const previous = items;
     setPendingId(post.id);

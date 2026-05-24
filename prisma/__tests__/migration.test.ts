@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { testDb } from "../../../tests/helpers/db"
+import { testDb } from "../../tests/helpers/db"
 
 const oldTables: string[] = [
   "Column",

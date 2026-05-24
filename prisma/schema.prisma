@@ -20,12 +20,6 @@ enum Role {
   VISITOR
 }
 
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
 enum ChannelKind {
   ARTICLES
   NOTES
@@ -83,10 +77,9 @@ model User {
   name      String
   avatar    String?
   role      Role     @default(VISITOR)
-  password  String?  // bcrypt hash, Credentials provider 用；OAuth 时为空
+  password  String? // bcrypt hash, Credentials provider 用；OAuth 时为空
   createdAt DateTime @default(now())
 
-  posts    Post[]
   entries  Entry[]
   comments Comment[]
   accounts Account[]
@@ -161,79 +154,6 @@ model SeriesTranslation {
 }
 
 // ============================================================
-// 专栏（Column）+ 翻译子表
-// ============================================================
-
-model Column {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  cover     String?
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-
-  translations ColumnTranslation[]
-  posts        Post[]
-}
-
-model ColumnTranslation {
-  id          String  @id @default(cuid())
-  columnId    String
-  locale      String
-  name        String
-  description String?
-
-  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
-
-  @@unique([columnId, locale])
-}
-
-// ============================================================
-// 文章（Post）+ 翻译子表
-// 计数器（viewCount / likeCount / commentCount）内嵌主表，
-// 详见 systemPatterns.md §9。
-// ============================================================
-
-model Post {
-  id            String     @id @default(cuid())
-  slug          String     @unique
-  cover         String?
-  status        PostStatus @default(DRAFT)
-  publishedAt   DateTime?
-  authorId      String
-  columnId      String?
-  viewCount     Int        @default(0)
-  likeCount     Int        @default(0)
-  commentCount  Int        @default(0)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  author       User              @relation(fields: [authorId], references: [id])
-  column       Column?           @relation(fields: [columnId], references: [id])
-  translations PostTranslation[]
-  tags         TagsOnPosts[]
-  comments     Comment[]
-  views        PostView[]
-  likes        PostLike[]
-
-  @@index([status, publishedAt])
-  @@index([authorId])
-  @@index([columnId])
-}
-
-model PostTranslation {
-  id      String  @id @default(cuid())
-  postId  String
-  locale  String
-  title   String
-  excerpt String?
-  content String  @db.Text
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, locale])
-}
-
-// ============================================================
 // 条目（Entry）+ 翻译子表
 // ============================================================
 
@@ -256,9 +176,9 @@ model Entry {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  channel      Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  author       User              @relation(fields: [authorId], references: [id])
-  series       Series?           @relation(fields: [seriesId], references: [id])
+  channel      Channel            @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author       User               @relation(fields: [authorId], references: [id])
+  series       Series?            @relation(fields: [seriesId], references: [id])
   translations EntryTranslation[]
   tags         TagsOnEntries[]
   comments     Comment[]
@@ -294,19 +214,7 @@ model Tag {
   slug String @unique
   name String
 
-  posts   TagsOnPosts[]
   entries TagsOnEntries[]
-}
-
-model TagsOnPosts {
-  postId String
-  tagId  String
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([postId, tagId])
-  @@index([tagId])
 }
 
 model TagsOnEntries {
@@ -326,15 +234,14 @@ model TagsOnEntries {
 // ============================================================
 
 model Comment {
-  id            String        @id @default(cuid())
-  postId        String?
-  entryId       String?
+  id            String            @id @default(cuid())
+  entryId       String
   authorName    String
   authorEmail   String
   authorWebsite String?
   authorUserId  String?
-  content       String        @db.Text
-  status        CommentStatus @default(PENDING)
+  content       String            @db.Text
+  status        CommentStatus     @default(PENDING)
   visibility    CommentVisibility @default(PUBLIC)
   visitorHash   String
   ipAddress     String
@@ -342,53 +249,17 @@ model Comment {
   parentId      String?
   reviewedBy    String?
   reviewedAt    DateTime?
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime          @default(now())
 
-  post    Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  entry   Entry?    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  entry   Entry     @relation(fields: [entryId], references: [id], onDelete: Cascade)
   author  User?     @relation(fields: [authorUserId], references: [id])
   parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies Comment[] @relation("CommentReplies")
 
-  @@index([postId, status])
   @@index([entryId, status])
   @@index([visitorHash, createdAt])
   @@index([status, createdAt])
   @@index([entryId, visibility])
-}
-
-// ============================================================
-// 文章浏览原始记录（按 IP+UA+日 去重）
-// 详见 systemPatterns.md §10
-// ============================================================
-
-model PostView {
-  id          String   @id @default(cuid())
-  postId      String
-  visitorHash String
-  dayKey      String   // YYYY-MM-DD（UTC），与 visitorHash 联合唯一以日内去重
-  createdAt   DateTime @default(now())
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, visitorHash, dayKey])
-  @@index([postId, createdAt])
-}
-
-// ============================================================
-// 文章点赞（同访客对同文章一次）
-// ============================================================
-
-model PostLike {
-  id          String   @id @default(cuid())
-  postId      String
-  visitorHash String
-  createdAt   DateTime @default(now())
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, visitorHash])
-  @@index([postId])
 }
 
 model EntryView {
@@ -471,11 +342,11 @@ model Media {
 // ============================================================
 
 model SiteConfig {
-  id         String   @id @default("singleton")
-  themeName  String   @default("default")
-  themeVars  Json     @default("{}")
-  metadata   Json     @default("{}")
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default("singleton")
+  themeName String   @default("default")
+  themeVars Json     @default("{}")
+  metadata  Json     @default("{}")
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================================
@@ -518,4 +389,3 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-

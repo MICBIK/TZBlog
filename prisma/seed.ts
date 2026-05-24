@@ -218,19 +218,23 @@ async function main() {
 }
 
 async function seedShowcaseContent(authorId: string) {
-  const columnsBySlug = new Map<string, { id: string }>();
+  const channelsBySlug = new Map<string, { id: string }>();
 
   for (const item of showcaseColumns) {
-    const column = await prisma.column.upsert({
+    const channel = await prisma.channel.upsert({
       where: { slug: item.slug },
       update: {
-        cover: item.cover,
         order: item.order,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
       },
       create: {
         slug: item.slug,
-        cover: item.cover,
         order: item.order,
+        enabled: true,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        icon: "BookOpen",
         translations: {
           create: {
             locale: "zh",
@@ -242,10 +246,10 @@ async function seedShowcaseContent(authorId: string) {
       select: { id: true, slug: true },
     });
 
-    await prisma.columnTranslation.upsert({
-      where: { columnId_locale: { columnId: column.id, locale: "zh" } },
+    await prisma.channelTranslation.upsert({
+      where: { channelId_locale: { channelId: channel.id, locale: "zh" } },
       create: {
-        columnId: column.id,
+        channelId: channel.id,
         locale: "zh",
         name: item.name,
         description: item.description,
@@ -256,12 +260,12 @@ async function seedShowcaseContent(authorId: string) {
       },
     });
 
-    columnsBySlug.set(column.slug, { id: column.id });
+    channelsBySlug.set(channel.slug, { id: channel.id });
   }
 
   for (const item of showcasePosts) {
-    const column = columnsBySlug.get(item.columnSlug);
-    if (!column) throw new Error(`Missing showcase column: ${item.columnSlug}`);
+    const channel = channelsBySlug.get(item.columnSlug);
+    if (!channel) throw new Error(`Missing showcase channel: ${item.columnSlug}`);
 
     const tagRows: Array<{ id: string }> = [];
     for (const slug of item.tags) {
@@ -273,25 +277,29 @@ async function seedShowcaseContent(authorId: string) {
       tagRows.push(tag);
     }
 
-    const post = await prisma.post.upsert({
+    const entry = await prisma.entry.upsert({
       where: { slug: item.slug },
       update: {
-        cover: item.cover,
+        kind: "ARTICLE",
         status: "PUBLISHED",
         publishedAt: item.publishedAt,
         authorId,
-        columnId: column.id,
+        channelId: channel.id,
+        body: item.content,
+        metadata: { cover: item.cover, toc: true },
         viewCount: item.viewCount,
         likeCount: item.likeCount,
         commentCount: item.commentCount,
       },
       create: {
         slug: item.slug,
-        cover: item.cover,
+        kind: "ARTICLE",
         status: "PUBLISHED",
         publishedAt: item.publishedAt,
         authorId,
-        columnId: column.id,
+        channelId: channel.id,
+        body: item.content,
+        metadata: { cover: item.cover, toc: true },
         viewCount: item.viewCount,
         likeCount: item.likeCount,
         commentCount: item.commentCount,
@@ -299,25 +307,23 @@ async function seedShowcaseContent(authorId: string) {
       select: { id: true },
     });
 
-    await prisma.postTranslation.upsert({
-      where: { postId_locale: { postId: post.id, locale: "zh" } },
+    await prisma.entryTranslation.upsert({
+      where: { entryId_locale: { entryId: entry.id, locale: "zh" } },
       create: {
-        postId: post.id,
+        entryId: entry.id,
         locale: "zh",
         title: item.title,
         excerpt: item.excerpt,
-        content: item.content,
       },
       update: {
         title: item.title,
         excerpt: item.excerpt,
-        content: item.content,
       },
     });
 
-    await prisma.tagsOnPosts.deleteMany({ where: { postId: post.id } });
-    await prisma.tagsOnPosts.createMany({
-      data: tagRows.map((tag) => ({ postId: post.id, tagId: tag.id })),
+    await prisma.tagsOnEntries.deleteMany({ where: { entryId: entry.id } });
+    await prisma.tagsOnEntries.createMany({
+      data: tagRows.map((tag) => ({ entryId: entry.id, tagId: tag.id })),
       skipDuplicates: true,
     });
   }
@@ -344,18 +350,18 @@ async function seedShowcaseComments() {
   ];
 
   for (const item of commentSeeds) {
-    const post = await prisma.post.findUnique({
+    const entry = await prisma.entry.findUnique({
       where: { slug: item.postSlug },
       select: { id: true },
     });
-    if (!post) continue;
+    if (!entry) continue;
 
     await prisma.comment.deleteMany({
-      where: { postId: post.id, visitorHash: item.visitorHash },
+      where: { entryId: entry.id, visitorHash: item.visitorHash },
     });
     await prisma.comment.create({
       data: {
-        postId: post.id,
+        entryId: entry.id,
         authorName: item.authorName,
         authorEmail: item.authorEmail,
         content: item.content,

@@ -27,8 +27,8 @@ export async function listAllTagsWithCount(
       name: true,
       _count: {
         select: {
-          posts: {
-            where: { post: { status: "PUBLISHED" } },
+          entries: {
+            where: { entry: { status: "PUBLISHED" } },
           },
         },
       },
@@ -39,7 +39,7 @@ export async function listAllTagsWithCount(
     .map((tag) => ({
       slug: tag.slug,
       name: tag.name,
-      count: tag._count.posts,
+      count: tag._count.entries,
     }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }

@@ -32,7 +32,7 @@ export async function listTags(
       : undefined,
     orderBy: { name: "asc" },
     include: {
-      _count: { select: { posts: true } },
+      _count: { select: { entries: true } },
     },
   })
 
@@ -40,7 +40,7 @@ export async function listTags(
     id: t.id,
     slug: t.slug,
     name: t.name,
-    postCount: t._count.posts,
+    postCount: t._count.entries,
   }))
 }
 

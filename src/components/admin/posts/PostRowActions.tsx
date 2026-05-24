@@ -10,7 +10,7 @@ import {
   Undo2,
 } from "lucide-react";
 import type { ComponentProps } from "react";
-import type { PostStatus } from "@prisma/client";
+import type { EntryStatus } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +24,7 @@ import {
 export interface PostRowActionsPost {
   id: string;
   slug: string;
-  status: PostStatus;
+  status: EntryStatus;
 }
 
 export interface PostRowActionsProps {

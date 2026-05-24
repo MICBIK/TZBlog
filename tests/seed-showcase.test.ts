@@ -114,7 +114,11 @@ describe("showcase seed", () => {
     )
     expect(assetExists("/showcase/article-observability.png")).toBe(true)
     expect(latestPost?.column?.translations[0].name).toBe("工程札记")
-    expect(latestPost?.tags.map((row) => row.tag.slug).sort()).toEqual([
+    expect(
+      latestPost?.tags
+        .map((row: { tag: { slug: string } }) => row.tag.slug)
+        .sort(),
+    ).toEqual([
       "analytics",
       "nextjs",
       "self-hosting",

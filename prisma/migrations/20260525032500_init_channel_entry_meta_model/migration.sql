@@ -1,3 +1,9 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'AUTHOR', 'VISITOR');
+
 -- CreateEnum
 CREATE TYPE "ChannelKind" AS ENUM ('ARTICLES', 'NOTES', 'LINKS', 'STREAM', 'GUESTBOOK', 'CUSTOM');
 
@@ -11,19 +17,23 @@ CREATE TYPE "EntryKind" AS ENUM ('ARTICLE', 'NOTE', 'LINK', 'JOKE', 'HOT_TAKE', 
 CREATE TYPE "EntryStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
 
 -- CreateEnum
+CREATE TYPE "CommentStatus" AS ENUM ('PENDING', 'APPROVED', 'SPAM', 'REJECTED');
+
+-- CreateEnum
 CREATE TYPE "CommentVisibility" AS ENUM ('PUBLIC', 'PRIVATE_TO_THREAD', 'DELETED');
 
--- AlterEnum
-ALTER TYPE "Role" ADD VALUE 'VISITOR';
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "avatar" TEXT,
+    "role" "Role" NOT NULL DEFAULT 'VISITOR',
+    "password" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- AlterTable
-ALTER TABLE "Comment" ADD COLUMN     "authorUserId" TEXT,
-ADD COLUMN     "entryId" TEXT,
-ADD COLUMN     "visibility" "CommentVisibility" NOT NULL DEFAULT 'PUBLIC',
-ALTER COLUMN "postId" DROP NOT NULL;
-
--- AlterTable
-ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'VISITOR';
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Channel" (
@@ -109,11 +119,42 @@ CREATE TABLE "EntryTranslation" (
 );
 
 -- CreateTable
+CREATE TABLE "Tag" (
+    "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Tag_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "TagsOnEntries" (
     "entryId" TEXT NOT NULL,
     "tagId" TEXT NOT NULL,
 
     CONSTRAINT "TagsOnEntries_pkey" PRIMARY KEY ("entryId","tagId")
+);
+
+-- CreateTable
+CREATE TABLE "Comment" (
+    "id" TEXT NOT NULL,
+    "entryId" TEXT NOT NULL,
+    "authorName" TEXT NOT NULL,
+    "authorEmail" TEXT NOT NULL,
+    "authorWebsite" TEXT,
+    "authorUserId" TEXT,
+    "content" TEXT NOT NULL,
+    "status" "CommentStatus" NOT NULL DEFAULT 'PENDING',
+    "visibility" "CommentVisibility" NOT NULL DEFAULT 'PUBLIC',
+    "visitorHash" TEXT NOT NULL,
+    "ipAddress" TEXT NOT NULL,
+    "userAgent" TEXT NOT NULL,
+    "parentId" TEXT,
+    "reviewedBy" TEXT,
+    "reviewedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -146,6 +187,86 @@ CREATE TABLE "RateLimitLog" (
 
     CONSTRAINT "RateLimitLog_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateTable
+CREATE TABLE "PageView" (
+    "id" TEXT NOT NULL,
+    "path" TEXT NOT NULL,
+    "visitorHash" TEXT NOT NULL,
+    "referrer" TEXT,
+    "userAgent" TEXT,
+    "device" TEXT,
+    "browser" TEXT,
+    "os" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PageView_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Media" (
+    "id" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "filename" TEXT NOT NULL,
+    "mimeType" TEXT NOT NULL,
+    "size" INTEGER NOT NULL,
+    "width" INTEGER,
+    "height" INTEGER,
+    "uploadedBy" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SiteConfig" (
+    "id" TEXT NOT NULL DEFAULT 'singleton',
+    "themeName" TEXT NOT NULL DEFAULT 'default',
+    "themeVars" JSONB NOT NULL DEFAULT '{}',
+    "metadata" JSONB NOT NULL DEFAULT '{}',
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SiteConfig_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Session" (
+    "id" TEXT NOT NULL,
+    "sessionToken" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Channel_slug_key" ON "Channel"("slug");
@@ -193,7 +314,22 @@ CREATE INDEX "Entry_trendingScore_idx" ON "Entry"("trendingScore" DESC);
 CREATE UNIQUE INDEX "EntryTranslation_entryId_locale_key" ON "EntryTranslation"("entryId", "locale");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Tag_slug_key" ON "Tag"("slug");
+
+-- CreateIndex
 CREATE INDEX "TagsOnEntries_tagId_idx" ON "TagsOnEntries"("tagId");
+
+-- CreateIndex
+CREATE INDEX "Comment_entryId_status_idx" ON "Comment"("entryId", "status");
+
+-- CreateIndex
+CREATE INDEX "Comment_visitorHash_createdAt_idx" ON "Comment"("visitorHash", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Comment_status_createdAt_idx" ON "Comment"("status", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Comment_entryId_visibility_idx" ON "Comment"("entryId", "visibility");
 
 -- CreateIndex
 CREATE INDEX "EntryView_entryId_createdAt_idx" ON "EntryView"("entryId", "createdAt");
@@ -211,10 +347,31 @@ CREATE UNIQUE INDEX "EntryLike_entryId_visitorHash_key" ON "EntryLike"("entryId"
 CREATE INDEX "RateLimitLog_scope_key_createdAt_idx" ON "RateLimitLog"("scope", "key", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "Comment_entryId_status_idx" ON "Comment"("entryId", "status");
+CREATE INDEX "PageView_createdAt_idx" ON "PageView"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "Comment_entryId_visibility_idx" ON "Comment"("entryId", "visibility");
+CREATE INDEX "PageView_path_createdAt_idx" ON "PageView"("path", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "PageView_visitorHash_createdAt_idx" ON "PageView"("visitorHash", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Media_key_key" ON "Media"("key");
+
+-- CreateIndex
+CREATE INDEX "Media_uploadedBy_createdAt_idx" ON "Media"("uploadedBy", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- AddForeignKey
 ALTER TABLE "ChannelTranslation" ADD CONSTRAINT "ChannelTranslation_channelId_fkey" FOREIGN KEY ("channelId") REFERENCES "Channel"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -250,7 +407,16 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_entryId_fkey" FOREIGN KEY ("entryI
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorUserId_fkey" FOREIGN KEY ("authorUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Comment"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
 ALTER TABLE "EntryView" ADD CONSTRAINT "EntryView_entryId_fkey" FOREIGN KEY ("entryId") REFERENCES "Entry"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EntryLike" ADD CONSTRAINT "EntryLike_entryId_fkey" FOREIGN KEY ("entryId") REFERENCES "Entry"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
