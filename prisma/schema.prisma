@@ -17,9 +17,44 @@ datasource db {
 enum Role {
   ADMIN
   AUTHOR
+  VISITOR
 }
 
 enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ChannelKind {
+  ARTICLES
+  NOTES
+  LINKS
+  STREAM
+  GUESTBOOK
+  CUSTOM
+}
+
+enum ChannelLayout {
+  CHRONICLE
+  CARDS
+  TIMELINE
+  GREP
+  FEED
+}
+
+enum EntryKind {
+  ARTICLE
+  NOTE
+  LINK
+  JOKE
+  HOT_TAKE
+  REVIEW
+  QUOTE
+  GUESTBOOK_THREAD
+}
+
+enum EntryStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
@@ -32,6 +67,12 @@ enum CommentStatus {
   REJECTED
 }
 
+enum CommentVisibility {
+  PUBLIC
+  PRIVATE_TO_THREAD
+  DELETED
+}
+
 // ============================================================
 // 用户 / 作者
 // ============================================================
@@ -41,13 +82,82 @@ model User {
   email     String   @unique
   name      String
   avatar    String?
-  role      Role     @default(AUTHOR)
+  role      Role     @default(VISITOR)
   password  String?  // bcrypt hash, Credentials provider 用；OAuth 时为空
   createdAt DateTime @default(now())
 
   posts    Post[]
+  entries  Entry[]
+  comments Comment[]
   accounts Account[]
   sessions Session[]
+}
+
+// ============================================================
+// 频道（Channel）+ 翻译子表
+// ============================================================
+
+model Channel {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  order       Int           @default(0)
+  enabled     Boolean       @default(true)
+  icon        String?
+  accentColor String?
+  kind        ChannelKind
+  layout      ChannelLayout
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  translations ChannelTranslation[]
+  entries      Entry[]
+  series       Series[]
+
+  @@index([enabled, order])
+  @@index([kind])
+}
+
+model ChannelTranslation {
+  id          String  @id @default(cuid())
+  channelId   String
+  locale      String
+  name        String
+  description String?
+  tagline     String?
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, locale])
+}
+
+// ============================================================
+// 系列（Series）+ 翻译子表
+// ============================================================
+
+model Series {
+  id        String   @id @default(cuid())
+  slug      String
+  channelId String
+  createdAt DateTime @default(now())
+
+  channel      Channel             @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  translations SeriesTranslation[]
+  entries      Entry[]
+
+  @@unique([channelId, slug])
+  @@index([channelId])
+}
+
+model SeriesTranslation {
+  id          String  @id @default(cuid())
+  seriesId    String
+  locale      String
+  name        String
+  description String?
+
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([seriesId, locale])
 }
 
 // ============================================================
@@ -124,6 +234,58 @@ model PostTranslation {
 }
 
 // ============================================================
+// 条目（Entry）+ 翻译子表
+// ============================================================
+
+model Entry {
+  id            String      @id @default(cuid())
+  slug          String      @unique
+  channelId     String
+  authorId      String
+  kind          EntryKind
+  status        EntryStatus @default(DRAFT)
+  publishedAt   DateTime?
+  body          String      @db.Text
+  metadata      Json        @default("{}")
+  seriesId      String?
+  seriesOrder   Int?
+  viewCount     Int         @default(0)
+  likeCount     Int         @default(0)
+  commentCount  Int         @default(0)
+  trendingScore Float       @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  channel      Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  author       User              @relation(fields: [authorId], references: [id])
+  series       Series?           @relation(fields: [seriesId], references: [id])
+  translations EntryTranslation[]
+  tags         TagsOnEntries[]
+  comments     Comment[]
+  views        EntryView[]
+  likes        EntryLike[]
+
+  @@index([channelId, status, publishedAt(sort: Desc)])
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([kind, status])
+  @@index([authorId])
+  @@index([seriesId, seriesOrder])
+  @@index([trendingScore(sort: Desc)])
+}
+
+model EntryTranslation {
+  id      String  @id @default(cuid())
+  entryId String
+  locale  String
+  title   String
+  excerpt String?
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, locale])
+}
+
+// ============================================================
 // 标签 + 多对多
 // ============================================================
 
@@ -132,7 +294,8 @@ model Tag {
   slug String @unique
   name String
 
-  posts TagsOnPosts[]
+  posts   TagsOnPosts[]
+  entries TagsOnEntries[]
 }
 
 model TagsOnPosts {
@@ -146,6 +309,17 @@ model TagsOnPosts {
   @@index([tagId])
 }
 
+model TagsOnEntries {
+  entryId String
+  tagId   String
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([entryId, tagId])
+  @@index([tagId])
+}
+
 // ============================================================
 // 评论（自研，匿名 + 后台审核）
 // 详见 systemPatterns.md §11
@@ -154,11 +328,14 @@ model TagsOnPosts {
 model Comment {
   id            String        @id @default(cuid())
   postId        String
+  entryId       String?
   authorName    String
   authorEmail   String
   authorWebsite String?
+  authorUserId  String?
   content       String        @db.Text
   status        CommentStatus @default(PENDING)
+  visibility    CommentVisibility @default(PUBLIC)
   visitorHash   String
   ipAddress     String
   userAgent     String
@@ -168,12 +345,16 @@ model Comment {
   createdAt     DateTime      @default(now())
 
   post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  entry   Entry?    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  author  User?     @relation(fields: [authorUserId], references: [id])
   parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies Comment[] @relation("CommentReplies")
 
   @@index([postId, status])
+  @@index([entryId, status])
   @@index([visitorHash, createdAt])
   @@index([status, createdAt])
+  @@index([entryId, visibility])
 }
 
 // ============================================================
@@ -208,6 +389,40 @@ model PostLike {
 
   @@unique([postId, visitorHash])
   @@index([postId])
+}
+
+model EntryView {
+  id          String   @id @default(cuid())
+  entryId     String
+  visitorHash String
+  dayKey      String
+  createdAt   DateTime @default(now())
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, visitorHash, dayKey])
+  @@index([entryId, createdAt])
+}
+
+model EntryLike {
+  id          String   @id @default(cuid())
+  entryId     String
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, visitorHash])
+  @@index([entryId])
+}
+
+model RateLimitLog {
+  id        String   @id @default(cuid())
+  scope     String
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([scope, key, createdAt])
 }
 
 // ============================================================
@@ -303,7 +518,5 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-
-
 
 
