@@ -2,11 +2,12 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1–M2 已完成；M3 `theme-tokens` + `public-shell` TDD 审计与 rebase 已闭环；M4 `home-composition` 已启动。
-- 当前窗口：M4 `home-composition` **home-001 ~ home-010 全闭环**（动态 Channel preview + trending + hero + Lighthouse mobile + bundle gate + 动态频道 e2e）；下一步进入 `channel-pages`（chl-001~）。
+- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1–M4 已完成；M5 `channel-pages` **chl-001 ~ chl-015 实现完成**（5 layout + page metadata + reduced-motion + grep mobile e2e）；下一步 `entry-detail`（ent-001~）。
+- 当前窗口：M5 `channel-pages` 代码与单测已绿；待 TDD commit 节奏提交 + demo-front 15 组合截图验收。
 
 ## 已完成
 
+- [x] **2026-05-26** `blog-ia-redesign` M5 `channel-pages` 完成：`chl-001~015`（CHRONICLE/CARDS/TIMELINE/GREP/FEED 五 layout + `ChannelLayoutRenderer` + `/c/[slug]` OG metadata + reduced-motion shared class + `e2e/grep-mobile.spec.ts`）。
 - [x] **2026-05-26** `blog-ia-redesign` M4 `home-composition` 完成：`home-001~010` TDD 闭环（含 Lighthouse mobile ≥85、bundle gzip <250KiB、动态 Channel e2e）。
 - [x] **2026-05-25** `blog-ia-redesign` M1 完成：
   - [x] `schema-001 ~ schema-010` / `mig-001 ~ mig-010` / `m1-gate-seed-showcase`
