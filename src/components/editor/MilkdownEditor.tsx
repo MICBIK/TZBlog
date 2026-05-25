@@ -15,11 +15,17 @@ export function MilkdownEditor({
   theme = "light",
 }: MilkdownEditorProps) {
   const [draft, setDraft] = React.useState(value);
+  const [hasSelection, setHasSelection] = React.useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const next = event.target.value;
     setDraft(next);
     onChange(next);
+  };
+
+  const handleSelect = (event: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    const target = event.currentTarget;
+    setHasSelection(target.selectionStart !== target.selectionEnd);
   };
 
   const showSlashMenu = draft.endsWith("/");
@@ -34,6 +40,7 @@ export function MilkdownEditor({
         aria-label="Milkdown editor content"
         value={draft}
         onChange={handleChange}
+        onSelect={handleSelect}
         className="min-h-[20rem] w-full resize-y bg-bg px-4 py-4 font-mono text-sm leading-7 text-fg outline-none"
       />
 
@@ -49,6 +56,21 @@ export function MilkdownEditor({
             className="block px-3 py-2 text-sm text-fg"
           >
             二级标题
+          </button>
+        </div>
+      ) : null}
+
+      {hasSelection ? (
+        <div
+          role="toolbar"
+          aria-label="Bubble 菜单"
+          className="absolute right-4 top-4 rounded-xl border border-border bg-bg shadow-md"
+        >
+          <button
+            type="button"
+            className="block px-3 py-2 text-sm text-fg"
+          >
+            Bold
           </button>
         </div>
       ) : null}
