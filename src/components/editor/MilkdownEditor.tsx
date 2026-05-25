@@ -98,6 +98,7 @@ export function MilkdownEditor({
     <div
       data-milkdown-editor
       data-theme={theme}
+      data-reduced-motion-safe
       className="relative w-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
     >
       <textarea
@@ -116,7 +117,7 @@ export function MilkdownEditor({
         <div
           role="menu"
           aria-label="Slash 菜单"
-          className="absolute left-4 top-16 rounded-xl border border-border bg-bg shadow-md"
+          className="absolute left-4 top-16 rounded-xl border border-border bg-bg shadow-md transition-none motion-reduce:transition-none"
         >
           <button
             type="button"
@@ -132,7 +133,7 @@ export function MilkdownEditor({
         <div
           role="toolbar"
           aria-label="Bubble 菜单"
-          className="absolute right-4 top-4 rounded-xl border border-border bg-bg shadow-md"
+          className="absolute right-4 top-4 rounded-xl border border-border bg-bg shadow-md transition-none motion-reduce:transition-none"
         >
           <button
             type="button"
