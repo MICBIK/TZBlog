@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("editorDoesNotOverflowAt375px", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/_editor-smoke");
+  await page.goto("/editor-smoke");
 
   const editor = page.locator("[data-milkdown-editor]");
   await expect(editor).toBeVisible();
