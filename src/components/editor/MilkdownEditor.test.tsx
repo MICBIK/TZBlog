@@ -95,6 +95,44 @@ describe("MilkdownEditor", () => {
     });
   });
 
+  it("unsafeMediaUrlBlockedFromInsertion", async () => {
+    vi.useFakeTimers();
+    const onChange = vi.fn();
+    mocks.fetch.mockResolvedValue(
+      new Response(
+        JSON.stringify({ data: { url: "blob:http://unsafe/1", alt: "unsafe.png" } }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    render(<MilkdownEditor value="" onChange={onChange} />);
+
+    const editor = screen.getByRole("textbox", { name: "Milkdown editor content" });
+    const file = new File(["binary"], "unsafe.png", { type: "image/png" });
+
+    fireEvent.drop(editor, {
+      dataTransfer: {
+        files: [file],
+      },
+    });
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    await vi.advanceTimersByTimeAsync(400);
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(editor.closest("[data-milkdown-editor]")).toHaveAttribute(
+      "data-upload-blocked",
+      "unsafe-url",
+    );
+
+    vi.useRealTimers();
+  });
+
   it("modSTriggersOnSavePrevented", () => {
     const onSave = vi.fn();
     render(<MilkdownEditor value="" onChange={vi.fn()} onSave={onSave} />);
