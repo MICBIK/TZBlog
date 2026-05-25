@@ -129,6 +129,9 @@ export function EntryEditor({
     initial?.kind ?? allowedKinds[0] ?? "ARTICLE",
   );
   const [body, setBody] = React.useState(initial?.content ?? "");
+  const [status, setStatus] = React.useState<"DRAFT" | "PUBLISHED" | "ARCHIVED">(
+    initial?.status ?? "DRAFT",
+  );
   const [submitting, setSubmitting] = React.useState(false);
   const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({});
   const [articleMetadata, setArticleMetadata] = React.useState<ArticleMetadataDraft>(
@@ -149,7 +152,9 @@ export function EntryEditor({
     );
   }
 
-  async function submit(targetStatus: "DRAFT" | "PUBLISHED") {
+  async function submit(
+    targetStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED",
+  ) {
     if (!selectedChannel) {
       return;
     }
@@ -216,11 +221,13 @@ export function EntryEditor({
       }
 
       if (mode === "edit" && initial?.id) {
+        setStatus(targetStatus);
         router.refresh();
         return;
       }
 
       const payload = (await response.json()) as { data?: { id?: string } };
+      setStatus(targetStatus);
       if (payload.data?.id) {
         router.push(`/admin/entries/${payload.data.id}/edit`);
       }
@@ -534,7 +541,7 @@ export function EntryEditor({
       <MilkdownEditor
         value={body}
         onChange={setBody}
-        onSave={() => void submit("DRAFT")}
+        onSave={() => void submit(status)}
       />
     </div>
   );
