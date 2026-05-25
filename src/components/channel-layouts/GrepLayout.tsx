@@ -23,17 +23,23 @@ function readSource(metadata: unknown): string {
   return "—";
 }
 
+function formatTags(tags: string[] | undefined): string {
+  if (!tags || tags.length === 0) return "—";
+  return tags.join(", ");
+}
+
 export function GrepLayout({ channelSlug, entries }: ChannelLayoutProps) {
   const [query, setQuery] = useState("");
 
+  const normalizedQuery = query.trim().toLowerCase();
+
   const filtered = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return entries;
+    if (!normalizedQuery) return entries;
     return entries.filter((entry) => {
-      const haystack = `${entry.title} ${entry.excerpt ?? ""} ${readSource(entry.metadata)}`.toLowerCase();
-      return haystack.includes(normalized);
+      const haystack = `${entry.title} ${entry.excerpt ?? ""} ${readSource(entry.metadata)} ${formatTags(entry.tags)}`.toLowerCase();
+      return haystack.includes(normalizedQuery);
     });
-  }, [entries, query]);
+  }, [entries, normalizedQuery]);
 
   if (entries.length === 0) {
     return (
@@ -57,28 +63,48 @@ export function GrepLayout({ channelSlug, entries }: ChannelLayoutProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="filter…"
+            data-testid="grep-filter-input"
             className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 font-mono text-sm text-fg outline-none ring-ring focus-visible:ring-2"
           />
         </label>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse font-mono text-sm">
+        <table
+          data-testid="grep-table"
+          className="w-full table-fixed border-collapse font-mono text-sm"
+        >
+          <colgroup>
+            <col className="w-12" />
+            <col className="w-28" />
+            <col />
+            <col className="w-36" />
+            <col className="w-40" />
+          </colgroup>
           <thead>
             <tr className="border-b border-border text-left text-xs text-muted-fg">
               <th className="px-3 py-2">#</th>
-              <th className="px-3 py-2">time</th>
-              <th className="px-3 py-2">title</th>
-              <th className="px-3 py-2">source</th>
+              <th className="px-3 py-2" data-testid="grep-col-time">
+                time
+              </th>
+              <th className="px-3 py-2" data-testid="grep-col-title">
+                title
+              </th>
+              <th className="px-3 py-2" data-testid="grep-col-source">
+                source
+              </th>
+              <th className="px-3 py-2" data-testid="grep-col-tags">
+                tags
+              </th>
             </tr>
           </thead>
           <tbody>
             {entries.map((entry, index) => {
               const visible = filtered.some((row) => row.id === entry.id);
               const href = entryHref(channelSlug, entry.slug, entry.kind);
+              const haystack = `${entry.title} ${entry.excerpt ?? ""} ${readSource(entry.metadata)} ${formatTags(entry.tags)}`.toLowerCase();
               const highlighted =
-                query.trim().length > 0 &&
-                `${entry.title}`.toLowerCase().includes(query.trim().toLowerCase());
+                normalizedQuery.length > 0 && haystack.includes(normalizedQuery);
 
               return (
                 <tr
@@ -89,25 +115,28 @@ export function GrepLayout({ channelSlug, entries }: ChannelLayoutProps) {
                   className={visible ? "border-b border-border/60" : "hidden"}
                 >
                   <td className="px-3 py-2 text-muted-fg">{index + 1}</td>
-                  <td className="px-3 py-2 whitespace-nowrap text-muted-fg">
+                  <td className="truncate px-3 py-2 whitespace-nowrap text-muted-fg">
                     {entry.publishedAt
                       ? format(entry.publishedAt, "yyyy-MM-dd")
                       : "—"}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="truncate px-3 py-2">
                     <Link
                       href={href}
                       className={
                         highlighted
-                          ? "rounded bg-accent/15 px-1 text-fg underline"
-                          : "text-fg hover:underline"
+                          ? "terminal-link rounded bg-accent/15 px-1 text-fg underline"
+                          : "terminal-link text-fg hover:underline"
                       }
                     >
                       {entry.title}
                     </Link>
                   </td>
-                  <td className="px-3 py-2 text-muted-fg">
+                  <td className="truncate px-3 py-2 text-muted-fg">
                     {readSource(entry.metadata)}
+                  </td>
+                  <td className="truncate px-3 py-2 text-muted-fg">
+                    {formatTags(entry.tags)}
                   </td>
                 </tr>
               );

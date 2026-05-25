@@ -8,6 +8,7 @@ export type ChannelLayoutEntry = {
   title: string;
   excerpt?: string | null;
   metadata: unknown;
+  tags?: string[];
 };
 
 export type ChannelLayoutProps = {

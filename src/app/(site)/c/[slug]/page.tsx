@@ -3,6 +3,8 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import { ChannelLayoutRenderer } from "@/components/channel-layouts/ChannelLayoutRenderer"
 import type { ChannelLayoutEntry } from "@/components/channel-layouts/types"
+import { BootSequence } from "@/components/terminal/BootSequence"
+import { TerminalShell } from "@/components/terminal/TerminalShell"
 import {
   getChannelPageBySlug,
   type ChannelPageData,
@@ -47,6 +49,7 @@ function toChannelLayoutEntries(
       title: entryTr?.title ?? entry.slug,
       excerpt: entryTr?.excerpt,
       metadata: entry.metadata,
+      tags: entry.tags.map((row) => row.tag.slug),
     }
   })
 }
@@ -79,16 +82,14 @@ export default async function ChannelDetailPage({ params }: Props) {
   const name = tr?.name ?? channel.slug
   const description = tr?.description
   const tagline = tr?.tagline
+  const isStream = channel.kind === "STREAM"
 
-  return (
-    <article
-      data-channel-layout={channel.layout}
-      className="mx-auto max-w-6xl space-y-10"
-    >
+  const content = (
+    <>
       <header className="space-y-4">
         <Link
           href="/"
-          className="inline-block font-mono text-xs text-muted-fg transition hover:text-fg"
+          className="inline-block font-mono text-xs text-muted-fg transition hover:text-fg terminal-link"
         >
           ← 首页
         </Link>
@@ -115,6 +116,29 @@ export default async function ChannelDetailPage({ params }: Props) {
         channelSlug={channel.slug}
         entries={toChannelLayoutEntries(channel, locale)}
       />
+    </>
+  )
+
+  if (isStream) {
+    return (
+      <TerminalShell slug={channel.slug}>
+        <BootSequence channelSlug={channel.slug} />
+        <article
+          data-channel-layout={channel.layout}
+          className="mx-auto max-w-6xl space-y-10"
+        >
+          {content}
+        </article>
+      </TerminalShell>
+    )
+  }
+
+  return (
+    <article
+      data-channel-layout={channel.layout}
+      className="mx-auto max-w-6xl space-y-10"
+    >
+      {content}
     </article>
   )
 }
