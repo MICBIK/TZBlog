@@ -95,4 +95,28 @@ describe("EntryEditor", () => {
     expect(screen.getByLabelText("sourceAuthor")).toBeInTheDocument();
     expect(screen.getByLabelText("thumbnail")).toBeInTheDocument();
   });
+
+  it("hotTakeKindRendersMetadataFields", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-stream",
+            slug: "stream",
+            kind: "STREAM",
+            name: "碎片流",
+          },
+        ]}
+        initialChannelId="channel-stream"
+      />,
+    );
+
+    await user.selectOptions(screen.getByLabelText("条目类型"), "HOT_TAKE");
+
+    expect(screen.getByLabelText("sourcePlatform")).toBeInTheDocument();
+    expect(screen.getByLabelText("sourceUrl")).toBeInTheDocument();
+    expect(screen.getByLabelText("sourceSnippet")).toBeInTheDocument();
+  });
 });
