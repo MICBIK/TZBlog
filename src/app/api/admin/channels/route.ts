@@ -18,3 +18,8 @@ export const GET = withErrorHandler(async (): Promise<NextResponse> => {
   const channels = await listChannels()
   return ok(channels)
 })
+
+export const POST = withErrorHandler(async (): Promise<NextResponse> => {
+  await requireAdminSession()
+  return ok({ id: "placeholder" })
+})

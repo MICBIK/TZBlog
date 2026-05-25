@@ -15,6 +15,7 @@ import {
 
 type ChannelsRoute = {
   GET: (req: Request) => Promise<Response>
+  POST: (req: Request) => Promise<Response>
 }
 
 let adminId: string
@@ -62,6 +63,30 @@ describe("GET /api/admin/channels", () => {
       "GUESTBOOK",
     ])
     expect(body.data.map((channel) => channel.order)).toEqual([0, 1, 99])
+  })
+})
+
+describe("POST /api/admin/channels", () => {
+  it("conflictSlugReturns409", async () => {
+    const { POST } = await loadRoute()
+
+    const res = await POST(
+      new Request("http://localhost/api/admin/channels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "articles",
+          kind: "ARTICLES",
+          layout: "CHRONICLE",
+          enabled: true,
+          translations: [{ locale: "zh", name: "文章", description: null }],
+        }),
+      }),
+    )
+    const body = await res.json()
+
+    expect(res.status).toBe(409)
+    expect(body.error.code).toBe("CONFLICT")
   })
 })
 
