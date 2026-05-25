@@ -67,7 +67,7 @@ describe("ThemeProvider", () => {
     expect(wrapper).not.toHaveAttribute("data-hero");
   });
 
-  it("reducedMotionDisablesAuroraDrift", () => {
+  it("reducedMotionStopsAuroraDriftHero", () => {
     render(
       <ThemeProvider theme="aurora" hero>
         <div data-testid="hero">hero</div>
