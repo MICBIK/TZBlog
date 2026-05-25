@@ -376,4 +376,55 @@ describe("EntryEditor", () => {
       expect(screen.getByText("slug 已被使用")).toBeInTheDocument();
     });
   });
+
+  it("modSPreservesCurrentStatusWhenAutosaving", async () => {
+    render(
+      <EntryEditor
+        mode="edit"
+        initial={{
+          id: "entry-1",
+          slug: "existing-entry",
+          channelId: "channel-articles",
+          kind: "ARTICLE",
+          status: "PUBLISHED",
+          publishedAt: "2026-05-25T12:00:00.000Z",
+          title: "已发布条目",
+          excerpt: "旧摘要",
+          content: "旧正文",
+          tags: [],
+          metadata: {
+            cover: "/uploads/cover.png",
+            readingMinutes: 6,
+            toc: true,
+            ogImage: null,
+          },
+        }}
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      target: { value: "快捷保存后的正文" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      key: "s",
+      code: "KeyS",
+      metaKey: true,
+    });
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    const [, init] = mocks.fetch.mock.calls[0];
+    expect(JSON.parse(init.body as string).status).toBe("PUBLISHED");
+  });
 });
