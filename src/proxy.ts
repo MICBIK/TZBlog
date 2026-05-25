@@ -2,36 +2,29 @@ import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 
 import { authConfig } from "@/lib/auth.config";
+import { resolveProxyDecision } from "@/lib/proxyAccess";
 
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;
-  const isAuthed = !!req.auth;
-  const pathname = nextUrl.pathname;
+  const decision = resolveProxyDecision({
+    pathname: nextUrl.pathname,
+    search: nextUrl.search,
+    origin: nextUrl.origin,
+    isAuthed: !!req.auth,
+    role: req.auth?.user?.role,
+  });
 
-  const isApi = pathname.startsWith("/api/");
-  const isProtected =
-    pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
-
-  if (!isProtected) return NextResponse.next();
-  if (isAuthed) return NextResponse.next();
-
-  if (isApi) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "UNAUTHORIZED",
-          message: "Authentication required",
-        },
-      },
-      { status: 401 },
-    );
+  if (decision.action === "next") {
+    return NextResponse.next();
   }
 
-  const loginUrl = new URL("/login", nextUrl);
-  loginUrl.searchParams.set("from", pathname + nextUrl.search);
-  return NextResponse.redirect(loginUrl);
+  if (decision.action === "redirect") {
+    return NextResponse.redirect(decision.url);
+  }
+
+  return NextResponse.json(decision.body, { status: decision.status });
 });
 
 export const config = {

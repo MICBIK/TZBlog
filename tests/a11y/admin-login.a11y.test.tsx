@@ -17,7 +17,7 @@ vi.mock("next-auth/react", () => ({
 
 describe("admin login a11y (SPEC-LH-A-2)", () => {
   it("Login page has no critical/serious axe violations", async () => {
-    const mod = await import("@/app/(admin)/login/page");
+    const mod = await import("@/app/(site)/login/page");
     const LoginPage = mod.default;
 
     const { container } = render(<LoginPage />);

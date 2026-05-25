@@ -1,10 +1,16 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 
 import { db } from "./db";
 import { authConfig } from "./auth.config";
+import {
+  MAGIC_LINK_MAX_AGE_SECONDS,
+  sendVerificationRequest,
+} from "./email/sendMagicLink";
+import { ensureVisitorRoleOnCreate } from "./auth/visitorRole";
 import { loginSchema } from "./schemas/auth";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -36,5 +42,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    EmailProvider({
+      from: process.env.AUTH_EMAIL_FROM ?? "TZBlog <onboarding@resend.dev>",
+      maxAge: MAGIC_LINK_MAX_AGE_SECONDS,
+      sendVerificationRequest,
+    }),
   ],
+  events: {
+    async createUser({ user }) {
+      if (user.id) {
+        await ensureVisitorRoleOnCreate(user.id, user.email, user.name);
+      }
+    },
+  },
 });
