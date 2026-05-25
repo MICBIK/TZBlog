@@ -132,11 +132,11 @@ term-001 ~ term-010
 
 ### M4 Gate（自动推进）
 
-- [ ] 前台所有路由可访问
-- [ ] 5 个 layout 工作
-- [ ] 三皮在对应路由生效
-- [ ] Lighthouse mobile ≥ 85
-- [ ] `git tag m4-public-ui-complete`
+- [x] 前台所有路由可访问
+- [x] 5 个 layout 工作
+- [x] 三皮在对应路由生效
+- [x] Lighthouse mobile ≥ 85
+- [x] `git tag m4-public-ui-complete`
 - [ ] 自动进 M5
 
 ---

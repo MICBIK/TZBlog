@@ -33,7 +33,7 @@
 
 ## Acceptance
 
-- [ ] 10 spec 全 pass
+- [x] 10 spec 全 pass
 - [ ] 截图对比 Terminal Workshop demo 还原 ≥ 90%
 - [ ] 用户测试通过：HaiDen 在 Terminal Workshop demo 反馈 "存在一些交互上的问题"——本次重构必须修复（具体待 HaiDen 标注）
 

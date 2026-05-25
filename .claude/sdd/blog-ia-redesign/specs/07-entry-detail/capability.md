@@ -63,7 +63,7 @@
 
 ## Acceptance
 
-- [ ] 20 spec 全 pass
+- [x] 20 spec 全 pass
 - [ ] 截图对比 Ink 主题 demo-front 还原 ≥ 90%
 
 ---

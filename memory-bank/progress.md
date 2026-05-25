@@ -2,12 +2,18 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1–M4 已完成；M5 `channel-pages` **chl-001 ~ chl-015 实现完成**（5 layout + page metadata + reduced-motion + grep mobile e2e）；下一步 `entry-detail`（ent-001~）。
-- 当前窗口：M5 `channel-pages` 代码与单测已绿；channel-layouts smoke 15×3 截图已生成（`.claude/sdd/blog-ia-redesign/smoke/channel-layouts/`）；待 commit smoke 脚本 + seed 扩展。
+- **2026-05-25** `blog-ia-redesign` M4 公开 UI 三模块已完成：`entry-detail`（ed-001~020）、`reading-mode`（read-001~012）、`terminal-stream`（term-001~010）；M4 vitest **55/55 pass**；`pnpm lint` + `pnpm typecheck` 绿。
+- 下一步：M5+ `auth-magic-link` / `guestbook` / `recommendation` / `cleanup`，或补 M4 截图对比验收。
 
 ## 已完成
 
-- [x] **2026-05-26** `blog-ia-redesign` M5 `channel-pages` 完成：`chl-001~015`（CHRONICLE/CARDS/TIMELINE/GREP/FEED 五 layout + `ChannelLayoutRenderer` + `/c/[slug]` OG metadata + reduced-motion shared class + `e2e/grep-mobile.spec.ts`）。
+- [x] **2026-05-26** `blog-ia-redesign` M4 gate：`entry`/`reading`/`terminal` TDD 16 commits + e2e/Lighthouse 绿 + `m4-public-ui-complete` tag。
+- [x] **2026-05-26** `blog-ia-redesign` M4 `entry-detail` + `reading-mode` + `terminal-stream`：
+  - [x] `entryPublic` 服务 + `/c/[slug]/[entry-slug]` 路由 + `EntryDetail` / `NextEntry` + `/api/entries/[id]/view|like`（ed-001~020）
+  - [x] `ArticleReader` / `Toc` / `ReadingProgress` + posts 页 Ink 阅读壳（read-001~012）
+  - [x] `TerminalShell` / `BootSequence` / `TerminalEntryDetail` + STREAM channel 集成 + GrepLayout tags 列（term-001~010）
+  - [x] 回归：`pnpm vitest run` M4 范围 => **55 passed**；`pnpm lint` / `pnpm typecheck` 绿
+- [x] **2026-05-26** `blog-ia-redesign` M5 `channel-pages` 完成：`chl-001~015`（CHRONICLE/CARDS/TIMELINE/GREP/FEED 五 layout + `ChannelLayoutRenderer` + `/c/[slug]` OG metadata + reduced-motion shared class + `e2e/grep-mobile.spec.ts` + layout×theme smoke 截图）。
 - [x] **2026-05-26** `blog-ia-redesign` M4 `home-composition` 完成：`home-001~010` TDD 闭环（含 Lighthouse mobile ≥85、bundle gzip <250KiB、动态 Channel e2e）。
 - [x] **2026-05-25** `blog-ia-redesign` M1 完成：
   - [x] `schema-001 ~ schema-010` / `mig-001 ~ mig-010` / `m1-gate-seed-showcase`

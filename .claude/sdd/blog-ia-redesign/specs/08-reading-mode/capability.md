@@ -36,7 +36,7 @@
 
 ## Acceptance
 
-- [ ] 12 spec 全 pass
+- [x] 12 spec 全 pass
 - [ ] 截图对比 Ink Garden demo 还原 ≥ 95%
 
 ---
