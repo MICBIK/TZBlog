@@ -12,7 +12,5 @@ export function previewLimitForKind(kind: ChannelKind): number {
 export function resolveTrendingEntries<
   T extends { trendingScore: number; publishedAt: Date | null },
 >(byScore: readonly T[], byRecency: readonly T[], limit = 5): T[] {
-  void byRecency;
-  void limit;
-  return [];
+  return byScore.slice(0, limit);
 }

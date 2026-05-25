@@ -19,6 +19,14 @@ const channelPreviewInclude = {
   },
 } satisfies Prisma.ChannelInclude;
 
+const trendingInclude = {
+  translations: { orderBy: { locale: "asc" as const } },
+  channel: {
+    include: {
+      translations: { orderBy: { locale: "asc" as const } },
+    },
+  },
+} satisfies Prisma.EntryInclude;
 
 export interface HomePreviewEntry {
   id: string;
@@ -55,9 +63,12 @@ export interface HomePageData {
   trending: HomeTrendingItem[];
 }
 
-import { previewLimitForKind } from "./homePageLogic";
+import {
+  previewLimitForKind,
+  resolveTrendingEntries,
+} from "./homePageLogic";
 
-export { previewLimitForKind } from "./homePageLogic";
+export { previewLimitForKind, resolveTrendingEntries } from "./homePageLogic";
 
 function pickTranslation<T extends { locale: string }>(
   rows: readonly T[],
@@ -73,16 +84,33 @@ function pickTranslation<T extends { locale: string }>(
 export async function getHomePageData(
   locale: Locale = DEFAULT_LOCALE,
 ): Promise<HomePageData> {
-  const [siteConfig, channels] = await Promise.all([
+  const [siteConfig, channels, trendingByScore, trendingByRecency] =
+    await Promise.all([
       db.siteConfig.findUnique({ where: { id: "singleton" } }),
       db.channel.findMany({
         where: { enabled: true, kind: { not: "GUESTBOOK" } },
         orderBy: [{ order: "asc" }, { createdAt: "asc" }],
         include: channelPreviewInclude,
       }),
+      db.entry.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ trendingScore: "desc" }, { publishedAt: "desc" }],
+        take: 5,
+        include: trendingInclude,
+      }),
+      db.entry.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }],
+        take: 5,
+        include: trendingInclude,
+      }),
     ]);
 
   const hero = parseSiteConfigHero(siteConfig?.metadata);
+  const trendingRows = resolveTrendingEntries(
+    trendingByScore,
+    trendingByRecency,
+  );
   return {
     hero,
     channels: channels.map((channel) => {
@@ -108,6 +136,20 @@ export async function getHomePageData(
         }),
       };
     }),
-    trending: [],
+    trending: trendingRows.map((entry) => {
+      const entryTr = pickTranslation(entry.translations, locale);
+      const channelTr = pickTranslation(entry.channel.translations, locale);
+
+      return {
+        id: entry.id,
+        slug: entry.slug,
+        kind: entry.kind,
+        title: entryTr?.title ?? entry.slug,
+        channelSlug: entry.channel.slug,
+        channelName: channelTr?.name ?? entry.channel.slug,
+        trendingScore: entry.trendingScore,
+        publishedAt: entry.publishedAt,
+      };
+    }),
   };
 }
