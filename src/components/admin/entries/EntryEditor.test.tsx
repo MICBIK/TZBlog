@@ -1,8 +1,30 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { EntryEditor } from "./EntryEditor";
+
+const mocks = vi.hoisted(() => ({
+  fetch: vi.fn(),
+  push: vi.fn(),
+  refresh: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.useRealTimers();
+  vi.stubGlobal("fetch", mocks.fetch);
+  mocks.fetch.mockResolvedValue(
+    new Response(JSON.stringify({ data: { id: "entry-1" } }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }),
+  );
+});
 
 describe("EntryEditor", () => {
   it("articleChannelRestrictsKindOptionsOnCreate", () => {
@@ -118,5 +140,63 @@ describe("EntryEditor", () => {
     expect(screen.getByLabelText("sourcePlatform")).toBeInTheDocument();
     expect(screen.getByLabelText("sourceUrl")).toBeInTheDocument();
     expect(screen.getByLabelText("sourceSnippet")).toBeInTheDocument();
+  });
+
+  it("saveDraftPostsNewArticleEntry", async () => {
+    const user = userEvent.setup();
+    vi.useFakeTimers();
+
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("标题"), "新条目");
+    await user.type(screen.getByLabelText("slug"), "new-entry");
+    fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      target: { value: "正文" },
+    });
+    await vi.advanceTimersByTimeAsync(300);
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/entries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slug: "new-entry",
+        channelId: "channel-articles",
+        kind: "ARTICLE",
+        status: "DRAFT",
+        metadata: {
+          cover: null,
+          readingMinutes: undefined,
+          toc: true,
+          ogImage: null,
+        },
+        tags: [],
+        translations: [
+          {
+            locale: "zh",
+            title: "新条目",
+            excerpt: null,
+            content: "正文",
+          },
+        ],
+      }),
+    });
+
+    vi.useRealTimers();
   });
 });
