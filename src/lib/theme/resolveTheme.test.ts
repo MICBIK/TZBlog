@@ -8,4 +8,10 @@ describe("resolveChannelTheme", () => {
       "terminal",
     );
   });
+
+  it("channelArticleKindWithChronicleLayoutResolvesToAurora", () => {
+    expect(
+      resolveChannelTheme({ kind: "ARTICLES", layout: "CHRONICLE" }),
+    ).toBe("aurora");
+  });
 });
