@@ -1,9 +1,21 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LikeButton } from "./LikeButton";
 import { PostCard } from "./PostCard";
+import type { HeaderChannel } from "@/lib/navigation/publicNav";
+
 import { SiteHeader } from "./SiteHeader";
+
+const sampleChannels: HeaderChannel[] = [
+  {
+    slug: "articles",
+    kind: "ARTICLES",
+    enabled: true,
+    order: 0,
+    translations: [{ locale: "zh", name: "文章" }],
+  },
+];
 
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
@@ -31,7 +43,7 @@ describe("site focus states", () => {
   it("exposesVisibleFocusForInteractiveSurfaces", () => {
     render(
       <>
-        <SiteHeader channels={[]} />
+        <SiteHeader channels={sampleChannels} />
         <LikeButton slug="focus-post" initialLikeCount={2} />
         <PostCard
           post={{
@@ -50,8 +62,10 @@ describe("site focus states", () => {
     );
 
     const brand = screen.getByRole("link", { name: "TZBlog" });
-    const navLink = screen.getByRole("link", { name: "关于" });
-    const likeButton = screen.getByRole("button");
+    const navLink = within(
+      screen.getByRole("navigation", { name: "主导航" }),
+    ).getByRole("link", { name: "文章" });
+    const likeButton = screen.getByRole("button", { name: "2" });
     const postCard = screen.getByRole("article", { name: "Focus post" });
     const postLink = screen.getByRole("link", { name: "Focus post" });
 

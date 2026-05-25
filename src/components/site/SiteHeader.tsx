@@ -7,6 +7,8 @@ import {
 } from "@/lib/navigation/publicNav";
 import { SITE_META } from "@/lib/site-meta";
 
+import { SiteHeaderNav } from "./SiteHeaderNav";
+
 export interface SiteHeaderProps {
   channels: HeaderChannel[];
 }
@@ -18,7 +20,7 @@ export function SiteHeader({ channels }: SiteHeaderProps) {
     <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur">
       <div
         data-site-header-inner
-        className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 md:px-8 lg:px-10"
+        className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6 md:px-8 lg:px-10"
       >
         <Link
           href="/"
@@ -28,17 +30,7 @@ export function SiteHeader({ channels }: SiteHeaderProps) {
         </Link>
 
         <div className="flex items-center gap-2">
-          <nav
-            aria-label="主导航"
-            data-site-header-nav
-            className="flex items-center gap-6"
-          >
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="text-sm text-muted-fg">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <SiteHeaderNav links={navLinks} />
           <button
             type="button"
             aria-hidden="true"
