@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import type { Metadata } from "next"
-import { format } from "date-fns"
-
+import { ChannelLayoutRenderer } from "@/components/channel-layouts/ChannelLayoutRenderer"
+import type { ChannelLayoutEntry } from "@/components/channel-layouts/types"
 import {
   getChannelPageBySlug,
   type ChannelPageData,
@@ -33,14 +33,39 @@ function pickEntryTranslation(
   )
 }
 
+function toChannelLayoutEntries(
+  channel: ChannelPageData,
+  locale: Locale,
+): ChannelLayoutEntry[] {
+  return channel.entries.map((entry) => {
+    const entryTr = pickEntryTranslation(entry, locale)
+    return {
+      id: entry.id,
+      slug: entry.slug,
+      kind: entry.kind,
+      publishedAt: entry.publishedAt,
+      title: entryTr?.title ?? entry.slug,
+      excerpt: entryTr?.excerpt,
+      metadata: entry.metadata,
+    }
+  })
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const channel = await getChannelPageBySlug(slug)
   if (!channel) return {}
   const tr = pickChannelTranslation(channel, getCurrentLocale())
+  const title = tr?.name ?? channel.slug
+  const description = tr?.description ?? undefined
   return {
-    title: `${tr?.name ?? channel.slug} — TZBlog`,
-    description: tr?.description ?? undefined,
+    title: `${title} — TZBlog`,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
   }
 }
 
@@ -85,46 +110,11 @@ export default async function ChannelDetailPage({ params }: Props) {
         </div>
       </header>
 
-      {channel.entries.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border py-16 text-center text-sm text-muted-fg">
-          这个频道还没有发布内容。
-        </div>
-      ) : (
-        <ul className="divide-y divide-border border-y border-border font-mono text-sm">
-          {channel.entries.map((entry) => {
-            const entryTr = pickEntryTranslation(entry, locale)
-            const href =
-              entry.kind === "ARTICLE" || entry.kind === "REVIEW"
-                ? `/posts/${entry.slug}`
-                : `/c/${channel.slug}#${entry.slug}`
-
-            return (
-              <li
-                id={entry.slug}
-                key={entry.id}
-                className="grid gap-3 py-5 md:grid-cols-[11rem_minmax(0,1fr)]"
-              >
-                <div className="text-xs text-muted-fg">
-                  {entry.publishedAt ? (
-                    <time>{format(entry.publishedAt, "yyyy-MM-dd")}</time>
-                  ) : null}
-                  <div className="mt-1">{entry.kind}</div>
-                </div>
-                <Link href={href} className="group min-w-0">
-                  <h2 className="text-base font-semibold text-fg group-hover:underline">
-                    {entryTr?.title ?? entry.slug}
-                  </h2>
-                  {entryTr?.excerpt ? (
-                    <p className="mt-2 text-sm text-muted-fg">
-                      {entryTr.excerpt}
-                    </p>
-                  ) : null}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      )}
+      <ChannelLayoutRenderer
+        layout={channel.layout}
+        channelSlug={channel.slug}
+        entries={toChannelLayoutEntries(channel, locale)}
+      />
     </article>
   )
 }
