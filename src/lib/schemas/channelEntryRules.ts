@@ -2,7 +2,7 @@ import type { ChannelKind, ChannelLayout, EntryKind } from "@prisma/client"
 
 const ENTRY_KINDS_BY_CHANNEL_KIND = {
   ARTICLES: ["ARTICLE"],
-  NOTES: ["NOTE", "QUOTE"],
+  NOTES: ["NOTE", "QUOTE", "LINK"],
   LINKS: ["LINK"],
   STREAM: ["NOTE", "JOKE", "HOT_TAKE", "QUOTE", "LINK", "REVIEW"],
   GUESTBOOK: ["GUESTBOOK_THREAD"],
