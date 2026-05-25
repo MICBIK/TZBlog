@@ -31,6 +31,9 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    authInterrupts: true,
+  },
   turbopack: {
     root: __dirname,
   },

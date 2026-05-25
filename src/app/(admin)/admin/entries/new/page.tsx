@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { forbidden, notFound } from "next/navigation";
 
 import { EntryEditor } from "@/components/admin/entries/EntryEditor";
 import { DEFAULT_LOCALE, getCurrentLocale } from "@/lib/i18n";
@@ -14,8 +14,17 @@ export default async function NewEntryPage({ searchParams }: Props) {
   const { channelId } = await searchParams;
   const locale = getCurrentLocale();
   const channels = await listChannels();
-  const options = channels
-    .filter((channel) => channel.enabled)
+  const enabledChannels = channels.filter((channel) => channel.enabled);
+  const requestedChannel = channelId
+    ? enabledChannels.find((channel) => channel.id === channelId) ?? null
+    : enabledChannels[0] ?? null;
+
+  if (requestedChannel?.kind === "GUESTBOOK") {
+    forbidden();
+  }
+
+  const options = enabledChannels
+    .filter((channel) => channel.kind !== "GUESTBOOK")
     .map((channel) => {
       const translation =
         channel.translations.find((row) => row.locale === locale) ??
@@ -34,5 +43,13 @@ export default async function NewEntryPage({ searchParams }: Props) {
     notFound();
   }
 
-  return <EntryEditor channels={options} initialChannelId={channelId} />;
+  const initialOption =
+    options.find((channel) => channel.id === channelId) ?? options[0];
+
+  return (
+    <EntryEditor
+      channels={options}
+      initialChannelId={initialOption?.id}
+    />
+  );
 }
