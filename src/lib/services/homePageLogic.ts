@@ -8,3 +8,11 @@ const previewLimitByKind: Partial<Record<ChannelKind, number>> = {
 export function previewLimitForKind(kind: ChannelKind): number {
   return previewLimitByKind[kind] ?? 3;
 }
+
+export function resolveTrendingEntries<
+  T extends { trendingScore: number; publishedAt: Date | null },
+>(byScore: readonly T[], byRecency: readonly T[], limit = 5): T[] {
+  void byRecency;
+  void limit;
+  return [];
+}
