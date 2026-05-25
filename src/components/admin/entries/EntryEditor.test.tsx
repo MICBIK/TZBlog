@@ -48,4 +48,25 @@ describe("EntryEditor", () => {
     expect(screen.getByRole("option", { name: "LINK" })).toBeInTheDocument();
     expect(screen.queryByRole("option", { name: "ARTICLE" })).not.toBeInTheDocument();
   });
+
+  it("articleKindRendersMetadataFields", () => {
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    expect(screen.getByLabelText("cover")).toBeInTheDocument();
+    expect(screen.getByLabelText("readingMinutes")).toBeInTheDocument();
+    expect(screen.getByLabelText("toc")).toBeInTheDocument();
+    expect(screen.getByLabelText("ogImage")).toBeInTheDocument();
+  });
 });
