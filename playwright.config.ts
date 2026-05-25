@@ -1,10 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const lighthouseMode = process.env.PW_LIGHTHOUSE === "1";
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: lighthouseMode ? 180_000 : 30_000,
+  globalSetup: "./e2e/global-setup.ts",
+  timeout: lighthouseMode ? 180_000 : 60_000,
   use: {
     baseURL: "http://127.0.0.1:3000",
     trace: "retain-on-failure",

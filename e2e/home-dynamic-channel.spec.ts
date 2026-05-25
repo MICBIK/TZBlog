@@ -1,22 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+import { loginAsAdmin } from "./helpers/adminAuth";
+
 test("newChannelAppearsWithoutCodeChange", async ({ page }) => {
   test.setTimeout(60_000);
-
-  const email = process.env.ADMIN_EMAIL ?? "admin@example.com";
-  const password = process.env.ADMIN_PASSWORD;
-  if (!password) {
-    throw new Error("ADMIN_PASSWORD is required for home-dynamic-channel e2e");
-  }
 
   const slug = `e2e-lab-${Date.now()}`;
   const channelName = "E2E 动态频道";
 
-  await page.goto("/login?from=/admin");
-  await page.getByLabel("邮箱").fill(email);
-  await page.getByLabel("密码").fill(password);
-  await page.getByRole("button", { name: "登录" }).click();
-  await page.waitForURL("**/admin**");
+  await loginAsAdmin(page);
 
   const createResponse = await page.request.post("/api/admin/channels", {
     data: {
