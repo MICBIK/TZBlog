@@ -34,4 +34,12 @@ describe("Milkdown Markdown round-trip parity", () => {
 
     expect(exported.trim()).toBe(source.trim());
   });
+
+  it("preservesTableMdWithCjkAndEscapedPipes", async () => {
+    const source = loadFixture("table");
+    const parsed = await milkdownParse(source);
+    const exported = await milkdownSerialize(parsed);
+
+    expect(exported.trim()).toBe(source.trim());
+  });
 });
