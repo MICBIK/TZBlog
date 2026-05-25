@@ -23,4 +23,19 @@ describe("shadcn theme integration", () => {
       unmount();
     }
   });
+
+  it("terminalForcesZeroBorderRadius", () => {
+    render(
+      <ThemeProvider theme="terminal">
+        <Button className="rounded-md">Terminal</Button>
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: "Terminal" })).toHaveClass(
+      "rounded-md",
+    );
+    expect(
+      screen.getByRole("button", { name: "Terminal" }).closest("[data-theme='terminal']"),
+    ).toBeTruthy();
+  });
 });
