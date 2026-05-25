@@ -111,6 +111,62 @@ describe("PATCH /api/admin/entries/[id]", () => {
     expect(stampedAt).toBeGreaterThanOrEqual(before - 5000);
     expect(stampedAt).toBeLessThanOrEqual(after + 5000);
   });
+
+  it("archivesPublishedArticle", async () => {
+    const { PATCH } = await loadRoute();
+    const channel = await testDb.channel.create({
+      data: {
+        slug: "articles",
+        order: 0,
+        enabled: true,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: {
+          create: [{ locale: "zh", name: "文章", description: null }],
+        },
+      },
+    });
+    const entry = await testDb.entry.create({
+      data: {
+        slug: "published-entry",
+        channelId: channel.id,
+        authorId,
+        kind: "ARTICLE",
+        status: "PUBLISHED",
+        publishedAt: new Date("2026-05-25T12:00:00.000Z"),
+        body: "正文",
+        metadata: {
+          cover: null,
+          readingMinutes: 5,
+          toc: true,
+          ogImage: null,
+        },
+        translations: {
+          create: [{ locale: "zh", title: "已发布条目", excerpt: "摘要" }],
+        },
+      },
+    });
+
+    const res = await PATCH(
+      new Request(`http://localhost/api/admin/entries/${entry.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ARCHIVED" }),
+      }),
+      ctx(entry.id),
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.data).toMatchObject({
+      id: entry.id,
+      status: "ARCHIVED",
+    });
+
+    const row = await testDb.entry.findUnique({ where: { id: entry.id } });
+    expect(row).not.toBeNull();
+    expect(row!.status).toBe("ARCHIVED");
+  });
 });
 
 async function loadRoute(): Promise<EntryItemRoute> {
