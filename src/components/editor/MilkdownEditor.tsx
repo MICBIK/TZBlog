@@ -13,6 +13,7 @@ export interface MilkdownEditorProps {
 export function MilkdownEditor({
   value,
   onChange,
+  onSave,
   theme = "light",
 }: MilkdownEditorProps) {
   const [draft, setDraft] = React.useState(value);
@@ -59,6 +60,13 @@ export function MilkdownEditor({
     onChange(next);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+      event.preventDefault();
+      onSave?.();
+    }
+  };
+
   const showSlashMenu = draft.endsWith("/");
 
   return (
@@ -72,6 +80,7 @@ export function MilkdownEditor({
         value={draft}
         onChange={handleChange}
         onSelect={handleSelect}
+        onKeyDown={handleKeyDown}
         onDrop={(event) => {
           void handleDrop(event);
         }}
