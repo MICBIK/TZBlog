@@ -31,4 +31,17 @@ describe("ChannelCreatePage", () => {
     expect(screen.queryByRole("option", { name: "CHRONICLE" })).not.toBeInTheDocument();
     expect(layout).toHaveValue("TIMELINE");
   });
+
+  it("guestbookKindRejectedFromManualCreation", async () => {
+    const user = userEvent.setup();
+    const { default: ChannelCreatePage } = await import("./page");
+
+    render(<ChannelCreatePage />);
+
+    await user.selectOptions(screen.getByLabelText("频道类型"), "GUESTBOOK");
+
+    expect(
+      screen.getByText("GUESTBOOK 由 seed 创建，admin 不能新建"),
+    ).toBeInTheDocument();
+  });
 });
