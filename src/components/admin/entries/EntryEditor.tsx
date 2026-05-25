@@ -209,6 +209,9 @@ export function EntryEditor({
           }
           setFieldErrors(nextErrors);
         }
+        if (payload.error?.code === "CONFLICT") {
+          setFieldErrors({ slug: "slug 已被使用" });
+        }
         return;
       }
 
