@@ -2,10 +2,10 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已完成 `ee-001 ~ ee-007`。
+- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已完成 `ee-001 ~ ee-012`。
 - 当前窗口已闭环 `admin-channel` 回补与收口：`ach-007`、`ach-009`、`ach-012 ~ ach-015` 全部按 `1 spec = 1 RED + 1 GREEN commit` 落地。
-- 当前窗口已闭环 `admin-entry` 第一段：`ee-002 ~ ee-007` 已按 `1 spec = 1 RED + 1 GREEN commit` 落地，范围覆盖 kind 联动、guestbook 403、3 组 metadata shell、ARTICLE draft 创建链路。
-- 下一步继续 `11-admin-entry-editor`：优先 `ee-008`（edit + publish）、`ee-009`（metadata validation 400）、`ee-010`（duplicate slug 409），随后进入 Mod+S / series / tags / archive / upload。
+- 当前窗口已闭环 `admin-entry` 第二段：`ee-008 ~ ee-012` 已按 `1 spec = 1 RED + 1 GREEN commit` 落地，范围覆盖 edit+publish、metadata field error、duplicate slug 409、Mod+S 保持状态、seriesId/seriesOrder。
+- 下一步继续 `11-admin-entry-editor`：优先 `ee-013`（tags 多选）、`ee-014`（archive）、`ee-015`（image upload）。
 
 ## 已完成
 
@@ -46,7 +46,12 @@
     - `src/lib/services/entries.ts`：`createEntry`（channel-kind guard + metadata parse + tags upsert + draft create）
     - `src/app/api/admin/entries/route.ts`：`POST /api/admin/entries`
     - `src/components/admin/entries/EntryEditor.tsx`：标题 / 摘要 / slug / 保存草稿按钮 + ARTICLE draft POST
-  - [x] admin-entry 当前回归：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts` => `7 passed`
+  - [x] `ee-008`：新增 `/admin/entries/[id]/edit`、`PATCH /api/admin/entries/[id]`、`updateEntry`；编辑已有 ARTICLE 发布时 `publishedAt` 自动补 now
+  - [x] `ee-009`：编辑器能把 `VALIDATION_ERROR.details.issues` 映射成字段级错误
+  - [x] `ee-010`：duplicate slug -> `409 CONFLICT`，UI 显示 `slug 已被使用`
+  - [x] `ee-011`：`Mod+S` 自动保存时保持当前 status，不把已发布条目改回 `DRAFT`
+  - [x] `ee-012`：series dropdown + `seriesOrder` 输入已接入；new/edit page 会传 `seriesOptions`，create payload / DB 都会写 `seriesId + seriesOrder`
+  - [x] admin-entry 当前回归：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts src/app/api/admin/entries/[id]/route.test.ts` => `17 passed`
 
 - [x] **2026-05-18** 旧版项目下线 — 远端 `MICBIK/TZBlog` 清空重建为单 empty commit `9d1370c`
 - [x] **2026-05-18** 本地工作目录清空（只剩 `.git/`）

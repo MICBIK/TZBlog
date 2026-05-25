@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**`blog-ia-redesign` 长任务进行中。当前 HEAD 是 `fb762c0 feat(admin-entry): ee-007`，M1 已闭环，M2 editor lane 已完成，admin-channel 已全量闭环，admin-entry 已推进到 ee-007。**
+**`blog-ia-redesign` 长任务进行中。当前 HEAD 是 `fc0143f feat(admin-entry): ee-012`，M1 已闭环，M2 editor lane 已完成，admin-channel 已全量闭环，admin-entry 已推进到 ee-012。**
 
 - M1：`schema` / `migration` / `cleanup-prep` 已完成，tag `m1-schema-migration-complete` 已打。
 - M2 editor：
@@ -23,8 +23,13 @@
   - `ee-003` 已完成：`/admin/entries/new?channelId=<guestbookId>` 走 `forbidden()`，Next `experimental.authInterrupts` 已打开，`src/app/forbidden.tsx` 已落地
   - `ee-004 ~ ee-006` 已完成：`ARTICLE / LINK / HOT_TAKE` metadata form shell 已在 `EntryEditor` 渲染
   - `ee-007` 已完成：`EntryEditor` 具备标题 / slug / 保存草稿最小提交链路，`POST /api/admin/entries` + `createEntrySchema` + `createEntry` service 已打通，ARTICLE draft 可真实写入 DB
-  - 当前 admin-entry 验证基线：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts` => `7 passed`
-  - 下一步：`ee-008` 编辑已有 ARTICLE 发布（PATCH + publishedAt now）、`ee-009` metadata schema error、`ee-010` duplicate slug 409
+  - `ee-008` 已完成：新增 `/admin/entries/[id]/edit`、`PATCH /api/admin/entries/[id]`、`updateEntry`；编辑已有 ARTICLE 发布时会自动回填 `publishedAt`
+  - `ee-009` 已完成：`VALIDATION_ERROR.details.issues` 已映射成 `EntryEditor` 字段级错误
+  - `ee-010` 已完成：duplicate slug -> `409 CONFLICT`，编辑器显示 `slug 已被使用`
+  - `ee-011` 已完成：编辑器内 `Mod+S` 自动保存且保持当前 status，不再把已发布条目降成 `DRAFT`
+  - `ee-012` 已完成：series dropdown + seriesOrder 输入已接入，create payload / DB 写入 `seriesId + seriesOrder`
+  - 当前 admin-entry 验证基线：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts src/app/api/admin/entries/[id]/route.test.ts` => `17 passed`
+  - 下一步：`ee-013` tags 多选、`ee-014` archive、`ee-015` 图片拖拽上传 markdown 插入
 
 - 当前 editor 验证基线：
   - `pnpm vitest run src/components/editor/round-trip.test.ts src/components/editor/MilkdownEditor.test.tsx` => `17 passed`
@@ -52,10 +57,10 @@
 
 ## 下一步计划
 
-1. **ee-008**：新增 `/admin/entries/[id]/edit` 与 `PATCH /api/admin/entries/[id]`，编辑已有 ARTICLE 发布时自动回填 `publishedAt`。
-2. **ee-009**：把 `entryMetadataSchema` 的 Zod 错误穿透到 API 400，并让编辑器拿到字段级 error 面。
-3. **ee-010**：duplicate slug -> `409 CONFLICT`，编辑器显示“slug 已被使用”。
-4. **ee-011+**：Mod+S、series/seriesOrder、tags、多状态归档和图片拖拽上传微循环。
+1. **ee-013**：接 `TagsInput` / suggestions，把 tag 多选真正写入 `TagsOnEntries`。
+2. **ee-014**：编辑已发布 entry 时增加“归档”动作，`PATCH` 置 `ARCHIVED`。
+3. **ee-015**：编辑器拖拽图片时上传媒体并插入 `![alt](url)`。
+4. admin-entry 当前薄弱点：还没有 series dropdown 的页面级测试，也还没把 tags / archive / upload 收口。
 
 ## 待办池 / 已知问题
 
