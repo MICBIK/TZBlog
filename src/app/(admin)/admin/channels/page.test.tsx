@@ -173,4 +173,31 @@ describe("ChannelsAdminPage", () => {
       "false",
     );
   });
+
+  it("rowClickNavigatesToEdit", async () => {
+    const user = userEvent.setup();
+    const { ChannelsTable: RealChannelsTable } = await vi.importActual<
+      typeof import("@/components/admin/channels/ChannelsTable")
+    >("@/components/admin/channels/ChannelsTable");
+
+    render(
+      <RealChannelsTable
+        initialChannels={[
+          {
+            id: "channel-1",
+            order: 0,
+            slug: "articles",
+            kind: "ARTICLES",
+            layout: "CHRONICLE",
+            enabled: true,
+            entryCount: 4,
+          },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByTestId("channel-row"));
+
+    expect(mocks.push).toHaveBeenCalledWith("/admin/channels/channel-1/edit");
+  });
 });
