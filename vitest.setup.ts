@@ -10,7 +10,10 @@ const testEnvDefaults: Record<string, string> = {
   S3_PUBLIC_URL: "http://localhost:9000/tzblog-media",
   SITE_URL: "http://localhost:3000",
 };
-for (const [key, value] of Object.entries(testEnvDefaults)) { process.env[key] ??= value; }
+
+for (const [key, value] of Object.entries(testEnvDefaults)) {
+  process.env[key] ??= value;
+}
 
 import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
