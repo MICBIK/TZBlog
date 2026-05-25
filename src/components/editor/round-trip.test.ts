@@ -66,4 +66,12 @@ describe("Milkdown Markdown round-trip parity", () => {
 
     expect(exported.trim()).toBe(source.trim());
   });
+
+  it("preservesInlineHtmlOrDocumentsDegradation", async () => {
+    const source = loadFixture("mixed");
+    const parsed = await milkdownParse(source);
+    const exported = await milkdownSerialize(parsed);
+
+    expect(exported.trim()).toBe(source.trim());
+  });
 });
