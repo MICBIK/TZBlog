@@ -4,6 +4,9 @@ import * as React from "react";
 import type { ChannelKind, EntryKind } from "@prisma/client";
 
 import { MilkdownEditor } from "@/components/editor/MilkdownEditor";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { getAllowedEntryKindsForChannelKind } from "@/lib/schemas/channelEntryRules";
 
 export interface EntryEditorChannel {
@@ -50,6 +53,9 @@ export function EntryEditor({
   initialChannelId,
 }: EntryEditorProps) {
   const initialChannel = getSelectedChannel(channels, initialChannelId);
+  const [title, setTitle] = React.useState("");
+  const [excerpt, setExcerpt] = React.useState("");
+  const [slug, setSlug] = React.useState("");
   const [channelId, setChannelId] = React.useState(initialChannel?.id ?? "");
   const selectedChannel = getSelectedChannel(channels, channelId);
   const allowedKinds = selectedChannel
@@ -57,6 +63,7 @@ export function EntryEditor({
     : [];
   const [kind, setKind] = React.useState<EntryKind>(allowedKinds[0] ?? "ARTICLE");
   const [body, setBody] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
   const [articleMetadata, setArticleMetadata] = React.useState<ArticleMetadataDraft>({
     cover: "",
     readingMinutes: "",
@@ -83,14 +90,74 @@ export function EntryEditor({
     );
   }
 
+  async function submitDraft() {
+    if (!selectedChannel) {
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await fetch("/api/admin/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug,
+          channelId: selectedChannel.id,
+          kind,
+          status: "DRAFT",
+          metadata: buildMetadataPayload(kind, articleMetadata, linkMetadata, hotTakeMetadata),
+          tags: [],
+          translations: [
+            {
+              locale: "zh",
+              title,
+              excerpt: excerpt.trim() ? excerpt.trim() : null,
+              content: body,
+            },
+          ],
+        }),
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="grid gap-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">新建条目</h1>
-        <p className="text-sm text-muted-fg">
-          先选频道，再按 Channel.kind 自动约束可创建的 Entry.kind。
-        </p>
-      </header>
+      <div className="sticky top-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-bg px-4 py-3 md:-mx-6 md:px-6">
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight">新建条目</h1>
+          <p className="text-sm text-muted-fg">
+            先选频道，再按 Channel.kind 自动约束可创建的 Entry.kind。
+          </p>
+        </header>
+
+        <Button type="button" onClick={() => void submitDraft()} disabled={submitting}>
+          {submitting ? "保存中..." : "保存草稿"}
+        </Button>
+      </div>
+
+      <section className="grid gap-4 rounded-lg border border-border p-4">
+        <label className="grid gap-2 text-sm font-medium">
+          标题
+          <Input
+            aria-label="标题"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="输入条目标题"
+          />
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium">
+          摘要
+          <Textarea
+            aria-label="摘要"
+            value={excerpt}
+            onChange={(event) => setExcerpt(event.target.value)}
+            rows={2}
+            placeholder="可选摘要"
+          />
+        </label>
+      </section>
 
       <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-medium">
@@ -130,6 +197,16 @@ export function EntryEditor({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium">
+          slug
+          <Input
+            aria-label="slug"
+            value={slug}
+            onChange={(event) => setSlug(event.target.value)}
+            placeholder="my-entry"
+          />
         </label>
       </section>
 
@@ -324,3 +401,37 @@ export function EntryEditor({
 }
 
 export default EntryEditor;
+
+function buildMetadataPayload(
+  kind: EntryKind,
+  articleMetadata: ArticleMetadataDraft,
+  linkMetadata: LinkMetadataDraft,
+  hotTakeMetadata: HotTakeMetadataDraft,
+) {
+  switch (kind) {
+    case "ARTICLE":
+      return {
+        cover: articleMetadata.cover.trim() ? articleMetadata.cover.trim() : null,
+        readingMinutes: articleMetadata.readingMinutes
+          ? Number(articleMetadata.readingMinutes)
+          : undefined,
+        toc: articleMetadata.toc,
+        ogImage: articleMetadata.ogImage.trim() ? articleMetadata.ogImage.trim() : null,
+      };
+    case "LINK":
+      return {
+        sourceUrl: linkMetadata.sourceUrl,
+        sourceTitle: linkMetadata.sourceTitle,
+        sourceAuthor: linkMetadata.sourceAuthor || undefined,
+        thumbnail: linkMetadata.thumbnail.trim() ? linkMetadata.thumbnail.trim() : null,
+      };
+    case "HOT_TAKE":
+      return {
+        sourcePlatform: hotTakeMetadata.sourcePlatform,
+        sourceUrl: hotTakeMetadata.sourceUrl,
+        sourceSnippet: hotTakeMetadata.sourceSnippet,
+      };
+    default:
+      return {};
+  }
+}

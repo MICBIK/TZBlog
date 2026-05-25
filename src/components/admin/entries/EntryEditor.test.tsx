@@ -144,7 +144,6 @@ describe("EntryEditor", () => {
 
   it("saveDraftPostsNewArticleEntry", async () => {
     const user = userEvent.setup();
-    vi.useFakeTimers();
 
     render(
       <EntryEditor
@@ -160,12 +159,16 @@ describe("EntryEditor", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText("标题"), "新条目");
-    await user.type(screen.getByLabelText("slug"), "new-entry");
+    fireEvent.change(screen.getByLabelText("标题"), {
+      target: { value: "新条目" },
+    });
+    fireEvent.change(screen.getByLabelText("slug"), {
+      target: { value: "new-entry" },
+    });
     fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
       target: { value: "正文" },
     });
-    await vi.advanceTimersByTimeAsync(300);
+    await new Promise((resolve) => setTimeout(resolve, 350));
     await user.click(screen.getByRole("button", { name: "保存草稿" }));
 
     await waitFor(() => {
@@ -196,7 +199,5 @@ describe("EntryEditor", () => {
         ],
       }),
     });
-
-    vi.useRealTimers();
   });
 });
