@@ -50,6 +50,7 @@ function getInitialLayout(
 
 export function ChannelForm({ mode = "create", initial }: ChannelFormProps) {
   const router = useRouter();
+  const isEdit = mode === "edit" && Boolean(initial?.id);
   const [slug, setSlug] = React.useState(initial?.slug ?? "");
   const [kind, setKind] = React.useState<(typeof KIND_OPTIONS)[number]>(
     initial?.kind ?? "ARTICLES",
@@ -67,24 +68,34 @@ export function ChannelForm({ mode = "create", initial }: ChannelFormProps) {
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/admin/channels", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug,
-          kind,
-          layout,
-        }),
-      });
+      const response = await fetch(
+        isEdit ? `/api/admin/channels/${initial!.id}` : "/api/admin/channels",
+        {
+          method: isEdit ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug,
+            kind,
+            layout,
+          }),
+        },
+      );
       const payload = (await response.json()) as {
         data?: { id?: string };
-        error?: { code?: string };
+        error?: { code?: string; message?: string };
       };
 
       if (!response.ok) {
         setSubmitError(
-          payload.error?.code === "CONFLICT" ? "slug 已被使用" : "创建频道失败",
+          payload.error?.code === "CONFLICT"
+            ? "slug 已被使用"
+            : payload.error?.message ?? (isEdit ? "保存频道失败" : "创建频道失败"),
         );
+        return;
+      }
+
+      if (isEdit) {
+        router.refresh();
         return;
       }
 

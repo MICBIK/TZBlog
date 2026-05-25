@@ -39,3 +39,7 @@ export const createChannelSchema = z.object({
 });
 
 export type CreateChannelInput = z.infer<typeof createChannelSchema>;
+
+export const updateChannelSchema = createChannelSchema.partial();
+
+export type UpdateChannelInput = z.infer<typeof updateChannelSchema>;
