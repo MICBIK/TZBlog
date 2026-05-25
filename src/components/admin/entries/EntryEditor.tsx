@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import type { ChannelKind, EntryKind } from "@prisma/client";
 
+import { TagsInput } from "@/components/admin/posts/TagsInput";
 import { MilkdownEditor } from "@/components/editor/MilkdownEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ export interface EntryEditorProps {
   initialChannelId?: string;
   mode?: "create" | "edit";
   seriesOptions?: Array<{ id: string; name: string; channelId: string }>;
+  allTags?: Array<{ slug: string; name: string }>;
   initial?: EntryEditorInitial;
 }
 
@@ -112,6 +114,7 @@ export function EntryEditor({
   initialChannelId,
   mode = "create",
   seriesOptions = [],
+  allTags = [],
   initial,
 }: EntryEditorProps) {
   const router = useRouter();
@@ -136,6 +139,7 @@ export function EntryEditor({
   const [seriesOrder, setSeriesOrder] = React.useState(
     initial?.seriesOrder ? String(initial.seriesOrder) : "",
   );
+  const [tags, setTags] = React.useState<string[]>(initial?.tags ?? []);
   const [body, setBody] = React.useState(initial?.content ?? "");
   const [status, setStatus] = React.useState<"DRAFT" | "PUBLISHED" | "ARCHIVED">(
     initial?.status ?? "DRAFT",
@@ -192,7 +196,7 @@ export function EntryEditor({
               linkMetadata,
               hotTakeMetadata,
             ),
-            tags: initial?.tags ?? [],
+            tags,
             translations: [
               {
                 locale: "zh",
@@ -384,6 +388,11 @@ export function EntryEditor({
             onChange={(event) => setSeriesOrder(event.target.value)}
             placeholder="1"
           />
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium md:col-span-2">
+          标签
+          <TagsInput value={tags} onChange={setTags} suggestions={allTags} />
         </label>
       </section>
 

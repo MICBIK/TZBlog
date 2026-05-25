@@ -6,6 +6,7 @@ import { DEFAULT_LOCALE, getCurrentLocale } from "@/lib/i18n";
 import { listChannels } from "@/lib/services/channels";
 import { getEntryById } from "@/lib/services/entries";
 import { listSeriesOptions } from "@/lib/services/series";
+import { listTags } from "@/lib/services/tags";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -14,10 +15,11 @@ type Props = {
 export default async function EditEntryPage({ params }: Props) {
   const { id } = await params;
   const locale = getCurrentLocale();
-  const [entry, channels, seriesOptions] = await Promise.all([
+  const [entry, channels, seriesOptions, tags] = await Promise.all([
     getEntryById(id),
     listChannels(),
     listSeriesOptions(locale),
+    listTags(),
   ]);
 
   if (!entry) {
@@ -51,6 +53,7 @@ export default async function EditEntryPage({ params }: Props) {
       initialChannelId={entry.channelId}
       channels={options}
       seriesOptions={seriesOptions}
+      allTags={tags.map((tag) => ({ slug: tag.slug, name: tag.name }))}
       initial={{
         id: entry.id,
         slug: entry.slug,
