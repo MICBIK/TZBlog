@@ -33,4 +33,14 @@ describe("resolveTrendingEntries", () => {
       "warm",
     ]);
   });
+
+  it("trendingFallsBackToPublishedAtDesc", () => {
+    const byScore = recency.map((row) => ({ ...row, trendingScore: 0 }));
+
+    expect(resolveTrendingEntries(byScore, recency).map((row) => row.id)).toEqual([
+      "a",
+      "b",
+      "c",
+    ]);
+  });
 });

@@ -39,4 +39,25 @@ describe("HomeTrending", () => {
     );
     expect(screen.getByText("次热文章")).toBeInTheDocument();
   });
+
+  it("trendingFallsBackToPublishedAtDesc", () => {
+    render(
+      <HomeTrending
+        items={[
+          {
+            id: "a",
+            slug: "newest",
+            kind: "ARTICLE",
+            title: "最新一篇",
+            channelSlug: "articles",
+            channelName: "文章",
+            trendingScore: 0,
+            publishedAt: new Date("2026-05-24T00:00:00Z"),
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "最新一篇" })).toBeInTheDocument();
+  });
 });
