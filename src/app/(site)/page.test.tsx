@@ -1,8 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { HomePageContent } from "@/components/site/HomePageContent";
-import { ThemeProvider } from "@/components/theme/ThemeProvider";
+const mocks = vi.hoisted(() => ({
+  getCurrentLocale: vi.fn(),
+  getHomePageData: vi.fn(),
+}));
+
+vi.mock("@/lib/i18n", () => ({
+  getCurrentLocale: mocks.getCurrentLocale,
+}));
+
+vi.mock("@/lib/services/homePage", () => ({
+  getHomePageData: mocks.getHomePageData,
+}));
+
+import HomePage from "./page";
 
 const sampleData = {
   hero: {
@@ -53,19 +65,13 @@ const sampleData = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.getCurrentLocale.mockReturnValue("zh");
+  mocks.getHomePageData.mockResolvedValue(sampleData);
 });
 
-function renderHome(data: typeof sampleData) {
-  render(
-    <ThemeProvider theme="aurora" hero>
-      <HomePageContent data={data} />
-    </ThemeProvider>,
-  );
-}
-
 describe("HomePage composition", () => {
-  it("rendersHeroAndChannelPreviewsAndTrending", () => {
-    renderHome(sampleData);
+  it("rendersHeroAndChannelPreviewsAndTrending", async () => {
+    render(await HomePage());
 
     expect(screen.getByTestId("home-hero")).toBeInTheDocument();
     expect(screen.getByTestId("channel-preview-articles")).toBeInTheDocument();
@@ -74,5 +80,27 @@ describe("HomePage composition", () => {
     expect(
       screen.getByTestId("home-hero").closest("[data-theme='aurora'][data-hero='true']"),
     ).toBeTruthy();
+  });
+
+  it("disabledChannelsAreNotShown", async () => {
+    mocks.getHomePageData.mockResolvedValue({
+      ...sampleData,
+      channels: sampleData.channels.filter((channel) => channel.slug !== "stream"),
+    });
+
+    render(await HomePage());
+
+    expect(screen.getByTestId("channel-preview-articles")).toBeInTheDocument();
+    expect(screen.queryByTestId("channel-preview-stream")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("channel-preview-guestbook")).not.toBeInTheDocument();
+  });
+
+  it("heroRendersAvatarFromSiteConfig", async () => {
+    render(await HomePage());
+
+    expect(screen.getByTestId("home-hero").querySelector("img")).toHaveAttribute(
+      "src",
+      "https://cdn.example.com/avatar.png",
+    );
   });
 });
