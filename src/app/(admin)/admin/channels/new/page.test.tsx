@@ -1,6 +1,29 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  fetch: vi.fn(),
+  push: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mocks.push }),
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.stubGlobal("fetch", mocks.fetch);
+  mocks.fetch.mockResolvedValue(
+    new Response(
+      JSON.stringify({ data: { id: "channel-new-id" } }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    ),
+  );
+});
 
 describe("ChannelCreatePage", () => {
   it("renders5StepForm", async () => {
@@ -43,5 +66,27 @@ describe("ChannelCreatePage", () => {
     expect(
       screen.getByText("GUESTBOOK 由 seed 创建，admin 不能新建"),
     ).toBeInTheDocument();
+  });
+
+  it("submitValidFormCreatesAndRedirects", async () => {
+    const user = userEvent.setup();
+    const { default: ChannelCreatePage } = await import("./page");
+
+    render(<ChannelCreatePage />);
+
+    await user.type(screen.getByLabelText("Slug"), "smoke-test");
+    await user.selectOptions(screen.getByLabelText("频道类型"), "NOTES");
+    await user.click(screen.getByRole("button", { name: "创建频道" }));
+
+    expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/channels", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slug: "smoke-test",
+        kind: "NOTES",
+        layout: "TIMELINE",
+      }),
+    });
+    expect(mocks.push).toHaveBeenCalledWith("/admin/channels/channel-new-id/edit");
   });
 });
