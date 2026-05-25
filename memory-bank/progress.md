@@ -2,9 +2,10 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已进入并完成 `ee-001`。
+- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已完成 `ee-001 ~ ee-007`。
 - 当前窗口已闭环 `admin-channel` 回补与收口：`ach-007`、`ach-009`、`ach-012 ~ ach-015` 全部按 `1 spec = 1 RED + 1 GREEN commit` 落地。
-- 下一步继续 `11-admin-entry-editor`：优先 `ee-002`（NOTES channel kind 联动）、`ee-003`（GUESTBOOK 403），随后进入 metadata form / create+patch API 微循环。
+- 当前窗口已闭环 `admin-entry` 第一段：`ee-002 ~ ee-007` 已按 `1 spec = 1 RED + 1 GREEN commit` 落地，范围覆盖 kind 联动、guestbook 403、3 组 metadata shell、ARTICLE draft 创建链路。
+- 下一步继续 `11-admin-entry-editor`：优先 `ee-008`（edit + publish）、`ee-009`（metadata validation 400）、`ee-010`（duplicate slug 409），随后进入 Mod+S / series / tags / archive / upload。
 
 ## 已完成
 
@@ -35,6 +36,17 @@
   - [x] admin-channel 回归：`pnpm vitest run src/app/(admin)/admin/channels/page.test.tsx src/app/(admin)/admin/channels/new/page.test.tsx src/app/(admin)/admin/channels/[id]/edit/page.test.tsx src/app/api/admin/channels/route.test.ts src/app/api/admin/channels/[id]/route.test.ts src/lib/schemas/channel.test.ts` => `16 passed`
 - [x] **2026-05-25** `blog-ia-redesign` M2 admin-entry 已启动：
   - [x] `ee-001`：新增 `src/components/admin/entries/EntryEditor.tsx` 与 `/admin/entries/new`，当初始 Channel 为 `ARTICLES` 时 kind dropdown 仅含 `ARTICLE`，Milkdown body 初始为空
+  - [x] `ee-002`：`NOTES` channel kind dropdown 显式 coverage 锁定 `NOTE / QUOTE / LINK`
+  - [x] `ee-003`：`/admin/entries/new?channelId=<guestbookId>` 返回 `403`；已启用 `next.config.ts experimental.authInterrupts` + `src/app/forbidden.tsx`
+  - [x] `ee-004`：`ARTICLE` metadata shell 渲染 `cover / readingMinutes / toc / ogImage`
+  - [x] `ee-005`：`LINK` metadata shell 渲染 `sourceUrl / sourceTitle / sourceAuthor / thumbnail`
+  - [x] `ee-006`：`HOT_TAKE` metadata shell 渲染 `sourcePlatform / sourceUrl / sourceSnippet`
+  - [x] `ee-007`：最小 create draft 链路打通：
+    - `src/lib/schemas/entry.ts`：create/update schema
+    - `src/lib/services/entries.ts`：`createEntry`（channel-kind guard + metadata parse + tags upsert + draft create）
+    - `src/app/api/admin/entries/route.ts`：`POST /api/admin/entries`
+    - `src/components/admin/entries/EntryEditor.tsx`：标题 / 摘要 / slug / 保存草稿按钮 + ARTICLE draft POST
+  - [x] admin-entry 当前回归：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts` => `7 passed`
 
 - [x] **2026-05-18** 旧版项目下线 — 远端 `MICBIK/TZBlog` 清空重建为单 empty commit `9d1370c`
 - [x] **2026-05-18** 本地工作目录清空（只剩 `.git/`）

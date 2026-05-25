@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**`blog-ia-redesign` 长任务进行中。当前 HEAD 是 `41d3ad8 feat(admin-entry): ee-001`，M1 已闭环，M2 editor lane 已完成，admin-channel 已全量闭环，admin-entry 已开始。**
+**`blog-ia-redesign` 长任务进行中。当前 HEAD 是 `fb762c0 feat(admin-entry): ee-007`，M1 已闭环，M2 editor lane 已完成，admin-channel 已全量闭环，admin-entry 已推进到 ee-007。**
 
 - M1：`schema` / `migration` / `cleanup-prep` 已完成，tag `m1-schema-migration-complete` 已打。
 - M2 editor：
@@ -19,7 +19,12 @@
 
 - M2 admin-entry：
   - `ee-001` 已完成：新增 `EntryEditor` + `/admin/entries/new`，当 Channel 为 `ARTICLES` 时 kind dropdown 仅含 `ARTICLE`，Milkdown body 初始为空
-  - 下一步：`ee-002` NOTES channel kind 联动、`ee-003` GUESTBOOK 403、`ee-004 ~ ee-006` metadata form shell
+  - `ee-002` 已完成：`NOTES` channel kind dropdown 显式 coverage 锁定 `NOTE / QUOTE / LINK`
+  - `ee-003` 已完成：`/admin/entries/new?channelId=<guestbookId>` 走 `forbidden()`，Next `experimental.authInterrupts` 已打开，`src/app/forbidden.tsx` 已落地
+  - `ee-004 ~ ee-006` 已完成：`ARTICLE / LINK / HOT_TAKE` metadata form shell 已在 `EntryEditor` 渲染
+  - `ee-007` 已完成：`EntryEditor` 具备标题 / slug / 保存草稿最小提交链路，`POST /api/admin/entries` + `createEntrySchema` + `createEntry` service 已打通，ARTICLE draft 可真实写入 DB
+  - 当前 admin-entry 验证基线：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts` => `7 passed`
+  - 下一步：`ee-008` 编辑已有 ARTICLE 发布（PATCH + publishedAt now）、`ee-009` metadata schema error、`ee-010` duplicate slug 409
 
 - 当前 editor 验证基线：
   - `pnpm vitest run src/components/editor/round-trip.test.ts src/components/editor/MilkdownEditor.test.tsx` => `17 passed`
@@ -47,10 +52,10 @@
 
 ## 下一步计划
 
-1. **ee-002**：`NOTES` channel 初始化时 kind dropdown 含 `NOTE / QUOTE / LINK`。
-2. **ee-003**：`/admin/entries/new?channelId=<guestbookId>` 返回 `403`，阻止 admin 手动创建 `GUESTBOOK_THREAD`。
-3. **ee-004 ~ ee-006**：按 `entryMetadataSchema` 为 `ARTICLE / LINK / HOT_TAKE` 渲染 metadata form。
-4. **ee-007+**：开始 `POST/PATCH /api/admin/entries`、publishedAt / archive / Mod+S / series / tags / image upload 微循环。
+1. **ee-008**：新增 `/admin/entries/[id]/edit` 与 `PATCH /api/admin/entries/[id]`，编辑已有 ARTICLE 发布时自动回填 `publishedAt`。
+2. **ee-009**：把 `entryMetadataSchema` 的 Zod 错误穿透到 API 400，并让编辑器拿到字段级 error 面。
+3. **ee-010**：duplicate slug -> `409 CONFLICT`，编辑器显示“slug 已被使用”。
+4. **ee-011+**：Mod+S、series/seriesOrder、tags、多状态归档和图片拖拽上传微循环。
 
 ## 待办池 / 已知问题
 
