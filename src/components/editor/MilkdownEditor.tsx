@@ -18,11 +18,36 @@ export function MilkdownEditor({
 }: MilkdownEditorProps) {
   const [draft, setDraft] = React.useState(value);
   const [hasSelection, setHasSelection] = React.useState(false);
+  const onChangeRef = React.useRef(onChange);
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  React.useEffect(
+    () => () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    },
+    [],
+  );
+
+  const emitChange = (next: string) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      onChangeRef.current(next);
+    }, 300);
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const next = event.target.value;
     setDraft(next);
-    onChange(next);
+    emitChange(next);
   };
 
   const handleSelect = (event: React.SyntheticEvent<HTMLTextAreaElement>) => {
@@ -57,7 +82,7 @@ export function MilkdownEditor({
 
     const next = `![${alt}](${url})`;
     setDraft(next);
-    onChange(next);
+    emitChange(next);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
