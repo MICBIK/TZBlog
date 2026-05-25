@@ -28,6 +28,8 @@ export interface EntryEditorInitial {
   excerpt: string;
   content: string;
   tags: string[];
+  seriesId?: string | null;
+  seriesOrder?: number | null;
   metadata: Record<string, unknown>;
 }
 
@@ -35,6 +37,7 @@ export interface EntryEditorProps {
   channels: EntryEditorChannel[];
   initialChannelId?: string;
   mode?: "create" | "edit";
+  seriesOptions?: Array<{ id: string; name: string; channelId: string }>;
   initial?: EntryEditorInitial;
 }
 
@@ -108,6 +111,7 @@ export function EntryEditor({
   channels,
   initialChannelId,
   mode = "create",
+  seriesOptions = [],
   initial,
 }: EntryEditorProps) {
   const router = useRouter();
@@ -128,6 +132,10 @@ export function EntryEditor({
   const [kind, setKind] = React.useState<EntryKind>(
     initial?.kind ?? allowedKinds[0] ?? "ARTICLE",
   );
+  const [seriesId, setSeriesId] = React.useState(initial?.seriesId ?? "");
+  const [seriesOrder, setSeriesOrder] = React.useState(
+    initial?.seriesOrder ? String(initial.seriesOrder) : "",
+  );
   const [body, setBody] = React.useState(initial?.content ?? "");
   const [status, setStatus] = React.useState<"DRAFT" | "PUBLISHED" | "ARCHIVED">(
     initial?.status ?? "DRAFT",
@@ -142,6 +150,9 @@ export function EntryEditor({
   );
   const [hotTakeMetadata, setHotTakeMetadata] = React.useState<HotTakeMetadataDraft>(
     readHotTakeMetadataDraft(initial?.metadata),
+  );
+  const availableSeries = seriesOptions.filter(
+    (option) => option.channelId === channelId,
   );
 
   if (!selectedChannel) {
@@ -173,6 +184,8 @@ export function EntryEditor({
             channelId: selectedChannel.id,
             kind,
             status: targetStatus,
+            seriesId: seriesId || null,
+            seriesOrder: seriesOrder ? Number(seriesOrder) : null,
             metadata: buildMetadataPayload(
               kind,
               articleMetadata,
@@ -344,6 +357,33 @@ export function EntryEditor({
           {fieldErrors.slug ? (
             <p className="text-sm text-destructive">{fieldErrors.slug}</p>
           ) : null}
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium">
+          seriesId
+          <select
+            aria-label="seriesId"
+            value={seriesId}
+            onChange={(event) => setSeriesId(event.target.value)}
+            className="rounded border border-border bg-bg px-3 py-2 text-sm"
+          >
+            <option value="">无系列</option>
+            {availableSeries.map((series) => (
+              <option key={series.id} value={series.id}>
+                {series.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="grid gap-2 text-sm font-medium">
+          seriesOrder
+          <Input
+            aria-label="seriesOrder"
+            value={seriesOrder}
+            onChange={(event) => setSeriesOrder(event.target.value)}
+            placeholder="1"
+          />
         </label>
       </section>
 

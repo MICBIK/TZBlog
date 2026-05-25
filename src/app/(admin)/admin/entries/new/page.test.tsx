@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   listChannels: vi.fn(),
+  listSeriesOptions: vi.fn(),
   forbidden: vi.fn(() => {
     throw new Error("NEXT_FORBIDDEN");
   }),
@@ -14,6 +15,10 @@ vi.mock("@/lib/services/channels", () => ({
   listChannels: mocks.listChannels,
 }));
 
+vi.mock("@/lib/services/series", () => ({
+  listSeriesOptions: mocks.listSeriesOptions,
+}));
+
 vi.mock("next/navigation", () => ({
   forbidden: mocks.forbidden,
   notFound: mocks.notFound,
@@ -21,6 +26,7 @@ vi.mock("next/navigation", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.listSeriesOptions.mockResolvedValue([]);
   mocks.listChannels.mockResolvedValue([
     {
       id: "channel-guestbook",

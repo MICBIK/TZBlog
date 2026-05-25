@@ -3,6 +3,7 @@ import { forbidden, notFound } from "next/navigation";
 import { EntryEditor } from "@/components/admin/entries/EntryEditor";
 import { DEFAULT_LOCALE, getCurrentLocale } from "@/lib/i18n";
 import { listChannels } from "@/lib/services/channels";
+import { listSeriesOptions } from "@/lib/services/series";
 
 type Props = {
   searchParams: Promise<{
@@ -13,7 +14,10 @@ type Props = {
 export default async function NewEntryPage({ searchParams }: Props) {
   const { channelId } = await searchParams;
   const locale = getCurrentLocale();
-  const channels = await listChannels();
+  const [channels, seriesOptions] = await Promise.all([
+    listChannels(),
+    listSeriesOptions(locale),
+  ]);
   const enabledChannels = channels.filter((channel) => channel.enabled);
   const requestedChannel = channelId
     ? enabledChannels.find((channel) => channel.id === channelId) ?? null
@@ -49,6 +53,7 @@ export default async function NewEntryPage({ searchParams }: Props) {
   return (
     <EntryEditor
       channels={options}
+      seriesOptions={seriesOptions}
       initialChannelId={initialOption?.id}
     />
   );

@@ -5,6 +5,7 @@ import { EntryEditor } from "@/components/admin/entries/EntryEditor";
 import { DEFAULT_LOCALE, getCurrentLocale } from "@/lib/i18n";
 import { listChannels } from "@/lib/services/channels";
 import { getEntryById } from "@/lib/services/entries";
+import { listSeriesOptions } from "@/lib/services/series";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -13,7 +14,11 @@ type Props = {
 export default async function EditEntryPage({ params }: Props) {
   const { id } = await params;
   const locale = getCurrentLocale();
-  const [entry, channels] = await Promise.all([getEntryById(id), listChannels()]);
+  const [entry, channels, seriesOptions] = await Promise.all([
+    getEntryById(id),
+    listChannels(),
+    listSeriesOptions(locale),
+  ]);
 
   if (!entry) {
     notFound();
@@ -45,6 +50,7 @@ export default async function EditEntryPage({ params }: Props) {
       mode="edit"
       initialChannelId={entry.channelId}
       channels={options}
+      seriesOptions={seriesOptions}
       initial={{
         id: entry.id,
         slug: entry.slug,
@@ -56,6 +62,8 @@ export default async function EditEntryPage({ params }: Props) {
         excerpt: translation?.excerpt ?? "",
         content: translation?.content ?? "",
         tags: entry.tags.map((row) => row.tag.slug),
+        seriesId: entry.seriesId,
+        seriesOrder: entry.seriesOrder,
         metadata: entry.metadata,
       }}
     />
