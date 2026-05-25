@@ -70,4 +70,19 @@ describe("MilkdownEditor", () => {
       expect(onChange).toHaveBeenCalledWith("![architecture.png](/uploads/architecture.png)");
     });
   });
+
+  it("modSTriggersOnSavePrevented", () => {
+    const onSave = vi.fn();
+    render(<MilkdownEditor value="" onChange={vi.fn()} onSave={onSave} />);
+
+    const editor = screen.getByRole("textbox", { name: "Milkdown editor content" });
+    const prevented = !fireEvent.keyDown(editor, {
+      key: "s",
+      code: "KeyS",
+      metaKey: true,
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(prevented).toBe(true);
+  });
 });
