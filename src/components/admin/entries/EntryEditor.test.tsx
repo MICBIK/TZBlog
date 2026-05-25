@@ -427,4 +427,53 @@ describe("EntryEditor", () => {
     const [, init] = mocks.fetch.mock.calls[0];
     expect(JSON.parse(init.body as string).status).toBe("PUBLISHED");
   });
+
+  it("includesSeriesSelectionInSubmitPayload", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        seriesOptions={[
+          {
+            id: "series-1",
+            channelId: "channel-articles",
+            name: "系列一",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("标题"), {
+      target: { value: "系列条目" },
+    });
+    fireEvent.change(screen.getByLabelText("slug"), {
+      target: { value: "series-entry" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      target: { value: "正文" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await user.selectOptions(screen.getByLabelText("seriesId"), "series-1");
+    fireEvent.change(screen.getByLabelText("seriesOrder"), {
+      target: { value: "2" },
+    });
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    const [, init] = mocks.fetch.mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body.seriesId).toBe("series-1");
+    expect(body.seriesOrder).toBe(2);
+  });
 });

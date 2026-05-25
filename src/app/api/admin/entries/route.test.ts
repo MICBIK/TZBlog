@@ -199,6 +199,71 @@ describe("POST /api/admin/entries", () => {
     expect(res.status).toBe(409);
     expect(body.error.code).toBe("CONFLICT");
   });
+
+  it("createsEntryWithSeriesSelection", async () => {
+    const { POST } = await loadRoute();
+    const channel = await testDb.channel.create({
+      data: {
+        slug: "articles",
+        order: 0,
+        enabled: true,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: {
+          create: [{ locale: "zh", name: "文章", description: null }],
+        },
+      },
+    });
+    const series = await testDb.series.create({
+      data: {
+        slug: "series-one",
+        channelId: channel.id,
+        translations: {
+          create: [{ locale: "zh", name: "系列一", description: null }],
+        },
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/admin/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "series-entry",
+          channelId: channel.id,
+          kind: "ARTICLE",
+          status: "DRAFT",
+          seriesId: series.id,
+          seriesOrder: 2,
+          metadata: {
+            cover: null,
+            toc: true,
+          },
+          tags: [],
+          translations: [
+            {
+              locale: "zh",
+              title: "系列条目",
+              excerpt: null,
+              content: "正文",
+            },
+          ],
+        }),
+      }),
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.data.seriesId).toBe(series.id);
+    expect(body.data.seriesOrder).toBe(2);
+
+    const row = await testDb.entry.findUnique({ where: { id: body.data.id } });
+    expect(row).not.toBeNull();
+    expect(row).toMatchObject({
+      seriesId: series.id,
+      seriesOrder: 2,
+    });
+  });
 });
 
 async function loadRoute(): Promise<EntriesRoute> {
