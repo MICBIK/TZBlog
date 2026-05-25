@@ -6,4 +6,8 @@ describe("resolveFontProse", () => {
   it("fontProseResolvesToInterInAurora", () => {
     expect(resolveFontProse("aurora")).toContain("--font-inter");
   });
+
+  it("fontProseResolvesToNotoSerifInInk", () => {
+    expect(resolveFontProse("ink")).toContain("--font-noto-serif-sc");
+  });
 });
