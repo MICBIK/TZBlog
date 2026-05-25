@@ -10,15 +10,15 @@ import { LikeButton } from "@/components/site/LikeButton";
 import { PostViewBeacon } from "@/components/site/PostViewBeacon";
 import { DEFAULT_LOCALE, getCurrentLocale, type Locale } from "@/lib/i18n";
 import { extractToc, renderMarkdown } from "@/lib/markdown";
-import { getPostBySlug, type PostWithRelations } from "@/lib/services/posts";
+import { getArticleBySlug, type ArticleWithRelations } from "@/lib/services/articles";
 import { SITE_META } from "@/lib/site-meta";
 
 type Props = { params: Promise<{ slug: string }> };
 
 function pickPostTranslation(
-  post: PostWithRelations,
+  post: ArticleWithRelations,
   locale: Locale,
-): PostWithRelations["translations"][number] | undefined {
+): ArticleWithRelations["translations"][number] | undefined {
   return (
     post.translations.find((t) => t.locale === locale) ??
     post.translations.find((t) => t.locale === DEFAULT_LOCALE) ??
@@ -26,11 +26,11 @@ function pickPostTranslation(
   );
 }
 
-function pickColumnTranslation(
-  column: NonNullable<PostWithRelations["column"]>,
+function pickChannelTranslation(
+  column: NonNullable<ArticleWithRelations["channel"]>,
   locale: Locale,
 ):
-  | NonNullable<PostWithRelations["column"]>["translations"][number]
+  | NonNullable<ArticleWithRelations["channel"]>["translations"][number]
   | undefined {
   return (
     column.translations.find((t) => t.locale === locale) ??
@@ -41,7 +41,7 @@ function pickColumnTranslation(
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const post = await getArticleBySlug(slug);
   if (!post || post.status !== "PUBLISHED") return {};
   const locale = getCurrentLocale();
   const tr = pickPostTranslation(post, locale);
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostDetailPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const post = await getArticleBySlug(slug);
   if (!post || post.status !== "PUBLISHED") notFound();
 
   const locale = getCurrentLocale();
@@ -63,11 +63,11 @@ export default async function PostDetailPage({ params }: Props) {
   const html = await renderMarkdown(tr.content);
   const headings = await extractToc(tr.content);
 
-  const columnTr = post.column
-    ? pickColumnTranslation(post.column, locale)
+  const channelTr = post.channel
+    ? pickChannelTranslation(post.channel, locale)
     : undefined;
-  const columnLabel = columnTr?.name ?? post.column?.slug ?? null;
-  const columnSlug = post.column?.slug ?? null;
+  const channelLabel = channelTr?.name ?? post.channel?.slug ?? null;
+  const channelSlug = post.channel?.slug ?? null;
 
   const tagSlugs = post.tags.map((t) => t.tag.slug);
   const cover = post.cover?.trim();
@@ -91,8 +91,8 @@ export default async function PostDetailPage({ params }: Props) {
       slug={post.slug}
       postId={post.id}
       tagSlugs={tagSlugs}
-      columnLabel={columnLabel}
-      columnSlug={columnSlug}
+      columnLabel={channelLabel}
+      columnSlug={channelSlug}
       viewBeacon={<PostViewBeacon slug={post.slug} />}
       likeButton={
         <LikeButton slug={post.slug} initialLikeCount={post.likeCount} />

@@ -47,3 +47,14 @@ export type CreateEntryInput = z.infer<typeof createEntrySchema>;
 export const updateEntrySchema = createEntrySchema.partial();
 
 export type UpdateEntryInput = z.infer<typeof updateEntrySchema>;
+
+
+export const articleFilterSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  status: entryStatusEnum.optional(),
+  channelId: z.string().optional(),
+  tag: z.string().optional(),
+  q: z.string().optional(),
+});
+export type ArticleFilterInput = z.infer<typeof articleFilterSchema>;

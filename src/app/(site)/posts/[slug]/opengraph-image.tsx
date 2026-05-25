@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 
 import { DEFAULT_LOCALE } from "@/lib/i18n"
 import { SITE_META } from "@/lib/site-meta"
-import { getPostBySlug, type PostWithRelations } from "@/lib/services/posts"
+import { getArticleBySlug, type ArticleWithRelations } from "@/lib/services/articles"
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -18,14 +18,14 @@ export const contentType = "image/png"
 
 export default async function Image({ params }: Props): Promise<Response> {
   const { slug } = await params
-  const post = await getPostBySlug(slug)
+  const post = await getArticleBySlug(slug)
   if (!post || post.status !== "PUBLISHED") notFound()
 
   const tr = pickPostTranslation(post)
   if (!tr) notFound()
 
-  const columnLabel = post.column
-    ? (pickColumnName(post.column) ?? post.column.slug)
+  const columnLabel = post.channel
+    ? (pickChannelName(post.channel) ?? post.channel.slug)
     : "Writings"
 
   return new ImageResponse(
@@ -100,20 +100,20 @@ export default async function Image({ params }: Props): Promise<Response> {
 }
 
 function pickPostTranslation(
-  post: PostWithRelations,
-): PostWithRelations["translations"][number] | undefined {
+  post: ArticleWithRelations,
+): ArticleWithRelations["translations"][number] | undefined {
   return (
     post.translations.find((t) => t.locale === DEFAULT_LOCALE) ??
     post.translations[0]
   )
 }
 
-function pickColumnName(
-  column: NonNullable<PostWithRelations["column"]>,
+function pickChannelName(
+  channel: NonNullable<ArticleWithRelations["channel"]>,
 ): string | null {
   return (
-    column.translations.find((t) => t.locale === DEFAULT_LOCALE)?.name ??
-    column.translations[0]?.name ??
+    channel.translations.find((t) => t.locale === DEFAULT_LOCALE)?.name ??
+    channel.translations[0]?.name ??
     null
   )
 }

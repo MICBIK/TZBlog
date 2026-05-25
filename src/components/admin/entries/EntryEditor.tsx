@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import type { ChannelKind, EntryKind } from "@prisma/client";
 
-import { TagsInput } from "@/components/admin/posts/TagsInput";
+import { TagsInput } from "@/components/admin/entries/TagsInput";
 import { MilkdownEditor } from "@/components/editor/MilkdownEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -295,7 +295,7 @@ export function EntryEditor({
       </div>
 
       <section className="grid gap-4 rounded-lg border border-border p-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid gap-2 text-sm font-medium text-fg">
           标题
           <Input
             aria-label="标题"
@@ -308,7 +308,7 @@ export function EntryEditor({
           ) : null}
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid gap-2 text-sm font-medium text-fg">
           摘要
           <Textarea
             aria-label="摘要"
@@ -321,7 +321,7 @@ export function EntryEditor({
       </section>
 
       <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid gap-2 text-sm font-medium text-fg">
           频道
           <select
             aria-label="频道"
@@ -334,7 +334,7 @@ export function EntryEditor({
                 setKind(getAllowedEntryKindsForChannelKind(nextChannel.kind)[0]);
               }
             }}
-            className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            className="rounded border border-border bg-bg px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             {channels.map((channel) => (
               <option key={channel.id} value={channel.id}>
@@ -344,7 +344,7 @@ export function EntryEditor({
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid gap-2 text-sm font-medium text-fg">
           条目类型
           <select
             aria-label="条目类型"
@@ -360,7 +360,7 @@ export function EntryEditor({
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid gap-2 text-sm font-medium text-fg">
           slug
           <Input
             aria-label="slug"
@@ -373,7 +373,7 @@ export function EntryEditor({
           ) : null}
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid gap-2 text-sm font-medium text-fg">
           seriesId
           <select
             aria-label="seriesId"
@@ -390,7 +390,7 @@ export function EntryEditor({
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid gap-2 text-sm font-medium text-fg">
           seriesOrder
           <Input
             aria-label="seriesOrder"
@@ -400,7 +400,7 @@ export function EntryEditor({
           />
         </label>
 
-        <label className="grid gap-2 text-sm font-medium md:col-span-2">
+        <label className="grid gap-2 text-sm font-medium text-fg md:col-span-2">
           标签
           <TagsInput value={tags} onChange={setTags} suggestions={allTags} />
         </label>
@@ -408,7 +408,7 @@ export function EntryEditor({
 
       {kind === "ARTICLE" ? (
         <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             cover
             <input
               aria-label="cover"
@@ -423,7 +423,7 @@ export function EntryEditor({
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             readingMinutes
             <input
               aria-label="readingMinutes"
@@ -438,7 +438,7 @@ export function EntryEditor({
             />
           </label>
 
-          <label className="flex items-center gap-3 text-sm font-medium">
+          <label className="flex items-center gap-3 text-sm font-medium text-fg">
             <input
               aria-label="toc"
               type="checkbox"
@@ -453,7 +453,7 @@ export function EntryEditor({
             toc
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             ogImage
             <input
               aria-label="ogImage"
@@ -472,7 +472,7 @@ export function EntryEditor({
 
       {kind === "LINK" ? (
         <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             sourceUrl
             <input
               aria-label="sourceUrl"
@@ -490,7 +490,7 @@ export function EntryEditor({
             ) : null}
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             sourceTitle
             <input
               aria-label="sourceTitle"
@@ -505,7 +505,7 @@ export function EntryEditor({
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             sourceAuthor
             <input
               aria-label="sourceAuthor"
@@ -520,7 +520,7 @@ export function EntryEditor({
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             thumbnail
             <input
               aria-label="thumbnail"
@@ -539,7 +539,7 @@ export function EntryEditor({
 
       {kind === "HOT_TAKE" ? (
         <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             sourcePlatform
             <select
               aria-label="sourcePlatform"
@@ -562,7 +562,7 @@ export function EntryEditor({
             </select>
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid gap-2 text-sm font-medium text-fg">
             sourceUrl
             <input
               aria-label="sourceUrl"
@@ -580,7 +580,7 @@ export function EntryEditor({
             ) : null}
           </label>
 
-          <label className="grid gap-2 text-sm font-medium md:col-span-2">
+          <label className="grid gap-2 text-sm font-medium text-fg md:col-span-2">
             sourceSnippet
             <textarea
               aria-label="sourceSnippet"

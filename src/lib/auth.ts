@@ -43,6 +43,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
     EmailProvider({
+      server: {
+        host: "127.0.0.1",
+        port: 1025,
+        auth: { user: "unused", pass: "unused" },
+      },
       from: process.env.AUTH_EMAIL_FROM ?? "TZBlog <onboarding@resend.dev>",
       maxAge: MAGIC_LINK_MAX_AGE_SECONDS,
       sendVerificationRequest,

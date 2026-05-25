@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import { ok, withErrorHandler } from "@/lib/api-response"
 import { errors } from "@/lib/errors"
 import { checkRateLimit } from "@/lib/rate-limit"
-import { incrementPostView } from "@/lib/services/posts"
+import { incrementArticleView } from "@/lib/services/articles"
 import { getDailySalt, getVisitorHash } from "@/lib/visitor"
 
 /**
@@ -32,7 +32,7 @@ export const POST = withErrorHandler(
     }
 
     const dayKey = getDailySalt()
-    const result = await incrementPostView(slug, visitorHash, dayKey)
+    const result = await incrementArticleView(slug, visitorHash, dayKey)
     return ok(result)
   },
 )

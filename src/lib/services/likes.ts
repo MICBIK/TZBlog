@@ -3,7 +3,7 @@ import { errors } from "@/lib/errors"
 
 /**
  * Likes service — 永久 unique 一次性点赞（D3）。
- * 与 `incrementPostView` 同构：
+ * 与 `incrementArticleView` 同构：
  *   - 事务内 `EntryLike.create` + `Entry.likeCount + 1`
  *   - 唯一约束 `@@unique([entryId, visitorHash])` 命中 P2002 时当 idempotent 处理：不增计数器、返回当前 likeCount
  */

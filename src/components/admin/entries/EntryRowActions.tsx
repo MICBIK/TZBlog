@@ -21,24 +21,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export interface PostRowActionsPost {
+export interface EntryRowActionsEntry {
   id: string;
   slug: string;
   status: EntryStatus;
 }
 
-export interface PostRowActionsProps {
-  post: PostRowActionsPost;
+export interface EntryRowActionsProps {
+  entry: EntryRowActionsEntry;
   onPublishToggle: () => void | Promise<void>;
   onDelete: () => void | Promise<void>;
 }
 
-export function PostRowActions({
-  post,
+export function EntryRowActions({
+  entry,
   onPublishToggle,
   onDelete,
-}: PostRowActionsProps) {
-  const isPublished = post.status === "PUBLISHED";
+}: EntryRowActionsProps) {
+  const isPublished = entry.status === "PUBLISHED";
 
   return (
     <DropdownMenu>
@@ -47,7 +47,7 @@ export function PostRowActions({
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          aria-label={`操作 ${post.slug}`}
+          aria-label={`操作 ${entry.slug}`}
         >
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -55,7 +55,7 @@ export function PostRowActions({
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuItem asChild>
           <Link
-            href={`/admin/posts/${post.id}/edit`}
+            href={`/admin/entries/${entry.id}/edit`}
             className="flex items-center gap-2"
           >
             <Pencil className="h-4 w-4" />
@@ -65,7 +65,7 @@ export function PostRowActions({
         {isPublished ? (
           <DropdownMenuItem asChild>
             <Link
-              href={`/posts/${post.slug}`}
+              href={`/posts/${entry.slug}`}
               className="flex items-center gap-2"
               target="_blank"
               rel="noreferrer"

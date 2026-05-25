@@ -5,22 +5,21 @@ import type { MetadataRoute } from "next"
 
 import { DEFAULT_LOCALE } from "@/lib/i18n"
 import { absoluteUrl } from "@/lib/site-meta"
-import { listColumnsForLocale } from "@/lib/services/columns"
-import { listAllPublishedSlugs } from "@/lib/services/posts"
+import { listArticleChannelsForLocale } from "@/lib/services/channels"
+import { listAllPublishedArticleSlugs } from "@/lib/services/articles"
 import { listAllTagsWithCount } from "@/lib/services/tags-public"
 
 export const revalidate = 600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [posts, columns, tags] = await Promise.all([
-    listAllPublishedSlugs(),
-    listColumnsForLocale(DEFAULT_LOCALE),
+    listAllPublishedArticleSlugs(),
+    listArticleChannelsForLocale(DEFAULT_LOCALE),
     listAllTagsWithCount(DEFAULT_LOCALE),
   ])
 
   return [
     { url: absoluteUrl("/") },
-    { url: absoluteUrl("/posts") },
     { url: absoluteUrl("/about") },
     { url: absoluteUrl("/tags") },
     ...posts.map((post) => ({
@@ -28,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: post.updatedAt,
     })),
     ...columns.map((column) => ({
-      url: absoluteUrl(`/columns/${column.slug}`),
+      url: absoluteUrl(`/c/${column.slug}`),
     })),
     ...tags.map((tag) => ({
       url: absoluteUrl(`/tags/${tag.slug}`),

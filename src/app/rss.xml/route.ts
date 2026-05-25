@@ -1,11 +1,11 @@
 import { DEFAULT_LOCALE } from "@/lib/i18n"
 import { SITE_META, absoluteUrl } from "@/lib/site-meta"
-import { listPosts } from "@/lib/services/posts"
+import { listArticles } from "@/lib/services/articles"
 
 export const revalidate = 600
 
 export async function GET(): Promise<Response> {
-  const posts = await listPosts(
+  const posts = await listArticles(
     { page: 1, pageSize: 20, status: "PUBLISHED" },
     DEFAULT_LOCALE,
   )

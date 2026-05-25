@@ -36,6 +36,26 @@ export type ChannelPageData = Prisma.ChannelGetPayload<{
   include: typeof channelPageInclude
 }>
 
+
+export async function listArticleChannelsForLocale(locale: string) {
+  const rows = await db.channel.findMany({
+    where: { kind: "ARTICLES" },
+    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    include: {
+      translations: { where: { locale } },
+    },
+  })
+
+  return rows
+    .filter((channel) => channel.translations.length > 0)
+    .map((channel) => ({
+      id: channel.id,
+      slug: channel.slug,
+      name: channel.translations[0]!.name,
+      description: channel.translations[0]!.description,
+    }))
+}
+
 export async function listChannels() {
   const rows = await db.channel.findMany({
     orderBy: [{ order: "asc" }, { createdAt: "asc" }],

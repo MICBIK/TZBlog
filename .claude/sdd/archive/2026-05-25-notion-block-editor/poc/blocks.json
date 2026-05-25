@@ -1,0 +1,1004 @@
+[
+  {
+    "id": "7f5e5450-796a-4afc-8811-32d537bff78e",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 1,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "BlockNote Markdown Round-Trip POC Fixture",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "837a7dfd-4e17-4d54-b8bd-1e10af5c29a9",
+    "type": "quote",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Covers every P0 publish-critical Markdown feature listed in ",
+        "styles": {}
+      },
+      {
+        "type": "text",
+        "text": "proposal.md",
+        "styles": {
+          "code": true
+        }
+      },
+      {
+        "type": "text",
+        "text": ".\n POC test feeds this through BlockNote ",
+        "styles": {}
+      },
+      {
+        "type": "text",
+        "text": "tryParseMarkdownToBlocks",
+        "styles": {
+          "code": true
+        }
+      },
+      {
+        "type": "text",
+        "text": " →\n ",
+        "styles": {}
+      },
+      {
+        "type": "text",
+        "text": "blocksToMarkdownLossy",
+        "styles": {
+          "code": true
+        }
+      },
+      {
+        "type": "text",
+        "text": " and asserts round-trip preservation.",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "2505d4f0-1b65-431e-9499-7d8b2e924b8c",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Heading",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "81989566-f056-49c8-a874-54fb9b6d1e53",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 1,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "标题一 (H1)",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "a0189fde-d218-4da3-85bc-3c5b15ccfb53",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "标题二 (H2)",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "53d58ba3-af72-4c78-a727-88ad4770c9d2",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 3,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "标题三 (H3)",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "034422d5-ec8d-487c-b40c-d1208d3f6f95",
+    "type": "paragraph",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "普通段落,这是一个 Chinese paragraph,混合 English 与 ",
+        "styles": {}
+      },
+      {
+        "type": "text",
+        "text": "斜体",
+        "styles": {
+          "italic": true
+        }
+      },
+      {
+        "type": "text",
+        "text": " 还有 ",
+        "styles": {}
+      },
+      {
+        "type": "text",
+        "text": "粗体",
+        "styles": {
+          "bold": true
+        }
+      },
+      {
+        "type": "text",
+        "text": ",以及 ",
+        "styles": {}
+      },
+      {
+        "type": "text",
+        "text": "inline code",
+        "styles": {
+          "code": true
+        }
+      },
+      {
+        "type": "text",
+        "text": " 与 ",
+        "styles": {}
+      },
+      {
+        "type": "link",
+        "href": "https://example.com",
+        "content": [
+          {
+            "type": "text",
+            "text": "链接",
+            "styles": {}
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "text": ",最后是组合 ",
+        "styles": {}
+      },
+      {
+        "type": "text",
+        "text": "bold-italic",
+        "styles": {
+          "bold": true,
+          "italic": true
+        }
+      },
+      {
+        "type": "text",
+        "text": "。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "528f7c66-e3f3-499e-a14f-6f4b4e6ad349",
+    "type": "paragraph",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "第二段。空行保留必须验证。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "e9084371-e4b1-4e22-a656-c46159c49f43",
+    "type": "paragraph",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "第三段。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "a3bdb23f-e9ad-4ea0-b7fb-cb2eca772f89",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "List 测试",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "a39a0c50-269b-4e5e-8c8e-c9035eaf0ac8",
+    "type": "bulletListItem",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "第一项",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "80526113-28ee-4043-b981-8ae51f725a21",
+    "type": "bulletListItem",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "第二项",
+        "styles": {}
+      }
+    ],
+    "children": [
+      {
+        "id": "2dd5cab1-93f6-459d-957a-82beb4738a14",
+        "type": "bulletListItem",
+        "props": {
+          "backgroundColor": "default",
+          "textColor": "default",
+          "textAlignment": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "嵌套项 a",
+            "styles": {}
+          }
+        ],
+        "children": []
+      },
+      {
+        "id": "09282d53-6938-4bba-b7bd-c9b25c26a4c1",
+        "type": "bulletListItem",
+        "props": {
+          "backgroundColor": "default",
+          "textColor": "default",
+          "textAlignment": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "嵌套项 b",
+            "styles": {}
+          }
+        ],
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "a4327055-06b2-4a0c-a923-c35d5e2e6d96",
+    "type": "bulletListItem",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "第三项",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "b2424a0a-73d2-429b-8085-eef8af1301d3",
+    "type": "numberedListItem",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "有序第一",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "32803273-7bc8-4756-804e-5fe37015d286",
+    "type": "numberedListItem",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "有序第二",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "6915b2f9-2f70-4d77-a11c-12b21da4298d",
+    "type": "numberedListItem",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "有序第三",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "ac4034c4-ba44-4612-882c-346f77dbc1b2",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Blockquote",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "a1ae123e-b25d-4db2-8430-b7966ee6b84f",
+    "type": "quote",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "这是一个引用块。\n 多行引用。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "b7d670f2-e727-4a3c-a293-44f86200443e",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "GH Alert Callouts",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "8e5fcd3b-09e1-4fa2-98b4-ecd4f82a7ef8",
+    "type": "quote",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "[!NOTE]\n 这是 note 提示块。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "f5162a25-229e-4b31-817b-02058e902f74",
+    "type": "quote",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "[!TIP]\n 这是 tip 提示块。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "e71b0b8e-70ae-4607-9df9-15029708fd01",
+    "type": "quote",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "[!WARNING]\n 这是 warning 提示块。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "d6649314-851e-4990-a9a8-45b6498beeb4",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Code Fence",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "26e0e1b3-c0a3-4b86-9cce-5489ae2c72d8",
+    "type": "codeBlock",
+    "props": {
+      "language": "ts"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "export function hello(name: string): string {\n  return `你好,${name}!`;\n}",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "d52296cf-09e7-418c-9dd2-db1a21bd1a87",
+    "type": "codeBlock",
+    "props": {
+      "language": "bash"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "pnpm install --frozen-lockfile\necho \"完成\"",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "7d45722b-b8d0-4658-9393-3d3942be2855",
+    "type": "codeBlock",
+    "props": {
+      "language": "json"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"title\": \"测试\",\n  \"count\": 42\n}",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "30a17a43-e2e4-422e-b7c8-3078dcc0cd75",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Table",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "e824e822-1045-4c45-b9ae-369378f20aa5",
+    "type": "table",
+    "props": {
+      "textColor": "default"
+    },
+    "content": {
+      "type": "tableContent",
+      "columnWidths": [
+        null,
+        null,
+        null
+      ],
+      "headerRows": 1,
+      "rows": [
+        {
+          "cells": [
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "列名",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "描述",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "状态",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Alpha",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "第一项",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "active",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Beta",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "含 | 转义",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pending",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Gamma",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "中文行",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            },
+            {
+              "type": "tableCell",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "done",
+                  "styles": {}
+                }
+              ],
+              "props": {
+                "colspan": 1,
+                "rowspan": 1,
+                "backgroundColor": "default",
+                "textColor": "default",
+                "textAlignment": "left"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "children": []
+  },
+  {
+    "id": "d2a4c3e0-07e2-4551-8258-b2e7b3b52d1e",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Image",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "4a17f091-56bf-4cd0-a359-0d4b5268aa61",
+    "type": "image",
+    "props": {
+      "textAlignment": "left",
+      "backgroundColor": "default",
+      "name": "架构图",
+      "url": "/uploads/architecture.png",
+      "caption": "",
+      "showPreview": true
+    },
+    "children": []
+  },
+  {
+    "id": "cea5d0a5-decf-448e-a0e0-4e2f116c9cca",
+    "type": "image",
+    "props": {
+      "textAlignment": "left",
+      "backgroundColor": "default",
+      "name": "外链图",
+      "url": "https://example.com/external.png",
+      "caption": "",
+      "showPreview": true
+    },
+    "children": []
+  },
+  {
+    "id": "b4b7f746-4b09-4682-bdb0-ad9e63439547",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Inline HTML (degraded fallback)",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "468985e0-5480-4f1c-bc02-063e47435688",
+    "type": "paragraph",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "普通段落含 上标 和 Ctrl+S,看 BlockNote 如何降级。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "9dd50f10-02cc-479e-a65a-d69b6ab00884",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Link with title (likely dropped)",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "60393e76-ab9d-468c-8d3e-0d71a0bf208c",
+    "type": "paragraph",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "link",
+        "href": "https://example.com",
+        "content": [
+          {
+            "type": "text",
+            "text": "带标题的链接",
+            "styles": {}
+          }
+        ]
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "2fb4e0f2-f212-471e-8d01-e776a5708611",
+    "type": "heading",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left",
+      "level": 2,
+      "isToggleable": false
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "End marker",
+        "styles": {}
+      }
+    ],
+    "children": []
+  },
+  {
+    "id": "d51a4ab1-f2cd-46ea-b76d-d8c8d7789e5b",
+    "type": "paragraph",
+    "props": {
+      "backgroundColor": "default",
+      "textColor": "default",
+      "textAlignment": "left"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "最后一段,验证文档尾部 trailing newline。",
+        "styles": {}
+      }
+    ],
+    "children": []
+  }
+]

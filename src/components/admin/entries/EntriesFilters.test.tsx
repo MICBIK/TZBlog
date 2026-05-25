@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { PostsFilters, type PostsFilter } from "./PostsFilters";
+import { EntriesFilters, type EntriesFilter } from "./EntriesFilters";
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
@@ -69,12 +69,12 @@ beforeEach(() => {
   vi.useRealTimers();
 });
 
-describe("PostsFilters", () => {
+describe("EntriesFilters", () => {
   it("pushes the q filter after a 300ms debounce", async () => {
     vi.useFakeTimers();
     renderFilters({ currentFilter: { page: 4, pageSize: 20 } });
 
-    fireEvent.change(screen.getByLabelText("搜索文章"), {
+    fireEvent.change(screen.getByPlaceholderText("搜索标题…"), {
       target: { value: "vitest" },
     });
     await act(async () => {
@@ -85,7 +85,7 @@ describe("PostsFilters", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1);
     });
-    expect(mocks.push).toHaveBeenCalledWith("/admin/posts?q=vitest");
+    expect(mocks.push).toHaveBeenCalledWith("/admin/entries?q=vitest");
     expect(mocks.refresh).toHaveBeenCalledTimes(1);
     vi.useRealTimers();
   });
@@ -97,7 +97,7 @@ describe("PostsFilters", () => {
     await user.click(screen.getByRole("button", { name: "已发布" }));
 
     expect(mocks.push).toHaveBeenCalledWith(
-      "/admin/posts?status=PUBLISHED",
+      "/admin/entries?status=PUBLISHED",
     );
   });
 
@@ -107,7 +107,7 @@ describe("PostsFilters", () => {
 
     await user.click(screen.getByRole("button", { name: "草稿" }));
 
-    expect(mocks.push).toHaveBeenCalledWith("/admin/posts?status=DRAFT");
+    expect(mocks.push).toHaveBeenCalledWith("/admin/entries?status=DRAFT");
     expect(mocks.push.mock.calls[0][0]).not.toContain("page=5");
   });
 
@@ -119,14 +119,14 @@ describe("PostsFilters", () => {
         pageSize: 20,
         q: "vitest",
         status: "PUBLISHED",
-        columnId: "col-1",
+        channelId: "col-1",
         tag: "react",
       },
     });
 
     await user.click(screen.getByRole("button", { name: "重置" }));
 
-    expect(mocks.push).toHaveBeenCalledWith("/admin/posts");
+    expect(mocks.push).toHaveBeenCalledWith("/admin/entries");
     expect(mocks.refresh).toHaveBeenCalledTimes(1);
   });
 
@@ -138,7 +138,7 @@ describe("PostsFilters", () => {
     expect(screen.queryByRole("button", { name: "重置" })).not.toBeInTheDocument();
 
     rerender(
-      <PostsFilters
+      <EntriesFilters
         currentFilter={{ page: 1, pageSize: 20, q: "vitest" }}
         columns={columns}
         tags={tags}
@@ -156,40 +156,40 @@ describe("PostsFilters", () => {
         page: 3,
         pageSize: 20,
         status: "PUBLISHED",
-        columnId: "col-1",
+        channelId: "col-1",
         tag: "react",
       },
     });
     await user.click(screen.getByRole("button", { name: "全部状态" }));
     expect(mocks.push).toHaveBeenLastCalledWith(
-      "/admin/posts?columnId=col-1&tag=react",
+      "/admin/entries?channelId=col-1&tag=react",
     );
 
     rerender(
-      <PostsFilters
+      <EntriesFilters
         currentFilter={{
           page: 3,
           pageSize: 20,
           status: "PUBLISHED",
-          columnId: "col-1",
+          channelId: "col-1",
           tag: "react",
         }}
         columns={columns}
         tags={tags}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "全部专栏" }));
+    await user.click(screen.getByRole("button", { name: "全部频道" }));
     expect(mocks.push).toHaveBeenLastCalledWith(
-      "/admin/posts?status=PUBLISHED&tag=react",
+      "/admin/entries?status=PUBLISHED&tag=react",
     );
 
     rerender(
-      <PostsFilters
+      <EntriesFilters
         currentFilter={{
           page: 3,
           pageSize: 20,
           status: "PUBLISHED",
-          columnId: "col-1",
+          channelId: "col-1",
           tag: "react",
         }}
         columns={columns}
@@ -198,7 +198,7 @@ describe("PostsFilters", () => {
     );
     await user.click(screen.getByRole("button", { name: "全部标签" }));
     expect(mocks.push).toHaveBeenLastCalledWith(
-      "/admin/posts?status=PUBLISHED&columnId=col-1",
+      "/admin/entries?status=PUBLISHED&channelId=col-1",
     );
   });
 });
@@ -209,9 +209,9 @@ const tags = [{ slug: "react", name: "React" }];
 function renderFilters({
   currentFilter = { page: 1, pageSize: 20 },
 }: {
-  currentFilter?: PostsFilter;
+  currentFilter?: EntriesFilter;
 } = {}) {
   return render(
-    <PostsFilters currentFilter={currentFilter} columns={columns} tags={tags} />,
+    <EntriesFilters currentFilter={currentFilter} columns={columns} tags={tags} />,
   );
 }

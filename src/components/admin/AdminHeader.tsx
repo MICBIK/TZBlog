@@ -17,7 +17,9 @@ export interface AdminHeaderProps {
 
 const SECTION_LABELS: Record<string, string> = {
   posts: "文章",
+  entries: "文章",
   columns: "专栏",
+  channels: "频道",
   comments: "评论",
   media: "媒体",
 };

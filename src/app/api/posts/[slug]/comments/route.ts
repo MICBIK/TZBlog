@@ -8,7 +8,7 @@ import {
   createComment,
   listApprovedComments,
 } from "@/lib/services/comments"
-import { getPostBySlug } from "@/lib/services/posts"
+import { getArticleBySlug } from "@/lib/services/articles"
 import { getClientIp, getVisitorHash } from "@/lib/visitor"
 
 /**
@@ -55,7 +55,7 @@ export const POST = withErrorHandler(
 export const GET = withErrorHandler(
   async (_req: Request, ctx: RouteContext): Promise<NextResponse> => {
     const { slug } = await ctx.params
-    const post = await getPostBySlug(slug)
+    const post = await getArticleBySlug(slug)
     if (!post) {
       throw errors.notFound(`Post with slug "${slug}" not found`)
     }

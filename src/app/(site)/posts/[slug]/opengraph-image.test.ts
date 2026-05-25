@@ -4,15 +4,15 @@ import { readFileSync } from "node:fs";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PostWithRelations } from "@/lib/services/posts";
+import type { ArticleWithRelations } from "@/lib/services/articles";
 
 const mocks = vi.hoisted(() => ({
-  getPostBySlug: vi.fn(),
+  getArticleBySlug: vi.fn(),
   notFound: vi.fn(),
 }));
 
-vi.mock("@/lib/services/posts", () => ({
-  getPostBySlug: mocks.getPostBySlug,
+vi.mock("@/lib/services/articles", () => ({
+  getArticleBySlug: mocks.getArticleBySlug,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -28,7 +28,7 @@ beforeEach(() => {
 
 describe("post opengraph-image", () => {
   it("returns image/png response for published post", async () => {
-    mocks.getPostBySlug.mockResolvedValue(
+    mocks.getArticleBySlug.mockResolvedValue(
       post({ slug: "hello", status: "PUBLISHED", title: "Hello World" }),
     );
 
@@ -38,7 +38,7 @@ describe("post opengraph-image", () => {
     });
 
     expect(size).toEqual({ width: 1200, height: 630 });
-    expect(mocks.getPostBySlug).toHaveBeenCalledWith("hello");
+    expect(mocks.getArticleBySlug).toHaveBeenCalledWith("hello");
     expect(response).toBeInstanceOf(Response);
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("image/png");
@@ -57,7 +57,7 @@ describe("post opengraph-image", () => {
       mocks.notFound.mockImplementation(() => {
         throw new Error("NEXT_NOT_FOUND");
       });
-      mocks.getPostBySlug.mockResolvedValue(value);
+      mocks.getArticleBySlug.mockResolvedValue(value);
 
       await expect(
         OgImage({
@@ -99,8 +99,8 @@ async function importOgImage(): Promise<{
 }
 
 function post(
-  overrides: Partial<PostWithRelations> & { title?: string } = {},
-): PostWithRelations {
+  overrides: Partial<ArticleWithRelations> & { title?: string } = {},
+): ArticleWithRelations {
   const title = overrides.title ?? "Post Title";
 
   return {
@@ -110,7 +110,7 @@ function post(
     status: "PUBLISHED",
     publishedAt: new Date("2026-05-21T00:00:00Z"),
     authorId: "author-id",
-    columnId: null,
+    channelId: null,
     viewCount: 0,
     likeCount: 0,
     commentCount: 0,
@@ -130,5 +130,5 @@ function post(
     tags: [],
     author: { id: "author-id", email: "author@example.com", name: "Author" },
     ...overrides,
-  } as PostWithRelations;
+  } as ArticleWithRelations;
 }

@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PostListItem } from "@/lib/services/posts";
-import { PostsTable } from "./PostsTable";
+import type { ArticleListItem } from "@/lib/services/articles";
+import { EntriesTable } from "./EntriesTable";
 
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
@@ -58,12 +58,12 @@ beforeEach(() => {
   mocks.fetch.mockResolvedValue(okResponse());
 });
 
-describe("PostsTable", () => {
+describe("EntriesTable", () => {
   it("renders the empty placeholder", () => {
     renderTable({ items: [] });
 
     expect(
-      screen.getByText("暂无文章 · 点击「新建文章」开始创建"),
+      screen.getByText("暂无条目 · 点击「新建条目」开始创建"),
     ).toBeInTheDocument();
   });
 
@@ -126,7 +126,7 @@ describe("PostsTable", () => {
 
     const dialog = screen.getByRole("alertdialog");
     expect(dialog).toBeInTheDocument();
-    expect(within(dialog).getByText("确认删除文章")).toBeInTheDocument();
+    expect(within(dialog).getByText("确认删除条目")).toBeInTheDocument();
     expect(within(dialog).getByText(/删掉我/)).toBeInTheDocument();
     expect(within(dialog).getByText(/评论/)).toBeInTheDocument();
     expect(within(dialog).getByText(/点赞/)).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe("PostsTable", () => {
     await user.click(screen.getByRole("button", { name: /^确认删除$/ }));
 
     await waitFor(() => {
-      expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/posts/delete-me", {
+      expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/entries/delete-me", {
         method: "DELETE",
       });
     });
@@ -192,7 +192,7 @@ describe("PostsTable", () => {
 
     expect(screen.getByText("已发布")).toBeInTheDocument();
     expect(mocks.fetch).toHaveBeenCalledWith(
-      "/api/admin/posts/publish-me",
+      "/api/admin/entries/publish-me",
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ status: "PUBLISHED" }),
@@ -239,7 +239,7 @@ describe("PostsTable", () => {
     expect(screen.getByRole("button", { name: "下一页" })).toBeEnabled();
 
     rerender(
-      <PostsTable
+      <EntriesTable
         initialItems={[post()]}
         total={30}
         page={3}
@@ -259,13 +259,13 @@ function renderTable({
   page = 1,
   pageSize = 10,
 }: {
-  items?: PostListItem[];
+  items?: ArticleListItem[];
   total?: number;
   page?: number;
   pageSize?: number;
 } = {}) {
   return render(
-    <PostsTable
+    <EntriesTable
       initialItems={items}
       total={total}
       page={page}
@@ -275,7 +275,7 @@ function renderTable({
   );
 }
 
-function post(overrides: Partial<PostListItem> = {}): PostListItem {
+function post(overrides: Partial<ArticleListItem> = {}): ArticleListItem {
   const id = overrides.id ?? "post-1";
   const slug = overrides.slug ?? id;
   return {
@@ -284,8 +284,8 @@ function post(overrides: Partial<PostListItem> = {}): PostListItem {
     cover: null,
     status: "DRAFT",
     publishedAt: null,
-    columnId: null,
-    columnName: null,
+    channelId: null,
+    channelName: null,
     authorName: "作者",
     title: slug,
     excerpt: null,

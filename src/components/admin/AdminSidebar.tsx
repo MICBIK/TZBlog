@@ -19,8 +19,8 @@ type AdminLink = {
 
 const adminLinks: AdminLink[] = [
   { href: "/admin", label: "概览", icon: LayoutDashboard },
-  { href: "/admin/posts", label: "文章", icon: FileText },
-  { href: "/admin/columns", label: "专栏", icon: Newspaper },
+  { href: "/admin/entries", label: "条目", icon: FileText },
+  { href: "/admin/channels", label: "频道", icon: Newspaper },
   { href: "/admin/comments", label: "评论", icon: MessageSquare },
   { href: "/admin/media", label: "媒体", icon: ImageIcon },
 ];

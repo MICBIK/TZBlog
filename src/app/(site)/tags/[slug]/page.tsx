@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 
 import { PostCard } from "@/components/site/PostCard";
 import { getCurrentLocale } from "@/lib/i18n";
-import { postFilterSchema } from "@/lib/schemas/post";
-import { listPosts } from "@/lib/services/posts";
+import { articleFilterSchema } from "@/lib/schemas/entry";
+import { listArticles } from "@/lib/services/articles";
 import { getTagBySlug } from "@/lib/services/tags-public";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -32,14 +32,14 @@ export default async function TagDetailPage({ params, searchParams }: Props) {
   if (!tag) notFound();
 
   const sp = await searchParams;
-  const filter = postFilterSchema.parse({
+  const filter = articleFilterSchema.parse({
     page: sp.page,
     pageSize: 12,
     status: "PUBLISHED",
     tag: slug,
   });
   const locale = getCurrentLocale();
-  const { items, total, page, pageSize } = await listPosts(filter, locale);
+  const { items, total, page, pageSize } = await listArticles(filter, locale);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (

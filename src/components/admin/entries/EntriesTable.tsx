@@ -27,19 +27,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PostRowActions } from "@/components/admin/posts/PostRowActions";
+import { EntryRowActions } from "@/components/admin/entries/EntryRowActions";
 import {
   filterToSearchParams,
-  type PostsFilter,
-} from "@/components/admin/posts/PostsFilters";
-import type { PostListItem } from "@/lib/services/posts";
+  type EntriesFilter,
+} from "@/components/admin/entries/EntriesFilters";
+import type { ArticleListItem } from "@/lib/services/articles";
 
-export interface PostsTableProps {
-  initialItems: PostListItem[];
+export interface EntriesTableProps {
+  initialItems: ArticleListItem[];
   total: number;
   page: number;
   pageSize: number;
-  currentFilter: PostsFilter;
+  currentFilter: EntriesFilter;
 }
 
 const STATUS_LABEL: Record<EntryStatus, string> = {
@@ -57,17 +57,17 @@ const STATUS_VARIANT: Record<
   ARCHIVED: "outline",
 };
 
-export function PostsTable({
+export function EntriesTable({
   initialItems,
   total,
   page,
   pageSize,
   currentFilter,
-}: PostsTableProps) {
+}: EntriesTableProps) {
   const router = useRouter();
-  const [items, setItems] = useState<PostListItem[]>(initialItems);
+  const [items, setItems] = useState<ArticleListItem[]>(initialItems);
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<PostListItem | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ArticleListItem | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const canPrev = page > 1;
@@ -75,23 +75,23 @@ export function PostsTable({
 
   function goToPage(nextPage: number) {
     const sp = filterToSearchParams({ ...currentFilter, page: nextPage });
-    router.push(sp ? `/admin/posts?${sp}` : "/admin/posts");
+    router.push(sp ? `/admin/entries?${sp}` : "/admin/entries");
     router.refresh();
   }
 
   async function confirmDelete() {
-    const post = pendingDelete;
-    if (!post) return;
+    const entry = pendingDelete;
+    if (!entry) return;
     setPendingDelete(null);
 
-    setPendingId(post.id);
+    setPendingId(entry.id);
     try {
-      const res = await fetch(`/api/admin/posts/${post.id}`, {
+      const res = await fetch(`/api/admin/entries/${entry.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setItems((prev) => prev.filter((p) => p.id !== post.id));
-      toast.success(`已删除「${post.title}」`);
+      setItems((prev) => prev.filter((p) => p.id !== entry.id));
+      toast.success(`已删除「${entry.title}」`);
     } catch (err) {
       toast.error("删除失败", {
         description: err instanceof Error ? err.message : undefined,
@@ -101,17 +101,17 @@ export function PostsTable({
     }
   }
 
-  async function handlePublishToggle(post: PostListItem) {
+  async function handlePublishToggle(entry: ArticleListItem) {
     const nextStatus: EntryStatus =
-      post.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
+      entry.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
     const previous = items;
-    setPendingId(post.id);
+    setPendingId(entry.id);
     setItems((prev) =>
-      prev.map((p) => (p.id === post.id ? { ...p, status: nextStatus } : p)),
+      prev.map((p) => (p.id === entry.id ? { ...p, status: nextStatus } : p)),
     );
 
     try {
-      const res = await fetch(`/api/admin/posts/${post.id}`, {
+      const res = await fetch(`/api/admin/entries/${entry.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus }),
@@ -119,8 +119,8 @@ export function PostsTable({
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       toast.success(
         nextStatus === "PUBLISHED"
-          ? `已发布「${post.title}」`
-          : `已撤回「${post.title}」为草稿`,
+          ? `已发布「${entry.title}」`
+          : `已撤回「${entry.title}」为草稿`,
       );
     } catch (err) {
       setItems(previous); // 回滚
@@ -139,7 +139,7 @@ export function PostsTable({
           <TableHeader>
             <TableRow>
               <TableHead>标题</TableHead>
-              <TableHead className="w-[140px]">专栏</TableHead>
+              <TableHead className="w-[140px]">频道</TableHead>
               <TableHead className="w-[100px]">状态</TableHead>
               <TableHead className="w-[200px]">标签</TableHead>
               <TableHead className="w-[80px] text-right">浏览</TableHead>
@@ -155,8 +155,8 @@ export function PostsTable({
                   className="p-0"
                 >
                   <EmptyState
-                    title="暂无文章 · 点击「新建文章」开始创建"
-                    action={{ label: "新建文章", href: "/admin/posts/new" }}
+                    title="暂无条目 · 点击「新建条目」开始创建"
+                    action={{ label: "新建条目", href: "/admin/entries/new" }}
                   />
                 </TableCell>
               </TableRow>
@@ -177,7 +177,7 @@ export function PostsTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {row.columnName ?? "—"}
+                    {row.channelName ?? "—"}
                   </TableCell>
                   <TableCell>
                     <Badge variant={STATUS_VARIANT[row.status]}>
@@ -212,8 +212,8 @@ export function PostsTable({
                     {format(new Date(row.createdAt), "yyyy-MM-dd")}
                   </TableCell>
                   <TableCell className="text-right">
-                    <PostRowActions
-                      post={{
+                    <EntryRowActions
+                      entry={{
                         id: row.id,
                         slug: row.slug,
                         status: row.status,
@@ -261,10 +261,10 @@ export function PostsTable({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除文章</AlertDialogTitle>
+            <AlertDialogTitle>确认删除条目</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingDelete
-                ? `将删除文章「${pendingDelete.title}」。级联删除：所有评论 / 点赞 / 浏览记录 / 标签关联 / 翻译。该操作不可恢复。`
+                ? `将删除条目「${pendingDelete.title}」。级联删除：所有评论 / 点赞 / 浏览记录 / 标签关联 / 翻译。该操作不可恢复。`
                 : ""}
             </AlertDialogDescription>
           </AlertDialogHeader>

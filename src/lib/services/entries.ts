@@ -303,3 +303,23 @@ function resolvePublishedAt(
   if (status === "PUBLISHED") return current ?? new Date();
   return current;
 }
+export async function listTrendingEntries(
+  limit: number,
+): Promise<Array<{ slug: string; trendingScore: number }>> {
+  return db.entry.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: { trendingScore: "desc" },
+    take: limit,
+    select: { slug: true, trendingScore: true },
+  });
+}
+
+export async function createEntryViewRecord(input: {
+  entryId: string;
+  visitorHash: string;
+  dayKey: string;
+}): Promise<{ id: string }> {
+  const row = await db.entryView.create({ data: input });
+  return { id: row.id };
+}
+

@@ -171,7 +171,7 @@ export async function EntryDetail({ entry, locale: localeProp }: EntryDetailProp
       {entry.kind === "NOTE" ? (
         <div
           data-entry-note-body
-          className="prose prose-neutral max-w-none dark:prose-invert"
+          className="markdown-body max-w-none"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : null}
@@ -195,7 +195,7 @@ export async function EntryDetail({ entry, locale: localeProp }: EntryDetailProp
       {entry.kind === "JOKE" ? (
         <div
           data-entry-joke-body
-          className="prose prose-neutral max-w-none dark:prose-invert"
+          className="markdown-body max-w-none"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : null}
@@ -279,7 +279,7 @@ function QuoteEntryBody({
           {'"'}
         </span>
         <div
-          className="prose prose-neutral max-w-none dark:prose-invert"
+          className="markdown-body max-w-none"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </blockquote>
