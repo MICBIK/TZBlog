@@ -32,6 +32,12 @@ interface LinkMetadataDraft {
   thumbnail: string;
 }
 
+interface HotTakeMetadataDraft {
+  sourcePlatform: string;
+  sourceUrl: string;
+  sourceSnippet: string;
+}
+
 function getSelectedChannel(
   channels: EntryEditorChannel[],
   channelId?: string,
@@ -62,6 +68,11 @@ export function EntryEditor({
     sourceTitle: "",
     sourceAuthor: "",
     thumbnail: "",
+  });
+  const [hotTakeMetadata, setHotTakeMetadata] = React.useState<HotTakeMetadataDraft>({
+    sourcePlatform: "twitter",
+    sourceUrl: "",
+    sourceSnippet: "",
   });
 
   if (!selectedChannel) {
@@ -245,6 +256,63 @@ export function EntryEditor({
                 }))
               }
               className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+        </section>
+      ) : null}
+
+      {kind === "HOT_TAKE" ? (
+        <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
+          <label className="grid gap-2 text-sm font-medium">
+            sourcePlatform
+            <select
+              aria-label="sourcePlatform"
+              value={hotTakeMetadata.sourcePlatform}
+              onChange={(event) =>
+                setHotTakeMetadata((current) => ({
+                  ...current,
+                  sourcePlatform: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            >
+              {["weibo", "twitter", "aihot", "hackernews", "v2ex", "zhihu"].map(
+                (option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium">
+            sourceUrl
+            <input
+              aria-label="sourceUrl"
+              value={hotTakeMetadata.sourceUrl}
+              onChange={(event) =>
+                setHotTakeMetadata((current) => ({
+                  ...current,
+                  sourceUrl: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium md:col-span-2">
+            sourceSnippet
+            <textarea
+              aria-label="sourceSnippet"
+              value={hotTakeMetadata.sourceSnippet}
+              onChange={(event) =>
+                setHotTakeMetadata((current) => ({
+                  ...current,
+                  sourceSnippet: event.target.value,
+                }))
+              }
+              className="min-h-24 rounded border border-border bg-bg px-3 py-2 text-sm"
             />
           </label>
         </section>
