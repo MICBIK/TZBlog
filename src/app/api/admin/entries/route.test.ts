@@ -139,6 +139,66 @@ describe("POST /api/admin/entries", () => {
     expect(res.status).toBe(400);
     expect(body.error.code).toBe("VALIDATION_ERROR");
   });
+
+  it("returns409WhenSlugAlreadyExists", async () => {
+    const { POST } = await loadRoute();
+    const channel = await testDb.channel.create({
+      data: {
+        slug: "articles",
+        order: 0,
+        enabled: true,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: {
+          create: [{ locale: "zh", name: "文章", description: null }],
+        },
+      },
+    });
+    await testDb.entry.create({
+      data: {
+        slug: "existing-entry",
+        channelId: channel.id,
+        authorId,
+        kind: "ARTICLE",
+        status: "DRAFT",
+        body: "旧正文",
+        metadata: { cover: null, toc: true },
+        translations: {
+          create: [{ locale: "zh", title: "已有条目", excerpt: null }],
+        },
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/admin/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "existing-entry",
+          channelId: channel.id,
+          kind: "ARTICLE",
+          status: "DRAFT",
+          metadata: {
+            cover: null,
+            toc: true,
+          },
+          tags: [],
+          translations: [
+            {
+              locale: "zh",
+              title: "重复 slug",
+              excerpt: null,
+              content: "正文",
+            },
+          ],
+        }),
+      }),
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(body.error.code).toBe("CONFLICT");
+  });
 });
 
 async function loadRoute(): Promise<EntriesRoute> {

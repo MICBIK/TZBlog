@@ -329,4 +329,51 @@ describe("EntryEditor", () => {
       expect(screen.getByText("sourceUrl is required")).toBeInTheDocument();
     });
   });
+
+  it("showsSlugConflictMessageWhenBackendReturns409", async () => {
+    const user = userEvent.setup();
+    mocks.fetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "CONFLICT",
+          },
+        }),
+        {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("标题"), {
+      target: { value: "冲突条目" },
+    });
+    fireEvent.change(screen.getByLabelText("slug"), {
+      target: { value: "existing-entry" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      target: { value: "正文" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("slug 已被使用")).toBeInTheDocument();
+    });
+  });
 });
