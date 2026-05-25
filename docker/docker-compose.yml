@@ -57,6 +57,24 @@ services:
     networks:
       - tzblog-internal
 
+
+  cron:
+    build:
+      context: ..
+      dockerfile: docker/cron.Dockerfile
+    container_name: tzblog-cron
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: production
+      CRON_RUNNER_AUTOSTART: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tzblog-internal
+
   caddy:
     image: caddy:2-alpine
     container_name: tzblog-caddy

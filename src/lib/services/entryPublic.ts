@@ -11,6 +11,7 @@ import type {
 } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import { getNextEntry } from "@/lib/services/nextEntry";
 import { errors } from "@/lib/errors";
 import type { Locale } from "@/lib/i18n";
 import { DEFAULT_LOCALE } from "@/lib/i18n";
@@ -184,64 +185,15 @@ export async function getNextEntrySuggestion(
   entry: PublicEntry,
   locale: Locale,
 ): Promise<NextEntrySuggestion | null> {
-  if (entry.seriesId && entry.seriesOrder != null) {
-    const next = await db.entry.findFirst({
-      where: {
-        seriesId: entry.seriesId,
-        status: "PUBLISHED",
-        seriesOrder: { gt: entry.seriesOrder },
-      },
-      orderBy: [{ seriesOrder: "asc" }],
-      include: { translations: true, channel: { select: { slug: true } } },
-    });
-    if (next) {
-      const tr = pickTranslation(next.translations, locale);
-      return {
-        kind: "series",
-        title: tr?.title ?? next.slug,
-        href: entryDetailHref(next.channel.slug, next.slug, next.kind),
-        seriesOrder: next.seriesOrder ?? undefined,
-      };
-    }
-  }
+  const { entry: next, reason } = await getNextEntry(entry.id);
+  if (!next || !reason) return null;
 
-  const tagIds = entry.tags.map((row) => row.tag.id);
-  if (tagIds.length > 0) {
-    const similar = await db.entry.findFirst({
-      where: {
-        id: { not: entry.id },
-        status: "PUBLISHED",
-        tags: { some: { tagId: { in: tagIds } } },
-      },
-      orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }],
-      include: { translations: true, channel: { select: { slug: true } } },
-    });
-    if (similar) {
-      const tr = pickTranslation(similar.translations, locale);
-      return {
-        kind: "similar",
-        title: tr?.title ?? similar.slug,
-        href: entryDetailHref(similar.channel.slug, similar.slug, similar.kind),
-      };
-    }
-  }
-
-  const recent = await db.entry.findFirst({
-    where: {
-      channelId: entry.channel.id,
-      id: { not: entry.id },
-      status: "PUBLISHED",
-    },
-    orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }],
-    include: { translations: true, channel: { select: { slug: true } } },
-  });
-  if (!recent) return null;
-
-  const tr = pickTranslation(recent.translations, locale);
+  const tr = pickTranslation(next.translations, locale);
   return {
-    kind: "recent",
-    title: tr?.title ?? recent.slug,
-    href: entryDetailHref(recent.channel.slug, recent.slug, recent.kind),
+    kind: reason,
+    title: tr?.title ?? next.slug,
+    href: entryDetailHref(next.channel.slug, next.slug, next.kind),
+    seriesOrder: reason === "series" ? (next.seriesOrder ?? undefined) : undefined,
   };
 }
 
