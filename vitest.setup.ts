@@ -1,4 +1,17 @@
 import "@testing-library/jest-dom/vitest";
+
+const testEnvDefaults: Record<string, string> = {
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tzblog",
+  AUTH_SECRET: "test-secret-test-secret-test-secret",
+  S3_ENDPOINT: "http://localhost:9000",
+  S3_BUCKET: "tzblog-media",
+  S3_ACCESS_KEY_ID: "minioadmin",
+  S3_SECRET_ACCESS_KEY: "minioadmin",
+  S3_PUBLIC_URL: "http://localhost:9000/tzblog-media",
+  SITE_URL: "http://localhost:3000",
+};
+for (const [key, value] of Object.entries(testEnvDefaults)) { process.env[key] ??= value; }
+
 import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 
