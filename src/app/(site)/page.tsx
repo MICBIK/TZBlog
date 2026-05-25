@@ -1,25 +1,21 @@
-import { GithubCard } from "@/components/site/GithubCard";
-import { HomeColumns } from "@/components/site/HomeColumns";
-import { HomeFeaturedAndRecent } from "@/components/site/HomeFeaturedAndRecent";
-import { HomeShell } from "@/components/site/HomeShell";
-import { HomeHero } from "@/components/site/HomeHero";
-import { HomePrinciples } from "@/components/site/HomePrinciples";
-import { HomeStats } from "@/components/site/HomeStats";
-import { TechStack } from "@/components/site/TechStack";
-import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import type { Metadata } from "next";
 
-export default function HomePage() {
+import { HomePageContent } from "@/components/site/HomePageContent";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { getCurrentLocale } from "@/lib/i18n";
+import { getHomePageData } from "@/lib/services/homePage";
+
+export const metadata: Metadata = {
+  title: "TZBlog",
+  description: "个人技术博客",
+};
+
+export default async function HomePage() {
+  const data = await getHomePageData(getCurrentLocale());
+
   return (
     <ThemeProvider theme="aurora" hero>
-      <HomeShell
-        hero={<HomeHero />}
-        featuredAndRecent={<HomeFeaturedAndRecent />}
-        columns={<HomeColumns />}
-        principles={<HomePrinciples />}
-        techStack={<TechStack />}
-        github={<GithubCard />}
-        stats={<HomeStats />}
-      />
+      <HomePageContent data={data} />
     </ThemeProvider>
   );
 }

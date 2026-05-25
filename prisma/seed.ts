@@ -362,6 +362,12 @@ async function main() {
       metadata: {
         title: "TZBlog",
         description: "个人技术博客",
+        hero: {
+          tagline: "个人写作，工程实现，克制表达。",
+          subtitle:
+            "这里记录一个中文单语博客系统的技术实践：从 source-first Markdown 编辑，到 PostgreSQL 驱动的数据层，再到能解释取舍的阅读体验。",
+          avatar: "https://avatars.githubusercontent.com/u/00000000?v=4",
+        },
       },
     },
     create: {
@@ -371,6 +377,12 @@ async function main() {
       metadata: {
         title: "TZBlog",
         description: "个人技术博客",
+        hero: {
+          tagline: "个人写作，工程实现，克制表达。",
+          subtitle:
+            "这里记录一个中文单语博客系统的技术实践：从 source-first Markdown 编辑，到 PostgreSQL 驱动的数据层，再到能解释取舍的阅读体验。",
+          avatar: "https://avatars.githubusercontent.com/u/00000000?v=4",
+        },
       },
     },
   });

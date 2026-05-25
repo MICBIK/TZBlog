@@ -2,9 +2,8 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已完成 `ee-001 ~ ee-015`。
-- 当前窗口已闭环 `admin-entry` 第三段：`ee-013 ~ ee-015` 已落地，覆盖 tags 多选写入、已发布 ARTICLE 归档、编辑器拖拽图片上传并插入 Markdown。
-- 下一步继续 `blog-ia-redesign` M2 后续 capability（auth / guestbook / public shell 等，按 tasks.md 顺序）。
+- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1–M2 已完成；M3 `theme-tokens` + `public-shell` TDD 审计与 rebase 已闭环；M4 `home-composition` 已启动。
+- 当前窗口：`home-001 ~ home-007` 已落地（动态 Channel preview + trending + SiteConfig hero）；待续 `home-008 ~ home-010`（Lighthouse / bundle / dynamic channel e2e）。
 
 ## 已完成
 
