@@ -117,6 +117,7 @@ export function MilkdownEditor({
         <div
           role="menu"
           aria-label="Slash 菜单"
+          data-theme={theme}
           className="absolute left-4 top-16 rounded-xl border border-border bg-bg shadow-md transition-none motion-reduce:transition-none"
         >
           <button
@@ -133,6 +134,7 @@ export function MilkdownEditor({
         <div
           role="toolbar"
           aria-label="Bubble 菜单"
+          data-theme={theme}
           className="absolute right-4 top-4 rounded-xl border border-border bg-bg shadow-md transition-none motion-reduce:transition-none"
         >
           <button
