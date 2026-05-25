@@ -38,6 +38,22 @@ const articlesChannel: HomeChannelPreview = {
   ],
 };
 
+const streamChannel: HomeChannelPreview = {
+  id: "ch-stream",
+  slug: "stream",
+  kind: "STREAM",
+  name: "日志流",
+  tagline: "grep my mind",
+  entries: Array.from({ length: 5 }, (_, index) => ({
+    id: `s${index + 1}`,
+    slug: `stream-${index + 1}`,
+    kind: "LINK",
+    title: `流条目 ${index + 1}`,
+    excerpt: `摘要 ${index + 1}`,
+    publishedAt: new Date(`2026-05-${20 - index}T00:00:00Z`),
+  })),
+};
+
 describe("ChannelPreviewBlock", () => {
   it("articlesChannelShowsTop3Entries", () => {
     render(<ChannelPreviewBlock channel={articlesChannel} />);
@@ -49,5 +65,16 @@ describe("ChannelPreviewBlock", () => {
       "/c/articles",
     );
     expect(screen.getAllByRole("link", { name: /第.+篇/ })).toHaveLength(3);
+  });
+
+  it("streamChannelShowsTop5Entries", () => {
+    render(<ChannelPreviewBlock channel={streamChannel} />);
+
+    expect(screen.getByRole("heading", { name: "日志流" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "进入流 →" })).toHaveAttribute(
+      "href",
+      "/c/stream",
+    );
+    expect(screen.getAllByRole("link", { name: /流条目/ })).toHaveLength(5);
   });
 });
