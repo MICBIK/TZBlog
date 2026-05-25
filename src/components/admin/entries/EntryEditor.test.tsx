@@ -26,4 +26,26 @@ describe("EntryEditor", () => {
     expect(screen.queryByRole("option", { name: "LINK" })).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Milkdown editor content" })).toHaveValue("");
   });
+
+  it("notesChannelOffersNoteQuoteLinkKinds", () => {
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-notes",
+            slug: "notes",
+            kind: "NOTES",
+            name: "笔记",
+          },
+        ]}
+        initialChannelId="channel-notes"
+      />,
+    );
+
+    expect(screen.getByLabelText("条目类型")).toHaveValue("NOTE");
+    expect(screen.getByRole("option", { name: "NOTE" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "QUOTE" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "LINK" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "ARTICLE" })).not.toBeInTheDocument();
+  });
 });
