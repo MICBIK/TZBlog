@@ -2,12 +2,12 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` M4 公开 UI 三模块已完成：`entry-detail`（ed-001~020）、`reading-mode`（read-001~012）、`terminal-stream`（term-001~010）；M4 vitest **55/55 pass**；`pnpm lint` + `pnpm typecheck` 绿。
-- 下一步：M4 截图人工 sign-off（对比 demo-front）→ M5+ `auth-magic-link` / `guestbook` / `recommendation` / `cleanup`，或补 M4 截图对比验收。
+- **2026-05-25** `blog-ia-redesign` M5 `auth-magic-link` 已实现：`auth-magic-001~013` 全绿（17 tests）；Resend + React Email + 三维度频控 + `/login` 双表单 + VISITOR proxy 403。
+- 下一步：M5 `guestbook`（gb-001~011）→ `recommendation` → `cleanup`；或补 auth magic link 人工 smoke（Resend 真发信）。
 
 ## 已完成
 
-- [x] **2026-05-26** `blog-ia-redesign` M4 public-ui smoke：9 PNGs（reading/terminal/entry）+ `e2e/m4-public-ui-smoke.spec.ts` 全绿。
+- [x] **2026-05-25** `blog-ia-redesign` M5 `auth-magic-link`：`hash`/`rateLimit`/`sendMagicLink`/Email provider/VISITOR role/`proxyAccess`/ `(site)/login` 双表单；vitest **17/17 pass**；lint + typecheck 绿。
 - [x] **2026-05-26** `blog-ia-redesign` M4 gate：`entry`/`reading`/`terminal` TDD 16 commits + e2e/Lighthouse 绿 + `m4-public-ui-complete` tag。
 - [x] **2026-05-26** `blog-ia-redesign` M4 `entry-detail` + `reading-mode` + `terminal-stream`：
   - [x] `entryPublic` 服务 + `/c/[slug]/[entry-slug]` 路由 + `EntryDetail` / `NextEntry` + `/api/entries/[id]/view|like`（ed-001~020）
