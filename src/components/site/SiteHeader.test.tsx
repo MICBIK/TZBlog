@@ -7,7 +7,6 @@ import { SiteHeader } from "./SiteHeader";
 
 describe("<SiteHeader /> public shell", () => {
   it("rendersBrandAndNavAndAdminLink", () => {
-    // @ts-expect-error shell-001 RED: channels prop pending
     render(<SiteHeader channels={[]} />);
 
     expect(

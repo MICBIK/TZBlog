@@ -31,7 +31,7 @@ describe("site focus states", () => {
   it("exposesVisibleFocusForInteractiveSurfaces", () => {
     render(
       <>
-        <SiteHeader />
+        <SiteHeader channels={[]} />
         <LikeButton slug="focus-post" initialLikeCount={2} />
         <PostCard
           post={{
@@ -50,7 +50,7 @@ describe("site focus states", () => {
     );
 
     const brand = screen.getByRole("link", { name: "TZBlog" });
-    const navLink = screen.getByRole("link", { name: "文章" });
+    const navLink = screen.getByRole("link", { name: "关于" });
     const likeButton = screen.getByRole("button");
     const postCard = screen.getByRole("article", { name: "Focus post" });
     const postLink = screen.getByRole("link", { name: "Focus post" });

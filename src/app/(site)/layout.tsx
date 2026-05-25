@@ -14,7 +14,7 @@ export default function SiteLayout({
       data-reduced-motion-safe
       className="flex min-h-screen flex-col bg-bg text-fg"
     >
-      <SiteHeader />
+      <SiteHeader channels={[]} />
       <main
         data-ssr-visible
         data-motion-hydration-safe
