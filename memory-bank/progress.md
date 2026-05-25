@@ -2,9 +2,39 @@
 
 ## 当前焦点
 
-- **2026-05-24** `final-experience-hardening` 已完成，当前可进入 P3 部署闭环与线上 Lighthouse / production smoke。
+- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已进入并完成 `ee-001`。
+- 当前窗口已闭环 `admin-channel` 回补与收口：`ach-007`、`ach-009`、`ach-012 ~ ach-015` 全部按 `1 spec = 1 RED + 1 GREEN commit` 落地。
+- 下一步继续 `11-admin-entry-editor`：优先 `ee-002`（NOTES channel kind 联动）、`ee-003`（GUESTBOOK 403），随后进入 metadata form / create+patch API 微循环。
 
 ## 已完成
+
+- [x] **2026-05-25** `blog-ia-redesign` M1 完成：
+  - [x] `schema-001 ~ schema-010` / `mig-001 ~ mig-010` / `m1-gate-seed-showcase`
+  - [x] `cleanup-prep`：`HomeGarden` 残留清理、`@blocknote/@codemirror` 直接引用清零、M1 guard 落地
+  - [x] 质量门：`pnpm typecheck` / `pnpm lint` / `pnpm test` / `pnpm build` 全绿
+  - [x] `pnpm prisma migrate status` up to date，Prisma smoke `channels_count=3`
+  - [x] tag：`m1-schema-migration-complete`
+- [x] **2026-05-25** `blog-ia-redesign` M2 editor lane 已完成：
+  - [x] `editor-001 ~ editor-009`：`src/components/editor/round-trip.test.ts` + 8 个 fixture + HTML parity
+  - [x] `editor-010 ~ editor-018`：`src/components/editor/MilkdownEditor.test.tsx` + `MilkdownEditor.tsx` 最小交互壳
+  - [x] `editor-017`：`playwright.config.ts`、`e2e/editor-mobile.spec.ts`、`/editor-smoke` route 落地并通过 375px overflow e2e
+  - [x] 验证：`pnpm vitest run src/components/editor/round-trip.test.ts src/components/editor/MilkdownEditor.test.tsx` => `17 passed`；`pnpm exec playwright test e2e/editor-mobile.spec.ts` => `1 passed`
+- [x] **2026-05-25** `blog-ia-redesign` M2 admin-channel 已部分完成：
+  - [x] `ach-001 ~ ach-004`：`/admin/channels` page + `ChannelsTable` 列表、上移、enabled toggle、row navigation
+  - [x] `ach-005`：`/admin/channels/new` page + `ChannelForm` 6 section shell
+  - [x] `ach-006`：`NOTES -> TIMELINE/FEED` 布局联动
+  - [x] `ach-007`：`LINKS -> GREP/CARDS` 显式 test/commit 对已回补
+  - [x] `ach-008`：`GUESTBOOK` 手动创建提示
+  - [x] `ach-009`：`POST /api/admin/channels` duplicate slug -> `409 CONFLICT`
+  - [x] `ach-010`：`src/lib/schemas/channel.ts` 建立，slug/kind/layout zod 约束落地
+  - [x] `ach-011`：新建频道 submit + `router.push('/admin/channels/<id>/edit')`
+  - [x] `ach-012`：`/admin/channels/[id]/edit` 页面与 `ChannelForm` 预填现有值
+  - [x] `ach-013`：编辑页保存改走 `PATCH /api/admin/channels/[id]`，layout 修改后 `router.refresh()`
+  - [x] `ach-014`：`DELETE /api/admin/channels/[id]` 级联删除 channel / entries / series / translations
+  - [x] `ach-015`：`kind=GUESTBOOK` 删除返回 `403 FORBIDDEN`
+  - [x] admin-channel 回归：`pnpm vitest run src/app/(admin)/admin/channels/page.test.tsx src/app/(admin)/admin/channels/new/page.test.tsx src/app/(admin)/admin/channels/[id]/edit/page.test.tsx src/app/api/admin/channels/route.test.ts src/app/api/admin/channels/[id]/route.test.ts src/lib/schemas/channel.test.ts` => `16 passed`
+- [x] **2026-05-25** `blog-ia-redesign` M2 admin-entry 已启动：
+  - [x] `ee-001`：新增 `src/components/admin/entries/EntryEditor.tsx` 与 `/admin/entries/new`，当初始 Channel 为 `ARTICLES` 时 kind dropdown 仅含 `ARTICLE`，Milkdown body 初始为空
 
 - [x] **2026-05-18** 旧版项目下线 — 远端 `MICBIK/TZBlog` 清空重建为单 empty commit `9d1370c`
 - [x] **2026-05-18** 本地工作目录清空（只剩 `.git/`）
@@ -171,6 +201,26 @@
   - `/admin/_editor-demo` 改为 `notFound()`；标签索引/详情、本地化后台 Dashboard、编辑器/弹窗 chrome、GitHub fallback 文案全部转为中文单语界面。
   - 质量门：`pnpm typecheck` ✓ / `pnpm lint` ✓ / `pnpm test` ✓（127 files / 629 passed / 1 skipped，仍有已登记 `pg@9` warning）/ `pnpm build` ✓。
   - 浏览器 smoke：seed 后验证 `/`、`/posts`、`/posts/self-hosted-nextjs-observability`、`/columns`、`/tags/nextjs` 的桌面/移动关键路径；无破图、无横向溢出，GitHub fallback 不再出现英文配置提示；截图保存在 `.claude/sdd/final-experience-hardening/smoke/`。
+- [x] **2026-05-24** public-layout-rebalance 完成：
+  - 新建 `.claude/sdd/public-layout-rebalance/`，补齐 proposal / specs / test-map，并按 TDD 更新 public shell 与文章详情/归档页布局断言。
+  - `(site)` 公共 shell、Header、Footer 从 `max-w-3xl` 升到 `max-w-7xl`；文章、专栏、标签等归档页使用 `max-w-6xl` 内层画布，专栏/标签索引桌面提升到三列。
+  - 文章详情 shell 改为 `xl` 才启用 TOC rail，桌面正文列扩到约 `844-860px`；移动端保持单列且无横向溢出。
+  - 发布态文章会在 `renderMarkdown` / `extractToc` 前去掉与 CMS 标题完全重复的首个 Markdown `#`，避免页面出现双 H1。
+  - 质量门：`pnpm typecheck` ✓ / `pnpm lint` ✓ / `pnpm test` ✓（129 files / 637 passed / 1 skipped）/ `pnpm build` ✓。
+  - 浏览器复验：`/`、`/posts`、`/posts/self-hosted-nextjs-observability`、`/columns`、`/tags`、`/tags/nextjs`、`/about` 的桌面/移动视口均无横向溢出；文章详情桌面正文列约 `844px`、右 rail `300px`，移动端仅保留单一 H1。
+- [x] **2026-05-24** admin-editor-shell-repair 完成：
+  - 新建 `.claude/sdd/admin-editor-shell-repair/`，补齐 proposal / specs / test-map，并用组件测试锁定 editor shell、slash command 和媒体插入行为。
+  - `NotionMarkdownEditor` 不再是裸 `textarea`：补上全宽写作画布、稳定最小高度、可读排版、命令菜单/格式 toolbar 的基础 chrome，并给空文档补了 starter actions 与可点击的 `/ 命令` 入口。
+  - slash command 和媒体插入改为按当前光标 / trigger range 插入，不再覆盖整篇内容；slash menu 支持 query 过滤、方向键切换和 Enter 确认；`PostEditor` 集成提交流程保持 Markdown 原样输出。
+  - 后台窄屏布局同步收口：sidebar 收成 compact rail，header breadcrumb 改成 truncate，文章编辑页 sticky toolbar spacing 不再制造横向溢出。
+  - 质量门：`pnpm typecheck` ✓ / `pnpm lint` ✓ / `pnpm test` ✓（129 files / 642 passed / 1 skipped）/ `pnpm build` ✓。
+  - 浏览器复验：`/admin/posts/new` 当前 in-app 桌面视口下 editor shell 宽度约 `648px`，无横向溢出；真实交互验证通过 starter action 插入、可点击 `/ 命令` 入口、`ArrowDown + Enter` 命令选择和 `/table` query 过滤插入。
+- [x] **2026-05-24** block-markdown-shell 完成：
+  - 新建 `.claude/sdd/block-markdown-shell/`，补齐 proposal / specs / test-map，并新增 `notionBlockModel` 单元测试锁定 Markdown → blocks → Markdown round trip。
+  - `NotionMarkdownEditor` 从单一 command-style textarea shell 提升为 block-based Markdown shell：标题、段落、列表、引用、提示块、代码块、表格、图片和 raw fallback 块都有独立编辑表面。
+  - 空文档保留 starter actions；块级新增按钮可创建新段落；第二块中的 slash query 过滤和 Enter 选择在真实浏览器里可用。
+  - 质量门：`pnpm typecheck` ✓ / `pnpm lint` ✓ / `pnpm test` ✓（130 files / 647 passed / 1 skipped）/ `pnpm build` ✓。
+  - 浏览器复验：全新 `/admin/posts/new` tab 中，starter action 先落成 `heading2`，随后新增第二块、输入 `/table` 后菜单只剩表格，回车后页面块序列为 `heading2 + table`，且无横向溢出。
 
 ## V2 backlog（MVP 上线后，独立 SDD）
 
@@ -198,6 +248,7 @@ V2/V3 不属于本轮 prelaunch-readiness；涉及 DB/UI/API/邮件/路由结构
 - **2026-05-23** KI-004 多语言当前仍是架构预留：schema 有 `*Translation` 子表和 `SUPPORTED_LOCALES`，但当前实现仍是单 locale；V3 需要独立 SDD 完成 route/dictionary/metadata/RSS/sitemap 全链路迁移。
 - **2026-05-24** creative-blog-notion-editor 收口：`NotionMarkdownEditor` 当前是轻量 Markdown shell，不引入 Novel/Tiptap/MDXEditor runtime 依赖；后续若真正接入第三方 rich/block editor，必须先跑 `notionEditorAdapter` round-trip/parity 证据门，并复核 admin editor route-specific client delta。
 - **2026-05-24** 展示 seed 策略：用于前台 smoke 的文章、专栏和 Markdown 图片必须引用仓库内可追踪资产（当前为 `public/showcase/*`），不要依赖 `.gitignore` 的 `public/uploads/*`，避免干净环境出现破图或空白首页。
+- **2026-05-24** 本地测试与 smoke 仍共用 `DATABASE_URL`：运行 `pnpm test` 会清空 showcase 数据，之后若要做浏览器 smoke 必须先执行 `pnpm db:seed`。长期方案应拆出独立 test DB / `.env.test`，避免测试污染本地演示环境。
 
 
 ## 度量指标

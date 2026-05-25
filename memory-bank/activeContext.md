@@ -4,7 +4,29 @@
 
 ## 当前焦点
 
-**public-ui-and-editor-overhaul 已完成 M1/M2/M3，当前入口是 SDD 归档与下一阶段 P3 部署上线。**
+**`blog-ia-redesign` 长任务进行中。当前 HEAD 是 `41d3ad8 feat(admin-entry): ee-001`，M1 已闭环，M2 editor lane 已完成，admin-channel 已全量闭环，admin-entry 已开始。**
+
+- M1：`schema` / `migration` / `cleanup-prep` 已完成，tag `m1-schema-migration-complete` 已打。
+- M2 editor：
+  - `editor-001 ~ editor-009` 已完成（8 fixture + HTML parity）
+  - `editor-010 ~ editor-018` 已完成（slash / bubble / upload / save / theme / debounce / unsafe-url / reduced-motion / mobile e2e）
+- M2 admin-channel：
+  - 已完成：`ach-001 ~ ach-015`
+  - `ach-007` 显式 test/commit 对已回补
+  - `ach-009`：`POST /api/admin/channels` duplicate slug -> `409 CONFLICT`
+  - `ach-012 ~ ach-015`：编辑页预填、PATCH layout 保存、DELETE 级联、guestbook delete forbidden 已完成
+  - admin-channel 验证基线已更新：`pnpm vitest run src/app/(admin)/admin/channels/page.test.tsx src/app/(admin)/admin/channels/new/page.test.tsx src/app/(admin)/admin/channels/[id]/edit/page.test.tsx src/app/api/admin/channels/route.test.ts src/app/api/admin/channels/[id]/route.test.ts src/lib/schemas/channel.test.ts` => `16 passed`
+
+- M2 admin-entry：
+  - `ee-001` 已完成：新增 `EntryEditor` + `/admin/entries/new`，当 Channel 为 `ARTICLES` 时 kind dropdown 仅含 `ARTICLE`，Milkdown body 初始为空
+  - 下一步：`ee-002` NOTES channel kind 联动、`ee-003` GUESTBOOK 403、`ee-004 ~ ee-006` metadata form shell
+
+- 当前 editor 验证基线：
+  - `pnpm vitest run src/components/editor/round-trip.test.ts src/components/editor/MilkdownEditor.test.tsx` => `17 passed`
+  - `pnpm exec playwright test e2e/editor-mobile.spec.ts` => `1 passed`
+- 当前 admin-channel 验证基线：
+  - `pnpm vitest run src/app/(admin)/admin/channels/page.test.tsx` => `4 passed`
+  - `pnpm vitest run src/app/(admin)/admin/channels/new/page.test.tsx` => `4 passed`
 
 - 媒体上传 §1-§7 已完成（archive `2026-05-21-media-upload`）。
 - 文章后台（列表 + 筛选 + 编辑器）+ 外围测试齐全（170 → 213）。
@@ -25,10 +47,10 @@
 
 ## 下一步计划
 
-1. **归档 SDD**：将 `.claude/sdd/public-ui-and-editor-overhaul` 归档到 `.claude/sdd/archive/2026-05-23-public-ui-and-editor-overhaul`。
-2. **P3 部署上线**：补 `Dockerfile`、生产 smoke、备份脚本、VPS/域名配置、灰度上线。
-3. **V2 独立 SDD**：主题 GUI、详细 Analytics、评论邮件、编辑器增强、Lighthouse 与展示资产 polish。
-4. **V3 独立 SDD**：`i18n-locale-routing-v3`，做真正 locale routing / dictionary / SEO-feed 全链路迁移。
+1. **ee-002**：`NOTES` channel 初始化时 kind dropdown 含 `NOTE / QUOTE / LINK`。
+2. **ee-003**：`/admin/entries/new?channelId=<guestbookId>` 返回 `403`，阻止 admin 手动创建 `GUESTBOOK_THREAD`。
+3. **ee-004 ~ ee-006**：按 `entryMetadataSchema` 为 `ARTICLE / LINK / HOT_TAKE` 渲染 metadata form。
+4. **ee-007+**：开始 `POST/PATCH /api/admin/entries`、publishedAt / archive / Mod+S / series / tags / image upload 微循环。
 
 ## 待办池 / 已知问题
 
