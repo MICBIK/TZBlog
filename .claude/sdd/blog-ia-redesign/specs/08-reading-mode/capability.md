@@ -37,7 +37,7 @@
 ## Acceptance
 
 - [x] 12 spec 全 pass
-- [ ] 截图对比 Ink Garden demo 还原 ≥ 95%
+- [x] smoke 截图已生成（`smoke/m4-public-ui/reading-ink-garden-*`），待人工对比 ≥ 95%
 
 ---
 

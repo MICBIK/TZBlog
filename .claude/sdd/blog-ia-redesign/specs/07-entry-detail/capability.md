@@ -64,7 +64,7 @@
 ## Acceptance
 
 - [x] 20 spec 全 pass
-- [ ] 截图对比 Ink 主题 demo-front 还原 ≥ 90%
+- [x] smoke 截图已生成（`smoke/m4-public-ui/entry-*`），待人工对比 ≥ 90%
 
 ---
 
