@@ -3,7 +3,7 @@
 ## 当前焦点
 
 - **2026-05-25** `blog-ia-redesign` 长任务进行中：M1–M4 已完成；M5 `channel-pages` **chl-001 ~ chl-015 实现完成**（5 layout + page metadata + reduced-motion + grep mobile e2e）；下一步 `entry-detail`（ent-001~）。
-- 当前窗口：M5 `channel-pages` 代码与单测已绿；待 TDD commit 节奏提交 + demo-front 15 组合截图验收。
+- 当前窗口：M5 `channel-pages` 代码与单测已绿；channel-layouts smoke 15×3 截图已生成（`.claude/sdd/blog-ia-redesign/smoke/channel-layouts/`）；待 commit smoke 脚本 + seed 扩展。
 
 ## 已完成
 

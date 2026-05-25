@@ -68,8 +68,8 @@
 
 ## Acceptance
 
-- [ ] 15 spec 全 pass
-- [ ] 5 个 layout × 3 主题 = 15 组合截图对比 demo-front
+- [x] 15 spec 全 pass
+- [x] 5 个 layout × 3 主题 = 15 组合截图对比 demo-front（见 `.claude/sdd/blog-ia-redesign/smoke/channel-layouts/`）
 
 ---
 
