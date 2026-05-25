@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { milkdownParse, milkdownSerialize } from "./milkdownBridge";
+import {
+  milkdownParse,
+  milkdownSerialize,
+  roundTripFixtureNames,
+} from "./milkdownBridge";
+import { renderMarkdown } from "@/lib/markdown";
 
 const FIXTURE_DIR = join(process.cwd(), "src/components/editor/__fixtures__/round-trip");
 
@@ -74,4 +79,20 @@ describe("Milkdown Markdown round-trip parity", () => {
 
     expect(exported.trim()).toBe(source.trim());
   });
+
+  it("renderMarkdownHtmlParityAcrossAllFixtures", async () => {
+    for (const name of roundTripFixtureNames) {
+      const source = loadFixture(name);
+      const parsed = await milkdownParse(source);
+      const exported = await milkdownSerialize(parsed);
+      const originalHtml = await renderMarkdown(source);
+      const roundTripHtml = await renderMarkdown(exported);
+
+      expect(normalizeHtml(roundTripHtml)).toBe(normalizeHtml(originalHtml));
+    }
+  });
 });
+
+function normalizeHtml(html: string): string {
+  return html.replace(/\s+/g, " ").trim();
+}
