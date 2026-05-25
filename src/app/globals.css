@@ -247,6 +247,57 @@
   --radius: 0.125rem;
 }
 
+[data-theme="terminal"] {
+  --bg: 150 10% 6%;
+  --fg: 120 100% 70%;
+  --muted: 150 8% 12%;
+  --muted-fg: 120 20% 55%;
+  --card: 150 10% 8%;
+  --card-fg: 120 100% 70%;
+  --primary: 120 100% 70%;
+  --primary-fg: 150 10% 6%;
+  --accent: 45 100% 55%;
+  --accent-fg: 150 10% 6%;
+  --border: 120 30% 22%;
+  --ring: 120 100% 70%;
+  --radius: 0px;
+}
+
+[data-theme="terminal"] [class*="rounded"] {
+  border-radius: 0 !important;
+}
+
+[data-theme="aurora"][data-hero="true"]::before {
+  animation: aurora-drift 18s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="aurora"][data-hero="true"]::before {
+    animation: none;
+  }
+}
+
+@keyframes aurora-drift {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+}
+
+[data-theme="terminal"] {
+  --bg: 150 10% 6%;
+  --fg: 120 100% 70%;
+  --muted: 150 8% 12%;
+  --muted-fg: 120 20% 55%;
+  --card: 150 10% 8%;
+  --card-fg: 120 100% 70%;
+  --primary: 120 100% 70%;
+  --primary-fg: 150 10% 6%;
+  --accent: 45 100% 55%;
+  --accent-fg: 150 10% 6%;
+  --border: 120 30% 22%;
+  --ring: 120 100% 70%;
+  --radius: 0px;
+}
+
 
 /* Map semantic tokens into Tailwind v4's @theme so utilities
  * like bg-bg / text-fg / border-border / ring-ring work. */
