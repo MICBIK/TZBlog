@@ -2,10 +2,9 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已完成 `ee-001 ~ ee-012`。
-- 当前窗口已闭环 `admin-channel` 回补与收口：`ach-007`、`ach-009`、`ach-012 ~ ach-015` 全部按 `1 spec = 1 RED + 1 GREEN commit` 落地。
-- 当前窗口已闭环 `admin-entry` 第二段：`ee-008 ~ ee-012` 已按 `1 spec = 1 RED + 1 GREEN commit` 落地，范围覆盖 edit+publish、metadata field error、duplicate slug 409、Mod+S 保持状态、seriesId/seriesOrder。
-- 下一步继续 `11-admin-entry-editor`：优先 `ee-013`（tags 多选）、`ee-014`（archive）、`ee-015`（image upload）。
+- **2026-05-25** `blog-ia-redesign` 长任务进行中：M1 已完成并打 `m1-schema-migration-complete`，M2 的 `editor-001 ~ editor-018` 已完成，`admin-channel` 已完成 `ach-001 ~ ach-015`，`admin-entry` 已完成 `ee-001 ~ ee-015`。
+- 当前窗口已闭环 `admin-entry` 第三段：`ee-013 ~ ee-015` 已落地，覆盖 tags 多选写入、已发布 ARTICLE 归档、编辑器拖拽图片上传并插入 Markdown。
+- 下一步继续 `blog-ia-redesign` M2 后续 capability（auth / guestbook / public shell 等，按 tasks.md 顺序）。
 
 ## 已完成
 
@@ -51,7 +50,10 @@
   - [x] `ee-010`：duplicate slug -> `409 CONFLICT`，UI 显示 `slug 已被使用`
   - [x] `ee-011`：`Mod+S` 自动保存时保持当前 status，不把已发布条目改回 `DRAFT`
   - [x] `ee-012`：series dropdown + `seriesOrder` 输入已接入；new/edit page 会传 `seriesOptions`，create payload / DB 都会写 `seriesId + seriesOrder`
-  - [x] admin-entry 当前回归：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts src/app/api/admin/entries/[id]/route.test.ts` => `17 passed`
+  - [x] `ee-013`：`TagsInput` 多选已接入 `EntryEditor`；new/edit page 传 `allTags`；create/update payload 写 `tags`，`TagsOnEntries` 同步
+  - [x] `ee-014`：编辑已发布 `ARTICLE` 时显示「归档」按钮；`PATCH` 置 `status=ARCHIVED`
+  - [x] `ee-015`：`MilkdownEditor` 拖拽图片走 `POST /api/admin/uploads`，成功后插入 `![alt](url)` markdown
+  - [x] admin-entry 当前回归：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts src/app/api/admin/entries/[id]/route.test.ts` => `21 passed`
 
 - [x] **2026-05-18** 旧版项目下线 — 远端 `MICBIK/TZBlog` 清空重建为单 empty commit `9d1370c`
 - [x] **2026-05-18** 本地工作目录清空（只剩 `.git/`）

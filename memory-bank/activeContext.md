@@ -4,7 +4,7 @@
 
 ## 当前焦点
 
-**`blog-ia-redesign` 长任务进行中。当前 HEAD 是 `fc0143f feat(admin-entry): ee-012`，M1 已闭环，M2 editor lane 已完成，admin-channel 已全量闭环，admin-entry 已推进到 ee-012。**
+**`blog-ia-redesign` 长任务进行中。admin-entry 已全量闭环 `ee-001 ~ ee-015`（工作区未提交）；M1 已闭环，M2 editor / admin-channel / admin-entry 均已完成。**
 
 - M1：`schema` / `migration` / `cleanup-prep` 已完成，tag `m1-schema-migration-complete` 已打。
 - M2 editor：
@@ -28,8 +28,10 @@
   - `ee-010` 已完成：duplicate slug -> `409 CONFLICT`，编辑器显示 `slug 已被使用`
   - `ee-011` 已完成：编辑器内 `Mod+S` 自动保存且保持当前 status，不再把已发布条目降成 `DRAFT`
   - `ee-012` 已完成：series dropdown + seriesOrder 输入已接入，create payload / DB 写入 `seriesId + seriesOrder`
-  - 当前 admin-entry 验证基线：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts src/app/api/admin/entries/[id]/route.test.ts` => `17 passed`
-  - 下一步：`ee-013` tags 多选、`ee-014` archive、`ee-015` 图片拖拽上传 markdown 插入
+  - `ee-013` 已完成：`TagsInput` 多选 + new/edit page 传 `allTags`，submit payload / DB `TagsOnEntries` 同步
+  - `ee-014` 已完成：编辑已发布 `ARTICLE` 显示「归档」，`PATCH status=ARCHIVED`
+  - `ee-015` 已完成：`MilkdownEditor` 拖拽图片走 `/api/admin/uploads` 并插入 markdown 图片语法
+  - 当前 admin-entry 验证基线：`pnpm vitest run src/components/admin/entries/EntryEditor.test.tsx src/app/(admin)/admin/entries/new/page.test.tsx src/app/api/admin/entries/route.test.ts src/app/api/admin/entries/[id]/route.test.ts` => `21 passed`
 
 - 当前 editor 验证基线：
   - `pnpm vitest run src/components/editor/round-trip.test.ts src/components/editor/MilkdownEditor.test.tsx` => `17 passed`
@@ -57,10 +59,8 @@
 
 ## 下一步计划
 
-1. **ee-013**：接 `TagsInput` / suggestions，把 tag 多选真正写入 `TagsOnEntries`。
-2. **ee-014**：编辑已发布 entry 时增加“归档”动作，`PATCH` 置 `ARCHIVED`。
-3. **ee-015**：编辑器拖拽图片时上传媒体并插入 `![alt](url)`。
-4. admin-entry 当前薄弱点：还没有 series dropdown 的页面级测试，也还没把 tags / archive / upload 收口。
+1. 按 `blog-ia-redesign/tasks.md` 继续 M2 后续 capability（`12-auth-magic-link` / `13-guestbook` / public shell 等）。
+2. 将 admin-entry `ee-013 ~ ee-015` 按 TDD 节奏拆成 test/feat commit 对（当前为工作区批量实现，尚未提交）。
 
 ## 待办池 / 已知问题
 
