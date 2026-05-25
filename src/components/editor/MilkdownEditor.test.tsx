@@ -10,6 +10,16 @@ const mocks = vi.hoisted(() => ({
 beforeEach(() => {
   vi.clearAllMocks();
   vi.stubGlobal("fetch", mocks.fetch);
+  vi.stubGlobal("matchMedia", vi.fn().mockImplementation((query: string) => ({
+    matches: query === "(prefers-reduced-motion: reduce)",
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })));
 });
 
 describe("MilkdownEditor", () => {
@@ -104,5 +114,16 @@ describe("MilkdownEditor", () => {
     expect(onChange).toHaveBeenLastCalledWith("abc");
 
     vi.useRealTimers();
+  });
+
+  it("reducedMotionDisablesAnimations", () => {
+    render(<MilkdownEditor value="/" onChange={vi.fn()} />);
+
+    const root = screen.getByRole("textbox", { name: "Milkdown editor content" }).closest(
+      "[data-milkdown-editor]",
+    );
+
+    expect(root).toHaveAttribute("data-reduced-motion-safe");
+    expect(screen.getByRole("menu", { name: "Slash 菜单" })).toHaveClass("transition-none");
   });
 });
