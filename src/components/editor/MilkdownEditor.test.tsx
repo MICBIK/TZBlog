@@ -33,6 +33,20 @@ describe("MilkdownEditor", () => {
     expect(screen.getByRole("menuitem", { name: "二级标题" })).toBeInTheDocument();
   });
 
+  it("darkThemePropPropagatesToContainer", () => {
+    render(<MilkdownEditor value="/" onChange={vi.fn()} theme="dark" />);
+
+    const root = screen.getByRole("textbox", { name: "Milkdown editor content" }).closest(
+      "[data-milkdown-editor]",
+    );
+
+    expect(root).toHaveAttribute("data-theme", "dark");
+    expect(screen.getByRole("menu", { name: "Slash 菜单" })).toHaveAttribute(
+      "data-theme",
+      "dark",
+    );
+  });
+
   it("bubbleMenuAppearsOnSelection", () => {
     render(<MilkdownEditor value="selected text" onChange={vi.fn()} />);
 
