@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { isSafeMediaUrl } from "./milkdownBridge";
 
 export interface MilkdownEditorProps {
   value: string;
@@ -28,6 +29,36 @@ export function MilkdownEditor({
     setHasSelection(target.selectionStart !== target.selectionEnd);
   };
 
+  const handleDrop = async (event: React.DragEvent<HTMLTextAreaElement>) => {
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+
+    event.preventDefault();
+    const body = new FormData();
+    body.append("file", file);
+
+    const response = await fetch("/api/media/upload", {
+      method: "POST",
+      body,
+    });
+
+    if (!response.ok) return;
+
+    const payload = (await response.json()) as {
+      data?: {
+        url?: string;
+        alt?: string;
+      };
+    };
+    const url = payload.data?.url;
+    const alt = payload.data?.alt ?? file.name;
+    if (!url || !isSafeMediaUrl(url)) return;
+
+    const next = `![${alt}](${url})`;
+    setDraft(next);
+    onChange(next);
+  };
+
   const showSlashMenu = draft.endsWith("/");
 
   return (
@@ -41,6 +72,9 @@ export function MilkdownEditor({
         value={draft}
         onChange={handleChange}
         onSelect={handleSelect}
+        onDrop={(event) => {
+          void handleDrop(event);
+        }}
         className="min-h-[20rem] w-full resize-y bg-bg px-4 py-4 font-mono text-sm leading-7 text-fg outline-none"
       />
 
