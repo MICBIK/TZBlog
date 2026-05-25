@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { Palette } from "lucide-react";
 
-import type { HeaderChannel } from "@/lib/navigation/publicNav";
+import {
+  buildHeaderNavLinks,
+  type HeaderChannel,
+} from "@/lib/navigation/publicNav";
 import { SITE_META } from "@/lib/site-meta";
 
 export interface SiteHeaderProps {
   channels: HeaderChannel[];
 }
 
-export function SiteHeader({ channels: _channels }: SiteHeaderProps) {
-  void _channels;
+export function SiteHeader({ channels }: SiteHeaderProps) {
+  const navLinks = buildHeaderNavLinks(channels);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur">
@@ -30,9 +33,11 @@ export function SiteHeader({ channels: _channels }: SiteHeaderProps) {
             data-site-header-nav
             className="flex items-center gap-6"
           >
-            <Link href="/about" className="text-sm text-muted-fg">
-              关于
-            </Link>
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="text-sm text-muted-fg">
+                {link.label}
+              </Link>
+            ))}
           </nav>
           <button
             type="button"
