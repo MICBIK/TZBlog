@@ -33,10 +33,22 @@ export function buildHeaderNavLinks(
     .filter((channel) => channel.enabled)
     .sort((left, right) => left.order - right.order);
 
-  const links: HeaderNavLink[] = enabled.map((channel) => ({
-    href: `/c/${channel.slug}`,
-    label: getChannelNavLabel(channel),
-  }));
+  const links: HeaderNavLink[] = [];
+
+  for (const channel of enabled) {
+    if (channel.kind === "GUESTBOOK") {
+      links.push({
+        href: "/guestbook",
+        label: getChannelNavLabel(channel),
+      });
+      continue;
+    }
+
+    links.push({
+      href: `/c/${channel.slug}`,
+      label: getChannelNavLabel(channel),
+    });
+  }
 
   links.push({ href: "/about", label: "关于" });
 
