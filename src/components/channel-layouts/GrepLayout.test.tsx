@@ -16,6 +16,7 @@ const entries: ChannelLayoutEntry[] = Array.from({ length: 20 }, (_, index) => (
     sourceUrl: `https://example.com/${index}`,
     domain: "example.com",
   },
+  tags: index === 3 ? ["postgres"] : ["systems"],
 }));
 
 describe("GrepLayout", () => {
@@ -40,5 +41,36 @@ describe("GrepLayout", () => {
     expect(visibleRows.length).toBeGreaterThan(0);
     expect(visibleRows.length).toBeLessThan(20);
     expect(screen.getByText("链接 3")).toBeVisible();
+  });
+
+  it("grepFilterMatchesHighlight", async () => {
+    const user = userEvent.setup();
+    render(<GrepLayout channelSlug="stream" entries={entries} />);
+
+    await user.type(screen.getByTestId("grep-filter-input"), "postgres");
+
+    const highlightedRows = screen
+      .getAllByTestId("grep-row")
+      .filter((row) => row.getAttribute("data-highlight") === "true");
+    expect(highlightedRows).toHaveLength(1);
+
+    const hiddenRows = screen
+      .getAllByTestId("grep-row")
+      .filter((row) => row.classList.contains("hidden"));
+    expect(hiddenRows.length).toBe(entries.length - 1);
+
+    expect(screen.getByRole("link", { name: "链接 3" })).toHaveClass(
+      "bg-accent/15",
+    );
+  });
+
+  it("rendersFixedWidthColumns", () => {
+    render(<GrepLayout channelSlug="stream" entries={entries.slice(0, 3)} />);
+
+    expect(screen.getByTestId("grep-table")).toHaveClass("table-fixed");
+    expect(screen.getByTestId("grep-col-time")).toHaveTextContent("time");
+    expect(screen.getByTestId("grep-col-title")).toHaveTextContent("title");
+    expect(screen.getByTestId("grep-col-source")).toHaveTextContent("source");
+    expect(screen.getByTestId("grep-col-tags")).toHaveTextContent("tags");
   });
 });
