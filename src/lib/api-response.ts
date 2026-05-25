@@ -2,6 +2,10 @@ import { NextResponse } from "next/server"
 import { ZodError } from "zod"
 import { AppError } from "./errors"
 
+export function created<T>(data: T) {
+  return NextResponse.json({ data }, { status: 201 })
+}
+
 export function ok<T>(data: T, meta?: Record<string, unknown>) {
   return NextResponse.json({ data, ...(meta ? { meta } : {}) })
 }

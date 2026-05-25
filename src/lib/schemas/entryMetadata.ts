@@ -69,6 +69,7 @@ export const guestbookThreadMetadataSchema = z.object({
   visibility: z.enum(["PRIVATE_TO_AUTHOR", "PUBLIC"]).default("PRIVATE_TO_AUTHOR"),
   visitorName: z.string().min(1).max(40),
   visitorEmail: z.string().email().optional(),
+  resolved: z.boolean().default(false),
 })
 
 export const entryMetadataSchema = z.discriminatedUnion("kind", [
