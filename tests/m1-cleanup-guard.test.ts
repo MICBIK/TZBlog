@@ -20,7 +20,7 @@ describe("M1 cleanup guard", () => {
   });
 
   it("has no HomeGarden residue in src", () => {
-    expect(grepCount(`grep -rwn "HomeGarden" src/`)).toBe(0);
+    expect(grepCount(`grep -rwn "HomeGarden" src/ --exclude=cleanup-guard.test.ts`)).toBe(0);
   });
 
   it("has no BlockNote source imports", () => {

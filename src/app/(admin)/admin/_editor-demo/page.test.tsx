@@ -5,8 +5,8 @@ const mocks = vi.hoisted(() => ({
   notFound: vi.fn(),
 }));
 
-vi.mock("@/components/editor/MarkdownEditorWithPreview", () => ({
-  MarkdownEditorWithPreview: ({ value }: { value: string }) => (
+vi.mock("@/components/editor/MilkdownEditor", () => ({
+  MilkdownEditor: ({ value }: { value: string }) => (
     <div data-testid="editor-demo-surface" data-value={value} />
   ),
 }));

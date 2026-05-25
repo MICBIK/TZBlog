@@ -2,12 +2,12 @@ import { render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PostListItem } from "@/lib/services/posts";
+import type { ArticleListItem } from "@/lib/services/articles";
 
 const mocks = vi.hoisted(() => ({
   getCurrentLocale: vi.fn(),
   getTagBySlug: vi.fn(),
-  listPosts: vi.fn(),
+  listArticles: vi.fn(),
   notFound: vi.fn(),
 }));
 
@@ -24,8 +24,8 @@ vi.mock("@/lib/services/tags-public", () => ({
   getTagBySlug: mocks.getTagBySlug,
 }));
 
-vi.mock("@/lib/services/posts", () => ({
-  listPosts: mocks.listPosts,
+vi.mock("@/lib/services/articles", () => ({
+  listArticles: mocks.listArticles,
 }));
 
 const tagDetailPageModulePath = "./page";
@@ -38,7 +38,7 @@ beforeEach(() => {
     slug: "foo",
     name: "Foo",
   });
-  mocks.listPosts.mockResolvedValue({
+  mocks.listArticles.mockResolvedValue({
     items: [post({ id: "p1", slug: "one", title: "Post One" })],
     total: 2,
     page: 1,
@@ -70,7 +70,7 @@ describe("TagDetailPage", () => {
   });
 
   it("TagDetailPage pagination supported via searchParams", async () => {
-    mocks.listPosts.mockResolvedValue({
+    mocks.listArticles.mockResolvedValue({
       items: [post({ id: "p2", slug: "two", title: "Post Two" })],
       total: 25,
       page: 2,
@@ -80,7 +80,7 @@ describe("TagDetailPage", () => {
 
     render(await TagDetailPage(pageProps("foo", { page: "2" })));
 
-    expect(mocks.listPosts).toHaveBeenCalledWith(
+    expect(mocks.listArticles).toHaveBeenCalledWith(
       { page: 2, pageSize: 12, status: "PUBLISHED", tag: "foo" },
       "zh",
     );
@@ -109,7 +109,7 @@ describe("TagDetailPage", () => {
   });
 
   it("TagDetailPage empty state when 0 posts", async () => {
-    mocks.listPosts.mockResolvedValue({
+    mocks.listArticles.mockResolvedValue({
       items: [],
       total: 0,
       page: 1,
@@ -154,15 +154,15 @@ function pageProps(
   };
 }
 
-function post(overrides: Partial<PostListItem> = {}): PostListItem {
+function post(overrides: Partial<ArticleListItem> = {}): ArticleListItem {
   return {
     id: "post-id",
     slug: "post",
     cover: null,
     status: "PUBLISHED",
     publishedAt: new Date("2026-05-21T00:00:00Z"),
-    columnId: null,
-    columnName: null,
+    channelId: null,
+    channelName: null,
     authorName: "Author",
     title: "Post Title",
     excerpt: "Post excerpt",

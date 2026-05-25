@@ -7,7 +7,7 @@ import {
   disconnectTestDb,
 } from "../../../tests/helpers/db"
 import { addLike, hasLikedBy } from "./likes"
-import { createPost } from "./posts"
+import { createTestArticle } from "@/lib/test/createTestArticle"
 
 let authorId: string
 
@@ -21,16 +21,13 @@ afterAll(async () => {
 })
 
 async function makePost(slug = "hello"): Promise<string> {
-  const p = await createPost(
-    {
-      slug,
-      status: "PUBLISHED",
-      translations: [{ locale: "zh", title: "hi", content: "body" }],
-      tags: [],
-    } as never,
-    authorId,
-  )
-  return p.id
+  const entry = await createTestArticle(authorId, {
+    slug,
+    status: "PUBLISHED",
+    title: "hi",
+    content: "body",
+  });
+  return entry.id;
 }
 
 describe("addLike", () => {

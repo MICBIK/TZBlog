@@ -91,7 +91,7 @@ describe("EntryDetail kind renderers", () => {
       }),
     );
 
-    expect(container.querySelector("[data-entry-note-body]")).toHaveClass("prose");
+    expect(container.querySelector("[data-entry-note-body]")).toHaveClass("markdown-body");
     expect(screen.queryByTestId("post-toc")).not.toBeInTheDocument();
     expect(screen.queryByTestId("reading-toc")).not.toBeInTheDocument();
   });
@@ -207,7 +207,7 @@ describe("EntryDetail kind renderers", () => {
       }),
     );
 
-    expect(document.querySelector("[data-entry-joke-body]")).toHaveClass("prose");
+    expect(document.querySelector("[data-entry-joke-body]")).toHaveClass("markdown-body");
   });
 });
 

@@ -109,7 +109,7 @@ function post(
     title: "Cover Title",
     excerpt: "Cover excerpt",
     publishedAt: new Date("2026-05-21T00:00:00Z"),
-    columnName: null,
+    channelName: null,
     tags: [],
     ...overrides,
   } as unknown as PostCardPost;

@@ -6,7 +6,7 @@ import {
   testDb,
   disconnectTestDb,
 } from "../../../tests/helpers/db"
-import { createPost } from "./posts"
+import { createTestArticle } from "@/lib/test/createTestArticle"
 
 /**
  * Schema-level integration test driving SPEC-C-S-1..2:
@@ -32,15 +32,13 @@ afterAll(async () => {
 })
 
 async function makePost(slug = "hello"): Promise<{ id: string }> {
-  return createPost(
-    {
-      slug,
-      status: "PUBLISHED",
-      translations: [{ locale: "zh", title: "hi", content: "body" }],
-      tags: [],
-    } as never,
-    authorId,
-  )
+  const entry = await createTestArticle(authorId, {
+    slug,
+    status: "PUBLISHED",
+    title: "hi",
+    content: "body",
+  });
+  return { id: entry.id };
 }
 
 describe("Comment.reviewedBy + reviewedAt schema (SPEC-C-S-1..2)", () => {

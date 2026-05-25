@@ -4,8 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const IMG_COMPONENT_FILES = [
-  "src/app/(site)/posts/[slug]/page.tsx",
-  "src/components/admin/posts/CoverUploader.tsx",
+  "src/components/reading/ArticleReader.tsx",
   "src/components/site/PostCard.tsx",
   "src/components/admin/media/MediaCard.tsx",
   "src/components/site/GithubCard.tsx",
@@ -26,7 +25,6 @@ describe("img attrs (SPEC-LH-P-1)", () => {
       }
 
       for (const img of imgs) {
-        // Skip <img> text fragments inside comments / strings (no src=)
         if (!/\bsrc\s*=/.test(img)) continue;
 
         const hasAlt = /\balt\s*=/.test(img);

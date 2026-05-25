@@ -2,21 +2,19 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-describe("HomePage TechStack integration", () => {
+describe("HomePage IA integration", () => {
   const source = readFileSync(
     join(process.cwd(), "src/app/(site)/page.tsx"),
     "utf-8",
   );
 
-  it("no longer contains terminal-style techStack const", () => {
+  it("loads home data through HomePageContent instead of legacy TechStack const", () => {
     expect(source).not.toMatch(/const techStack\s*=/);
-    expect(source).not.toMatch(/\$\s*<\/span>\s*whoami/);
+    expect(source).toMatch(/getHomePageData/);
+    expect(source).toMatch(/<HomePageContent data=\{data\} \/>/);
   });
 
-  it("imports and renders TechStack component", () => {
-    expect(source).toMatch(
-      /import\s+\{\s*TechStack\s*\}\s+from\s+"@\/components\/site\/TechStack"/,
-    );
-    expect(source).toMatch(/<TechStack\s*\/>/);
+  it("wraps the homepage in the aurora theme provider", () => {
+    expect(source).toMatch(/<ThemeProvider theme="aurora" hero>/);
   });
 });

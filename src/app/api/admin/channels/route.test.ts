@@ -55,14 +55,20 @@ describe("GET /api/admin/channels", () => {
     expect(body.data.map((channel) => channel.slug)).toEqual([
       "articles",
       "stream",
+      "notes",
+      "cards",
+      "pulse",
       "guestbook",
     ])
     expect(body.data.map((channel) => channel.kind)).toEqual([
       "ARTICLES",
       "STREAM",
+      "NOTES",
+      "ARTICLES",
+      "STREAM",
       "GUESTBOOK",
     ])
-    expect(body.data.map((channel) => channel.order)).toEqual([0, 1, 99])
+    expect(body.data.map((channel) => channel.order)).toEqual([0, 1, 2, 3, 4, 99])
   })
 })
 

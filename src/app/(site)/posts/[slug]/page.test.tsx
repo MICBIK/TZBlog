@@ -3,13 +3,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PostWithRelations } from "@/lib/services/posts";
+import type { ArticleWithRelations } from "@/lib/services/articles";
 import PostDetailPage, { generateMetadata } from "./page";
 
 const mocks = vi.hoisted(() => ({
   extractToc: vi.fn(),
   getCurrentLocale: vi.fn(),
-  getPostBySlug: vi.fn(),
+  getArticleBySlug: vi.fn(),
   notFound: vi.fn(),
   renderMarkdown: vi.fn(),
 }));
@@ -23,8 +23,8 @@ vi.mock("@/lib/i18n", () => ({
   getCurrentLocale: mocks.getCurrentLocale,
 }));
 
-vi.mock("@/lib/services/posts", () => ({
-  getPostBySlug: mocks.getPostBySlug,
+vi.mock("@/lib/services/articles", () => ({
+  getArticleBySlug: mocks.getArticleBySlug,
 }));
 
 vi.mock("@/lib/markdown", () => ({
@@ -76,7 +76,7 @@ beforeEach(() => {
 
 describe("PostDetailPage cover banner", () => {
   it("renders cover hero banner above title when set", async () => {
-    mocks.getPostBySlug.mockResolvedValue(
+    mocks.getArticleBySlug.mockResolvedValue(
       post({ cover: "/uploads/2026/05/detail-cover.png" }),
     );
 
@@ -91,7 +91,7 @@ describe("PostDetailPage cover banner", () => {
   });
 
   it("skips cover banner when cover is null", async () => {
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null }));
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
 
@@ -105,7 +105,7 @@ describe("PostDetailPage cover banner", () => {
 describe("PostDetailPage TOC", () => {
   it("does not render toc aside when headings empty", async () => {
     mocks.extractToc.mockResolvedValue([]);
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null }));
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
 
@@ -114,7 +114,7 @@ describe("PostDetailPage TOC", () => {
 
   it("renders toc aside when headings present", async () => {
     mocks.extractToc.mockResolvedValue([{ id: "a", text: "A", level: 2 }]);
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null, content: "x".repeat(1200) }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null, content: "x".repeat(1200) }));
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
 
@@ -127,7 +127,7 @@ describe("PostDetailPage reading article shell", () => {
     mocks.extractToc.mockResolvedValue([
       { id: "intro", text: "Intro", level: 2 },
     ]);
-    mocks.getPostBySlug.mockResolvedValue(
+    mocks.getArticleBySlug.mockResolvedValue(
       post({
         cover: "/uploads/2026/05/editorial-cover.png",
         content: "x".repeat(1200),
@@ -167,7 +167,7 @@ describe("PostDetailPage reading article shell", () => {
 
 describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
   it("renders LikeButton in place of likes count + CommentSection at end of article", async () => {
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null }));
 
     render(
       await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }),
@@ -188,7 +188,7 @@ describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
   });
 
   it("renders stats chrome in Chinese for the single-locale site", async () => {
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null }));
 
     render(
       await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }),
@@ -202,7 +202,7 @@ describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
 
 describe("PostDetailPage metadata i18n current state", () => {
   it("does not emit fake alternates.languages for missing locale routes", async () => {
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null }));
 
     const metadata = await generateMetadata({
       params: Promise.resolve({ slug: "detail" }),
@@ -214,7 +214,7 @@ describe("PostDetailPage metadata i18n current state", () => {
 
 describe("PostDetailPage markdown reading system", () => {
   it("renders article HTML inside markdown-body instead of prose-only defaults", async () => {
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null }));
 
     const { container } = render(
       await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }),
@@ -234,7 +234,7 @@ describe("PostDetailPage markdown reading system", () => {
       join(process.cwd(), "src/lib/markdown/__fixtures__/full-syntax.md"),
       "utf-8",
     );
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null, content: fixture }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null, content: fixture }));
 
     const { container } = render(
       await PostDetailPageWithRealMarkdown({
@@ -261,7 +261,7 @@ describe("PostDetailPage markdown reading system", () => {
 
 describe("PostDetailPage tag links", () => {
   it("Post detail page tag links use /tags/{slug}", async () => {
-    mocks.getPostBySlug.mockResolvedValue(
+    mocks.getArticleBySlug.mockResolvedValue(
       post({
         cover: null,
         tags: [
@@ -290,8 +290,8 @@ function post({
 }: {
   cover: string | null;
   content?: string;
-  tags?: PostWithRelations["tags"];
-}): PostWithRelations {
+  tags?: ArticleWithRelations["tags"];
+}): ArticleWithRelations {
   return {
     id: "post-id",
     slug: "detail",
@@ -299,7 +299,7 @@ function post({
     status: "PUBLISHED",
     publishedAt: new Date("2026-05-21T00:00:00Z"),
     authorId: "author-id",
-    columnId: null,
+    channelId: null,
     viewCount: 10,
     likeCount: 2,
     commentCount: 1,
@@ -308,24 +308,24 @@ function post({
     translations: [
       {
         id: "tr-id",
-        postId: "post-id",
+        entryId: "post-id",
         locale: "zh",
         title: "Detail Title",
         excerpt: "Detail excerpt",
         content,
       },
     ],
-    column: null,
+    channel: null,
     tags,
     author: { id: "author-id", email: "author@example.com", name: "Author" },
-  } as PostWithRelations;
+  } as ArticleWithRelations;
 }
 
 
 describe("PostDetailPage entry detail routing", () => {
   it("rendersInkThemeArticleDetail", async () => {
     const PostSlugLayout = (await import("./layout")).default;
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getArticleBySlug.mockResolvedValue(post({ cover: null }));
 
     render(
       <PostSlugLayout>
@@ -342,7 +342,7 @@ describe("PostDetailPage entry detail routing", () => {
   });
 
   it("noteAtPostsRouteReturns404", async () => {
-    mocks.getPostBySlug.mockResolvedValue(null);
+    mocks.getArticleBySlug.mockResolvedValue(null);
 
     await expect(
       PostDetailPage({ params: Promise.resolve({ slug: "daily-note" }) }),

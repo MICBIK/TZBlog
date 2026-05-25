@@ -17,9 +17,9 @@ const activeDocs = [
 const developerGuidanceDocs = [
   "openspec/config.yaml",
   "openspec/specs/media-upload/spec.md",
-  "src/app/api/admin/posts/route.ts",
-  "src/app/api/admin/columns/route.ts",
-  "src/components/editor/MarkdownEditor.tsx",
+  "src/app/api/admin/entries/route.ts",
+  "src/app/api/admin/channels/route.ts",
+  "src/components/editor/MilkdownEditor.tsx",
 ];
 
 async function readProjectFile(path: string): Promise<string> {

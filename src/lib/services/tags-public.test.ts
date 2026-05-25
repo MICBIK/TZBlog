@@ -87,16 +87,16 @@ async function seedTagsWithPublishedAndDraftPosts() {
   ]);
 
   await Promise.all([
-    createPostWithTag("foo-1", "PUBLISHED", foo.id),
-    createPostWithTag("foo-2", "PUBLISHED", foo.id),
-    createPostWithTag("foo-3", "PUBLISHED", foo.id),
-    createPostWithTag("bar-1", "PUBLISHED", bar.id),
-    createPostWithTag("baz-draft-1", "DRAFT", baz.id),
-    createPostWithTag("baz-draft-2", "DRAFT", baz.id),
+    createTestArticleWithTag("foo-1", "PUBLISHED", foo.id),
+    createTestArticleWithTag("foo-2", "PUBLISHED", foo.id),
+    createTestArticleWithTag("foo-3", "PUBLISHED", foo.id),
+    createTestArticleWithTag("bar-1", "PUBLISHED", bar.id),
+    createTestArticleWithTag("baz-draft-1", "DRAFT", baz.id),
+    createTestArticleWithTag("baz-draft-2", "DRAFT", baz.id),
   ]);
 }
 
-async function createPostWithTag(
+async function createTestArticleWithTag(
   slug: string,
   status: "DRAFT" | "PUBLISHED",
   tagId: string,

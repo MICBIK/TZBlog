@@ -36,8 +36,8 @@ describe("AdminSidebar navigation", () => {
 
     expect(hrefs).toEqual([
       "/admin",
-      "/admin/posts",
-      "/admin/columns",
+      "/admin/entries",
+      "/admin/channels",
       "/admin/comments",
       "/admin/media",
     ]);
@@ -64,18 +64,18 @@ describe("AdminSidebar navigation", () => {
       "data-active",
       "true",
     );
-    expect(screen.getByRole("link", { name: "文章" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "条目" })).toHaveAttribute(
       "data-active",
       "false",
     );
   });
 
   it("marks posts active for nested post routes", () => {
-    mocks.pathname = "/admin/posts/new";
+    mocks.pathname = "/admin/entries/new";
 
     render(<AdminSidebar />);
 
-    expect(screen.getByRole("link", { name: "文章" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "条目" })).toHaveAttribute(
       "data-active",
       "true",
     );

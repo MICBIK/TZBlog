@@ -9,15 +9,12 @@ function source(path: string): string {
 describe("admin AR-4 button, form, and focus conventions", () => {
   const commentsTable = source("src/components/admin/comments/CommentsTable.tsx");
   const postMetaSidebar = source(
-    "src/components/admin/posts/PostMetaSidebar.tsx",
+    "src/components/admin/entries/EntryEditor.tsx",
   );
   const postRowActions = source(
-    "src/components/admin/posts/PostRowActions.tsx",
+    "src/components/admin/entries/EntryRowActions.tsx",
   );
-  const columnRowActions = source(
-    "src/components/admin/columns/ColumnRowActions.tsx",
-  );
-  const coverUploader = source("src/components/admin/posts/CoverUploader.tsx");
+  const coverUploader = source("src/components/admin/entries/EntryEditor.tsx");
   const mediaUploadDropzone = source(
     "src/components/admin/media/MediaUploadDropzone.tsx",
   );
@@ -33,7 +30,6 @@ describe("admin AR-4 button, form, and focus conventions", () => {
     const destructiveActionSources = [
       commentsTable,
       postRowActions,
-      columnRowActions,
     ];
 
     for (const actionSource of destructiveActionSources) {

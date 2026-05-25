@@ -10,7 +10,7 @@ interface AdminHeaderProps {
 }
 
 const mocks = vi.hoisted(() => ({
-  pathname: "/admin/posts/new",
+  pathname: "/admin/entries/new",
 }));
 
 vi.mock("next/navigation", () => ({

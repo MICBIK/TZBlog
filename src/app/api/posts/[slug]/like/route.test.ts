@@ -6,7 +6,7 @@ import {
   disconnectTestDb,
 } from "../../../../../../tests/helpers/db"
 import { GET, POST } from "./route"
-import { createPost } from "@/lib/services/posts"
+import { createTestArticle } from "@/lib/test/createTestArticle"
 
 let authorId: string
 
@@ -20,7 +20,7 @@ afterAll(async () => {
 })
 
 async function makePost(slug = "hello"): Promise<void> {
-  await createPost(
+  await createTestArticle(
     {
       slug,
       status: "PUBLISHED",

@@ -230,7 +230,7 @@ describe("analytics dashboard query functions", () => {
       createdAt: daysAgo(1),
     })
     await createPageViews(100, {
-      path: "/admin/posts",
+      path: "/admin/entries",
       visitorHashPrefix: "admin",
       createdAt: daysAgo(1),
     })

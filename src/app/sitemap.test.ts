@@ -23,9 +23,9 @@ afterAll(async () => {
 describe("sitemap", () => {
   it("includes static routes + published posts + columns", async () => {
     const [firstPost, secondPost, thirdPost] = await Promise.all([
-      createPost("published-one", "PUBLISHED"),
-      createPost("published-two", "PUBLISHED"),
-      createPost("published-three", "PUBLISHED"),
+      createTestArticle("published-one", "PUBLISHED"),
+      createTestArticle("published-two", "PUBLISHED"),
+      createTestArticle("published-three", "PUBLISHED"),
     ]);
     await Promise.all([createColumn("tech"), createColumn("notes")]);
 
@@ -37,13 +37,12 @@ describe("sitemap", () => {
     expect(urls).toEqual(
       expect.arrayContaining([
         `${baseUrl}/`,
-        `${baseUrl}/posts`,
-        `${baseUrl}/about`,
+                `${baseUrl}/about`,
         `${baseUrl}/posts/${firstPost.slug}`,
         `${baseUrl}/posts/${secondPost.slug}`,
         `${baseUrl}/posts/${thirdPost.slug}`,
-        `${baseUrl}/columns/tech`,
-        `${baseUrl}/columns/notes`,
+        `${baseUrl}/c/tech`,
+        `${baseUrl}/c/notes`,
       ]),
     );
     expect(urls.every((url) => url.startsWith(baseUrl))).toBe(true);
@@ -56,9 +55,9 @@ describe("sitemap", () => {
 
   it("skips DRAFT and ARCHIVED posts", async () => {
     await Promise.all([
-      createPost("live-only", "PUBLISHED"),
-      createPost("draft-post", "DRAFT"),
-      createPost("archived-post", "ARCHIVED"),
+      createTestArticle("live-only", "PUBLISHED"),
+      createTestArticle("draft-post", "DRAFT"),
+      createTestArticle("archived-post", "ARCHIVED"),
     ]);
 
     const { default: sitemap } = await importSitemap();
@@ -115,10 +114,10 @@ describe("sitemap", () => {
     const baseUrl = siteUrl();
     const columnUrls = entries
       .map((entry) => entry.url)
-      .filter((url) => url.startsWith(`${baseUrl}/columns/`));
+      .filter((url) => url.startsWith(`${baseUrl}/c/`));
 
-    expect(columnUrls).toContain(`${baseUrl}/columns/visible-column`);
-    expect(columnUrls).not.toContain(`${baseUrl}/columns/en-only-column`);
+    expect(columnUrls).toContain(`${baseUrl}/c/visible-column`);
+    expect(columnUrls).not.toContain(`${baseUrl}/c/en-only-column`);
   });
 });
 
@@ -135,7 +134,7 @@ async function importSitemap(): Promise<{
   };
 }
 
-async function createPost(
+async function createTestArticle(
   slug: string,
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED",
 ) {

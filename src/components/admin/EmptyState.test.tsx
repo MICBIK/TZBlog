@@ -19,7 +19,7 @@ describe("EmptyState", () => {
         icon={<span aria-hidden="true">#</span>}
         title="暂无文章"
         description="点击「新建文章」开始创建"
-        action={{ label: "新建文章", href: "/admin/posts/new" }}
+        action={{ label: "新建文章", href: "/admin/entries/new" }}
       />,
     );
 
@@ -27,7 +27,7 @@ describe("EmptyState", () => {
     expect(screen.getByText("点击「新建文章」开始创建")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "新建文章" })).toHaveAttribute(
       "href",
-      "/admin/posts/new",
+      "/admin/entries/new",
     );
   });
 

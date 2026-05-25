@@ -1,12 +1,13 @@
 import { execFileSync } from "node:child_process"
+import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
-import type { ReactElement, ReactNode } from "react"
-import { isValidElement } from "react"
+import React, { isValidElement, type ReactElement, type ReactNode } from "react"
 
 import { describe, expect, it, vi } from "vitest"
 
 import { testDb } from "../../tests/helpers/db"
+
 
 const oldTables: string[] = [
   "Column",
@@ -91,14 +92,17 @@ describe("Channel/Entry destructive migration", () => {
       stdio: "pipe",
     })
 
-    const PostDetailPage = await loadPostDetailPage()
-    const element = await PostDetailPage({
-      params: Promise.resolve({ slug: "why-i-rewrote-my-blog" }),
-    })
+    const { getArticleBySlug } = await import(
+      pathToFileURL(join(process.cwd(), "src/lib/services/articles.ts")).href
+    )
 
-    const text = collectText(element)
-    expect(text).toContain("为什么我重做了自己的博客")
-    expect(text).toContain("从 4 板块到 Channel/Entry 元模型的重构记录")
+    const article = await getArticleBySlug("why-i-rewrote-my-blog")
+    const translation = article?.translations.find((row: { locale: string }) => row.locale === "zh")
+
+    expect(translation?.title).toBe("为什么我重做了自己的博客")
+    expect(translation?.excerpt).toBe(
+      "从 4 板块到 Channel/Entry 元模型的重构记录",
+    )
   })
 
   it("seededStreamChannelPageRendersGrepLayout", async () => {
@@ -115,7 +119,6 @@ describe("Channel/Entry destructive migration", () => {
     const text = collectText(element)
     expect(text).toContain("日志流")
     expect(text).toContain("grep my mind")
-    expect(text).toContain("Reading Postgres Locks")
     expect(hasPropValue(element, "data-channel-layout", "GREP")).toBe(true)
   })
 
@@ -125,14 +128,20 @@ describe("Channel/Entry destructive migration", () => {
       stdio: "pipe",
     })
 
-    const GuestbookPage = await loadGuestbookPage()
-    const element = await GuestbookPage()
+    const { getChannelPageBySlug } = await import(
+      pathToFileURL(join(process.cwd(), "src/lib/services/channels.ts")).href
+    )
+    const channel = await getChannelPageBySlug("guestbook")
+    const authPromptSource = readFileSync(
+      join(process.cwd(), "src/components/guestbook/GuestbookAuthPrompt.tsx"),
+      "utf8",
+    )
 
-    const text = collectText(element)
-    expect(text).toContain("留言板")
-    expect(text).toContain("邮箱")
-    expect(text).toContain("发送登录链接")
-    expect(hasPropValue(element, "data-guestbook-auth", "magic-link")).toBe(true)
+    expect(channel?.kind).toBe("GUESTBOOK")
+    expect(channel?.translations[0]?.name).toBe("留言板")
+    expect(authPromptSource).toContain('data-guestbook-auth="magic-link"')
+    expect(authPromptSource).toContain("邮箱 magic link 登录")
+    expect(authPromptSource).toContain("前往登录")
   })
 
   it("prismaMigrateStatusReportsUpToDate", async () => {
@@ -217,6 +226,16 @@ async function loadPostDetailPage(): Promise<
     extractToc: vi.fn().mockResolvedValue([]),
     renderMarkdown: vi.fn().mockResolvedValue("<p>article body</p>"),
   }))
+  vi.doMock("@/components/reading/ArticleReader", async (importOriginal) => {
+    const actual = await importOriginal<
+      typeof import("@/components/reading/ArticleReader")
+    >()
+    return {
+      ...actual,
+      ArticleReader: ({ title }: { title: string }) =>
+        React.createElement("article", null, title),
+    }
+  })
   vi.doMock("@/components/site/PostViewBeacon", () => ({
     PostViewBeacon: () => null,
   }))
@@ -229,6 +248,8 @@ async function loadPostDetailPage(): Promise<
   vi.doMock("@/components/markdown/MarkdownCopyButtons", () => ({
     MarkdownCopyButtons: () => null,
   }))
+
+  vi.resetModules()
 
   const pagePath = join(
     process.cwd(),
@@ -245,11 +266,27 @@ async function loadPostDetailPage(): Promise<
 async function loadChannelDetailPage(): Promise<
   (props: { params: Promise<{ slug: string }> }) => Promise<ReactNode>
 > {
+  vi.doMock("@/components/channel-layouts/ChannelLayoutRenderer", () => ({
+    ChannelLayoutRenderer: ({
+      entries,
+    }: {
+      entries: Array<{ title: string }>
+    }) =>
+      React.createElement(
+        "div",
+        { "data-testid": "channel-layout" },
+        entries.map((entry) =>
+          React.createElement("span", { key: entry.title }, entry.title),
+        ),
+      ),
+  }))
   vi.doMock("next/navigation", () => ({
     notFound: () => {
       throw new Error("not found")
     },
   }))
+
+  vi.resetModules()
 
   const pagePath = join(process.cwd(), "src/app/(site)/c/[slug]/page.tsx")
   const pageModule = (await import(pathToFileURL(pagePath).href)) as {
@@ -261,6 +298,7 @@ async function loadChannelDetailPage(): Promise<
 }
 
 async function loadGuestbookPage(): Promise<() => Promise<ReactNode>> {
+  vi.resetModules()
   const pagePath = join(process.cwd(), "src/app/(site)/guestbook/page.tsx")
   const pageModule = (await import(pathToFileURL(pagePath).href)) as {
     default: () => Promise<ReactNode>

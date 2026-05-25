@@ -17,7 +17,7 @@ describe("principles content", () => {
     ]);
   });
 
-  it("HomePrinciples is a featured subset of AboutPrinciples, not the full set", async () => {
+  it("featured principles are a subset subset of AboutPrinciples, not the full set", async () => {
     const { getAboutPrinciples, getHomePrinciples } = await loadPrinciples();
     const about = getAboutPrinciples();
     const home = getHomePrinciples();

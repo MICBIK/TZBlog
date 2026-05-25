@@ -50,7 +50,7 @@ describe("POST /api/track", () => {
   })
 
   it("204 + DB unchanged on path blacklist (/admin, /api, /login) (SPEC-A-A-3)", async () => {
-    for (const p of ["/admin/posts", "/api/track", "/login"]) {
+    for (const p of ["/admin/entries", "/api/track", "/login"]) {
       const res = await POST(mkReq({ path: p }))
       expect(res.status).toBe(204)
     }

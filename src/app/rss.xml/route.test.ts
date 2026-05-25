@@ -2,19 +2,19 @@ import "dotenv/config";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { PostListItem } from "@/lib/services/posts";
+import type { ArticleListItem } from "@/lib/services/articles";
 
 const mocks = vi.hoisted(() => ({
-  listPosts: vi.fn(),
+  listArticles: vi.fn(),
 }));
 
-vi.mock("@/lib/services/posts", () => ({
-  listPosts: mocks.listPosts,
+vi.mock("@/lib/services/articles", () => ({
+  listArticles: mocks.listArticles,
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.listPosts.mockResolvedValue({
+  mocks.listArticles.mockResolvedValue({
     items: [],
     total: 0,
     page: 1,
@@ -36,7 +36,7 @@ describe("GET /rss.xml", () => {
       excerpt: "Second excerpt",
       publishedAt: new Date("2026-05-20T00:00:00Z"),
     });
-    mocks.listPosts.mockResolvedValue({
+    mocks.listArticles.mockResolvedValue({
       items: [first, second],
       total: 2,
       page: 1,
@@ -80,7 +80,7 @@ describe("GET /rss.xml", () => {
         publishedAt: new Date(Date.UTC(2026, 4, 21 - index)),
       }),
     );
-    mocks.listPosts.mockResolvedValue({
+    mocks.listArticles.mockResolvedValue({
       items: items.slice(0, 20),
       total: 25,
       page: 1,
@@ -91,7 +91,7 @@ describe("GET /rss.xml", () => {
     const response = await GET();
     const body = await response.text();
 
-    expect(mocks.listPosts).toHaveBeenCalledWith(
+    expect(mocks.listArticles).toHaveBeenCalledWith(
       { page: 1, pageSize: 20, status: "PUBLISHED" },
       "zh",
     );
@@ -102,7 +102,7 @@ describe("GET /rss.xml", () => {
   });
 
   it('includes <atom:link rel="self"> and <lastBuildDate>', async () => {
-    mocks.listPosts.mockResolvedValue({
+    mocks.listArticles.mockResolvedValue({
       items: [post({ slug: "rss-self", title: "RSS Self" })],
       total: 1,
       page: 1,
@@ -124,7 +124,7 @@ describe("GET /rss.xml", () => {
   });
 
   it('escapes &, <, >, ", and \' in title and description', async () => {
-    mocks.listPosts.mockResolvedValue({
+    mocks.listArticles.mockResolvedValue({
       items: [
         post({
           slug: "special",
@@ -169,15 +169,15 @@ function countItems(xml: string): number {
   return [...xml.matchAll(/<item>/g)].length;
 }
 
-function post(overrides: Partial<PostListItem> = {}): PostListItem {
+function post(overrides: Partial<ArticleListItem> = {}): ArticleListItem {
   return {
     id: "post-id",
     slug: "post",
     cover: null,
     status: "PUBLISHED",
     publishedAt: new Date("2026-05-21T00:00:00Z"),
-    columnId: null,
-    columnName: null,
+    channelId: null,
+    channelName: null,
     authorName: "Author",
     title: "Post",
     excerpt: "Excerpt",

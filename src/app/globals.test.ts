@@ -226,15 +226,13 @@ describe("globals.css editorial system", () => {
   });
 
   it("nested list, blockquote, and hr use structured spacing", () => {
-    const nested = cssBlock(css, ".markdown-body ul ul");
-    const blockquote = cssBlock(css, ".markdown-body blockquote");
-    const hr = cssBlock(css, ".markdown-body hr");
-
-    expect(nested).toContain("padding-left:");
-    expect(blockquote).toContain("font-family: var(--font-serif);");
-    expect(blockquote).toContain("font-style: italic;");
-    expect(hr).toContain("border-top: 1px solid hsl(var(--border));");
-    expect(hr).toContain("margin: var(--space-stack-lg) 0;");
+    expect(css).toMatch(/\.markdown-body ul ul[\s\S]*padding-left:/);
+    expect(css).toMatch(
+      /\.markdown-body blockquote[\s\S]*font-family: var\(--font-serif\);[\s\S]*font-style: italic;/,
+    );
+    expect(css).toMatch(
+      /\.markdown-body hr[\s\S]*border-top: 1px solid hsl\(var\(--border\)\);[\s\S]*margin: var\(--space-stack-lg\) 0;/,
+    );
   });
 
   it("globals.css contains all new markdown tokens and selectors", () => {
@@ -303,10 +301,11 @@ describe("globals.css editorial system", () => {
 
   it("site components use generated theme utilities instead of unresolved var arbitrary classes", () => {
     const files = [
-      "src/components/site/HeroEditorial.tsx",
-      "src/components/site/TechStack.tsx",
+      "src/components/site/HomePageContent.tsx",
+      "src/components/site/HomePageHero.tsx",
+      "src/components/site/ChannelPreviewBlock.tsx",
+      "src/components/site/HomeTrending.tsx",
       "src/components/site/GithubCard.tsx",
-      "src/components/site/LaunchNarrative.tsx",
       "src/components/site/about/AboutHero.tsx",
       "src/components/site/about/AboutNow.tsx",
       "src/components/site/about/AboutProjectIntent.tsx",

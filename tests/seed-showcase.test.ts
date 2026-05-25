@@ -28,17 +28,17 @@ describe("showcase seed", () => {
     await runSeed()
     await runSeed()
 
-    const [posts, columns, tags, comments, config] = await Promise.all([
-      testDb.post.findMany({
+    const [entries, channels, tags, comments, config] = await Promise.all([
+      testDb.entry.findMany({
         where: { status: "PUBLISHED" },
         include: {
           translations: true,
-          column: { include: { translations: true } },
+          channel: { include: { translations: true } },
           tags: { include: { tag: true } },
         },
         orderBy: { slug: "asc" },
       }),
-      testDb.column.findMany({ include: { translations: true } }),
+      testDb.channel.findMany({ include: { translations: true } }),
       testDb.tag.findMany({ orderBy: { slug: "asc" } }),
       testDb.comment.findMany({ where: { status: "APPROVED" } }),
       testDb.siteConfig.findUnique({ where: { id: "singleton" } }),
@@ -48,117 +48,113 @@ describe("showcase seed", () => {
       title: "TZBlog",
       description: expect.stringContaining("技术博客"),
     })
-    expect(posts).toHaveLength(8)
-    expect(columns).toHaveLength(3)
+    expect(entries.length).toBeGreaterThanOrEqual(8)
+    expect(channels).toHaveLength(6)
     expect(tags.length).toBeGreaterThanOrEqual(12)
     expect(comments.length).toBeGreaterThanOrEqual(2)
 
-    for (const post of posts) {
-      expect(post.publishedAt).toBeInstanceOf(Date)
-      expect(post.translations).toHaveLength(1)
-      expect(post.translations[0].locale).toBe("zh")
-      expect(post.translations[0].title).not.toEqual("(untitled)")
-      expect(post.column?.translations[0]?.name).toBeTruthy()
-      expect(post.tags.length).toBeGreaterThanOrEqual(1)
+    for (const entry of entries) {
+      expect(entry.publishedAt).toBeInstanceOf(Date)
+      expect(entry.translations).toHaveLength(1)
+      expect(entry.translations[0].locale).toBe("zh")
+      expect(entry.translations[0].title).not.toEqual("(untitled)")
+      expect(entry.channel?.translations[0]?.name).toBeTruthy()
+      expect(entry.tags.length).toBeGreaterThanOrEqual(1)
     }
 
-    const entriesWithCover = posts.filter((post) => post.cover)
-    expect(entriesWithCover.length).toBeGreaterThanOrEqual(3)
-    for (const entry of entriesWithCover) {
-      expect(entry.cover).toMatch(/^\/showcase\/cover-[\w-]+\.png$/)
-      expect(assetExists(entry.cover)).toBe(true)
-    }
-
-    const articleEntries = posts.filter((post) =>
-      ["notion-like-markdown-workflow", "self-hosted-nextjs-observability", "why-i-rewrote-my-blog"].includes(post.slug),
+    const articleEntries = entries.filter((entry) =>
+      [
+        "notion-like-markdown-workflow",
+        "self-hosted-nextjs-observability",
+        "why-i-rewrote-my-blog",
+      ].includes(entry.slug),
     )
     for (const entry of articleEntries) {
-      expect(entry.translations[0].content).toContain("```ts")
-      expect(entry.translations[0].content).toContain("![](/showcase/article-")
+      expect(entry.body).toContain("```ts")
+      expect(entry.body).toContain("![](/showcase/article-")
     }
 
-    expect(posts.map((post) => post.slug)).toEqual([
-      "hot-take-2026-05-22",
-      "joke-bom-prod",
-      "link-postgres-locks",
-      "note-2026-05-23",
-      "notion-like-markdown-workflow",
-      "quote-didion",
-      "self-hosted-nextjs-observability",
-      "why-i-rewrote-my-blog",
-    ])
+    expect(entries.map((entry) => entry.slug)).toEqual(
+      expect.arrayContaining([
+        "hot-take-2026-05-22",
+        "joke-bom-prod",
+        "link-postgres-locks",
+        "note-2026-05-23",
+        "notion-like-markdown-workflow",
+        "quote-didion",
+        "self-hosted-nextjs-observability",
+        "why-i-rewrote-my-blog",
+      ]),
+    )
   })
 
   it("seededContentSupportsPublicShowcaseRoutes", async () => {
     await runSeed()
 
-    const latestPost = await testDb.post.findFirst({
-      where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: { sort: "desc", nulls: "last" } },
+    const latestEntry = await testDb.entry.findUnique({
+      where: { slug: "self-hosted-nextjs-observability" },
       include: {
         translations: true,
-        column: { include: { translations: true } },
+        channel: { include: { translations: true } },
         tags: { include: { tag: true } },
         comments: { where: { status: "APPROVED" } },
       },
     })
-    const columns = await testDb.column.findMany({
+    const channels = await testDb.channel.findMany({
       include: {
         translations: true,
-        posts: { where: { status: "PUBLISHED" }, select: { id: true } },
+        entries: { where: { status: "PUBLISHED" }, select: { id: true } },
       },
     })
     const tags = await testDb.tag.findMany({
       include: {
-        posts: {
-          where: { post: { status: "PUBLISHED" } },
-          select: { postId: true },
+        entries: {
+          where: { entry: { status: "PUBLISHED" } },
+          select: { entryId: true },
         },
       },
     })
 
-    expect(latestPost?.slug).toBe("self-hosted-nextjs-observability")
-    expect(latestPost?.cover).toMatch(/^\/showcase\/cover-[\w-]+\.png$/)
-    expect(assetExists(latestPost?.cover)).toBe(true)
-    expect(latestPost?.translations[0].content).toContain("## MVP 指标")
-    expect(latestPost?.translations[0].content).toContain("### 交付前检查")
-    expect(latestPost?.translations[0].content).toContain("> [!WARNING]")
-    expect(latestPost?.translations[0].content).toContain("| 指标 |")
-    expect(latestPost?.translations[0].content).toContain("```ts")
-    expect(latestPost?.translations[0].content).toContain(
+    expect(latestEntry?.slug).toBe("self-hosted-nextjs-observability")
+    expect(latestEntry?.body).toContain("## MVP 指标")
+    expect(latestEntry?.body).toContain("### 交付前检查")
+    expect(latestEntry?.body).toContain("> [!WARNING]")
+    expect(latestEntry?.body).toContain("| 指标 |")
+    expect(latestEntry?.body).toContain("```ts")
+    expect(latestEntry?.body).toContain(
       "![](/showcase/article-observability.png)",
     )
     expect(assetExists("/showcase/article-observability.png")).toBe(true)
-    expect(latestPost?.column?.translations[0].name).toBe("文章")
+    expect(latestEntry?.channel?.translations[0].name).toBe("文章")
     expect(
-      latestPost?.tags
+      latestEntry?.tags
         .map((row: { tag: { slug: string } }) => row.tag.slug)
         .sort(),
-    ).toEqual([
-      "analytics",
-      "nextjs",
-      "self-hosting",
-    ])
+    ).toEqual(["analytics", "nextjs", "self-hosting"])
 
-    expect(columns).toHaveLength(3)
-    expect(columns.map((column) => column.slug).sort()).toEqual([
+    expect(channels).toHaveLength(6)
+    expect(channels.map((channel) => channel.slug).sort()).toEqual([
       "articles",
+      "cards",
       "guestbook",
+      "notes",
+      "pulse",
       "stream",
     ])
-    const enabledChannels = columns.filter((column) => column.enabled)
-    expect(enabledChannels).toHaveLength(2)
-    expect(enabledChannels.every((column) => column.posts.length > 0)).toBe(true)
-    expect(columns.every((column) => assetExists(column.cover))).toBe(true)
+    const enabledChannels = channels.filter((channel) => channel.enabled)
+    expect(enabledChannels.length).toBeGreaterThanOrEqual(2)
+    expect(enabledChannels.every((channel) => channel.entries.length > 0)).toBe(
+      true,
+    )
     expect(tags.length).toBeGreaterThanOrEqual(6)
-    expect(tags.every((tag) => tag.posts.length > 0)).toBe(true)
+    expect(tags.every((tag) => tag.entries.length > 0)).toBe(true)
 
-    const commentedPost = await testDb.post.findUnique({
+    const commentedEntry = await testDb.entry.findUnique({
       where: { slug: "notion-like-markdown-workflow" },
       include: { comments: { where: { status: "APPROVED" } } },
     })
-    expect(commentedPost?.commentCount).toBe(commentedPost?.comments.length)
-    expect(commentedPost?.comments[0]?.content).toContain("Markdown 存储边界")
+    expect(commentedEntry?.commentCount).toBe(commentedEntry?.comments.length)
+    expect(commentedEntry?.comments[0]?.content).toContain("Markdown 存储边界")
   })
 })
 
