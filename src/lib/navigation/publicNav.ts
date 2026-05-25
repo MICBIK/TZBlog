@@ -50,7 +50,5 @@ export function buildHeaderNavLinks(
     });
   }
 
-  links.push({ href: "/about", label: "关于" });
-
-  return links;
+  return [...links, { href: "/about", label: "关于" }];
 }
