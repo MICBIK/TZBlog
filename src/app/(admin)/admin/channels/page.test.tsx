@@ -135,4 +135,42 @@ describe("ChannelsAdminPage", () => {
     expect(rows[0]).toHaveAttribute("data-slug", "stream");
     expect(rows[1]).toHaveAttribute("data-slug", "articles");
   });
+
+  it("enabledToggleUpdates", async () => {
+    const user = userEvent.setup();
+    const { ChannelsTable: RealChannelsTable } = await vi.importActual<
+      typeof import("@/components/admin/channels/ChannelsTable")
+    >("@/components/admin/channels/ChannelsTable");
+
+    render(
+      <RealChannelsTable
+        initialChannels={[
+          {
+            id: "channel-1",
+            order: 0,
+            slug: "articles",
+            kind: "ARTICLES",
+            layout: "CHRONICLE",
+            enabled: true,
+            entryCount: 4,
+          },
+        ]}
+      />,
+    );
+
+    await user.click(screen.getByRole("switch", { name: "启用 articles" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/channels/channel-1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: false }),
+      });
+    });
+
+    expect(screen.getByRole("switch", { name: "启用 articles" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+  });
 });
