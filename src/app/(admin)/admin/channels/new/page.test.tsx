@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 describe("ChannelCreatePage", () => {
@@ -14,5 +15,20 @@ describe("ChannelCreatePage", () => {
     expect(screen.getByText("主题与强调")).toBeInTheDocument();
     expect(screen.getByText("翻译")).toBeInTheDocument();
     expect(screen.getByText("可见性")).toBeInTheDocument();
+  });
+
+  it("notesKindFiltersLayoutsToTimelineFeed", async () => {
+    const user = userEvent.setup();
+    const { default: ChannelCreatePage } = await import("./page");
+
+    render(<ChannelCreatePage />);
+
+    await user.selectOptions(screen.getByLabelText("频道类型"), "NOTES");
+
+    const layout = screen.getByLabelText("布局");
+    expect(screen.getByRole("option", { name: "TIMELINE" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "FEED" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "CHRONICLE" })).not.toBeInTheDocument();
+    expect(layout).toHaveValue("TIMELINE");
   });
 });
