@@ -1,7 +1,16 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MilkdownEditor } from "./MilkdownEditor";
+
+const mocks = vi.hoisted(() => ({
+  fetch: vi.fn(),
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.stubGlobal("fetch", mocks.fetch);
+});
 
 describe("MilkdownEditor", () => {
   it("slashMenuAppearsAtCaret", () => {
@@ -28,5 +37,37 @@ describe("MilkdownEditor", () => {
 
     expect(screen.getByRole("toolbar", { name: "Bubble 菜单" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bold" })).toBeInTheDocument();
+  });
+
+  it("imageDropTriggersMediaUpload", async () => {
+    const onChange = vi.fn();
+    mocks.fetch.mockResolvedValue(
+      new Response(
+        JSON.stringify({ data: { url: "/uploads/architecture.png", alt: "architecture.png" } }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    render(<MilkdownEditor value="" onChange={onChange} />);
+
+    const editor = screen.getByRole("textbox", { name: "Milkdown editor content" });
+    const file = new File(["binary"], "architecture.png", { type: "image/png" });
+
+    fireEvent.drop(editor, {
+      dataTransfer: {
+        files: [file],
+      },
+    });
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith("![architecture.png](/uploads/architecture.png)");
+    });
   });
 });
