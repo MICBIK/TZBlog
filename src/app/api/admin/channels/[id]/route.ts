@@ -4,7 +4,7 @@ import { ok, withErrorHandler } from "@/lib/api-response"
 import { auth } from "@/lib/auth"
 import { errors } from "@/lib/errors"
 import { updateChannelSchema } from "@/lib/schemas/channel"
-import { updateChannel } from "@/lib/services/channels"
+import { deleteChannel, updateChannel } from "@/lib/services/channels"
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -24,5 +24,14 @@ export const PATCH = withErrorHandler(
     const input = updateChannelSchema.parse(body)
     const channel = await updateChannel(id, input)
     return ok(channel)
+  },
+)
+
+export const DELETE = withErrorHandler(
+  async (_req: Request, ctx: RouteContext): Promise<NextResponse> => {
+    await requireAdminSession()
+    const { id } = await ctx.params
+    await deleteChannel(id)
+    return ok({ id })
   },
 )
