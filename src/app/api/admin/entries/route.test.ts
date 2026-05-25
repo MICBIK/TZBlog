@@ -94,6 +94,51 @@ describe("POST /api/admin/entries", () => {
       body: "正文",
     });
   });
+
+  it("returns400WhenLinkMetadataIsInvalid", async () => {
+    const { POST } = await loadRoute();
+    const channel = await testDb.channel.create({
+      data: {
+        slug: "notes",
+        order: 1,
+        enabled: true,
+        kind: "NOTES",
+        layout: "TIMELINE",
+        translations: {
+          create: [{ locale: "zh", name: "笔记", description: null }],
+        },
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/admin/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "invalid-link-entry",
+          channelId: channel.id,
+          kind: "LINK",
+          status: "DRAFT",
+          metadata: {
+            sourceTitle: "无链接来源",
+          },
+          tags: [],
+          translations: [
+            {
+              locale: "zh",
+              title: "无效链接",
+              excerpt: null,
+              content: "正文",
+            },
+          ],
+        }),
+      }),
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error.code).toBe("VALIDATION_ERROR");
+  });
 });
 
 async function loadRoute(): Promise<EntriesRoute> {

@@ -273,4 +273,60 @@ describe("EntryEditor", () => {
     });
     expect(mocks.refresh).toHaveBeenCalledTimes(1);
   });
+
+  it("showsFieldLevelErrorWhenLinkMetadataInvalid", async () => {
+    const user = userEvent.setup();
+    mocks.fetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "VALIDATION_ERROR",
+            details: {
+              issues: [
+                {
+                  path: ["data", "sourceUrl"],
+                  message: "sourceUrl is required",
+                },
+              ],
+            },
+          },
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-notes",
+            slug: "notes",
+            kind: "NOTES",
+            name: "笔记",
+          },
+        ]}
+        initialChannelId="channel-notes"
+      />,
+    );
+
+    await user.selectOptions(screen.getByLabelText("条目类型"), "LINK");
+    fireEvent.change(screen.getByLabelText("标题"), {
+      target: { value: "链接条目" },
+    });
+    fireEvent.change(screen.getByLabelText("slug"), {
+      target: { value: "link-entry" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      target: { value: "正文" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("sourceUrl is required")).toBeInTheDocument();
+    });
+  });
 });
