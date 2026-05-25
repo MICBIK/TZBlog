@@ -6,17 +6,20 @@ import { HomeHero } from "@/components/site/HomeHero";
 import { HomePrinciples } from "@/components/site/HomePrinciples";
 import { HomeStats } from "@/components/site/HomeStats";
 import { TechStack } from "@/components/site/TechStack";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 
 export default function HomePage() {
   return (
-    <HomeShell
-      hero={<HomeHero />}
-      featuredAndRecent={<HomeFeaturedAndRecent />}
-      columns={<HomeColumns />}
-      principles={<HomePrinciples />}
-      techStack={<TechStack />}
-      github={<GithubCard />}
-      stats={<HomeStats />}
-    />
+    <ThemeProvider theme="aurora" hero>
+      <HomeShell
+        hero={<HomeHero />}
+        featuredAndRecent={<HomeFeaturedAndRecent />}
+        columns={<HomeColumns />}
+        principles={<HomePrinciples />}
+        techStack={<TechStack />}
+        github={<GithubCard />}
+        stats={<HomeStats />}
+      />
+    </ThemeProvider>
   );
 }
