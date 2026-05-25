@@ -224,6 +224,14 @@
   --ring-soft: 220 70% 65%;
 }
 
+
+/* Route-level theme skins (M3 theme-tokens) */
+:root,
+[data-theme="aurora"] {
+  --radius: 0.875rem;
+}
+
+
 /* Map semantic tokens into Tailwind v4's @theme so utilities
  * like bg-bg / text-fg / border-border / ring-ring work. */
 @theme inline {

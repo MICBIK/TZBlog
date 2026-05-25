@@ -66,6 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
+      data-theme="aurora"
       className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
