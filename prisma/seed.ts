@@ -230,6 +230,30 @@ interface EditorContract {
 
 > [!TIP]
 > 真正值得保留的是内容迁移能力，而不是某个编辑器运行时。
+
+## 为什么仍然坚持 Markdown
+
+Markdown 是最稳定的 interchange format。它不会因为某个 SaaS 改 schema 就让旧文章失效，也不会把渲染逻辑锁死在浏览器里。
+
+## Slash menu 与 bubble menu
+
+Slash menu 负责块级插入，bubble menu 负责选区格式化。两者都应该输出标准 Markdown，而不是隐藏的 DOM 状态。
+
+## 媒体与安全 URL
+
+图片上传后只保存经过校验的 URL；任何 \`javascript:\` 或内联事件处理器都必须在入库前被拒绝。
+
+## 发布链路
+
+后台保存 Markdown，前台仍走 \`renderMarkdown\` + Shiki。这样 smoke 截图、RSS 与 OG 都共享同一套渲染结果。
+
+## 对 smoke 与 CI 的要求
+
+Playwright 只验证 DOM 契约与可访问性，不替代人工对比 demo-front 方向稿。Ink 阅读页应在桌面端展示 sticky TOC，在移动端折叠目录。
+
+## 对迁移的要求
+
+任何编辑器升级都必须通过 round-trip fixture；不允许 silent degradation。旧文章打开后如果丢块，说明适配层越界了。目录侧栏是长文阅读体验的一部分，也是 read-002 的验收锚点。
 `,
   },
   {
@@ -286,6 +310,18 @@ const signal = {
 \`\`\`
 
 这些数据不追求复杂，但必须足够稳定，能支撑上线后的每一次判断。
+
+## 采样与留存
+
+浏览上报只记录匿名哈希与日键，不把原始 IP 暴露给前台组件。点赞与评论仍走独立去重表，避免把互动误算成 PV。
+
+## 告警阈值
+
+当 404 比例连续升高、RSS 拉取失败或 sitemap 缺少已发布条目时，后台应给出可见提示，而不是静默失败。
+
+## 扩展路线
+
+后续可以把 Channel/Entry 点击流接到同一 PageView 管道，而不另起一套 SDK；主题切换与 layout 渲染仍保持 SSR，避免 smoke 截图受 hydration 抖动影响。
 `,
   },
   {
