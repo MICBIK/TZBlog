@@ -281,6 +281,16 @@ export function EntryEditor({
           >
             发布
           </Button>
+          {mode === "edit" && status === "PUBLISHED" && kind === "ARTICLE" ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void submit("ARCHIVED")}
+              disabled={submitting}
+            >
+              归档
+            </Button>
+          ) : null}
         </div>
       </div>
 
