@@ -78,4 +78,14 @@ describe("<SiteHeader /> public shell", () => {
     );
     expect(container.querySelector('a[href="/c/guestbook"]')).not.toBeInTheDocument();
   });
+
+  it("navAlwaysHasAboutLink", () => {
+    render(<SiteHeader channels={sampleChannels} />);
+
+    const nav = screen.getByRole("navigation", { name: "主导航" });
+    const links = within(nav).getAllByRole("link");
+
+    expect(links.at(-1)).toHaveTextContent("关于");
+    expect(links.at(-1)).toHaveAttribute("href", "/about");
+  });
 });
