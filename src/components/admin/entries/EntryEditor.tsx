@@ -25,6 +25,13 @@ interface ArticleMetadataDraft {
   ogImage: string;
 }
 
+interface LinkMetadataDraft {
+  sourceUrl: string;
+  sourceTitle: string;
+  sourceAuthor: string;
+  thumbnail: string;
+}
+
 function getSelectedChannel(
   channels: EntryEditorChannel[],
   channelId?: string,
@@ -49,6 +56,12 @@ export function EntryEditor({
     readingMinutes: "",
     toc: true,
     ogImage: "",
+  });
+  const [linkMetadata, setLinkMetadata] = React.useState<LinkMetadataDraft>({
+    sourceUrl: "",
+    sourceTitle: "",
+    sourceAuthor: "",
+    thumbnail: "",
   });
 
   if (!selectedChannel) {
@@ -165,6 +178,70 @@ export function EntryEditor({
                 setArticleMetadata((current) => ({
                   ...current,
                   ogImage: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+        </section>
+      ) : null}
+
+      {kind === "LINK" ? (
+        <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
+          <label className="grid gap-2 text-sm font-medium">
+            sourceUrl
+            <input
+              aria-label="sourceUrl"
+              value={linkMetadata.sourceUrl}
+              onChange={(event) =>
+                setLinkMetadata((current) => ({
+                  ...current,
+                  sourceUrl: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium">
+            sourceTitle
+            <input
+              aria-label="sourceTitle"
+              value={linkMetadata.sourceTitle}
+              onChange={(event) =>
+                setLinkMetadata((current) => ({
+                  ...current,
+                  sourceTitle: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium">
+            sourceAuthor
+            <input
+              aria-label="sourceAuthor"
+              value={linkMetadata.sourceAuthor}
+              onChange={(event) =>
+                setLinkMetadata((current) => ({
+                  ...current,
+                  sourceAuthor: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium">
+            thumbnail
+            <input
+              aria-label="thumbnail"
+              value={linkMetadata.thumbnail}
+              onChange={(event) =>
+                setLinkMetadata((current) => ({
+                  ...current,
+                  thumbnail: event.target.value,
                 }))
               }
               className="rounded border border-border bg-bg px-3 py-2 text-sm"
