@@ -58,6 +58,8 @@ interface HotTakeMetadataDraft {
   sourceSnippet: string;
 }
 
+type FieldErrors = Record<string, string>;
+
 function getSelectedChannel(
   channels: EntryEditorChannel[],
   channelId?: string,
@@ -128,6 +130,7 @@ export function EntryEditor({
   );
   const [body, setBody] = React.useState(initial?.content ?? "");
   const [submitting, setSubmitting] = React.useState(false);
+  const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({});
   const [articleMetadata, setArticleMetadata] = React.useState<ArticleMetadataDraft>(
     readArticleMetadataDraft(initial?.metadata),
   );
@@ -150,6 +153,7 @@ export function EntryEditor({
     if (!selectedChannel) {
       return;
     }
+    setFieldErrors({});
     setSubmitting(true);
     try {
       const response = await fetch(
@@ -184,6 +188,27 @@ export function EntryEditor({
       );
 
       if (!response.ok) {
+        const payload = (await response.json()) as {
+          error?: {
+            code?: string;
+            details?: {
+              issues?: Array<{
+                path?: Array<string | number>;
+                message?: string;
+              }>;
+            };
+          };
+        };
+        if (payload.error?.code === "VALIDATION_ERROR") {
+          const nextErrors: FieldErrors = {};
+          for (const issue of payload.error.details?.issues ?? []) {
+            const field = issue.path?.at(-1);
+            if (typeof field === "string" && issue.message) {
+              nextErrors[field] = issue.message;
+            }
+          }
+          setFieldErrors(nextErrors);
+        }
         return;
       }
 
@@ -241,6 +266,9 @@ export function EntryEditor({
             onChange={(event) => setTitle(event.target.value)}
             placeholder="输入条目标题"
           />
+          {fieldErrors.title ? (
+            <p className="text-sm text-destructive">{fieldErrors.title}</p>
+          ) : null}
         </label>
 
         <label className="grid gap-2 text-sm font-medium">
@@ -303,6 +331,9 @@ export function EntryEditor({
             onChange={(event) => setSlug(event.target.value)}
             placeholder="my-entry"
           />
+          {fieldErrors.slug ? (
+            <p className="text-sm text-destructive">{fieldErrors.slug}</p>
+          ) : null}
         </label>
       </section>
 
@@ -385,6 +416,9 @@ export function EntryEditor({
               }
               className="rounded border border-border bg-bg px-3 py-2 text-sm"
             />
+            {fieldErrors.sourceUrl ? (
+              <p className="text-sm text-destructive">{fieldErrors.sourceUrl}</p>
+            ) : null}
           </label>
 
           <label className="grid gap-2 text-sm font-medium">
@@ -472,6 +506,9 @@ export function EntryEditor({
               }
               className="rounded border border-border bg-bg px-3 py-2 text-sm"
             />
+            {fieldErrors.sourceUrl ? (
+              <p className="text-sm text-destructive">{fieldErrors.sourceUrl}</p>
+            ) : null}
           </label>
 
           <label className="grid gap-2 text-sm font-medium md:col-span-2">
