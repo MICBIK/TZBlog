@@ -1,30 +1,12 @@
-import { AnalyticsBeacon } from "@/components/site/AnalyticsBeacon";
-import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { Toaster } from "@/components/ui/sonner";
+import { SiteShell } from "@/components/site/SiteShell";
+import { listChannels } from "@/lib/services/channels";
 
-export default function SiteLayout({
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div
-      data-site-motion-root
-      data-reduced-motion-safe
-      className="flex min-h-screen flex-col bg-bg text-fg"
-    >
-      <SiteHeader channels={[]} />
-      <main
-        data-ssr-visible
-        data-motion-hydration-safe
-        className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 md:px-8 md:py-24"
-      >
-        {children}
-      </main>
-      <SiteFooter />
-      <Toaster richColors position="top-right" />
-      <AnalyticsBeacon />
-    </div>
-  );
+  const channels = await listChannels();
+
+  return <SiteShell channels={channels}>{children}</SiteShell>;
 }
