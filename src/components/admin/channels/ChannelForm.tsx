@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
 import { getAllowedLayoutsForChannelKind } from "@/lib/schemas/channelEntryRules";
 
@@ -14,15 +15,49 @@ const KIND_OPTIONS = [
 ] as const;
 
 export function ChannelForm() {
+  const router = useRouter();
   const [slug, setSlug] = React.useState("");
   const [kind, setKind] = React.useState<(typeof KIND_OPTIONS)[number]>("ARTICLES");
   const allowedLayouts = getAllowedLayoutsForChannelKind(kind);
   const [layout, setLayout] = React.useState<(typeof allowedLayouts)[number]>(
     allowedLayouts[0],
   );
+  const [submitting, setSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitError(null);
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("/api/admin/channels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug,
+          kind,
+          layout,
+        }),
+      });
+
+      if (!response.ok) {
+        setSubmitError("创建频道失败");
+        return;
+      }
+
+      const payload = (await response.json()) as { data?: { id?: string } };
+      const id = payload.data?.id;
+      if (id) {
+        router.push(`/admin/channels/${id}/edit`);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
-    <form className="grid gap-6">
+    <form className="grid gap-6" onSubmit={(event) => void handleSubmit(event)}>
       <section className="rounded-lg border border-border p-4">
         <h2 className="text-base font-semibold">Slug</h2>
         <input
@@ -87,6 +122,22 @@ export function ChannelForm() {
       <section className="rounded-lg border border-border p-4">
         <h2 className="text-base font-semibold">可见性</h2>
       </section>
+
+      {submitError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {submitError}
+        </p>
+      ) : null}
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={submitting || kind === "GUESTBOOK"}
+          className="rounded bg-foreground px-4 py-2 text-sm text-background disabled:opacity-50"
+        >
+          {submitting ? "创建中..." : "创建频道"}
+        </button>
+      </div>
     </form>
   );
 }
