@@ -65,7 +65,7 @@ export function MilkdownEditor({
     const body = new FormData();
     body.append("file", file);
 
-    const response = await fetch("/api/media/upload", {
+    const response = await fetch("/api/admin/uploads", {
       method: "POST",
       body,
     });
@@ -75,11 +75,12 @@ export function MilkdownEditor({
     const payload = (await response.json()) as {
       data?: {
         url?: string;
+        filename?: string;
         alt?: string;
       };
     };
     const url = payload.data?.url;
-    const alt = payload.data?.alt ?? file.name;
+    const alt = payload.data?.alt ?? payload.data?.filename ?? file.name;
     if (!url || !isSafeMediaUrl(url)) {
       setUploadBlocked("unsafe-url");
       return;
