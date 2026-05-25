@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveChannelTheme } from "./resolveTheme";
+import { resolveChannelTheme, resolveEntryTheme } from "./resolveTheme";
 
 describe("resolveChannelTheme", () => {
   it("channelStreamKindResolvesToTerminal", () => {
@@ -13,5 +13,13 @@ describe("resolveChannelTheme", () => {
     expect(
       resolveChannelTheme({ kind: "ARTICLES", layout: "CHRONICLE" }),
     ).toBe("aurora");
+  });
+});
+
+describe("resolveEntryTheme", () => {
+  it("entryArticleKindOverridesParentChannelTheme", () => {
+    expect(
+      resolveEntryTheme({ kind: "ARTICLE" }, { kind: "STREAM", layout: "FEED" }),
+    ).toBe("ink");
   });
 });
