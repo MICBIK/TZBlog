@@ -1,7 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  fetch: vi.fn(),
   getChannelById: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
@@ -24,6 +26,13 @@ vi.mock("next/navigation", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubGlobal("fetch", mocks.fetch);
+  mocks.fetch.mockResolvedValue(
+    new Response(JSON.stringify({ data: { id: "channel-1" } }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }),
+  );
   mocks.getChannelById.mockResolvedValue({
     id: "channel-1",
     slug: "stream",
@@ -45,5 +54,29 @@ describe("ChannelEditPage", () => {
     expect(screen.getByLabelText("频道类型")).toHaveValue("STREAM");
     expect(screen.getByLabelText("布局")).toHaveValue("FEED");
     expect(mocks.getChannelById).toHaveBeenCalledWith("channel-1");
+  });
+
+  it("layoutChangeUpdatesFrontend", async () => {
+    const user = userEvent.setup();
+    const { default: ChannelEditPage } = await import("./page");
+
+    render(await ChannelEditPage({ params: Promise.resolve({ id: "channel-1" }) }));
+
+    await user.selectOptions(screen.getByLabelText("布局"), "GREP");
+    await user.click(screen.getByRole("button", { name: "保存更改" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/channels/channel-1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "stream",
+          kind: "STREAM",
+          layout: "GREP",
+        }),
+      });
+    });
+
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
   });
 });
