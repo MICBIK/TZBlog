@@ -3,7 +3,10 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 
-import { getAllowedLayoutsForChannelKind } from "@/lib/schemas/channelEntryRules";
+import {
+  getAllowedLayoutsForChannelKind,
+  isLayoutAllowedForChannelKind,
+} from "@/lib/schemas/channelEntryRules";
 
 const KIND_OPTIONS = [
   "ARTICLES",
@@ -14,13 +17,46 @@ const KIND_OPTIONS = [
   "CUSTOM",
 ] as const;
 
-export function ChannelForm() {
+export interface ChannelFormInitial {
+  id: string;
+  slug: string;
+  kind: (typeof KIND_OPTIONS)[number];
+  layout: string;
+  enabled: boolean;
+  translations: Array<{
+    locale: string;
+    name: string;
+    description: string | null;
+  }>;
+}
+
+export interface ChannelFormProps {
+  mode?: "create" | "edit";
+  initial?: ChannelFormInitial;
+}
+
+type ChannelLayoutOption = ReturnType<typeof getAllowedLayoutsForChannelKind>[number];
+
+function getInitialLayout(
+  kind: (typeof KIND_OPTIONS)[number],
+  layout?: string,
+): ChannelLayoutOption {
+  const allowed = getAllowedLayoutsForChannelKind(kind);
+  if (layout && isLayoutAllowedForChannelKind(kind, layout as ChannelLayoutOption)) {
+    return layout as ChannelLayoutOption;
+  }
+  return allowed[0];
+}
+
+export function ChannelForm({ mode = "create", initial }: ChannelFormProps) {
   const router = useRouter();
-  const [slug, setSlug] = React.useState("");
-  const [kind, setKind] = React.useState<(typeof KIND_OPTIONS)[number]>("ARTICLES");
+  const [slug, setSlug] = React.useState(initial?.slug ?? "");
+  const [kind, setKind] = React.useState<(typeof KIND_OPTIONS)[number]>(
+    initial?.kind ?? "ARTICLES",
+  );
   const allowedLayouts = getAllowedLayoutsForChannelKind(kind);
-  const [layout, setLayout] = React.useState<(typeof allowedLayouts)[number]>(
-    allowedLayouts[0],
+  const [layout, setLayout] = React.useState<ChannelLayoutOption>(
+    getInitialLayout(initial?.kind ?? "ARTICLES", initial?.layout),
   );
   const [submitting, setSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -103,9 +139,7 @@ export function ChannelForm() {
         <select
           aria-label="布局"
           value={layout}
-          onChange={(event) =>
-            setLayout(event.target.value as (typeof allowedLayouts)[number])
-          }
+          onChange={(event) => setLayout(event.target.value as ChannelLayoutOption)}
           className="mt-3 w-full rounded border border-border px-3 py-2 text-sm"
         >
           {allowedLayouts.map((option) => (
@@ -140,7 +174,13 @@ export function ChannelForm() {
           disabled={submitting || kind === "GUESTBOOK"}
           className="rounded bg-foreground px-4 py-2 text-sm text-background disabled:opacity-50"
         >
-          {submitting ? "创建中..." : "创建频道"}
+          {submitting
+            ? mode === "edit"
+              ? "保存中..."
+              : "创建中..."
+            : mode === "edit"
+              ? "保存更改"
+              : "创建频道"}
         </button>
       </div>
     </form>

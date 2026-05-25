@@ -45,6 +45,13 @@ export async function listChannels() {
   }))
 }
 
+export async function getChannelById(id: string) {
+  return db.channel.findUnique({
+    where: { id },
+    include: channelDetailInclude,
+  })
+}
+
 export async function createChannel(input: CreateChannelInput) {
   if (input.kind === "GUESTBOOK") {
     throw errors.validation("GUESTBOOK 由 seed 创建，admin 不能新建")
