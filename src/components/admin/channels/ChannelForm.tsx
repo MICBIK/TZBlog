@@ -21,10 +21,6 @@ export function ChannelForm() {
     allowedLayouts[0],
   );
 
-  React.useEffect(() => {
-    setLayout(allowedLayouts[0]);
-  }, [allowedLayouts, kind]);
-
   return (
     <form className="grid gap-6">
       <section className="rounded-lg border border-border p-4">
@@ -42,7 +38,11 @@ export function ChannelForm() {
         <select
           aria-label="频道类型"
           value={kind}
-          onChange={(event) => setKind(event.target.value as (typeof KIND_OPTIONS)[number])}
+          onChange={(event) => {
+            const nextKind = event.target.value as (typeof KIND_OPTIONS)[number];
+            setKind(nextKind);
+            setLayout(getAllowedLayoutsForChannelKind(nextKind)[0]);
+          }}
           className="mt-3 w-full rounded border border-border px-3 py-2 text-sm"
         >
           {KIND_OPTIONS.map((option) => (
@@ -51,6 +51,11 @@ export function ChannelForm() {
             </option>
           ))}
         </select>
+        {kind === "GUESTBOOK" ? (
+          <p className="mt-3 text-sm text-destructive">
+            GUESTBOOK 由 seed 创建，admin 不能新建
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded-lg border border-border p-4">
