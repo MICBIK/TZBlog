@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolveFontProse } from "./font";
+import { resolveFontMono, resolveFontProse } from "./font";
 
 describe("resolveFontProse", () => {
   it("fontProseResolvesToInterInAurora", () => {
@@ -9,5 +9,11 @@ describe("resolveFontProse", () => {
 
   it("fontProseResolvesToNotoSerifInInk", () => {
     expect(resolveFontProse("ink")).toContain("--font-noto-serif-sc");
+  });
+});
+
+describe("resolveFontMono", () => {
+  it("fontMonoResolvesToJetbrainsInTerminal", () => {
+    expect(resolveFontMono("terminal")).toContain("--font-jetbrains-mono");
   });
 });
