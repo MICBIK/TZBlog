@@ -20,6 +20,7 @@ export function ThemeProvider({
       data-theme={theme}
       data-hero={hero ? "true" : undefined}
       data-mode={mode}
+      data-reduced-motion-safe
       className={className}
     >
       {children}
