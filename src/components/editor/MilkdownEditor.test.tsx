@@ -89,6 +89,10 @@ describe("MilkdownEditor", () => {
     await waitFor(() => {
       expect(mocks.fetch).toHaveBeenCalledTimes(1);
     });
+    expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/uploads", {
+      method: "POST",
+      body: expect.any(FormData),
+    });
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledWith("![architecture.png](/uploads/architecture.png)");
