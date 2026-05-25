@@ -109,27 +109,28 @@ describe("PostDetailPage TOC", () => {
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
 
-    expect(screen.queryByTestId("post-toc")).toBeNull();
+    expect(screen.queryByTestId("reading-toc")).toBeNull();
   });
 
   it("renders toc aside when headings present", async () => {
     mocks.extractToc.mockResolvedValue([{ id: "a", text: "A", level: 2 }]);
-    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null, content: "x".repeat(1200) }));
 
     render(await PostDetailPage({ params: Promise.resolve({ slug: "detail" }) }));
 
-    expect(screen.getByTestId("post-toc")).toBeInTheDocument();
+    expect(screen.getByTestId("reading-toc")).toBeInTheDocument();
   });
 });
 
-describe("PostDetailPage editorial article shell", () => {
-  it("rendersEditorialArticleShellWithRail", async () => {
+describe("PostDetailPage reading article shell", () => {
+  it("rendersInkArticleReaderShell", async () => {
     mocks.extractToc.mockResolvedValue([
       { id: "intro", text: "Intro", level: 2 },
     ]);
     mocks.getPostBySlug.mockResolvedValue(
       post({
         cover: "/uploads/2026/05/editorial-cover.png",
+        content: "x".repeat(1200),
         tags: [
           {
             tag: { id: "tag-id", slug: "architecture", name: "Architecture" },
@@ -143,24 +144,21 @@ describe("PostDetailPage editorial article shell", () => {
     );
 
     const shell = screen.getByRole("article", { name: "Detail Title" });
-    const bodyColumn = container.querySelector("[data-article-body-column]");
-    const rail = screen.getByRole("complementary", { name: "文章辅助信息" });
+    const bodyColumn = shell.querySelector(":scope > div");
 
-    expect(shell).toHaveAttribute("data-article-shell", "editorial");
-    expect(shell).toHaveClass("lg:grid-cols-[minmax(0,760px)_minmax(220px,280px)]");
-    expect(bodyColumn).toHaveClass("max-w-[760px]", "min-w-0");
+    expect(shell).toHaveAttribute("data-article-reader");
+    expect(shell).toHaveClass("lg:grid-cols-[minmax(0,52ch)_minmax(200px,280px)]");
+    expect(bodyColumn).toHaveClass("max-w-[52ch]", "min-w-0");
     expect(container.querySelector("[data-article-header]")).toBeInTheDocument();
     expect(container.querySelector("[data-article-cover]")).toHaveClass("aspect-[3/1]");
     expect(container.querySelector("[data-article-content]")).toHaveClass(
       "markdown-body",
       "max-w-none",
     );
-    expect(rail).toHaveAttribute("data-article-right-rail");
-    expect(rail).toHaveClass("hidden", "lg:block");
-    expect(screen.getByTestId("post-toc")).toBeInTheDocument();
+    expect(screen.getByTestId("reading-toc")).toBeInTheDocument();
     expect(screen.getByTestId("mock-comment-section")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "相关文章" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "更多文章" })).toHaveAttribute(
+    expect(screen.getByText("■")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "← 所有文章" })).toHaveAttribute(
       "href",
       "/posts",
     );
@@ -197,9 +195,8 @@ describe("PostDetailPage D3 integration (SPEC-D3-C-12)", () => {
     );
 
     expect(screen.getByText("10 次浏览")).toBeInTheDocument();
-    expect(screen.getByText("1 条评论")).toBeInTheDocument();
+    expect(screen.getByText(/\d+ 字/)).toBeInTheDocument();
     expect(screen.queryByText(/^views 10$/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/^comments 1$/)).not.toBeInTheDocument();
   });
 });
 
@@ -323,3 +320,32 @@ function post({
     author: { id: "author-id", email: "author@example.com", name: "Author" },
   } as PostWithRelations;
 }
+
+
+describe("PostDetailPage entry detail routing", () => {
+  it("rendersInkThemeArticleDetail", async () => {
+    const PostSlugLayout = (await import("./layout")).default;
+    mocks.getPostBySlug.mockResolvedValue(post({ cover: null }));
+
+    render(
+      <PostSlugLayout>
+        {await PostDetailPage({
+          params: Promise.resolve({ slug: "why-i-rewrote" }),
+        })}
+      </PostSlugLayout>,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Detail Title" }).closest("[data-theme='ink']"),
+    ).toBeTruthy();
+    expect(screen.getByRole("article", { name: "Detail Title" })).toBeInTheDocument();
+  });
+
+  it("noteAtPostsRouteReturns404", async () => {
+    mocks.getPostBySlug.mockResolvedValue(null);
+
+    await expect(
+      PostDetailPage({ params: Promise.resolve({ slug: "daily-note" }) }),
+    ).rejects.toThrow("not found");
+  });
+});
