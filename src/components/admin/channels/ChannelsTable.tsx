@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export interface ChannelRow {
@@ -14,6 +15,7 @@ export interface ChannelRow {
 }
 
 export function ChannelsTable({ initialChannels }: { initialChannels: ChannelRow[] }) {
+  const router = useRouter();
   const [channels, setChannels] = React.useState<ChannelRow[]>(() =>
     [...initialChannels].sort((a, b) => a.order - b.order),
   );
@@ -95,6 +97,9 @@ export function ChannelsTable({ initialChannels }: { initialChannels: ChannelRow
               data-testid="channel-row"
               data-slug={channel.slug}
               className="border-t border-border"
+              onClick={() => {
+                router.push(`/admin/channels/${channel.id}/edit`);
+              }}
             >
               <td className="px-3 py-2">
                 <div className="flex items-center gap-2">
@@ -102,7 +107,8 @@ export function ChannelsTable({ initialChannels }: { initialChannels: ChannelRow
                     type="button"
                     aria-label={`上移 ${channel.slug}`}
                     disabled={index === 0}
-                    onClick={() => {
+                    onClick={(event) => {
+                      event.stopPropagation();
                       void handleMove(channel.id, "up");
                     }}
                     className="rounded border border-border px-2 py-1 disabled:opacity-40"
@@ -113,7 +119,8 @@ export function ChannelsTable({ initialChannels }: { initialChannels: ChannelRow
                     type="button"
                     aria-label={`下移 ${channel.slug}`}
                     disabled={index === channels.length - 1}
-                    onClick={() => {
+                    onClick={(event) => {
+                      event.stopPropagation();
                       void handleMove(channel.id, "down");
                     }}
                     className="rounded border border-border px-2 py-1 disabled:opacity-40"
@@ -133,7 +140,8 @@ export function ChannelsTable({ initialChannels }: { initialChannels: ChannelRow
                     role="switch"
                     aria-label={`启用 ${channel.slug}`}
                     aria-checked={channel.enabled}
-                    onClick={() => {
+                    onClick={(event) => {
+                      event.stopPropagation();
                       void handleToggle(channel.id);
                     }}
                     className="rounded border border-border px-2 py-1"
