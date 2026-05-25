@@ -18,6 +18,13 @@ export interface EntryEditorProps {
   initialChannelId?: string;
 }
 
+interface ArticleMetadataDraft {
+  cover: string;
+  readingMinutes: string;
+  toc: boolean;
+  ogImage: string;
+}
+
 function getSelectedChannel(
   channels: EntryEditorChannel[],
   channelId?: string,
@@ -37,6 +44,12 @@ export function EntryEditor({
     : [];
   const [kind, setKind] = React.useState<EntryKind>(allowedKinds[0] ?? "ARTICLE");
   const [body, setBody] = React.useState("");
+  const [articleMetadata, setArticleMetadata] = React.useState<ArticleMetadataDraft>({
+    cover: "",
+    readingMinutes: "",
+    toc: true,
+    ogImage: "",
+  });
 
   if (!selectedChannel) {
     return (
@@ -95,6 +108,70 @@ export function EntryEditor({
           </select>
         </label>
       </section>
+
+      {kind === "ARTICLE" ? (
+        <section className="grid gap-4 rounded-lg border border-border p-4 md:grid-cols-2">
+          <label className="grid gap-2 text-sm font-medium">
+            cover
+            <input
+              aria-label="cover"
+              value={articleMetadata.cover}
+              onChange={(event) =>
+                setArticleMetadata((current) => ({
+                  ...current,
+                  cover: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium">
+            readingMinutes
+            <input
+              aria-label="readingMinutes"
+              value={articleMetadata.readingMinutes}
+              onChange={(event) =>
+                setArticleMetadata((current) => ({
+                  ...current,
+                  readingMinutes: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="flex items-center gap-3 text-sm font-medium">
+            <input
+              aria-label="toc"
+              type="checkbox"
+              checked={articleMetadata.toc}
+              onChange={(event) =>
+                setArticleMetadata((current) => ({
+                  ...current,
+                  toc: event.target.checked,
+                }))
+              }
+            />
+            toc
+          </label>
+
+          <label className="grid gap-2 text-sm font-medium">
+            ogImage
+            <input
+              aria-label="ogImage"
+              value={articleMetadata.ogImage}
+              onChange={(event) =>
+                setArticleMetadata((current) => ({
+                  ...current,
+                  ogImage: event.target.value,
+                }))
+              }
+              className="rounded border border-border bg-bg px-3 py-2 text-sm"
+            />
+          </label>
+        </section>
+      ) : null}
 
       <MilkdownEditor value={body} onChange={setBody} />
     </div>
