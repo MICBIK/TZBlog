@@ -1,4 +1,4 @@
-import type { ChannelKind, ChannelLayout } from "@prisma/client";
+import type { ChannelKind, ChannelLayout, EntryKind } from "@prisma/client";
 
 export type ThemeName = "aurora" | "ink" | "terminal" | "admin";
 
@@ -7,9 +7,26 @@ export interface ChannelThemeInput {
   layout: ChannelLayout;
 }
 
-export function resolveChannelTheme(channel: ChannelThemeInput): Exclude<ThemeName, "admin"> {
+export interface EntryThemeInput {
+  kind: EntryKind;
+}
+
+export function resolveChannelTheme(
+  channel: ChannelThemeInput,
+): Exclude<ThemeName, "admin"> {
   if (channel.kind === "STREAM") {
     return "terminal";
   }
+
+  if (channel.layout === "GREP") {
+    return "terminal";
+  }
+
+  if (channel.layout === "TIMELINE" || channel.layout === "FEED") {
+    return "aurora";
+  }
+
   return "aurora";
 }
+
+export const DEFAULT_SITE_THEME: Exclude<ThemeName, "admin"> = "aurora";
