@@ -2,11 +2,15 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` M5 `guestbook` 已完成：`gb-001~011` 全绿（17 tests）；私密 thread + API + 频控 + admin 列表。
-- 下一步：M5 `recommendation` → `cleanup`；或 guestbook 人工 smoke（magic link → 发留言 → admin 回复）。
+- **2026-05-25** `blog-ia-redesign` **COMPLETE** — M1~M5 全绿（672 tests / typecheck / lint / build）；PR 待 review。
+- **2026-05-25** `blog-ia-redesign` M5 `recommendation` + `cleanup` 已落地：trending/nextEntry/cron + legacy 代码清理 + `cleanup-guard.test.ts`。
+- Milestone tags：`m1-schema-migration-complete` / `m2-editor-admin-complete` / `m3-theme-system-complete` / `m4-public-ui-complete` / `m5-auth-guestbook-recommendation-complete`。
 
 ## 已完成
 
+- [x] **2026-05-25** `blog-ia-redesign` gate closure：`pnpm typecheck` / `lint` / `test` (672) / `build` 全绿；cleanup guard 0 命中；`notion-block-editor` SDD 已归档。
+- [x] **2026-05-25** `blog-ia-redesign` M5 `recommendation`：`trending.ts` / `similarEntries.ts` / `nextEntry.ts` + `cron-runner.ts` + `docker/cron.Dockerfile`；vitest **17/17 pass**（trend/next/cron 子集）。
+- [x] **2026-05-25** `blog-ia-redesign` M5 `cleanup`：`articles.ts` 替代 `posts.ts`；删 legacy Home/editor/posts/columns 路由与组件；`/admin/entries` 列表；`cleanup-guard.test.ts` **20/20 pass**；SDD `notion-block-editor` 已归档。
 - [x] **2026-05-25** `blog-ia-redesign` M5 `guestbook`：`gb-001~011` TDD 闭环（page/API/service/频控/validation）；vitest **17/17 pass**。
 - [x] **2026-05-25** `blog-ia-redesign` M5 `auth-magic-link`：`auth-magic-001~013` TDD 闭环；vitest **17/17 pass**；lint + typecheck 绿。
 - [x] **2026-05-26** `blog-ia-redesign` M4 gate：`entry`/`reading`/`terminal` TDD 16 commits + e2e/Lighthouse 绿 + `m4-public-ui-complete` tag。

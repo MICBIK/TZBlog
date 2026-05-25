@@ -20,12 +20,12 @@
 - **解法**：§F follow-up 已落地：`robots.ts`、root `metadataBase` + OpenGraph 默认值、OG Promise params、sitemap `listAllPublishedSlugs` 全量分页、column locale filter、sitemap/RSS `revalidate = 600`、RSS `atom:link` + `lastBuildDate`、删除 RSS 冗余 slice。`src/lib/seo/` 是未跟踪空目录，已本地 `rmdir`；F.7.d `priority/changeFrequency` 为 optional，本轮按 brief 跳过。
 - **闭环 commits**：`6634ee5 → 74a9382 → 58c5c90 → 323198d → 528e23a → ce1ad70 → e64bb3d → bcbcc27 → 113935b → 1986096 → 7fdff94 → b118fe1 → 4fe2f60 → 8e8040b → 488c887`
 
-## KI-002 `Post.cover` 前台未渲染 — RESOLVED 2026-05-21
+## KI-002 `Entry/Article cover (legacy Post.cover)` 前台未渲染 — RESOLVED 2026-05-21
 
 - **首次发现**：2026-05-21（P1-3 媒体上传 §7 smoke）
-- **现象**：后台可上传并保存 `/uploads/...` 到 `Post.cover`，但前台 `/posts` 列表与 `/posts/[slug]` 详情页均不渲染。
+- **现象**：后台可上传并保存 `/uploads/...` 到 `Entry/Article cover (legacy Post.cover)`，但前台 `/posts` 列表与 `/posts/[slug]` 详情页均不渲染。
 - **影响范围**：P1-3 验收矩阵 K（"删除被引用封面后前台破图"）不可观测。
-- **解法**：D1 在 `PostCard`（左缩略图 `aspect-[16/10]`）与详情页 header（hero banner `aspect-[3/1]`）接入 `Post.cover` 渲染；cover 为 `null` 或空串时整个图位不渲染，无破图占位。原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`（暂不接 next/image，避开 MinIO/local 双 driver 的 `remotePatterns` 配置）。
+- **解法**：D1 在 `PostCard`（左缩略图 `aspect-[16/10]`）与详情页 header（hero banner `aspect-[3/1]`）接入 `Entry/Article cover (legacy Post.cover)` 渲染；cover 为 `null` 或空串时整个图位不渲染，无破图占位。原生 `<img>` + 行级 `eslint-disable @next/next/no-img-element`（暂不接 next/image，避开 MinIO/local 双 driver 的 `remotePatterns` 配置）。
 - **闭环 commits**：`163e281 → 51922b1 → 5cf5c6e → 7281ee8`
 
 ## KI-004 多语言当前仍是单 locale 架构预留

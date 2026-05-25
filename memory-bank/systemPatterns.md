@@ -13,32 +13,34 @@
 ```
 src/app/
 ├── (site)/        # 前台公开页面，无认证守卫
-│   ├── page.tsx           首页
-│   ├── posts/...
-│   ├── columns/[slug]/
-│   ├── tags/[tag]/
-│   └── layout.tsx          前台 Header/Footer
+│   ├── page.tsx              首页（Aurora ThemeProvider）
+│   ├── c/[slug]/             Channel 列表（layout 由 Channel.layout 决定）
+│   ├── c/[slug]/[entry-slug]/ 非 ARTICLE entry 详情
+│   ├── posts/[slug]/         ARTICLE 长文详情（Ink 主题）
+│   ├── guestbook/            留言板（magic link + thread）
+│   ├── tags/[slug]/
+│   ├── about/
+│   └── layout.tsx
 ├── (admin)/       # 后台管理，proxy 守卫
 │   ├── admin/
-│   │   ├── posts/
-│   │   ├── columns/
+│   │   ├── channels/
+│   │   ├── entries/
 │   │   ├── comments/
 │   │   ├── media/
 │   │   ├── analytics/
-│   │   └── layout.tsx       后台 Sidebar
+│   │   └── layout.tsx
 │   └── login/page.tsx
 └── api/
     ├── auth/[...nextauth]/
-    ├── posts/[slug]/
-    │   ├── view/route.ts    POST  浏览上报
-    │   ├── like/route.ts    POST/DELETE
-    │   └── comments/route.ts GET/POST
-    ├── admin/               所有需要 admin 权限的 API
-    │   ├── posts/
-    │   ├── comments/        审核操作
-    │   └── analytics/
-    ├── track/route.ts        POST  全局 PageView 上报
-    ├── media/upload/route.ts
+    ├── posts/[slug]/         兼容 ARTICLE 互动 API（view/like/comments）
+    ├── entries/[id]/         Entry 级 view/like
+    ├── admin/
+    │   ├── channels/
+    │   ├── entries/
+    │   ├── comments/
+    │   └── uploads/
+    ├── guestbook/
+    ├── track/route.ts
     └── rss.xml/route.ts
 ```
 
@@ -48,7 +50,7 @@ src/app/
 ## 3. 数据访问
 
 - 所有 DB 操作走 `src/lib/db.ts` 导出的 Prisma client。
-- Server Component 直接 `await db.post.findMany(...)`，**不要**包装无意义的 service 层。
+- Server Component 直接 `await db.entry.findMany(...)` / `db.channel.findMany(...)`，**不要**包装无意义的 service 层。
 - 只有「跨多张表的业务流程」（如：发表评论 → 反垃圾检查 → 写 Comment + 更新 commentCount）才拆 `src/lib/services/*.ts`。
 - 不写 Repository 模式，Prisma 自己就是。
 
@@ -108,20 +110,24 @@ model PostTranslation {
 - `metadata / RSS / sitemap` 必须同时输出 locale-aware URL、canonical、alternate links；避免只翻译页面内容但 SEO/feed 仍指向单 locale。
 - V3 完成前，`SUPPORTED_LOCALES = ["zh", "en"]` 只代表数据模型预留，不代表站点已经完成多语言支持。
 
-## 8. 主题系统（CSS 变量 first）
+## 8. 主题系统（路由级三主题 hard map）
 
-- **从 P0 开始** 所有颜色都用 CSS 变量：`color: hsl(var(--fg))` 而不是 `color: #000`
-- 变量定义在 `src/app/globals.css` 的 `@theme` 块
-- V2 加主题切换：只换 `:root[data-theme="solar"]` 下的变量值，组件零修改
-- 命名约定：`--bg / --fg / --muted / --accent / --border / --ring` 等语义化，**不要** `--blue-500`
+- 所有颜色仍走 CSS 变量：`color: hsl(var(--fg))`；变量定义在 `src/app/globals.css` `@theme` 块。
+- **Channel 表无 theme 字段**；主题由路由 + `resolveTheme()` 推论：
+  - `/` → `aurora`（`ThemeProvider theme="aurora"`）
+  - `/posts/[slug]` → `ink`（文章 layout）
+  - `/c/[slug]` 且 channel.kind=STREAM → `terminal`
+  - 其他 `/c/*` → 默认 `aurora`
+- DOM 标记：`data-theme="aurora|ink|terminal"`；组件禁止硬编码色值。
+- AA contrast 由 `theme-guards.test.ts` + globals token 测试守门。
 
 ## 9. 计数器策略
 
 高频读、低频写的字段（浏览/点赞/评论数）：
 
-- Post 内嵌 `viewCount`, `likeCount`, `commentCount` 三个 `Int @default(0)`
-- 写入时事务内 `update post SET ...count = ...count + 1`
-- 详情表（`PostView` / `PostLike` / `Comment`）记录原始数据，用于去重 + 后台审计
+- Entry 内嵌 `viewCount`, `likeCount`, `commentCount` 三个 `Int @default(0)`
+- 写入时事务内 `update entry SET ...count = ...count + 1`
+- 详情表（`EntryView` / `EntryLike` / `Comment`）记录原始数据，用于去重 + 后台审计
 - 不每次 `count(*)` 主表关联
 
 ## 10. 反垃圾 visitor 指纹
@@ -143,6 +149,7 @@ model PostTranslation {
 - 限流：同 visitorHash 5 分钟内最多 3 条
 - 关键词黑名单（简单 string contains），命中直接 `status=SPAM`，不进队列
 - 后台批量审核：列表多选 → 批量 approve/spam
+- Guestbook thread 使用 `Comment.visibility` + channel kind `GUESTBOOK`；visitor 仅可见自己的 thread
 
 ## 12. 自研分析（替代 Umami）
 
@@ -180,13 +187,11 @@ content (Markdown 字符串)
 
 ## 14. 编辑器契约
 
-- 管理端文章内容编辑器当前入口是 `NotionMarkdownEditor`：提供 Notion-like shell（slash command、bubble formatting、媒体库图片插入、Mod-S 保存），但保存输出仍是 Markdown string。
-- 存储格式永远是 Markdown 字符串；后端永远收 Markdown，不收 JSON。
-- 编辑体验不再强制“编辑区永远显示 Markdown 原文”，但任何候选 rich/block editor 必须先通过 `notionEditorAdapter` 的 Markdown import/export 和 `renderMarkdown` parity 证据门；未通过不得替换存储契约。
-- 禁止把后端存储切到 editor 私有 JSON/block schema，除非单独 SDD 证明 Markdown round-trip 不可持续并完成迁移方案。
-- 媒体图片插入只能使用媒体库 URL 或安全相对 URL；禁止保存 `blob:` / `data:` payload。
-- 任何预览/发布 parity 必须继续复用 `renderMarkdown` 管道；不得恢复 `miniRenderMarkdown` 或客户端简化 renderer。
-- 编辑器底层依赖变动必须单独 SDD，并覆盖 slash command、bubble menu、media image、selection API、Mod-S、SSR safety、preview/publish parity 回归。
+- 管理端入口：`src/components/editor/MilkdownEditor.tsx`（Notion-like shell：slash、bubble、拖拽图片、Mod+S）。
+- **存储格式永远是 Markdown 字符串**（`Entry.body`）；后端/API 禁止收 ProseMirror/BlockNote JSON。
+- Round-trip 守门：`src/components/editor/round-trip.test.ts` + 8 fixtures；preview/publish 必须复用 `renderMarkdown`。
+- 禁止 `@blocknote/*`、`@codemirror/*` 直接依赖；旧 BlockNote SDD 已归档至 `.claude/sdd/archive/2026-05-25-notion-block-editor/`。
+- 媒体插入只允许媒体库 URL 或安全相对路径；禁止 `blob:` / `data:` payload。
 
 ## 15. 前台 motion system
 
