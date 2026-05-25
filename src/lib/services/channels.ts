@@ -2,10 +2,16 @@ import type { Prisma } from "@prisma/client"
 
 import { db } from "@/lib/db"
 import { errors } from "@/lib/errors"
+import type { CreateChannelInput } from "@/lib/schemas/channel"
+import { isLayoutAllowedForChannelKind } from "@/lib/schemas/channelEntryRules"
 
 const channelListInclude = {
   translations: { orderBy: { locale: "asc" } },
   _count: { select: { entries: true } },
+} satisfies Prisma.ChannelInclude
+
+const channelDetailInclude = {
+  translations: { orderBy: { locale: "asc" } },
 } satisfies Prisma.ChannelInclude
 
 const channelPageInclude = {
@@ -39,6 +45,48 @@ export async function listChannels() {
   }))
 }
 
+export async function createChannel(input: CreateChannelInput) {
+  if (input.kind === "GUESTBOOK") {
+    throw errors.validation("GUESTBOOK 由 seed 创建，admin 不能新建")
+  }
+
+  if (!isLayoutAllowedForChannelKind(input.kind, input.layout)) {
+    throw errors.validation(
+      `Layout ${input.layout} is not allowed for channel kind ${input.kind}`,
+    )
+  }
+
+  assertUniqueLocales(input.translations)
+
+  const existing = await db.channel.findUnique({
+    where: { slug: input.slug },
+    select: { id: true },
+  })
+  if (existing) {
+    throw errors.conflict(`Channel with slug "${input.slug}" already exists`)
+  }
+
+  const created = await db.channel.create({
+    data: {
+      slug: input.slug,
+      order: await nextOrder(),
+      enabled: input.enabled,
+      kind: input.kind,
+      layout: input.layout,
+      translations: {
+        create: input.translations.map((translation) => ({
+          locale: translation.locale,
+          name: translation.name,
+          description: translation.description ?? null,
+        })),
+      },
+    },
+    include: channelDetailInclude,
+  })
+
+  return created
+}
+
 export async function getChannelPageBySlug(
   slug: string,
 ): Promise<ChannelPageData | null> {
@@ -58,4 +106,26 @@ export async function deleteChannel(id: string): Promise<void> {
   }
 
   await db.channel.delete({ where: { id } })
+}
+
+async function nextOrder(): Promise<number> {
+  const top = await db.channel.findFirst({
+    orderBy: { order: "desc" },
+    select: { order: true },
+  })
+  return top ? top.order + 1 : 0
+}
+
+function assertUniqueLocales(
+  translations: ReadonlyArray<{ locale: string }>,
+): void {
+  const seen = new Set<string>()
+  for (const translation of translations) {
+    if (seen.has(translation.locale)) {
+      throw errors.validation(
+        `Duplicate translation locale "${translation.locale}" in payload`,
+      )
+    }
+    seen.add(translation.locale)
+  }
 }

@@ -40,13 +40,18 @@ export function ChannelForm() {
           layout,
         }),
       });
+      const payload = (await response.json()) as {
+        data?: { id?: string };
+        error?: { code?: string };
+      };
 
       if (!response.ok) {
-        setSubmitError("创建频道失败");
+        setSubmitError(
+          payload.error?.code === "CONFLICT" ? "slug 已被使用" : "创建频道失败",
+        );
         return;
       }
 
-      const payload = (await response.json()) as { data?: { id?: string } };
       const id = payload.data?.id;
       if (id) {
         router.push(`/admin/channels/${id}/edit`);
