@@ -9,7 +9,7 @@ export function entryHref(
     return `/posts/${entrySlug}`;
   }
 
-  return `/c/${channelSlug}#${entrySlug}`;
+  return `/c/${channelSlug}/${entrySlug}`;
 }
 
 export function readEntryCover(
