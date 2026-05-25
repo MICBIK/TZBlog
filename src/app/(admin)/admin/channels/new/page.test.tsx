@@ -55,6 +55,22 @@ describe("ChannelCreatePage", () => {
     expect(layout).toHaveValue("TIMELINE");
   });
 
+  it("linksKindFiltersLayoutsToGrepCards", async () => {
+    const user = userEvent.setup();
+    const { default: ChannelCreatePage } = await import("./page");
+
+    render(<ChannelCreatePage />);
+
+    await user.selectOptions(screen.getByLabelText("频道类型"), "LINKS");
+
+    const layout = screen.getByLabelText("布局");
+    expect(screen.getByRole("option", { name: "GREP" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "CARDS" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "TIMELINE" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "CHRONICLE" })).not.toBeInTheDocument();
+    expect(layout).toHaveValue("GREP");
+  });
+
   it("guestbookKindRejectedFromManualCreation", async () => {
     const user = userEvent.setup();
     const { default: ChannelCreatePage } = await import("./page");
