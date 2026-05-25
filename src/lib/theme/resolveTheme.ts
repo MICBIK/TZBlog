@@ -29,4 +29,15 @@ export function resolveChannelTheme(
   return "aurora";
 }
 
+export function resolveEntryTheme(
+  entry: EntryThemeInput,
+  channel: ChannelThemeInput,
+): Exclude<ThemeName, "admin"> {
+  if (entry.kind === "ARTICLE") {
+    return "ink";
+  }
+
+  return resolveChannelTheme(channel);
+}
+
 export const DEFAULT_SITE_THEME: Exclude<ThemeName, "admin"> = "aurora";
