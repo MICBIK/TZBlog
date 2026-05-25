@@ -264,6 +264,61 @@ describe("POST /api/admin/entries", () => {
       seriesOrder: 2,
     });
   });
+
+  it("createsEntryWithSelectedTags", async () => {
+    const { POST } = await loadRoute();
+    const channel = await testDb.channel.create({
+      data: {
+        slug: "articles",
+        order: 0,
+        enabled: true,
+        kind: "ARTICLES",
+        layout: "CHRONICLE",
+        translations: {
+          create: [{ locale: "zh", name: "文章", description: null }],
+        },
+      },
+    });
+
+    const res = await POST(
+      new Request("http://localhost/api/admin/entries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "tagged-entry",
+          channelId: channel.id,
+          kind: "ARTICLE",
+          status: "DRAFT",
+          metadata: {
+            cover: null,
+            toc: true,
+          },
+          tags: ["next-js", "prisma"],
+          translations: [
+            {
+              locale: "zh",
+              title: "标签条目",
+              excerpt: null,
+              content: "正文",
+            },
+          ],
+        }),
+      }),
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(
+      body.data.tags.map((row: { tag: { slug: string } }) => row.tag.slug).sort(),
+    ).toEqual(["next-js", "prisma"]);
+
+    const row = await testDb.entry.findUnique({
+      where: { id: body.data.id },
+      include: { tags: { include: { tag: true }, orderBy: { tag: { slug: "asc" } } } },
+    });
+    expect(row).not.toBeNull();
+    expect(row!.tags.map((item) => item.tag.slug)).toEqual(["next-js", "prisma"]);
+  });
 });
 
 async function loadRoute(): Promise<EntriesRoute> {

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   listChannels: vi.fn(),
   listSeriesOptions: vi.fn(),
+  listTags: vi.fn(),
   forbidden: vi.fn(() => {
     throw new Error("NEXT_FORBIDDEN");
   }),
@@ -19,6 +20,10 @@ vi.mock("@/lib/services/series", () => ({
   listSeriesOptions: mocks.listSeriesOptions,
 }));
 
+vi.mock("@/lib/services/tags", () => ({
+  listTags: mocks.listTags,
+}));
+
 vi.mock("next/navigation", () => ({
   forbidden: mocks.forbidden,
   notFound: mocks.notFound,
@@ -27,6 +32,7 @@ vi.mock("next/navigation", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.listSeriesOptions.mockResolvedValue([]);
+  mocks.listTags.mockResolvedValue([]);
   mocks.listChannels.mockResolvedValue([
     {
       id: "channel-guestbook",

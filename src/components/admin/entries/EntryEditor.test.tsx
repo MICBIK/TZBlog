@@ -182,6 +182,8 @@ describe("EntryEditor", () => {
         channelId: "channel-articles",
         kind: "ARTICLE",
         status: "DRAFT",
+        seriesId: null,
+        seriesOrder: null,
         metadata: {
           cover: null,
           readingMinutes: undefined,
@@ -254,6 +256,8 @@ describe("EntryEditor", () => {
         channelId: "channel-articles",
         kind: "ARTICLE",
         status: "PUBLISHED",
+        seriesId: null,
+        seriesOrder: null,
         metadata: {
           cover: "/uploads/cover.png",
           readingMinutes: 6,
@@ -475,5 +479,96 @@ describe("EntryEditor", () => {
     const body = JSON.parse(init.body as string);
     expect(body.seriesId).toBe("series-1");
     expect(body.seriesOrder).toBe(2);
+  });
+
+  it("includesSelectedTagsInSubmitPayload", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        allTags={[
+          {
+            slug: "next-js",
+            name: "Next.js",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("标题"), {
+      target: { value: "标签条目" },
+    });
+    fireEvent.change(screen.getByLabelText("slug"), {
+      target: { value: "tagged-entry" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      target: { value: "正文" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await user.type(screen.getByPlaceholderText("输入标签..."), "next-js{enter}");
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    const [, init] = mocks.fetch.mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body.tags).toEqual(["next-js"]);
+  });
+
+  it("archivesPublishedArticleFromEditMode", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EntryEditor
+        mode="edit"
+        initial={{
+          id: "entry-1",
+          slug: "published-entry",
+          channelId: "channel-articles",
+          kind: "ARTICLE",
+          status: "PUBLISHED",
+          publishedAt: "2026-05-25T12:00:00.000Z",
+          title: "已发布条目",
+          excerpt: "摘要",
+          content: "正文",
+          tags: [],
+          metadata: {
+            cover: null,
+            readingMinutes: 5,
+            toc: true,
+            ogImage: null,
+          },
+        }}
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "归档" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "归档" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    const [, init] = mocks.fetch.mock.calls[0];
+    expect(JSON.parse(init.body as string).status).toBe("ARCHIVED");
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
   });
 });
