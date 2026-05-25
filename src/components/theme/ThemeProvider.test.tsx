@@ -13,4 +13,16 @@ describe("ThemeProvider", () => {
 
     expect(screen.getByText("content").closest("[data-theme='aurora']")).toBeTruthy();
   });
+
+  it("postSlugRouteResolvesToInkTheme", () => {
+    render(
+      <ThemeProvider theme="ink">
+        <article>article body</article>
+      </ThemeProvider>,
+    );
+
+    expect(
+      screen.getByText("article body").closest("[data-theme='ink']"),
+    ).toBeTruthy();
+  });
 });
