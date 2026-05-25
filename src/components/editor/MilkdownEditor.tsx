@@ -18,6 +18,7 @@ export function MilkdownEditor({
 }: MilkdownEditorProps) {
   const [draft, setDraft] = React.useState(value);
   const [hasSelection, setHasSelection] = React.useState(false);
+  const [uploadBlocked, setUploadBlocked] = React.useState<"unsafe-url" | null>(null);
   const onChangeRef = React.useRef(onChange);
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -60,6 +61,7 @@ export function MilkdownEditor({
     if (!file) return;
 
     event.preventDefault();
+    setUploadBlocked(null);
     const body = new FormData();
     body.append("file", file);
 
@@ -78,7 +80,10 @@ export function MilkdownEditor({
     };
     const url = payload.data?.url;
     const alt = payload.data?.alt ?? file.name;
-    if (!url || !isSafeMediaUrl(url)) return;
+    if (!url || !isSafeMediaUrl(url)) {
+      setUploadBlocked("unsafe-url");
+      return;
+    }
 
     const next = `![${alt}](${url})`;
     setDraft(next);
@@ -99,6 +104,7 @@ export function MilkdownEditor({
       data-milkdown-editor
       data-theme={theme}
       data-reduced-motion-safe
+      data-upload-blocked={uploadBlocked ?? undefined}
       className="relative w-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
     >
       <textarea

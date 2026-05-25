@@ -96,7 +96,6 @@ describe("MilkdownEditor", () => {
   });
 
   it("unsafeMediaUrlBlockedFromInsertion", async () => {
-    vi.useFakeTimers();
     const onChange = vi.fn();
     mocks.fetch.mockResolvedValue(
       new Response(
@@ -122,15 +121,15 @@ describe("MilkdownEditor", () => {
     await waitFor(() => {
       expect(mocks.fetch).toHaveBeenCalledTimes(1);
     });
-    await vi.advanceTimersByTimeAsync(400);
+    await waitFor(() => {
+      expect(editor.closest("[data-milkdown-editor]")).toHaveAttribute(
+        "data-upload-blocked",
+        "unsafe-url",
+      );
+    });
+    await new Promise((resolve) => setTimeout(resolve, 350));
 
     expect(onChange).not.toHaveBeenCalled();
-    expect(editor.closest("[data-milkdown-editor]")).toHaveAttribute(
-      "data-upload-blocked",
-      "unsafe-url",
-    );
-
-    vi.useRealTimers();
   });
 
   it("modSTriggersOnSavePrevented", () => {
