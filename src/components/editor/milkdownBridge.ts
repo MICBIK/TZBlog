@@ -4,6 +4,17 @@ export interface MilkdownDocument {
 
 const UNSAFE_URL_PREFIXES = ["blob:", "data:", "javascript:"];
 
+export const roundTripFixtureNames = [
+  "basic",
+  "list",
+  "code",
+  "table",
+  "alert",
+  "image-link",
+  "blockquote",
+  "mixed",
+] as const;
+
 export async function milkdownParse(markdown: string): Promise<MilkdownDocument> {
   return { markdown };
 }
