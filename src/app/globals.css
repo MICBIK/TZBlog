@@ -247,6 +247,53 @@
   --radius: 0.125rem;
 }
 
+[data-theme="ink"] [data-article-reader] .markdown-body > p {
+  animation: editorial-reveal var(--duration-slow, 800ms)
+    var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) backwards;
+  animation-delay: calc(var(--reveal-delay, 0ms) + 40ms);
+  text-indent: 0;
+}
+
+[data-theme="ink"] [data-article-reader] .markdown-body h2 {
+  border-top: 0;
+  font-family: var(--font-noto-serif-sc), var(--font-source-serif), Georgia, serif;
+  font-weight: 700;
+  margin-top: 4em;
+  padding-top: 0;
+}
+
+[data-theme="ink"] [data-article-reader] .markdown-body blockquote {
+  border-left: 0;
+  padding-left: 1.75rem;
+  position: relative;
+}
+
+[data-theme="ink"] [data-article-reader] .markdown-body blockquote::before {
+  color: hsl(var(--accent));
+  content: "\201C";
+  font-family: var(--font-noto-serif-sc), var(--font-source-serif), Georgia, serif;
+  font-size: 2.5rem;
+  left: 0;
+  line-height: 1;
+  position: absolute;
+  top: -0.15rem;
+}
+
+@media (max-width: 767px) {
+  [data-theme="ink"] [data-article-reader] .markdown-body {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reduced-motion-safe] [data-theme="ink"] [data-article-reader] .markdown-body > p {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
 [data-theme="terminal"] {
   --bg: 150 10% 6%;
   --fg: 120 100% 70%;
@@ -265,6 +312,53 @@
 
 [data-theme="terminal"] [class*="rounded"] {
   border-radius: 0 !important;
+}
+
+
+@keyframes terminal-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.terminal-cursor {
+  animation: terminal-cursor-blink 1s step-end infinite;
+}
+
+.terminal-cursor--static {
+  animation: none;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.terminal-link {
+  position: relative;
+  display: inline-block;
+}
+
+.terminal-link::before {
+  content: ">";
+  left: -1ch;
+  opacity: 0;
+  position: absolute;
+  transform: translateX(-0.25rem);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.terminal-link:hover::before,
+.terminal-link:focus-visible::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.terminal-link:hover,
+.terminal-link:focus-visible {
+  text-decoration: underline;
 }
 
 [data-theme="aurora"][data-hero="true"]::before {
