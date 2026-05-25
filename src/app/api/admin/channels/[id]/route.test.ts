@@ -94,6 +94,30 @@ describe("DELETE /api/admin/channels/[id]", () => {
     expect(await testDb.entry.count({ where: { channelId: channel.id } })).toBe(0)
     expect(await testDb.entryTranslation.count({ where: { entryId: entry.id } })).toBe(0)
   })
+
+  it("guestbookDeleteForbidden", async () => {
+    const { DELETE } = await loadRoute()
+    const channel = await testDb.channel.create({
+      data: {
+        slug: "guestbook",
+        order: 99,
+        enabled: true,
+        kind: "GUESTBOOK",
+        layout: "FEED",
+        translations: {
+          create: [{ locale: "zh", name: "留言板", description: null }],
+        },
+      },
+    })
+
+    const res = await DELETE(request(channel.id), ctx(channel.id))
+    const body = await res.json()
+
+    expect(res.status).toBe(403)
+    expect(body.error.code).toBe("FORBIDDEN")
+    expect(body.error.message).toBe("GUESTBOOK 不可删除")
+    expect(await testDb.channel.findUnique({ where: { id: channel.id } })).not.toBeNull()
+  })
 })
 
 async function loadRoute(): Promise<ChannelItemRoute> {
