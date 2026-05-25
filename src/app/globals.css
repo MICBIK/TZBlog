@@ -231,6 +231,22 @@
   --radius: 0.875rem;
 }
 
+[data-theme="ink"] {
+  --bg: 45 50% 94%;
+  --fg: 250 8% 14%;
+  --muted: 45 25% 88%;
+  --muted-fg: 250 5% 45%;
+  --card: 45 50% 96%;
+  --card-fg: 250 8% 14%;
+  --primary: 250 8% 14%;
+  --primary-fg: 45 50% 96%;
+  --accent: 12 75% 45%;
+  --accent-fg: 45 50% 96%;
+  --border: 45 20% 82%;
+  --ring: 12 75% 45%;
+  --radius: 0.125rem;
+}
+
 
 /* Map semantic tokens into Tailwind v4's @theme so utilities
  * like bg-bg / text-fg / border-border / ring-ring work. */
