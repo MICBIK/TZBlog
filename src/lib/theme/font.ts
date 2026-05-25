@@ -14,6 +14,13 @@ export function resolveFontProse(theme: ThemeName): string {
 }
 
 export function resolveFontMono(theme: ThemeName): string {
-  void theme;
-  return "var(--font-geist-mono), ui-monospace, monospace";
+  switch (theme) {
+    case "terminal":
+      return "var(--font-jetbrains-mono), var(--font-geist-mono), monospace";
+    case "ink":
+    case "aurora":
+    case "admin":
+    default:
+      return "var(--font-geist-mono), ui-monospace, monospace";
+  }
 }
