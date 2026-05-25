@@ -26,4 +26,12 @@ describe("Milkdown Markdown round-trip parity", () => {
 
     expect(exported.trim()).toBe(source.trim());
   });
+
+  it("preservesCodeMdWithLanguageHints", async () => {
+    const source = loadFixture("code");
+    const parsed = await milkdownParse(source);
+    const exported = await milkdownSerialize(parsed);
+
+    expect(exported.trim()).toBe(source.trim());
+  });
 });
