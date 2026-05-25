@@ -187,10 +187,13 @@ export async function getChannelPageBySlug(
 export async function deleteChannel(id: string): Promise<void> {
   const current = await db.channel.findUnique({
     where: { id },
-    select: { id: true },
+    select: { id: true, kind: true },
   })
   if (!current) {
     throw errors.notFound(`Channel ${id} not found`)
+  }
+  if (current.kind === "GUESTBOOK") {
+    throw errors.forbidden("GUESTBOOK 不可删除")
   }
 
   await db.channel.delete({ where: { id } })
