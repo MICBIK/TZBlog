@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import type { ChannelKind, EntryKind } from "@prisma/client";
 
 import { MilkdownEditor } from "@/components/editor/MilkdownEditor";
@@ -16,9 +17,25 @@ export interface EntryEditorChannel {
   name: string;
 }
 
+export interface EntryEditorInitial {
+  id: string;
+  slug: string;
+  channelId: string;
+  kind: EntryKind;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  publishedAt: string | null;
+  title: string;
+  excerpt: string;
+  content: string;
+  tags: string[];
+  metadata: Record<string, unknown>;
+}
+
 export interface EntryEditorProps {
   channels: EntryEditorChannel[];
   initialChannelId?: string;
+  mode?: "create" | "edit";
+  initial?: EntryEditorInitial;
 }
 
 interface ArticleMetadataDraft {
@@ -48,39 +65,78 @@ function getSelectedChannel(
   return channels.find((channel) => channel.id === channelId) ?? channels[0] ?? null;
 }
 
+function toStringOrEmpty(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function readArticleMetadataDraft(
+  raw: Record<string, unknown> | undefined,
+): ArticleMetadataDraft {
+  return {
+    cover: toStringOrEmpty(raw?.cover),
+    readingMinutes:
+      typeof raw?.readingMinutes === "number" ? String(raw.readingMinutes) : "",
+    toc: typeof raw?.toc === "boolean" ? raw.toc : true,
+    ogImage: toStringOrEmpty(raw?.ogImage),
+  };
+}
+
+function readLinkMetadataDraft(
+  raw: Record<string, unknown> | undefined,
+): LinkMetadataDraft {
+  return {
+    sourceUrl: toStringOrEmpty(raw?.sourceUrl),
+    sourceTitle: toStringOrEmpty(raw?.sourceTitle),
+    sourceAuthor: toStringOrEmpty(raw?.sourceAuthor),
+    thumbnail: toStringOrEmpty(raw?.thumbnail),
+  };
+}
+
+function readHotTakeMetadataDraft(
+  raw: Record<string, unknown> | undefined,
+): HotTakeMetadataDraft {
+  return {
+    sourcePlatform: toStringOrEmpty(raw?.sourcePlatform) || "twitter",
+    sourceUrl: toStringOrEmpty(raw?.sourceUrl),
+    sourceSnippet: toStringOrEmpty(raw?.sourceSnippet),
+  };
+}
+
 export function EntryEditor({
   channels,
   initialChannelId,
+  mode = "create",
+  initial,
 }: EntryEditorProps) {
-  const initialChannel = getSelectedChannel(channels, initialChannelId);
-  const [title, setTitle] = React.useState("");
-  const [excerpt, setExcerpt] = React.useState("");
-  const [slug, setSlug] = React.useState("");
-  const [channelId, setChannelId] = React.useState(initialChannel?.id ?? "");
+  const router = useRouter();
+  const initialChannel = getSelectedChannel(
+    channels,
+    initial?.channelId ?? initialChannelId,
+  );
+  const [title, setTitle] = React.useState(initial?.title ?? "");
+  const [excerpt, setExcerpt] = React.useState(initial?.excerpt ?? "");
+  const [slug, setSlug] = React.useState(initial?.slug ?? "");
+  const [channelId, setChannelId] = React.useState(
+    initial?.channelId ?? initialChannel?.id ?? "",
+  );
   const selectedChannel = getSelectedChannel(channels, channelId);
   const allowedKinds = selectedChannel
     ? getAllowedEntryKindsForChannelKind(selectedChannel.kind)
     : [];
-  const [kind, setKind] = React.useState<EntryKind>(allowedKinds[0] ?? "ARTICLE");
-  const [body, setBody] = React.useState("");
+  const [kind, setKind] = React.useState<EntryKind>(
+    initial?.kind ?? allowedKinds[0] ?? "ARTICLE",
+  );
+  const [body, setBody] = React.useState(initial?.content ?? "");
   const [submitting, setSubmitting] = React.useState(false);
-  const [articleMetadata, setArticleMetadata] = React.useState<ArticleMetadataDraft>({
-    cover: "",
-    readingMinutes: "",
-    toc: true,
-    ogImage: "",
-  });
-  const [linkMetadata, setLinkMetadata] = React.useState<LinkMetadataDraft>({
-    sourceUrl: "",
-    sourceTitle: "",
-    sourceAuthor: "",
-    thumbnail: "",
-  });
-  const [hotTakeMetadata, setHotTakeMetadata] = React.useState<HotTakeMetadataDraft>({
-    sourcePlatform: "twitter",
-    sourceUrl: "",
-    sourceSnippet: "",
-  });
+  const [articleMetadata, setArticleMetadata] = React.useState<ArticleMetadataDraft>(
+    readArticleMetadataDraft(initial?.metadata),
+  );
+  const [linkMetadata, setLinkMetadata] = React.useState<LinkMetadataDraft>(
+    readLinkMetadataDraft(initial?.metadata),
+  );
+  const [hotTakeMetadata, setHotTakeMetadata] = React.useState<HotTakeMetadataDraft>(
+    readHotTakeMetadataDraft(initial?.metadata),
+  );
 
   if (!selectedChannel) {
     return (
@@ -90,50 +146,90 @@ export function EntryEditor({
     );
   }
 
-  async function submitDraft() {
+  async function submit(targetStatus: "DRAFT" | "PUBLISHED") {
     if (!selectedChannel) {
       return;
     }
     setSubmitting(true);
     try {
-      await fetch("/api/admin/entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug,
-          channelId: selectedChannel.id,
-          kind,
-          status: "DRAFT",
-          metadata: buildMetadataPayload(kind, articleMetadata, linkMetadata, hotTakeMetadata),
-          tags: [],
-          translations: [
-            {
-              locale: "zh",
-              title,
-              excerpt: excerpt.trim() ? excerpt.trim() : null,
-              content: body,
-            },
-          ],
-        }),
-      });
+      const response = await fetch(
+        mode === "edit" && initial?.id
+          ? `/api/admin/entries/${initial.id}`
+          : "/api/admin/entries",
+        {
+          method: mode === "edit" && initial?.id ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug,
+            channelId: selectedChannel.id,
+            kind,
+            status: targetStatus,
+            metadata: buildMetadataPayload(
+              kind,
+              articleMetadata,
+              linkMetadata,
+              hotTakeMetadata,
+            ),
+            tags: initial?.tags ?? [],
+            translations: [
+              {
+                locale: "zh",
+                title,
+                excerpt: excerpt.trim() ? excerpt.trim() : null,
+                content: body,
+              },
+            ],
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        return;
+      }
+
+      if (mode === "edit" && initial?.id) {
+        router.refresh();
+        return;
+      }
+
+      const payload = (await response.json()) as { data?: { id?: string } };
+      if (payload.data?.id) {
+        router.push(`/admin/entries/${payload.data.id}/edit`);
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
+  const heading = mode === "edit" ? "编辑条目" : "新建条目";
+
   return (
     <div className="grid gap-6">
       <div className="sticky top-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-bg px-4 py-3 md:-mx-6 md:px-6">
         <header className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">新建条目</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{heading}</h1>
           <p className="text-sm text-muted-fg">
             先选频道，再按 Channel.kind 自动约束可创建的 Entry.kind。
           </p>
         </header>
 
-        <Button type="button" onClick={() => void submitDraft()} disabled={submitting}>
-          {submitting ? "保存中..." : "保存草稿"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void submit("DRAFT")}
+            disabled={submitting}
+          >
+            {submitting ? "保存中..." : "保存草稿"}
+          </Button>
+          <Button
+            type="button"
+            onClick={() => void submit("PUBLISHED")}
+            disabled={submitting}
+          >
+            发布
+          </Button>
+        </div>
       </div>
 
       <section className="grid gap-4 rounded-lg border border-border p-4">
@@ -395,12 +491,14 @@ export function EntryEditor({
         </section>
       ) : null}
 
-      <MilkdownEditor value={body} onChange={setBody} />
+      <MilkdownEditor
+        value={body}
+        onChange={setBody}
+        onSave={() => void submit("DRAFT")}
+      />
     </div>
   );
 }
-
-export default EntryEditor;
 
 function buildMetadataPayload(
   kind: EntryKind,
@@ -435,3 +533,5 @@ function buildMetadataPayload(
       return {};
   }
 }
+
+export default EntryEditor;

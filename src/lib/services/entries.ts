@@ -11,7 +11,7 @@ import { errors } from "@/lib/errors";
 import type { EntryKindForMetadata } from "@/lib/schemas/entryMetadata";
 import { parseEntryMetadata } from "@/lib/schemas/entryMetadata";
 import { isEntryKindAllowedForChannelKind } from "@/lib/schemas/channelEntryRules";
-import type { CreateEntryInput } from "@/lib/schemas/entry";
+import type { CreateEntryInput, UpdateEntryInput } from "@/lib/schemas/entry";
 import { upsertTagsBySlug } from "@/lib/services/tags";
 
 const includeRelations = {
@@ -119,6 +119,148 @@ export async function createEntry(
   });
 
   return toEntryCompat(created);
+}
+
+export async function getEntryById(
+  id: string,
+): Promise<EntryWithRelationsCompat | null> {
+  const row = await db.entry.findUnique({
+    where: { id },
+    include: includeRelations,
+  });
+  return row ? toEntryCompat(row) : null;
+}
+
+export async function updateEntry(
+  id: string,
+  input: UpdateEntryInput,
+): Promise<EntryWithRelationsCompat> {
+  const current = await db.entry.findUnique({
+    where: { id },
+    include: includeRelations,
+  });
+  if (!current) {
+    throw errors.notFound(`Entry ${id} not found`);
+  }
+
+  if (input.slug && input.slug !== current.slug) {
+    const clash = await db.entry.findUnique({ where: { slug: input.slug } });
+    if (clash) {
+      throw errors.conflict(`Entry with slug "${input.slug}" already exists`);
+    }
+  }
+
+  if (input.translations) {
+    assertUniqueLocales(input.translations);
+  }
+
+  const nextChannelId = input.channelId ?? current.channelId;
+  const nextKind = input.kind ?? current.kind;
+  const channel = await db.channel.findUnique({
+    where: { id: nextChannelId },
+    select: { id: true, kind: true },
+  });
+  if (!channel) {
+    throw errors.notFound(`Channel ${nextChannelId} not found`);
+  }
+  if (channel.kind === "GUESTBOOK") {
+    throw errors.forbidden("admin 不能手动创建 GUESTBOOK_THREAD");
+  }
+  if (!isEntryKindAllowedForChannelKind(channel.kind, nextKind)) {
+    throw errors.validation(
+      `Entry kind ${nextKind} is not allowed for channel kind ${channel.kind}`,
+    );
+  }
+
+  const metadata = parseEntryMetadata(
+    nextKind as EntryKindForMetadata,
+    input.metadata ?? current.metadata,
+  ).data;
+  const tagRows =
+    input.tags !== undefined
+      ? input.tags.length > 0
+        ? await upsertTagsBySlug(input.tags.map((slug) => ({ slug })))
+        : []
+      : null;
+
+  const data: Prisma.EntryUpdateInput = {};
+  if (input.slug !== undefined) data.slug = input.slug;
+  if (input.kind !== undefined) data.kind = input.kind;
+  if (input.status !== undefined) data.status = input.status;
+  if (input.channelId !== undefined) {
+    data.channel = { connect: { id: nextChannelId } };
+  }
+  if (input.seriesId !== undefined) {
+    data.series =
+      input.seriesId === null
+        ? { disconnect: true }
+        : { connect: { id: input.seriesId } };
+  }
+  if (input.seriesOrder !== undefined) {
+    data.seriesOrder = input.seriesOrder ?? null;
+  }
+  if (input.metadata !== undefined || input.kind !== undefined) {
+    data.metadata = metadata;
+  }
+  if (input.translations?.[0]?.content !== undefined) {
+    data.body = input.translations[0].content;
+  }
+  if (input.status !== undefined || input.publishedAt !== undefined) {
+    const nextStatus = input.status ?? current.status;
+    data.publishedAt = resolvePublishedAt(
+      nextStatus,
+      input.publishedAt === undefined
+        ? current.publishedAt
+        : input.publishedAt ?? null,
+      current.publishedAt,
+    );
+  }
+
+  return db.$transaction(async (tx) => {
+    if (Object.keys(data).length > 0) {
+      await tx.entry.update({ where: { id }, data });
+    }
+
+    if (input.translations) {
+      for (const translation of input.translations) {
+        await tx.entryTranslation.upsert({
+          where: {
+            entryId_locale: { entryId: id, locale: translation.locale },
+          },
+          create: {
+            entryId: id,
+            locale: translation.locale,
+            title: translation.title,
+            excerpt: translation.excerpt ?? null,
+          },
+          update: {
+            title: translation.title,
+            excerpt: translation.excerpt ?? null,
+          },
+        });
+      }
+    }
+
+    if (tagRows !== null) {
+      await tx.tagsOnEntries.deleteMany({ where: { entryId: id } });
+      if (tagRows.length > 0) {
+        await tx.tagsOnEntries.createMany({
+          data: tagRows.map((tag) => ({ entryId: id, tagId: tag.id })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    const updated = await tx.entry.findUnique({
+      where: { id },
+      include: includeRelations,
+    });
+    if (!updated) {
+      throw errors.notFound(`Entry ${id} not found`);
+    }
+
+    return toEntryCompat(updated);
+  });
 }
 
 function toEntryCompat(entry: EntryWithRelations): EntryWithRelationsCompat {
