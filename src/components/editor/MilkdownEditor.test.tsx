@@ -85,4 +85,24 @@ describe("MilkdownEditor", () => {
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(prevented).toBe(true);
   });
+
+  it("debouncedOnChangeEmitsOnceAfter300ms", async () => {
+    vi.useFakeTimers();
+    const onChange = vi.fn();
+    render(<MilkdownEditor value="" onChange={onChange} />);
+
+    const editor = screen.getByRole("textbox", { name: "Milkdown editor content" });
+    fireEvent.change(editor, { target: { value: "a" } });
+    fireEvent.change(editor, { target: { value: "ab" } });
+    fireEvent.change(editor, { target: { value: "abc" } });
+
+    await vi.advanceTimersByTimeAsync(299);
+    expect(onChange).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenLastCalledWith("abc");
+
+    vi.useRealTimers();
+  });
 });
