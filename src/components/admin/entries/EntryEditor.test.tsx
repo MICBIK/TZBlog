@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { EntryEditor } from "./EntryEditor";
@@ -68,5 +69,30 @@ describe("EntryEditor", () => {
     expect(screen.getByLabelText("readingMinutes")).toBeInTheDocument();
     expect(screen.getByLabelText("toc")).toBeInTheDocument();
     expect(screen.getByLabelText("ogImage")).toBeInTheDocument();
+  });
+
+  it("linkKindRendersMetadataFields", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EntryEditor
+        channels={[
+          {
+            id: "channel-notes",
+            slug: "notes",
+            kind: "NOTES",
+            name: "笔记",
+          },
+        ]}
+        initialChannelId="channel-notes"
+      />,
+    );
+
+    await user.selectOptions(screen.getByLabelText("条目类型"), "LINK");
+
+    expect(screen.getByLabelText("sourceUrl")).toBeInTheDocument();
+    expect(screen.getByLabelText("sourceTitle")).toBeInTheDocument();
+    expect(screen.getByLabelText("sourceAuthor")).toBeInTheDocument();
+    expect(screen.getByLabelText("thumbnail")).toBeInTheDocument();
   });
 });
