@@ -2,12 +2,13 @@
 
 ## 当前焦点
 
-- **2026-05-25** `blog-ia-redesign` M5 `auth-magic-link` 已实现：`auth-magic-001~013` 全绿（17 tests）；Resend + React Email + 三维度频控 + `/login` 双表单 + VISITOR proxy 403。
-- 下一步：M5 `guestbook`（gb-001~011）→ `recommendation` → `cleanup`；或补 auth magic link 人工 smoke（Resend 真发信）。
+- **2026-05-25** `blog-ia-redesign` M5 `guestbook` 已完成：`gb-001~011` 全绿（17 tests）；私密 thread + API + 频控 + admin 列表。
+- 下一步：M5 `recommendation` → `cleanup`；或 guestbook 人工 smoke（magic link → 发留言 → admin 回复）。
 
 ## 已完成
 
-- [x] **2026-05-25** `blog-ia-redesign` M5 `auth-magic-link`：`hash`/`rateLimit`/`sendMagicLink`/Email provider/VISITOR role/`proxyAccess`/ `(site)/login` 双表单；vitest **17/17 pass**；lint + typecheck 绿。
+- [x] **2026-05-25** `blog-ia-redesign` M5 `guestbook`：`gb-001~011` TDD 闭环（page/API/service/频控/validation）；vitest **17/17 pass**。
+- [x] **2026-05-25** `blog-ia-redesign` M5 `auth-magic-link`：`auth-magic-001~013` TDD 闭环；vitest **17/17 pass**；lint + typecheck 绿。
 - [x] **2026-05-26** `blog-ia-redesign` M4 gate：`entry`/`reading`/`terminal` TDD 16 commits + e2e/Lighthouse 绿 + `m4-public-ui-complete` tag。
 - [x] **2026-05-26** `blog-ia-redesign` M4 `entry-detail` + `reading-mode` + `terminal-stream`：
   - [x] `entryPublic` 服务 + `/c/[slug]/[entry-slug]` 路由 + `EntryDetail` / `NextEntry` + `/api/entries/[id]/view|like`（ed-001~020）
