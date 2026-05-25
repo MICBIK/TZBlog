@@ -17,6 +17,23 @@ afterAll(async () => {
 });
 
 describe("rateLimit auth-magic", () => {
+  it("guestbookCommentRateLimit3In5min", async () => {
+    const key = await hashIdentifier("guestbook:visitor-1");
+
+    for (let i = 0; i < 3; i += 1) {
+      await recordRateLimit({ scope: "guestbook:message", key });
+    }
+
+    const exceeded = await checkRateLimit({
+      scope: "guestbook:message",
+      key,
+      windowSeconds: 5 * 60,
+      maxCount: 3,
+    });
+
+    expect(exceeded).toBe(true);
+  });
+
   it("rateLimitPerEmailBlocksAfter5In24h", async () => {
     const key = await hashIdentifier("visitor@example.com");
 
