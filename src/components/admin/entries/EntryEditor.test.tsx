@@ -200,4 +200,77 @@ describe("EntryEditor", () => {
       }),
     });
   });
+
+  it("publishExistingArticlePatchesEntryAndRefreshes", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EntryEditor
+        mode="edit"
+        initial={{
+          id: "entry-1",
+          slug: "existing-entry",
+          channelId: "channel-articles",
+          kind: "ARTICLE",
+          status: "DRAFT",
+          publishedAt: null,
+          title: "已有条目",
+          excerpt: "旧摘要",
+          content: "旧正文",
+          tags: [],
+          metadata: {
+            cover: "/uploads/cover.png",
+            readingMinutes: 6,
+            toc: true,
+            ogImage: null,
+          },
+        }}
+        channels={[
+          {
+            id: "channel-articles",
+            slug: "articles",
+            kind: "ARTICLES",
+            name: "文章",
+          },
+        ]}
+        initialChannelId="channel-articles"
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Milkdown editor content" }), {
+      target: { value: "更新后的正文" },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await user.click(screen.getByRole("button", { name: "发布" }));
+
+    await waitFor(() => {
+      expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    });
+    expect(mocks.fetch).toHaveBeenCalledWith("/api/admin/entries/entry-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slug: "existing-entry",
+        channelId: "channel-articles",
+        kind: "ARTICLE",
+        status: "PUBLISHED",
+        metadata: {
+          cover: "/uploads/cover.png",
+          readingMinutes: 6,
+          toc: true,
+          ogImage: null,
+        },
+        tags: [],
+        translations: [
+          {
+            locale: "zh",
+            title: "已有条目",
+            excerpt: "旧摘要",
+            content: "更新后的正文",
+          },
+        ],
+      }),
+    });
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
+  });
 });
