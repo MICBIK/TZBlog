@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { format } from "date-fns";
 
 import type { HomeChannelPreview } from "@/lib/services/homePage";
 
@@ -15,6 +16,11 @@ export interface ChannelPreviewBlockProps {
 }
 
 export function ChannelPreviewBlock({ channel }: ChannelPreviewBlockProps) {
+  const cta =
+    channel.kind === "STREAM"
+      ? { href: `/c/${channel.slug}`, label: "进入流 →" }
+      : { href: `/c/${channel.slug}`, label: "查看全部 →" };
+
   return (
     <section
       aria-labelledby={`channel-preview-${channel.slug}`}
@@ -34,32 +40,56 @@ export function ChannelPreviewBlock({ channel }: ChannelPreviewBlockProps) {
           ) : null}
         </div>
         <Link
-          href={`/c/${channel.slug}`}
+          href={cta.href}
           className="text-sm font-medium text-accent hover:underline"
         >
-          查看全部 →
+          {cta.label}
         </Link>
       </header>
 
-      <ul className="grid gap-4 md:grid-cols-3">
-        {channel.entries.map((entry) => (
-          <li key={entry.id}>
-            <Link
-              href={entryHref(channel.slug, entry.slug, entry.kind)}
-              className="group block rounded-xl border border-border p-4 transition-colors hover:border-accent"
-            >
-              <h3 className="font-semibold text-fg group-hover:underline">
-                {entry.title}
-              </h3>
-              {entry.excerpt ? (
-                <p className="mt-2 line-clamp-3 text-sm text-muted-fg">
-                  {entry.excerpt}
-                </p>
-              ) : null}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {channel.kind === "STREAM" ? (
+        <ul className="divide-y divide-border border-y border-border font-mono text-sm">
+          {channel.entries.map((entry) => (
+            <li key={entry.id} className="py-4">
+              <Link href={entryHref(channel.slug, entry.slug, entry.kind)} className="group block">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="font-semibold text-fg group-hover:underline">
+                    {entry.title}
+                  </span>
+                  {entry.publishedAt ? (
+                    <time className="text-xs text-muted-fg">
+                      {format(entry.publishedAt, "yyyy-MM-dd")}
+                    </time>
+                  ) : null}
+                </div>
+                {entry.excerpt ? (
+                  <p className="mt-2 text-sm text-muted-fg">{entry.excerpt}</p>
+                ) : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="grid gap-4 md:grid-cols-3">
+          {channel.entries.map((entry) => (
+            <li key={entry.id}>
+              <Link
+                href={entryHref(channel.slug, entry.slug, entry.kind)}
+                className="group block rounded-xl border border-border p-4 transition-colors hover:border-accent"
+              >
+                <h3 className="font-semibold text-fg group-hover:underline">
+                  {entry.title}
+                </h3>
+                {entry.excerpt ? (
+                  <p className="mt-2 line-clamp-3 text-sm text-muted-fg">
+                    {entry.excerpt}
+                  </p>
+                ) : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
