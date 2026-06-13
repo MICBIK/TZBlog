@@ -1,0 +1,41 @@
+server:
+  port: 8080
+  mode: debug # debug, release, test
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: password
+  dbname: tzblog
+  sslmode: disable
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 1h
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+
+jwt:
+  secret: your-secret-key-change-in-production
+  expiry: 168h # 7 days
+
+storage:
+  provider: cloudflare_r2
+  r2:
+    account_id: your-account-id
+    access_key_id: your-access-key
+    secret_access_key: your-secret-key
+    bucket: tzblog
+    public_url: https://cdn.tzblog.com
+    region: auto
+
+log:
+  level: info # debug, info, warn, error
+  format: json # json, console
+  output: stdout # stdout, file
+  file_path: logs/app.log
