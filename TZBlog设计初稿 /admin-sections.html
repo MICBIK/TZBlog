@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>板块与置顶 · tzblog</title>
+<style>
+  :root{
+    --bg:#0a0e14;--panel:#11161f;--panel-2:#0d1219;--line:#1d2530;
+    --fg:#e4e8ee;--fg-2:#aab3c0;--muted:#6b7686;--faint:#46505e;
+    --accent:#3fe08f;--accent-dim:#1f7a4d;--warn:#e8b339;--danger:#e06a5a;--info:#56a8e8;
+    --mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,monospace;
+    --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'PingFang SC',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;display:grid;grid-template-columns:232px 1fr;height:100vh;overflow:hidden}
+  a{color:inherit;text-decoration:none}::selection{background:rgba(63,224,143,.25)}
+
+  .side{background:var(--panel-2);border-right:1px solid var(--line);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+  .brand{padding:18px 20px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .brand b{font-family:var(--mono);font-size:14px;letter-spacing:.02em}.brand span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .nav{padding:12px;flex:1;display:flex;flex-direction:column;gap:2px}
+  .nav .grp{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;padding:14px 10px 6px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:var(--fg-2);font-size:13px;transition:.15s;position:relative}
+  .nav a .ic{width:15px;text-align:center;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .nav a:hover{background:var(--panel);color:var(--fg)}
+  .nav a.on{background:rgba(63,224,143,.1);color:var(--fg)}
+  .nav a.on .ic{color:var(--accent)}
+  .nav a.on::before{content:"";position:absolute;left:-12px;top:7px;bottom:7px;width:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 6px var(--accent)}
+  .side .me{padding:12px 16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .side .me .av{width:30px;height:30px;border-radius:7px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);color:var(--accent);font-size:13px}
+  .side .me .nm{font-size:13px}.side .me .rl{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  .main{display:flex;flex-direction:column;min-width:0;height:100vh;overflow-y:auto}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--line);background:rgba(13,18,25,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5}
+  .top .crumb{font-family:var(--mono);font-size:12px;color:var(--muted)}.top .crumb b{color:var(--fg-2);font-weight:400}
+  .top .acts{display:flex;gap:10px;align-items:center}
+  .btn{font-family:var(--mono);font-size:12.5px;padding:7px 13px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--fg-2);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;position:relative;overflow:hidden}
+  .btn:hover{border-color:var(--faint);color:var(--fg)}
+  .btn.primary{background:rgba(63,224,143,.12);border-color:var(--accent-dim);color:var(--accent)}
+  .btn.primary:hover{background:rgba(63,224,143,.18)}
+  .btn.sm{padding:5px 9px;font-size:11.5px}
+  .btn.dgr{color:var(--danger);border-color:rgba(224,106,90,.35)}.btn.dgr:hover{background:rgba(224,106,90,.08)}
+  .wrap{padding:24px 26px 40px;max-width:920px;width:100%}
+
+  .set{background:var(--panel);border:1px solid var(--line);border-radius:11px;margin-bottom:18px;overflow:hidden}
+  .sh{padding:13px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+  .sh .t{font-family:var(--mono);font-size:12.5px;color:var(--fg-2)}.sh .t b{color:var(--accent);font-weight:400}
+  .sh .desc{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .sh .btn{margin-left:auto}
+
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 18px;border-bottom:1px solid var(--line)}
+  td{padding:12px 18px;border-bottom:1px solid var(--panel-2);font-size:13px;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr.row:hover{background:var(--panel-2)}
+  .cat-name{display:flex;align-items:center;gap:9px}
+  .swatch{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+  .slug{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .cnt{font-family:var(--mono);color:var(--fg-2);font-variant-numeric:tabular-nums}
+  td.act{text-align:right;white-space:nowrap}
+  .switch{position:relative;width:40px;height:22px;display:inline-block;cursor:pointer;vertical-align:middle}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;margin:0}
+  .switch .tr{position:absolute;inset:0;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;transition:.18s}
+  .switch .kn{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--muted);transition:.18s}
+  .switch input:checked~.tr{background:rgba(63,224,143,.15);border-color:var(--accent-dim)}
+  .switch input:checked~.kn{left:20px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+
+  /* add form */
+  .addform{padding:14px 18px;border-bottom:1px solid var(--panel-2);display:none;gap:10px;flex-wrap:wrap;align-items:center;background:var(--panel-2)}
+  .addform.open{display:flex}
+  .addform input{background:var(--bg);border:1px solid var(--line);border-radius:7px;color:var(--fg);font-family:var(--mono);font-size:12.5px;padding:8px 11px}
+  .addform input:focus{outline:none;border-color:var(--accent-dim)}
+  .addform .nm-in{flex:1;min-width:140px}.addform .sl-in{width:150px}
+
+  /* pinned */
+  .pin-list{padding:6px 0}
+  .pin-item{display:flex;align-items:center;gap:13px;padding:12px 18px;border-bottom:1px solid var(--panel-2);cursor:pointer;transition:.14s}
+  .pin-item:last-child{border-bottom:none}
+  .pin-item:hover{background:var(--panel-2)}
+  .pin-item.on{background:rgba(63,224,143,.07)}
+  .radio{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--faint);flex:0 0 auto;display:grid;place-items:center;transition:.14s}
+  .pin-item.on .radio{border-color:var(--accent)}
+  .pin-item.on .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+  .pin-info{flex:1;min-width:0}
+  .pin-info .ti{font-size:13.5px;color:var(--fg);font-weight:500}
+  .pin-info .mt{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+  .pin-badge{font-family:var(--mono);font-size:10px;color:var(--warn);border:1px solid rgba(232,179,57,.4);border-radius:5px;padding:2px 7px;opacity:0;transition:.14s}
+  .pin-item.on .pin-badge{opacity:1}
+
+  .savebar{position:sticky;bottom:0;background:rgba(13,18,25,.85);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:13px 26px;display:flex;align-items:center;justify-content:space-between}
+  .savebar .st{font-family:var(--mono);font-size:11.5px;color:var(--muted)}.savebar .st b{color:var(--warn);font-weight:400}
+  .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:12.5px;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:.25s;z-index:20}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:880px){body{grid-template-columns:1fr}.side{position:fixed;left:-232px;z-index:30;transition:.2s}.side.open{left:0}}
+</style>
+<link rel="stylesheet" href="assets/admin-chrome.css">
+<script src="assets/admin-chrome.js" defer></script>
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+  <aside class="side">
+    <div class="brand"><span class="dot"></span><b>tzblog</b><span>/admin</span></div>
+    <nav class="nav">
+      <div class="grp">概览</div>
+      <a href="admin-dashboard.html"><span class="ic">▦</span>仪表盘</a>
+  <a href="admin-analytics.html"><span class="ic">∿</span>数据分析</a>
+      <div class="grp">内容</div>
+      <a href="admin-editor.html"><span class="ic">✎</span>写文章</a>
+      <a class="on" href="admin-sections.html"><span class="ic">▤</span>板块与置顶</a>
+      <a href="admin-media.html"><span class="ic">⊞</span>媒体库</a>
+      <div class="grp">系统</div>
+      <a href="admin-settings.html"><span class="ic">⚙</span>站点设置</a>
+      <a href="front-home.html"><span class="ic">↗</span>查看前台</a>
+    </nav>
+    <div class="me"><span class="av">H</span><div><div class="nm">haiden</div><div class="rl">站长</div></div></div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb">admin ❯ <b>sections</b></div>
+      <div class="acts">
+        <a class="btn" href="front-home.html">↗ 预览首页</a>
+        <button class="btn primary" onclick="save()">✓ 保存更改</button>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="set">
+        <div class="sh"><span class="t"><b>#</b> 内容板块 / 分类</span><span class="desc">前台导航与归类依据</span><button class="btn sm primary" onclick="toggleAdd()">+ 新增板块</button></div>
+        <div class="addform" id="addform">
+          <input class="nm-in" id="newName" placeholder="板块名称，如「性能优化」">
+          <input class="sl-in" id="newSlug" placeholder="slug，如 perf">
+          <button class="btn sm primary" onclick="addCat()">确定</button>
+          <button class="btn sm" onclick="toggleAdd()">取消</button>
+        </div>
+        <table>
+          <thead><tr><th>板块</th><th>Slug</th><th>文章数</th><th>前台显示</th><th></th></tr></thead>
+          <tbody id="cats">
+            <tr class="row"><td><div class="cat-name"><span class="swatch" style="background:#3fe08f"></span>AI Coding</div></td><td><span class="slug">ai-coding</span></td><td><span class="cnt">42</span></td><td><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></td><td class="act"><button class="btn sm" data-msg="编辑板块（原型占位）">编辑</button> <button class="btn sm dgr" onclick="delCat(this)">删除</button></td></tr>
+            <tr class="row"><td><div class="cat-name"><span class="swatch" style="background:#56a8e8"></span>全栈工程</div></td><td><span class="slug">fullstack</span></td><td><span class="cnt">38</span></td><td><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></td><td class="act"><button class="btn sm" data-msg="编辑板块（原型占位）">编辑</button> <button class="btn sm dgr" onclick="delCat(this)">删除</button></td></tr>
+            <tr class="row"><td><div class="cat-name"><span class="swatch" style="background:#e8b339"></span>工具效率</div></td><td><span class="slug">tools</span></td><td><span class="cnt">24</span></td><td><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></td><td class="act"><button class="btn sm" data-msg="编辑板块（原型占位）">编辑</button> <button class="btn sm dgr" onclick="delCat(this)">删除</button></td></tr>
+            <tr class="row"><td><div class="cat-name"><span class="swatch" style="background:#b07ce8"></span>随笔思考</div></td><td><span class="slug">essay</span></td><td><span class="cnt">15</span></td><td><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></td><td class="act"><button class="btn sm" data-msg="编辑板块（原型占位）">编辑</button> <button class="btn sm dgr" onclick="delCat(this)">删除</button></td></tr>
+            <tr class="row"><td><div class="cat-name"><span class="swatch" style="background:#e06a5a"></span>作品项目</div></td><td><span class="slug">works</span></td><td><span class="cnt">9</span></td><td><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></td><td class="act"><button class="btn sm" data-msg="编辑板块（原型占位）">编辑</button> <button class="btn sm dgr" onclick="delCat(this)">删除</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="set">
+        <div class="sh"><span class="t"><b>★</b> 首页置顶文章</span><span class="desc">选择 1 篇展示在首页顶部</span></div>
+        <div class="pin-list" id="pins">
+          <div class="pin-item on" onclick="pick(this)"><div class="radio"></div><div class="pin-info"><div class="ti">spec-first 让 Claude 连续写对 3000 行</div><div class="mt">AI Coding · 2026-05-20 · 阅读 3.2k</div></div><span class="pin-badge">★ 当前置顶</span></div>
+          <div class="pin-item" onclick="pick(this)"><div class="radio"></div><div class="pin-info"><div class="ti">Next.js 15 RSC 缓存的 7 个坑</div><div class="mt">全栈工程 · 2026-05-12 · 阅读 2.7k</div></div><span class="pin-badge">★ 当前置顶</span></div>
+          <div class="pin-item" onclick="pick(this)"><div class="radio"></div><div class="pin-info"><div class="ti">Go 重写后端：120ms → 18ms</div><div class="mt">全栈工程 · 2026-04-28 · 阅读 4.1k</div></div><span class="pin-badge">★ 当前置顶</span></div>
+          <div class="pin-item" onclick="pick(this)"><div class="radio"></div><div class="pin-info"><div class="ti">写完 100 篇博客后的反思</div><div class="mt">随笔思考 · 2026-04-15 · 阅读 1.9k</div></div><span class="pin-badge">★ 当前置顶</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="savebar"><span class="st" id="st">已保存 · 最后更新 5 分钟前</span><button class="btn primary" onclick="save()">✓ 保存更改</button></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+<script>
+  var t=document.getElementById('toast'),tm,st=document.getElementById('st'),dirty=false;
+  function toast(m){t.textContent=m;t.classList.add('show');clearTimeout(tm);tm=setTimeout(function(){t.classList.remove('show')},1800);}
+  function mark(){if(!dirty){dirty=true;st.innerHTML='<b>● 有未保存的更改</b>';}}
+  function save(){dirty=false;st.textContent='已保存 · 刚刚';toast('板块与置顶已保存');}
+  function toggleAdd(){document.getElementById('addform').classList.toggle('open');}
+  function addCat(){
+    var n=document.getElementById('newName').value.trim(),s=document.getElementById('newSlug').value.trim()||'new';
+    if(!n){toast('请填写板块名称');return;}
+    var tr=document.createElement('tr');tr.className='row';
+    tr.innerHTML='<td><div class="cat-name"><span class="swatch" style="background:#6b7686"></span>'+n+'</div></td><td><span class="slug">'+s+'</span></td><td><span class="cnt">0</span></td><td><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></td><td class="act"><button class="btn sm dgr" onclick="delCat(this)">删除</button></td>';
+    document.getElementById('cats').appendChild(tr);
+    document.getElementById('newName').value='';document.getElementById('newSlug').value='';
+    toggleAdd();mark();toast('已新增板块「'+n+'」');
+  }
+  function delCat(b){b.closest('tr').remove();mark();toast('板块已删除');}
+  function pick(el){
+    document.querySelectorAll('.pin-item').forEach(function(p){p.classList.remove('on');});
+    el.classList.add('on');mark();toast('已设为首页置顶');
+  }
+  document.querySelectorAll('input[type=checkbox]').forEach(function(c){c.addEventListener('change',mark);});
+  document.querySelectorAll('[data-msg]').forEach(function(el){el.addEventListener('click',function(){toast(el.dataset.msg);});});
+  document.querySelectorAll('.btn').forEach(function(el){el.addEventListener('click',function(e){var r=document.createElement('span');var dd=Math.max(el.offsetWidth,el.offsetHeight);var x=e.clientX-el.getBoundingClientRect().left-dd/2,y=e.clientY-el.getBoundingClientRect().top-dd/2;r.style.cssText='position:absolute;border-radius:50%;width:'+dd+'px;height:'+dd+'px;left:'+x+'px;top:'+y+'px;background:radial-gradient(circle,rgba(63,224,143,.4),transparent 70%);transform:scale(0);animation:rp .5s ease-out;pointer-events:none';el.appendChild(r);setTimeout(function(){r.remove()},500);});});
+  var s=document.createElement('style');s.textContent='@keyframes rp{to{transform:scale(2.2);opacity:0}}';document.head.appendChild(s);
+</script>
+</body>
+</html>

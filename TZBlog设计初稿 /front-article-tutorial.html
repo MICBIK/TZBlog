@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>spec-first 工作流 · tzblog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+ --bg:#0b0f14;--bg-2:#0f151c;--panel:#11171f;--panel-2:#141b24;
+    --line:#1f2730;--line-2:#2a343f;
+    --fg:#c9d4df;--fg-strong:#eef3f8;--muted:#6b7a89;--dim:#7d8a97;
+    --acc:#3fe08f;--acc-dim:#1f7a4d;--amber:#e3b341;
+  --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
+    --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    --r:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0 3px,rgba(0,0,0,.18) 3px 4px),radial-gradient(120% 80% at 50% -10%,rgba(63,224,143,.05),transparent 60%);opacity:.5;mix-blend-mode:soft-light}
+  body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(rgba(107,122,137,.06) 1px,transparent 1px);background-size:22px 22px}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+
+  /* reading progress */
+  .progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--acc);z-index:30;box-shadow:0 0 8px var(--acc)}
+
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(11,15,20,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .wrap{display:flex;align-items:center;gap:22px;height:56px}
+  .prompt{color:var(--acc);font-weight:700;white-space:nowrap}
+  .prompt .path{color:var(--fg-strong)}
+  .nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+  .nav a{padding:6px 11px;border-radius:var(--r);color:var(--muted);font-size:13.5px;transition:.16s}
+  .nav a::before{content:"./";color:var(--dim)}
+  .nav a:hover{color:var(--fg-strong);background:var(--panel-2)}
+  .nav a[aria-current]{color:var(--acc);background:rgba(63,224,143,.08)}
+  .nav a[aria-current]::before{color:var(--acc-dim)}
+
+  /* article layout */
+  .layout{display:grid;grid-template-columns:1fr 240px;gap:50px;padding:38px 0 70px;align-items:start}
+  .crumb{font-size:12.5px;color:var(--dim);margin-bottom:22px}
+  .crumb .pr{color:var(--acc)}
+  .crumb b{color:var(--muted);font-weight:400}
+  article h1{font-family:var(--sans);font-weight:700;font-size:clamp(28px,4vw,42px);line-height:1.2;color:var(--fg-strong);letter-spacing:-.01em;max-width:20ch}
+  .head-meta{display:flex;align-items:center;gap:11px;margin:20px 0 4px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .ava{width:32px;height:32px;border-radius:7px;display:grid;place-items:center;background:rgba(63,224,143,.1);border:1px solid var(--acc-dim);color:var(--acc);font-weight:700;font-size:12px}
+  .head-meta b{color:var(--fg-strong);font-weight:600}
+  .sep{color:var(--dim)}
+  .tags{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap}
+  .tags a{font-size:12px;padding:4px 10px;border:1px solid var(--line-2);border-radius:5px;color:var(--muted);transition:.15s}
+  .tags a::before{content:"#";color:var(--dim)}
+  .tags a:hover{color:var(--acc);border-color:var(--acc-dim)}
+  .cover{margin:28px 0;border:1px solid var(--line);border-radius:10px;height:200px;background:linear-gradient(135deg,#0d1822,#0a0f15);display:grid;place-items:center;color:var(--acc-dim);font-size:13px;position:relative;overflow:hidden}
+  .cover::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(63,224,143,.08) 1px,transparent 1px);background-size:16px 16px}
+  .cover span{position:relative;color:var(--muted)}
+
+  /* prose */
+  .prose{font-family:var(--sans);font-size:16.5px;line-height:1.85;color:var(--fg);max-width:none}
+  .prose p{margin:18px 0;opacity:.92}
+  .prose h2{font-family:var(--sans);font-size:24px;color:var(--fg-strong);margin:42px 0 4px;font-weight:700;scroll-margin-top:72px;display:flex;align-items:baseline;gap:10px}
+  .prose h2::before{content:"##";font-family:var(--mono);color:var(--acc-dim);font-size:18px;font-weight:700}
+  .prose h3{font-family:var(--sans);font-size:18px;color:var(--fg-strong);margin:28px 0 4px;font-weight:600}
+  .prose strong{color:var(--fg-strong)}
+  .prose em{color:var(--amber);font-style:normal}
+  .prose code{font-family:var(--mono);font-size:14px;background:var(--panel-2);border:1px solid var(--line);padding:1px 6px;border-radius:4px;color:var(--acc)}
+  .prose ul{margin:16px 0;padding-left:4px;list-style:none}
+  .prose li{margin:9px 0;padding-left:24px;position:relative}
+  .prose li::before{content:"▸";position:absolute;left:4px;color:var(--acc-dim)}
+  .callout{border:1px solid var(--acc-dim);border-left-width:3px;background:rgba(63,224,143,.05);border-radius:0 8px 8px 0;padding:16px 20px;margin:24px 0;font-size:15px}
+  .callout .lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:6px}
+
+  /* code block */
+  .codeblock{border:1px solid var(--line);border-radius:8px;background:#080c11;margin:24px 0;overflow:hidden}
+  .code-head{display:flex;align-items:center;gap:10px;padding:8px 13px;border-bottom:1px solid var(--line);background:var(--panel-2);font-size:12px;font-family:var(--mono)}
+  .lang{color:var(--acc);font-weight:600}.fname{color:var(--dim)}
+  .copy{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted);background:transparent;border:1px solid var(--line-2);border-radius:5px;padding:4px 10px;cursor:pointer;transition:.15s}
+  .copy:hover,.copy.ok{color:var(--acc);border-color:var(--acc-dim)}
+  .code-body{display:flex;font-family:var(--mono);font-size:13.5px;line-height:1.75;overflow-x:auto}
+  .gutter{padding:14px 0 14px 14px;color:var(--dim);text-align:right;user-select:none;border-right:1px solid var(--line)}
+  .gutter span{display:block}
+  pre{padding:14px 16px;color:var(--fg);white-space:pre;overflow-x:auto;font-family:var(--mono)}
+  .k{color:#ff7b9c}.s{color:var(--acc)}.c{color:var(--dim);font-style:italic}.f{color:var(--amber)}.n{color:#79c0ff}
+
+  /* TOC sidebar */
+  aside{position:sticky;top:78px}
+  .toc{border:1px solid var(--line);border-radius:8px;background:var(--panel);overflow:hidden}
+  .toc-h{padding:11px 15px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted);background:var(--panel-2);font-family:var(--mono)}
+  .toc-h .pr{color:var(--acc)}
+  .toc-b{padding:8px 6px}
+  .toc-b a{display:block;font-family:var(--sans);font-size:13px;color:var(--muted);padding:6px 12px;border-left:2px solid transparent;transition:.15s;line-height:1.4}
+  .toc-b a:hover{color:var(--fg)}
+  .toc-b a.active{color:var(--acc);border-left-color:var(--acc)}
+  .side-act{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .side-act button{font-family:var(--mono);font-size:13px;padding:9px 14px;border:1px solid var(--line-2);border-radius:var(--r);background:transparent;color:var(--fg);cursor:pointer;transition:.15s;text-align:left}
+  .side-act button:hover{border-color:var(--acc-dim);color:var(--acc)}
+  .side-act button .n{color:var(--dim);float:right;font-family:var(--sans)}
+
+  /* prev-next + comments */
+  .pn{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:48px 0 0}
+  .pn a{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:14px 16px;transition:.16s}
+  .pn a:hover{border-color:var(--acc-dim);background:var(--panel-2)}
+  .pn .dir{font-family:var(--mono);font-size:11.5px;color:var(--acc-dim)}
+  .pn .t{font-family:var(--sans);font-size:14px;color:var(--fg-strong);margin-top:5px;line-height:1.4}
+  .pn a.next{text-align:right}
+  .comments{margin-top:48px;border-top:1px solid var(--line);padding-top:28px}
+  .comments .ch{font-family:var(--mono);font-size:13px;color:var(--muted);margin-bottom:18px}
+  .comments .ch .pr{color:var(--acc)}
+  .cbox{display:flex;gap:10px;margin-bottom:24px}
+  .cbox textarea{flex:1;background:var(--panel);border:1px solid var(--line-2);border-radius:8px;color:var(--fg);font-family:var(--sans);font-size:14px;padding:11px 14px;resize:vertical;min-height:48px}
+  .cbox textarea:focus{outline:none;border-color:var(--acc-dim)}
+  .cbox button{align-self:flex-end;font-family:var(--mono);font-size:13px;padding:10px 18px;background:var(--acc);color:#06120b;font-weight:700;border:none;border-radius:var(--r);cursor:pointer}
+  .cmt{padding:14px 0;border-bottom:1px dashed var(--line)}
+  .cmt .who{font-family:var(--mono);font-size:13px;color:var(--acc)}
+  .cmt .when{color:var(--dim);font-size:11.5px;margin-left:8px}
+  .cmt p{font-family:var(--sans);font-size:14px;color:var(--fg);margin-top:6px;line-height:1.6}
+
+  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--dim);font-size:12.5px}
+  footer .pr{color:var(--acc-dim)}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s cubic-bezier(.16,1,.3,1)}
+  .rv.in{opacity:1;transform:none}
+
+  @media(max-width:860px){.layout{grid-template-columns:1fr;gap:28px}aside{position:static;order:-1}.nav{display:none}.pn{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}*{transition:none!important}}
+</style>
+<link rel="stylesheet" href="assets/site-chrome.css" />
+<script defer src="assets/site-chrome.js"></script>
+<meta name="description" content="spec-first 工作流：让 Claude 连续写对 3000 行代码。规格驱动的 AI Coding 实战教程，含完整方法与代码示例。" />
+<link rel="canonical" href="https://tzcode.top/p/spec-first-claude-3000-lines" />
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="tzblog" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:title" content="spec-first 工作流：让 Claude 连续写对 3000 行" />
+<meta property="og:description" content="规格驱动的 AI Coding 实战教程，含完整方法与代码示例。" />
+<meta property="og:url" content="https://tzcode.top/p/spec-first-claude-3000-lines" />
+<meta name="twitter:card" content="summary" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"spec-first 工作流：让 Claude 连续写对 3000 行代码","inLanguage":"zh-CN","author":{"@type":"Person","name":"haiden"},"publisher":{"@type":"Organization","name":"tzblog"},"mainEntityOfPage":"https://tzcode.top/p/spec-first-claude-3000-lines","articleSection":"AI Coding","keywords":"AI Coding,Claude,spec-first,规格驱动开发"}</script>
+</head>
+<body>
+<div class="progress" id="bar"></div>
+<header class="topbar">
+  <div class="wrap">
+    <a class="prompt" href="front-home.html">haiden@tzblog:<span class="path">~/posts</span> $</a>
+    <nav class="nav">
+  <a href="front-home.html">home</a>
+      <a href="front-pathways.html">pathways</a>
+      <a href="front-works.html">works</a>
+      <a href="front-library.html">shelf</a>
+      <a href="front-search.html">search</a>
+      <a href="front-about.html">about</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="layout">
+    <article class="prose">
+      <p class="crumb"><span class="pr">$</span> cat <b>~/posts/2026/spec-first-workflow.md</b></p>
+      <h1>我用 spec-first 工作流让 Claude 连续写对 3000 行代码</h1>
+      <div class="head-meta">
+        <span class="ava">HA</span><b>haiden</b>
+        <span class="sep">·</span><span>2026-05-28</span>
+        <span class="sep">·</span><span>22 min</span>
+ <span class="sep">·</span><span>3.2k 阅读</span>
+    </div>
+      <div class="tags">
+   <a href="front-search.html">AI Coding</a><a href="front-search.html">prompt</a><a href="front-search.html">agent</a><a href="front-search.html">工作流</a>
+      </div>
+      <div class="cover"><span>spec → verify → replay · 一个能回放的失败轨迹</span></div>
+
+      <p>过去半年我让 agent 写过最长的一次，是一个 3000 行的支付对账模块——一次性跑通、过了全部契约测试、上了生产。很多人以为关键是"更聪明的模型"或"更长的 prompt"。<strong>都不是。</strong>真正起作用的，是我把功能开工的顺序倒过来了：先写验证，再写实现，让 agent 的唯一目标变成"让验证全绿"。</p>
+
+      <h2 id="s1">为什么 prompt 越写越长反而越糟</h2>
+      <p>越长的 prompt 越像"许愿"——你在描述一个你脑子里的成品，但 agent 没有办法判断它有没有命中。它会很自信地写出一坨看起来对、跑起来错的代码。问题不在它的能力，在于<strong>没有一个客观的、它够得到的成功信号</strong>。</p>
+      <ul>
+      <li>需求在你脑子里是模糊的，写成 prompt 时被迫具体化，但具体得不够</li>
+        <li>agent 把"看起来合理"当成"正确"，因为没有更硬的标准</li>
+    <li>你在 review 时才发现偏差，返工成本被推到了最后</li>
+      </ul>
+
+<h2 id="s2">spec-first：先写验收脚本</h2>
+      <p>我现在每个功能开工前先落的，不是 prompt，而是一段<strong>验收脚本</strong>。它先于实现存在，agent 的任务就是让它从红变绿：</p>
+      <div class="codeblock">
+        <div class="code-head"><span class="lang">bash</span><span class="fname">verify.sh</span><button class="copy" data-copy>copy</button></div>
+        <div class="code-body">
+        <div class="gutter"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div>
+<pre data-code><span class="c"># 验收脚本先于实现存在——agent 的唯一目标是让它全绿</span>
+<span class="k">set</span> -euo pipefail
+
+pnpm tsc --noEmit     <span class="c"># 类型先过</span>
+pnpm vitest run spec/<span class="f">checkout</span>  <span class="c"># 行为契约</span>
+node scripts/replay.js <span class="s">"last-failure"</span>  <span class="c"># 回放上次失败轨迹</span>
+<span class="k">echo</span> <span class="s">"✓ spec satisfied"</span></pre>
+        </div>
+      </div>
+      <p>这三行分别对应三个闸门：<strong>类型</strong>挡掉一半的低级错误，<strong>契约测试</strong>把"我以为它懂了"变成"它必须通过"，<strong>失败回放</strong>让上次踩过的坑不会重复掉进去。</p>
+
+ <div class="callout">
+        <div class="lbl">核心洞察</div>
+关键不是脚本写得多漂亮，而是它在 agent 动手<strong>之前</strong>就存在。验证层是 agent 的"目标函数"——没有它，再聪明的模型也只是在猜你想要什么。
+      </div>
+
+      <h2 id="s3">最便宜的验证层放在哪</h2>
+      <p>不是所有验证都值得写。我的排序是：<strong>类型 &gt; 纯函数单测 &gt; 契约测试 &gt; e2e</strong>。越靠左越便宜、反馈越快，越应该让 agent 频繁撞它。e2e 留到最后做兜底，而不是开发循环里的主力。</p>
+      <h3>一个反直觉的点</h3>
+      <p>很多人省略类型检查，觉得"反正测试会兜住"。但类型是 <em>agent 写代码时</em>就能拿到的反馈，测试要跑起来才知道。把最快的反馈给 agent，它的收敛速度会肉眼可见地提升。</p>
+
+  <h2 id="s4">失败轨迹回放</h2>
+      <p>这是最被低估的一环。每次 agent 失败，我把它的输入、输出、报错存成一条 trace。下次开工先 <code>replay</code> 一遍历史失败——等于给 agent 装了"长期记忆"，同一个坑不会掉第二次。半年下来，这个 trace 库本身成了团队最值钱的资产。</p>
+
+      <div class="pn">
+        <a class="prev" href="front-article-tutorial.html"><div class="dir">← prev</div><div class="t">Next.js 15 RSC 缓存的 7 个坑</div></a>
+        <a class="next" href="front-article-tutorial.html"><div class="dir">next →</div><div class="t">把后端从 Node 重写成 Go</div></a>
+   </div>
+
+    <section class="comments">
+        <div class="ch"><span class="pr">$</span> tail comments.log — 12 条评论</div>
+        <div class="cbox">
+          <textarea placeholder="// 写下你的想法… 登录后发布"></textarea>
+  <button data-msg="登录后即可发布评论（GitHub / Google / 邮箱）">发布</button>
+        </div>
+<div class="cmt"><span class="who">@林深</span><span class="when">2 天前</span><p>spec 那段直接照搬到我们 CI 里了，agent 返工率肉眼可见下降。请问 replay 的 trace 格式方便开源一下吗？</p></div>
+        <div class="cmt"><span class="who">@coderwang</span><span class="when">4 天前</span><p>"把最快的反馈给 agent"——这句点醒我了，之前一直只靠 e2e 兜底，循环慢得要死。</p></div>
+        <div class="cmt"><span class="who">@阿吉</span><span class="when">5 天前</span><p>3000 行一次跑通有点夸张，但顺序倒过来这个思路确实成立，已经在小功能上验证了。</p></div>
+      </section>
+    </article>
+
+    <aside>
+      <nav class="toc">
+        <div class="toc-h"><span class="pr">$</span> grep '^##' article</div>
+ <div class="toc-b">
+       <a href="#s1">为什么 prompt 越写越长反而越糟</a>
+<a href="#s2">spec-first：先写验收脚本</a>
+       <a href="#s3">最便宜的验证层放在哪</a>
+        <a href="#s4">失败轨迹回放</a>
+        </div>
+      </nav>
+      <div class="side-act">
+        <button data-msg="已点赞 · 感谢支持">👍 赞 <span class="n">312</span></button>
+        <button data-msg="已加入收藏 · 可在「我的书架」查看">★ 收藏 <span class="n">186</span></button>
+        <button data-msg="链接已复制到剪贴板" data-share>↗ 分享</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer>
+<div class="wrap"><span class="pr">$</span> echo "© 2026 tzblog · haiden" — tzcode.top · RSS · GitHub</div>
+</footer>
+
+<script>
+  // reading progress
+  const bar=document.getElementById('bar');
+  addEventListener('scroll',()=>{const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;bar.style.width=p+'%'},{passive:true});
+  // copy
+  document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{
+    const code=b.closest('.codeblock').querySelector('[data-code]').innerText;
+    navigator.clipboard.writeText(code).then(()=>{b.textContent='copied ✓';b.classList.add('ok');setTimeout(()=>{b.textContent='copy';b.classList.remove('ok')},1600)});
+  }));
+  // share
+  document.querySelectorAll('[data-share]').forEach(b=>b.addEventListener('click',()=>navigator.clipboard&&navigator.clipboard.writeText(location.href)));
+// toast
+  document.querySelectorAll('[data-msg]').forEach(el=>el.addEventListener('click',e=>{
+    e.preventDefault();const t=document.createElement('div');t.textContent=el.dataset.msg;
+    t.style.cssText='position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#11171f;border:1px solid #2a343f;color:#3fe08f;font:13px/1.5 "JetBrains Mono",monospace;padding:10px 16px;border-radius:8px;z-index:99;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+  }));
+  // TOC scroll-spy
+  const links=[...document.querySelectorAll('.toc-b a')];
+  const heads=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const spy=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const i=heads.indexOf(e.target);if(links[i])links[i].classList.add('active')}}),{rootMargin:'-72px 0px -65% 0px'});
+  heads.forEach(h=>h&&spy.observe(h));
+  // reveal
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

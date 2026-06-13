@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tzblog · 搜索</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#0f141d; --panel-2:#131a25; --line:#1e2733;
+    --fg:#d6e0ee; --fg-2:#9fb0c3; --muted:#5e6f82;
+--accent:#3fe08f; --accent-dim:#1f7a4d;
+    --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
+    --sans:'Noto Sans SC',-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--fg); font-family:var(--sans);
+    line-height:1.6; min-height:100vh; -webkit-font-smoothing:antialiased;
+    position:relative; overflow-x:hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(63,221,132,.012) 3px,transparent 4px),
+      radial-gradient(1px 1px at 20px 30px,rgba(159,176,195,.05) 1px,transparent 0);
+    background-size:auto,42px 42px;
+  }
+  .wrap{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:0 24px}
+
+  /* nav */
+  .topnav{
+    position:sticky; top:0; z-index:20; backdrop-filter:blur(8px);
+    background:rgba(10,14,20,.82); border-bottom:1px solid var(--line);
+  }
+  .topnav .row{display:flex; align-items:center; gap:20px; height:56px; max-width:1080px; margin:0 auto; padding:0 24px}
+  .logo{font-family:var(--mono); font-weight:700; color:var(--fg); text-decoration:none; letter-spacing:-.02em}
+  .logo b{color:var(--accent)}
+  .navlinks{display:flex; gap:4px; margin-left:8px; flex-wrap:wrap}
+  .navlinks a{
+    font-family:var(--mono); font-size:13px; color:var(--fg-2); text-decoration:none;
+    padding:6px 10px; border-radius:6px; transition:.15s;
+  }
+  .navlinks a::before{content:"~/"; color:var(--muted)}
+  .navlinks a:hover{color:var(--fg); background:var(--panel-2)}
+  .navlinks a[aria-current]{color:var(--accent); background:var(--panel-2)}
+  .navlinks a[aria-current]::before{color:var(--accent-dim)}
+  .kbd{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--line); padding:3px 7px; border-radius:5px}
+
+  /* hero search */
+  .hero{padding:48px 0 28px}
+  .eyebrow{font-family:var(--mono); font-size:12px; color:var(--accent); letter-spacing:.08em; margin-bottom:10px}
+  .hero h1{font-size:clamp(26px,4vw,38px); font-weight:700; letter-spacing:-.02em; margin-bottom:6px}
+  .hero p{color:var(--fg-2); font-size:15px; margin-bottom:22px}
+  .searchbar{
+    display:flex; align-items:center; gap:10px; background:var(--panel);
+    border:1px solid var(--line); border-radius:10px; padding:14px 16px;
+    font-family:var(--mono); transition:.18s;
+  }
+  .searchbar:focus-within{border-color:var(--accent-dim); box-shadow:0 0 0 3px rgba(63,221,132,.08)}
+  .searchbar .prompt{color:var(--accent); font-weight:700}
+  .searchbar input{
+    flex:1; background:transparent; border:none; outline:none;
+color:var(--fg); font-family:var(--mono); font-size:15px;
+  }
+  .searchbar input::placeholder{color:var(--muted)}
+  .searchbar .caret{width:8px; height:18px; background:var(--accent); animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* filters */
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin:18px 0 8px}
+  .chip{
+    font-family:var(--mono); font-size:12px; color:var(--fg-2); cursor:pointer;
+    background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:5px 13px; transition:.15s;
+  }
+  .chip:hover{color:var(--fg); border-color:var(--muted)}
+  .chip[aria-pressed="true"]{color:var(--accent); border-color:var(--accent-dim); background:var(--panel-2)}
+  .meta-line{font-family:var(--mono); font-size:12px; color:var(--muted); margin:14px 0 6px}
+  .meta-line b{color:var(--accent)}
+
+  /* results */
+  .results{display:flex; flex-direction:column; gap:2px; padding-bottom:60px}
+  .hit{
+    display:block; text-decoration:none; color:inherit; padding:18px 16px;
+    border:1px solid transparent; border-radius:10px; transition:.15s;
+  }
+  .hit:hover{background:var(--panel); border-color:var(--line)}
+  .hit-top{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:5px}
+  .tag{font-family:var(--mono); font-size:11px; color:var(--accent); border:1px solid var(--accent-dim); border-radius:5px; padding:2px 7px}
+  .hit-date{font-family:var(--mono); font-size:11px; color:var(--muted)}
+  .hit h3{font-size:17px; font-weight:600; letter-spacing:-.01em; transition:.15s}
+  .hit:hover h3{color:var(--accent)}
+  .hit p{color:var(--fg-2); font-size:14px; margin-top:4px}
+  .hit p mark{background:rgba(63,221,132,.16); color:var(--accent); padding:0 2px; border-radius:2px}
+  .hit-stats{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:8px; display:flex; gap:16px}
+  .empty{font-family:var(--mono); color:var(--muted); padding:40px 16px; text-align:center}
+  .empty b{color:var(--fg-2)}
+
+  footer{border-top:1px solid var(--line); padding:28px 0; margin-top:20px}
+  footer .row{display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-family:var(--mono); font-size:12px; color:var(--muted)}
+  footer a{color:var(--fg-2); text-decoration:none}
+  footer a:hover{color:var(--accent)}
+
+  @media(max-width:640px){.kbd{display:none} .hero{padding:32px 0 20px}}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="assets/site-chrome.css" />
+<script defer src="assets/site-chrome.js"></script>
+<meta name="description" content="搜索 tzblog 全站文章：AI Coding、全栈工程、工具效率、随笔与作品，支持关键词与分类实时检索。" />
+<link rel="canonical" href="https://tzcode.top/search" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="tzblog" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:title" content="搜索 · tzblog" />
+<meta property="og:description" content="搜索 tzblog 全站文章，支持关键词与分类实时检索。" />
+<meta property="og:url" content="https://tzcode.top/search" />
+<meta name="twitter:card" content="summary" />
+</head>
+<body>
+  <nav class="topnav">
+    <div class="row">
+      <a class="logo" href="front-home.html">tz<b>blog</b></a>
+      <div class="navlinks">
+        <a href="front-home.html">home</a>
+  <a href="front-article-tutorial.html">posts</a>
+        <a href="front-library.html">library</a>
+    <a href="front-works.html">works</a>
+        <a aria-current="page" href="front-search.html">search</a>
+        <a href="front-pathways.html">paths</a>
+        <a href="front-about.html">about</a>
+  </div>
+      <span class="kbd">press / to search</span>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">$ grep -ri &quot;关键词&quot; ./posts</div>
+      <h1>全站搜索</h1>
+  <p>128 篇文章，38.6 万字。按标题、正文、标签实时检索。</p>
+      <label class="searchbar">
+ <span class="prompt">tzblog ❯</span>
+        <input id="q" type="text" placeholder="试试 spec-first、缓存、Go、终端…" autocomplete="off" />
+        <span class="caret" id="caret"></span>
+      </label>
+      <div class="filters" id="filters">
+        <button class="chip" data-cat="all" aria-pressed="true">全部</button>
+        <button class="chip" data-cat="AI Coding" aria-pressed="false">AI Coding</button>
+        <button class="chip" data-cat="全栈" aria-pressed="false">全栈工程</button>
+        <button class="chip" data-cat="工具" aria-pressed="false">工具效率</button>
+        <button class="chip" data-cat="随笔" aria-pressed="false">思考随笔</button>
+      </div>
+    </section>
+
+    <div class="meta-line" id="count"></div>
+    <section class="results" id="results"></section>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <div class="row">
+  <span>tzblog © 2026 · haiden · tzcode.top</span>
+  <span><a href="front-home.html">返回首页</a> · <a href="front-pathways.html">学习路径</a></span>
+      </div>
+</div>
+  </footer>
+
+<script>
+  const POSTS = [
+    {t:"spec-first：让 Claude 连续写对 3000 行代码",c:"AI Coding",d:"2026-05-28",x:"先写规格再写代码，把 AI 的发挥空间收敛进可验证的边界里。",read:"14 分钟",like:312},
+    {t:"Next.js 15 RSC 缓存的 7 个坑",c:"全栈",d:"2026-05-19",x:"fetch 缓存、Router Cache、生产与开发行为分叉，逐个拆解。",read:"11 分钟",like:208},
+    {t:"Go 重写后端：P99 从 120ms 砍到 18ms",c:"全栈",d:"2026-05-09",x:"连接池、零拷贝序列化、pprof 火焰图定位三处真实瓶颈。",read:"16 分钟",like:421},
+    {t:"2026 我的终端配置：zsh + tmux + neovim",c:"工具",d:"2026-04-30",x:"一套用了三年仍在迭代的命令行工作流与 dotfiles。",read:"9 分钟",like:176},
+    {t:"用 Meilisearch 给博客加全文搜索",c:"全栈",d:"2026-04-21",x:"中文分词、拼写容错、毫秒级响应，自托管搜索方案落地。",read:"10 分钟",like:154},
+  {t:"Shiki + KaTeX：博客的代码与公式渲染",c:"工具",d:"2026-04-12",x:"构建期高亮、零运行时 JS，公式服务端渲染的取舍。",read:"8 分钟",like:131},
+    {t:"Docker 多阶段构建把镜像砍到 40MB",c:"工具",d:"2026-03-30",x:"distroless 基镜像、依赖分层缓存、构建提速 6 倍。",read:"7 分钟",like:142},
+  {t:"写完 100 篇博客后，我对写作的重新理解",c:"随笔",d:"2026-03-18",x:"流量不是目的，把模糊的想法逼到清晰才是写作的回报。",read:"6 分钟",like:389}
+  ];
+
+  const q = document.getElementById('q');
+  const results = document.getElementById('results');
+  const count = document.getElementById('count');
+  const filters = document.getElementById('filters');
+  let cat = 'all';
+
+  const esc = s => s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+  const hl = (s,kw) => kw ? esc(s).replace(new RegExp('('+kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>') : esc(s);
+
+  function render(){
+    const kw = q.value.trim();
+    const t0 = performance.now();
+    const list = POSTS.filter(p =>
+      (cat==='all'||p.c===cat) &&
+      (!kw || (p.t+p.x+p.c).toLowerCase().includes(kw.toLowerCase()))
+    );
+    const ms = (performance.now()-t0).toFixed(2);
+  count.innerHTML = `> 命中 <b>${list.length}</b> 篇 · ${ms}ms` + (kw?` · 关键词 "${esc(kw)}"`:'');
+    results.innerHTML = list.length ? list.map(p=>`
+      <a class="hit" href="front-article-tutorial.html">
+        <div class="hit-top"><span class="tag">${p.c}</span><span class="hit-date">${p.d}</span></div>
+        <h3>${hl(p.t,kw)}</h3>
+        <p>${hl(p.x,kw)}</p>
+        <div class="hit-stats"><span>↗ ${p.read}</span><span>♥ ${p.like}</span></div>
+      </a>`).join('') :
+      `<div class="empty">没有匹配 <b>"${esc(kw)}"</b> 的文章<br>试试更短的关键词，或换个分类</div>`;
+  }
+
+  q.addEventListener('input', render);
+  filters.addEventListener('click', e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    cat = b.dataset.cat;
+    [...filters.children].forEach(c=>c.setAttribute('aria-pressed', c===b));
+    render();
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key==='/' && document.activeElement!==q){ e.preventDefault(); q.focus(); }
+    if(e.key==='Escape'){ q.blur(); }
+  });
+  q.addEventListener('focus',()=>document.getElementById('caret').style.display='none');
+  q.addEventListener('blur',()=>{ if(!q.value) document.getElementById('caret').style.display='block'; });
+  render();
+</script>
+</body>
+</html>

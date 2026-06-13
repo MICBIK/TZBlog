@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tzblog · 学习路径</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#0f141d; --panel-2:#121925; --line:#1d2738;
+    --fg:#d7e0ee; --fg-2:#9bb0c9; --muted:#5f7491; --green:#3fe08f; --green-dim:#1f7a4d;
+    --warn:#e3b341; --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
+    --sans:'Noto Sans SC',-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--fg); font-family:var(--sans); line-height:1.6; min-height:100vh; position:relative; overflow-x:hidden}
+  body::before{content:""; position:fixed; inset:0; z-index:0; pointer-events:none; background-image:radial-gradient(rgba(63,224,143,.04) 1px,transparent 1px); background-size:3px 3px; opacity:.5}
+body::after{content:""; position:fixed; inset:0; z-index:0; pointer-events:none; background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.14) 2px 4px); opacity:.35; mix-blend-mode:overlay}
+  .wrap{position:relative; z-index:1; max-width:820px; margin:0 auto; padding:0 24px}
+  .cli-nav{border-bottom:1px solid var(--line); background:rgba(10,14,20,.82); backdrop-filter:blur(8px); position:sticky; top:0; z-index:20}
+  .cli-inner{display:flex; align-items:center; gap:18px; height:54px; font-family:var(--mono); font-size:13px}
+  .cli-brand{color:var(--green); font-weight:600}
+  .cli-brand .b{color:var(--muted)}
+  .cli-links{display:flex; gap:4px; margin-left:auto; flex-wrap:wrap}
+  .cli-links a{color:var(--fg-2); text-decoration:none; padding:5px 10px; border-radius:5px; font-size:12.5px; transition:.16s}
+  .cli-links a:hover,.cli-links a.active{color:var(--green); background:var(--panel-2)}
+  .hero{padding:52px 0 22px; font-family:var(--mono)}
+  .hero .cmd{color:var(--muted); font-size:13px; margin-bottom:14px}
+  .hero .cmd .p{color:var(--green)}
+  .hero h1{font-size:clamp(28px,5vw,40px); font-weight:600; letter-spacing:-.01em; margin-bottom:10px}
+  .hero h1 .ac{color:var(--green)}
+  .hero .lede{font-family:var(--sans); color:var(--fg-2); max-width:58ch; font-size:15px}
+  .switch{display:flex; gap:6px; flex-wrap:wrap; padding:8px 0 28px; font-family:var(--mono)}
+  .pbtn{background:var(--panel); border:1px solid var(--line); color:var(--fg-2); padding:8px 15px; border-radius:6px; font-size:13px; cursor:pointer; transition:.16s; text-align:left}
+  .pbtn:hover{border-color:var(--green-dim); color:var(--fg)}
+  .pbtn.on{background:var(--green); border-color:var(--green); color:#06140c; font-weight:600}
+  .path{display:none; padding-bottom:60px}
+  .path.on{display:block}
+  .phead{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0 6px; flex-wrap:wrap}
+  .phead h2{font-family:var(--mono); font-size:18px; color:var(--fg)}
+  .phead .lvl{font-family:var(--mono); font-size:12px; color:var(--muted)}
+  .prog{height:6px; background:var(--panel-2); border-radius:6px; overflow:hidden; margin:10px 0 24px}
+  .prog i{display:block; height:100%; background:linear-gradient(90deg,var(--green-dim),var(--green)); box-shadow:0 0 8px rgba(63,224,143,.5)}
+  .step{display:flex; gap:16px; padding-bottom:4px}
+  .rail{flex:0 0 22px; display:flex; flex-direction:column; align-items:center}
+  .dot{width:16px; height:16px; border-radius:50%; border:2px solid var(--line); background:var(--bg); flex:0 0 auto; margin-top:14px; position:relative; z-index:1}
+  .step.done .dot{border-color:var(--green); background:var(--green)}
+  .step.now .dot{border-color:var(--green); box-shadow:0 0 0 4px rgba(63,224,143,.15)}
+  .line{width:2px; flex:1; background:var(--line); margin:2px 0}
+  .step.done .line{background:var(--green-dim)}
+  .step:last-child .line{display:none}
+  .scard{flex:1; background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:14px 16px; margin-bottom:14px; transition:.16s; text-decoration:none; display:block}
+  .scard:hover{border-color:var(--green-dim); transform:translateX(3px)}
+  .scard .st{font-size:15px; color:var(--fg); font-weight:600; margin-bottom:3px; display:flex; align-items:center; gap:8px}
+  .step.done .scard .st::after{content:"✓ 读过"; font-family:var(--mono); font-size:10.5px; color:var(--green); border:1px solid var(--green-dim); padding:1px 6px; border-radius:20px}
+  .step.now .scard .st::after{content:"在这里"; font-family:var(--mono); font-size:10.5px; color:var(--warn); border:1px solid #5a4a1f; padding:1px 6px; border-radius:20px}
+  .scard .sd{font-size:13.5px; color:var(--fg-2)}
+  .scard .sm{font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-top:7px}
+  footer{border-top:1px solid var(--line); padding:30px 0; font-family:var(--mono); font-size:12.5px; color:var(--muted); position:relative; z-index:1}
+  footer .wrap{display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+footer a{color:var(--fg-2); text-decoration:none}
+  footer a:hover{color:var(--green)}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="assets/site-chrome.css" />
+<script defer src="assets/site-chrome.js"></script>
+<meta name="description" content="tzblog 学习路径：AI Coding 上手、全栈工程实战、从零搭建个人博客——成体系的进阶路线与进度跟踪。" />
+<link rel="canonical" href="https://tzcode.top/pathways" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="tzblog" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:title" content="学习路径 · tzblog" />
+<meta property="og:description" content="AI Coding 上手、全栈工程实战、从零搭建个人博客的成体系进阶路线。" />
+<meta property="og:url" content="https://tzcode.top/pathways" />
+<meta name="twitter:card" content="summary" />
+</head>
+<body>
+  <nav class="cli-nav">
+    <div class="wrap cli-inner">
+      <span class="cli-brand">tzblog<span class="b">@haiden</span><span class="b"> ~/pathways $</span></span>
+      <span class="cli-links">
+    <a href="front-home.html">home</a>
+        <a href="front-article-tutorial.html">posts</a>
+        <a href="front-library.html">library</a>
+        <a href="front-works.html">works</a>
+        <a href="front-search.html">search</a>
+        <a href="front-pathways.html" class="active">pathways</a>
+        <a href="front-about.html">about</a>
+      </span>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="cmd"><span class="p">$</span> cat ~/learning-paths/*.md</div>
+      <h1>跟着<span class="ac">路径</span>读，不是随便翻</h1>
+      <p class="lede">把散落的文章按学习顺序串成几条路。每条路标了难度、预计时长和你读到哪了——照着走，不用自己拼。</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="switch" id="switch">
+      <button class="pbtn on" data-p="ai">AI Coding 上手</button>
+      <button class="pbtn" data-p="stack">全栈工程实战</button>
+      <button class="pbtn" data-p="blog">从 0 搭个人博客</button>
+    </div>
+
+    <section class="path on" id="ai">
+      <div class="phead"><h2>AI Coding 上手</h2><span class="lvl">入门 → 进阶 · 约 2.5h · 4 篇</span></div>
+      <div class="prog"><i style="width:50%"></i></div>
+      <div class="step done"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">第一次用 LLM 写代码的踩坑记录</div><div class="sd">先看别人怎么翻车，再决定自己怎么开始。</div><div class="sm">入门 · 12 min</div></a></div>
+      <div class="step now"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">spec-first 让 Claude 连续写对 3000 行</div><div class="sd">本路径的核心方法论：先写规格，再让模型落地。</div><div class="sm">核心 · 18 min</div></a></div>
+      <div class="step"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">把验收回归固化进 CLI 工具</div><div class="sd">让每次生成都跑一遍验收，质量不靠运气。</div><div class="sm">进阶 · 15 min</div></a></div>
+      <div class="step"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">上下文工程：喂给模型什么决定它写出什么</div><div class="sd">收尾的进阶篇，决定产出上限。</div><div class="sm">进阶 · 20 min</div></a></div>
+    </section>
+
+    <section class="path" id="stack">
+      <div class="phead"><h2>全栈工程实战</h2><span class="lvl">进阶 · 约 3h · 4 篇</span></div>
+      <div class="prog"><i style="width:25%"></i></div>
+      <div class="step done"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">Next.js 15 RSC 缓存的 7 个坑</div><div class="sd">前端这层先把缓存模型搞明白。</div><div class="sm">进阶 · 16 min</div></a></div>
+      <div class="step now"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">Go 重写后端：P99 从 120ms 到 18ms</div><div class="sd">后端选型与性能，重写的真实收益。</div><div class="sm">核心 · 19 min</div></a></div>
+      <div class="step"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">用 Meilisearch 给博客加全文搜索</div><div class="sd">检索能力，给内容站补上最后一块。</div><div class="sm">进阶 · 14 min</div></a></div>
+      <div class="step"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">Docker 多阶段构建把镜像砍到 40MB</div><div class="sd">部署收尾，把整套东西打包上线。</div><div class="sm">进阶 · 13 min</div></a></div>
+    </section>
+
+    <section class="path" id="blog">
+      <div class="phead"><h2>从 0 搭个人博客</h2><span class="lvl">入门 → 进阶 · 约 4h · 4 篇</span></div>
+      <div class="prog"><i style="width:0%"></i></div>
+      <div class="step now"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">从 0 搭一个能用三年的个人博客架构</div><div class="sd">先定架构，少走弯路。</div><div class="sm">入门 · 17 min</div></a></div>
+      <div class="step"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">Shiki + KaTeX：代码与公式渲染管线</div><div class="sd">技术博客必备的内容渲染层。</div><div class="sm">进阶 · 15 min</div></a></div>
+      <div class="step"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">为什么我把笔记从 Notion 搬回纯文本</div><div class="sd">内容源的取舍，影响长期维护成本。</div><div class="sm">随笔 · 10 min</div></a></div>
+    <div class="step"><div class="rail"><span class="dot"></span><span class="line"></span></div><a class="scard" href="front-article-tutorial.html"><div class="st">写完 100 篇博客后的一些反思</div><div class="sd">收尾：坚持下来之后的回看。</div><div class="sm">随笔 · 14 min</div></a></div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 tzblog · 由 haiden 手写，托管在 tzcode.top</span>
+      <span><a href="front-home.html">home</a> · <a href="front-library.html">归档</a> · 用 Next.js + Go 驱动</span>
+    </div>
+  </footer>
+
+<script>
+document.getElementById('switch').addEventListener('click',e=>{
+  const b=e.target.closest('.pbtn'); if(!b) return;
+  document.querySelectorAll('.pbtn').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.path').forEach(x=>x.classList.remove('on'));
+b.classList.add('on'); document.getElementById(b.dataset.p).classList.add('on');
+});
+</script>
+</body>
+</html>

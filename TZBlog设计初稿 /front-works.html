@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tzblog · 作品集</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#0f141d; --panel-2:#121925; --line:#1d2738;
+    --fg:#d7e0ee; --fg-2:#9bb0c9; --muted:#5f7491; --green:#3fe08f; --green-dim:#1f7a4d;
+    --warn:#e3b341; --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
+  --sans:'Noto Sans SC',-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--fg); font-family:var(--sans);
+    line-height:1.6; min-height:100vh; position:relative; overflow-x:hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:radial-gradient(rgba(63,224,143,.04) 1px,transparent 1px);
+    background-size:3px 3px; opacity:.5;
+  }
+  body::after{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.14) 2px 4px);
+    opacity:.35; mix-blend-mode:overlay;
+  }
+  .wrap{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:0 24px}
+  /* command-line nav */
+  .cli-nav{
+    border-bottom:1px solid var(--line); background:rgba(10,14,20,.82);
+    backdrop-filter:blur(8px); position:sticky; top:0; z-index:20;
+  }
+  .cli-inner{display:flex; align-items:center; gap:18px; height:54px; font-family:var(--mono); font-size:13px}
+  .cli-brand{color:var(--green); font-weight:600; letter-spacing:.02em}
+  .cli-brand .b{color:var(--muted)}
+  .cli-links{display:flex; gap:4px; margin-left:auto; flex-wrap:wrap}
+  .cli-links a{
+    color:var(--fg-2); text-decoration:none; padding:5px 10px; border-radius:5px;
+    font-size:12.5px; transition:.16s;
+  }
+  .cli-links a:hover{color:var(--green); background:var(--panel-2)}
+  .cli-links a.active{color:var(--green); background:var(--panel-2)}
+  /* hero */
+  .hero{padding:52px 0 30px; font-family:var(--mono)}
+  .hero .cmd{color:var(--muted); font-size:13px; margin-bottom:14px}
+  .hero .cmd .p{color:var(--green)}
+  .hero h1{
+    font-family:var(--mono); font-size:clamp(28px,5vw,42px); font-weight:600;
+    letter-spacing:-.01em; color:var(--fg); margin-bottom:10px;
+  }
+  .hero h1 .ac{color:var(--green)}
+  .hero .lede{font-family:var(--sans); color:var(--fg-2); max-width:60ch; font-size:15.5px}
+  /* filter chips */
+  .filters{display:flex; gap:8px; flex-wrap:wrap; padding:8px 0 26px; font-family:var(--mono)}
+  .chip{
+    background:var(--panel); border:1px solid var(--line); color:var(--fg-2);
+    padding:6px 13px; border-radius:6px; font-size:12.5px; cursor:pointer; transition:.16s;
+  }
+  .chip:hover{border-color:var(--green-dim); color:var(--fg)}
+  .chip.on{background:var(--green); border-color:var(--green); color:#06140c; font-weight:600}
+  .chip .n{opacity:.6; margin-left:5px}
+  /* count line */
+  .count{font-family:var(--mono); font-size:12.5px; color:var(--muted); padding-bottom:16px}
+  .count b{color:var(--green); font-weight:600}
+  /* project grid */
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; padding-bottom:60px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+ padding:20px; transition:.2s; display:flex; flex-direction:column; gap:12px;
+    opacity:0; transform:translateY(14px);
+  }
+  .card.in{opacity:1; transform:none}
+  .card:hover{border-color:var(--green-dim); transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .card-top{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .repo{font-family:var(--mono); font-size:15px; color:var(--green); font-weight:600; display:flex; align-items:center; gap:7px}
+  .repo svg{width:15px; height:15px; opacity:.75}
+  .status{font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:20px; border:1px solid}
+  .status.active{color:var(--green); border-color:var(--green-dim); background:rgba(63,224,143,.08)}
+  .status.maint{color:var(--warn); border-color:#5a4a1f; background:rgba(227,179,65,.08)}
+.status.arch{color:var(--muted); border-color:var(--line)}
+  .desc{font-size:14px; color:var(--fg-2); flex:1}
+  .stack{display:flex; gap:6px; flex-wrap:wrap}
+  .lang{font-family:var(--mono); font-size:11.5px; color:var(--fg-2); padding:3px 8px; background:var(--panel-2); border-radius:5px}
+  .lang::before{content:""; display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; background:var(--dot,var(--muted))}
+  .meta{display:flex; gap:18px; font-family:var(--mono); font-size:12px; color:var(--muted); padding-top:10px; border-top:1px solid var(--line)}
+  .meta span{display:flex; align-items:center; gap:5px}
+  .meta b{color:var(--fg-2); font-weight:500}
+  /* footer */
+  footer{border-top:1px solid var(--line); padding:30px 0; font-family:var(--mono); font-size:12.5px; color:var(--muted); position:relative; z-index:1}
+footer .container{max-width:1080px; margin:0 auto; padding:0 24px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px}
+  footer a{color:var(--fg-2); text-decoration:none}
+  footer a:hover{color:var(--green)}
+  @media(prefers-reduced-motion:reduce){.card{opacity:1; transform:none; transition:none}}
+</style>
+<link rel="stylesheet" href="assets/site-chrome.css" />
+<script defer src="assets/site-chrome.js"></script>
+<meta name="description" content="haiden 的开源作品与项目：全栈应用、开发者工具与实验项目，含技术栈与仓库链接。" />
+<link rel="canonical" href="https://tzcode.top/works" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="tzblog" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:title" content="作品集 · tzblog" />
+<meta property="og:description" content="haiden 的开源作品与项目：全栈应用、开发者工具与实验项目。" />
+<meta property="og:url" content="https://tzcode.top/works" />
+<meta name="twitter:card" content="summary" />
+</head>
+<body>
+  <nav class="cli-nav">
+    <div class="wrap cli-inner">
+      <span class="cli-brand">tzblog<span class="b">@haiden</span><span class="b"> ~/works $</span></span>
+      <span class="cli-links">
+     <a href="front-home.html">home</a>
+        <a href="front-article-tutorial.html">posts</a>
+        <a href="front-library.html">library</a>
+        <a href="front-works.html" class="active">works</a>
+        <a href="front-search.html">search</a>
+   <a href="front-pathways.html">pathways</a>
+        <a href="front-about.html">about</a>
+      </span>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+<div class="cmd"><span class="p">$</span> ls -la ~/projects --sort=stars</div>
+ <h1>构建过的<span class="ac">东西</span></h1>
+      <p class="lede">从这个博客本身，到给它配的搜索、渲染与构建工具链——能跑、在用、开源。下面是按 star 排序的真实仓库。</p>
+ </div>
+</header>
+
+  <div class="wrap">
+    <div class="filters" id="filters">
+      <button class="chip on" data-f="all">all<span class="n" id="c-all">6</span></button>
+      <button class="chip" data-f="ts">TypeScript</button>
+      <button class="chip" data-f="go">Go</button>
+      <button class="chip" data-f="rust">Rust</button>
+      <button class="chip" data-f="shell">Shell</button>
+    </div>
+    <div class="count" id="count">&gt; <b>6</b> 个仓库 · 共 <b>3.4k</b> stars</div>
+  <div class="grid" id="grid"></div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 tzblog · 由 haiden 手写，托管在 tzcode.top</span>
+    <span><a href="https://github.com">github</a> · <a href="front-home.html">rss</a> · 用 Next.js + Go 驱动</span>
+    </div>
+  </footer>
+
+<script>
+const repos=[
+  {name:'tzblog',lang:'TypeScript',f:'ts',dot:'#3178c6',status:['active','在线'],desc:'你正在看的这个博客本体。Next.js 15 App Router + RSC，Go 写的内容 API，Postgres 存储，Docker 部署到自己的 VPS。',stars:'1.2k',commit:'3 天前',issues:4},
+  {name:'spec-runner',lang:'TypeScript',f:'ts',dot:'#3178c6',status:['active','在线'],desc:'把「先写 spec 再让 Claude 写代码」固化成 CLI：维护规格文件、生成上下文、跑验收回归。连续写对 3000 行就靠它。',stars:'860',commit:'6 天前',issues:11},
+  {name:'meili-blog',lang:'Rust',f:'rust',dot:'#dea584',status:['active','在线'],desc:'给静态/SSR 博客挂 Meilisearch 全文搜索的胶水层：增量索引、中文分词配置、前端即时检索组件。',stars:'540',commit:'2 周前',issues:7},
+  {name:'go-api-fast',lang:'Go',f:'go',dot:'#00add8',status:['maint','维护中'],desc:'后端从 Node 重写到 Go 的脚手架沉淀：连接池、缓存层、中间件，把 P99 从 120ms 压到 18ms 的那套。',stars:'480',commit:'1 月前',issues:3},
+  {name:'shiki-katex-md',lang:'TypeScript',f:'ts',dot:'#3178c6',status:['maint','维护中'],desc:'Markdown 渲染管线：Shiki 双主题代码高亮 + KaTeX 公式 + 标题锚点 + TOC 提取，给技术博客用的。',stars:'210',commit:'1 月前',issues:2},
+  {name:'dotfiles',lang:'Shell',f:'shell',dot:'#89e051',status:['arch','长期'],desc:'2026 版终端配置：zsh + starship + tmux + neovim，一行 install.sh 在新机器上复刻整套环境。',stars:'120',commit:'3 月前',issues:0},
+];
+const grid=document.getElementById('grid');
+const countEl=document.getElementById('count');
+const ICON='<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.5 2.5 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.5 2.5 0 0 1 4.5 9h8Z"/></svg>';
+function render(f){
+  grid.innerHTML='';
+  const list=repos.filter(r=>f==='all'||r.f===f);
+  list.forEach((r,i)=>{
+    const el=document.createElement('article');
+    el.className='card';
+    el.innerHTML=`
+      <div class="card-top">
+        <span class="repo">${ICON}${r.name}</span>
+        <span class="status ${r.status[0]}">${r.status[1]}</span>
+      </div>
+      <p class="desc">${r.desc}</p>
+      <div class="stack"><span class="lang" style="--dot:${r.dot}">${r.lang}</span></div>
+      <div class="meta">
+<span>★ <b>${r.stars}</b></span>
+      <span>⊙ <b>${r.issues}</b> issues</span>
+        <span>↻ ${r.commit}</span>
+      </div>`;
+    grid.appendChild(el);
+    requestAnimationFrame(()=>setTimeout(()=>el.classList.add('in'),i*60));
+  });
+  const total=list.reduce((s,r)=>s+parseFloat(r.stars),0);
+  countEl.innerHTML=`&gt; <b>${list.length}</b> 个仓库 · 共 <b>${total>=1?total.toFixed(1)+'k':'—'}</b> stars`;
+}
+document.getElementById('filters').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); render(c.dataset.f);
+});
+render('all');
+</script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+/* ──────────────────────────────────────────────────────────────
+   site-chrome.css — single source of truth for the shared footer,
+ background motion, click ripple and glow cursor across all
+   front-facing tzblog pages. Tokens (--bg/--acc/...) are inherited
+   from each page's own :root, so no palette is duplicated here.
+   ────────────────────────────────────────────────────────────── */
+
+/* ── background motion layer (injected #site-fx) ──────────────── */
+#site-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#site-fx .aurora{position:absolute;border-radius:50%;filter:blur(90px);opacity:.16;
+  background:radial-gradient(circle,var(--acc,var(--accent,#3fe08f)),transparent 70%);will-change:transform}
+#site-fx .a1{width:46vw;height:46vw;left:-12vw;top:-14vw;animation:drift1 34s ease-in-out infinite}
+#site-fx .a2{width:38vw;height:38vw;right:-10vw;bottom:-12vw;opacity:.1;
+  background:radial-gradient(circle,var(--amber,#e3b341),transparent 70%);animation:drift2 46s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8vw,6vh) scale(1.12)}}
+@keyframes drift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-7vw,-5vh) scale(.9)}}
+/* slow-falling phosphor embers */
+#site-fx .ember{position:absolute;top:-8px;width:2px;height:2px;border-radius:50%;
+  background:var(--acc,var(--accent,#3fe08f));opacity:.5;box-shadow:0 0 6px var(--acc,var(--accent,#3fe08f));animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(-10px);opacity:0}10%{opacity:.55}90%{opacity:.4}100%{transform:translateY(102vh);opacity:0}}
+
+/* kill MPA white-flash on navigation: dark canvas + cross-document fade */
+@view-transition{navigation:auto}
+html{background:var(--bg,#0b0f14)}
+/* keyboard focus — WCAG 2.4.7/2.4.13: visible phosphor ring on tab-focus, every front page */
+:focus-visible{outline:2px solid var(--acc,var(--accent,#3fe08f));outline-offset:2px;border-radius:3px}
+/* ── themed cursor: sleek phosphor pointer (dark stroke = visible on any bg), hotspot at tip ─ */
+html{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M4 3 L4 19.5 L8.6 15.4 L11.7 21.8 L14.3 20.6 L11.2 14.3 L17.5 14 Z' fill='%233fe08f' stroke='%230b0f14' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") 4 3,default}
+a,button,[role=button],summary,label{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M4 3 L4 19.5 L8.6 15.4 L11.7 21.8 L14.3 20.6 L11.2 14.3 L17.5 14 Z' fill='%237dffba' stroke='%230b0f14' stroke-width='1.4' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='6' r='2.2' fill='%233fe08f' opacity='.9'/%3E%3C/svg%3E") 4 3,pointer}
+input,textarea,[contenteditable]{cursor:text}
+/* unified scrollbars — constant on hover (kills the editor scrollbar hover jump) */
+*{scrollbar-width:thin;scrollbar-color:var(--line-2,#2a343f) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--line-2,#2a343f);border-radius:6px;border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--line-2,#2a343f);background-clip:content-box}
+
+/* ── click glyph-fall (injected into #site-fall) ──────────────── */
+#site-fall{position:fixed;inset:0;z-index:9997;pointer-events:none}
+#site-fall span{position:absolute;font-family:var(--mono);font-weight:700;
+  color:var(--acc,var(--accent,#3fe08f));text-shadow:0 0 8px var(--acc,var(--accent,#3fe08f));
+  will-change:transform,opacity;animation:glyphfall 1.9s cubic-bezier(.25,.55,.35,1) forwards}
+@keyframes glyphfall{0%{transform:translate(-50%,-50%) scale(1);opacity:0}
+  10%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}
+  72%{opacity:.92}100%{transform:translate(-50%,calc(-50% + 88px)) scale(.72);opacity:0}}
+
+/* ── page-load boot + content skeleton ────────────────────────── */
+#site-load{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;
+background:var(--bg,#0b0f14);font-family:var(--mono);transition:opacity .5s,visibility .5s}
+#site-load.done{opacity:0;visibility:hidden}
+#site-load .box{width:min(300px,74vw)}
+#site-load .ln{color:var(--acc,#3fe08f);font-size:13px;text-shadow:0 0 8px var(--acc,#3fe08f)}
+#site-load .ln b{color:var(--fg-strong,#eef3f8)}
+#site-load .cur{display:inline-block;width:7px;height:14px;vertical-align:-2px;margin-left:2px;
+  background:var(--acc,#3fe08f);animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+#site-load .bar{margin-top:14px;height:3px;border-radius:3px;background:var(--line,#1f2730);overflow:hidden}
+#site-load .bar i{display:block;height:100%;width:38%;border-radius:3px;
+  background:var(--acc,#3fe08f);box-shadow:0 0 10px var(--acc,#3fe08f);animation:loadbar 1.05s ease-in-out infinite}
+@keyframes loadbar{0%{transform:translateX(-130%)}100%{transform:translateX(360%)}}
+.skeleton{position:relative;overflow:hidden;background:var(--panel-2,#141b24);border-radius:var(--r,6px)}
+.skeleton::after{content:'';position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(63,224,143,.08),transparent);animation:shimmer 1.4s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+
+/* ── error toast (terminal red) ───────────────────────────────── */
+#site-err{position:fixed;left:50%;bottom:34px;transform:translate(-50%,16px);z-index:10001;
+  max-width:min(440px,90vw);display:flex;gap:10px;align-items:flex-start;opacity:0;
+  background:var(--panel-2,#141b24);border:1px solid #c0392b;border-left:3px solid #ff5f56;
+  color:var(--fg-strong,#eef3f8);font-family:var(--mono);font-size:13px;line-height:1.55;
+  padding:12px 14px;border-radius:var(--r,6px);box-shadow:0 14px 40px -12px rgba(0,0,0,.7);transition:opacity .25s,transform .25s}
+#site-err.show{opacity:1;transform:translate(-50%,0)}
+#site-err .ic{color:#ff5f56;font-weight:700}
+#site-err .x{margin-left:auto;color:var(--muted);padding:0 4px}
+
+/* ── canonical footer (injected into [data-site-footer]) ──────── */
+[data-site-footer]{position:relative;z-index:1;border-top:1px solid var(--line);margin-top:40px;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.25));font-family:var(--mono)}
+.sf-main{max-width:1480px;margin:0 auto;padding:46px clamp(24px,3.4vw,64px) 30px;display:grid;
+  grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;gap:30px}
+.sf-brand .bp{color:var(--acc,var(--accent,#3fe08f));font-weight:700;margin-bottom:12px}
+.sf-brand p{font-family:var(--sans);font-size:13.5px;color:var(--muted);line-height:1.7;max-width:40ch}
+.sf-soc{display:flex;gap:10px;margin-top:16px}
+.sf-soc a{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line-2,var(--line,#2a343f));
+  border-radius:var(--r);color:var(--muted);font-size:15px;transition:.16s}
+.sf-soc a:hover{border-color:var(--acc-dim,var(--accent-dim,#1f7a4d));color:var(--acc,var(--accent,#3fe08f));transform:translateY(-2px)}
+.sf-col h5{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim,var(--faint,#7d8a97));margin-bottom:14px}
+.sf-col a{display:block;font-family:var(--sans);font-size:13.5px;color:var(--muted);padding:4px 0;transition:.14s}
+.sf-col a:hover{color:var(--acc,var(--accent,#3fe08f));transform:translateX(3px)}
+.sf-bottom{border-top:1px solid var(--line);font-size:12px;color:var(--dim,var(--faint,#7d8a97))}
+.sf-bottom .in{max-width:1480px;margin:0 auto;padding:16px clamp(24px,3.4vw,64px);display:flex;gap:16px;
+  flex-wrap:wrap;align-items:center;justify-content:space-between}
+.sf-bottom a{color:var(--muted)}
+.sf-bottom a:hover{color:var(--acc,var(--accent,#3fe08f))}
+.sf-bottom .pw b{color:var(--fg)}
+/* widen topbar to match footer width; .wrap.wrap (0,3,0) beats each page's inline .topbar .wrap (0,2,0) regardless of link order */
+.topbar .wrap.wrap{max-width:1480px;padding:0 clamp(24px,3.4vw,64px)}
+
+@media(max-width:760px){.sf-main{grid-template-columns:1fr 1fr;gap:26px}
+  .sf-brand{grid-column:1/-1}.sf-bottom .in{flex-direction:column;align-items:flex-start;gap:8px}}
+
+/* ── respect reduced motion + touch ───────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  #site-fx .aurora,#site-fx .ember{animation:none}
+  .skeleton::after,#site-load .bar i,#site-load .cur{animation:none}
+  /* View Transitions API ignores reduced-motion by spec — kill cross-page motion for RM users */
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none !important}
+}

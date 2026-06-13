@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>tzblog · 原型总入口</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#11161f; --panel-2:#0d1219; --line:#1d2530;
+    --fg:#e4e8ee; --fg-2:#aab3c0; --muted:#6b7686; --faint:#46505e;
+    --accent:#3fe08f; --accent-dim:#1f7a4d;
+    --mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,monospace;
+    --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'PingFang SC',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;
+    background-image:radial-gradient(rgba(63,224,143,.04) 1px,transparent 1px);background-size:22px 22px}
+  a{color:inherit;text-decoration:none}
+  ::selection{background:rgba(63,224,143,.25)}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 26px 60px}
+
+  .hero{border:1px solid var(--line);border-radius:13px;background:linear-gradient(180deg,var(--panel),var(--panel-2));padding:26px 28px;margin-bottom:14px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(63,224,143,.1),transparent 70%)}
+  .hero .dot{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .hero .dot i{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);font-style:normal}
+  .hero h1{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:-.01em;margin:14px 0 8px}
+  .hero h1 .c{color:var(--accent)}
+  .hero p{color:var(--fg-2);max-width:600px}
+  .boot{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:14px}
+  .boot b{color:var(--accent);font-weight:400}
+
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px}
+  .meta span{font-family:var(--mono);font-size:11.5px;color:var(--fg-2);border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:6px 11px}
+  .meta span b{color:var(--accent);font-weight:400}
+
+  .group{margin-bottom:30px}
+  .gh{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:13px;display:flex;align-items:center;gap:8px}
+  .gh::before{content:"›";color:var(--accent)}
+  .gh small{color:var(--faint);letter-spacing:0;text-transform:none}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+  .card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:16px 17px;transition:.16s;position:relative;overflow:hidden;cursor:pointer}
+  .card:hover{border-color:var(--accent-dim);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);opacity:0;transition:.16s}
+  .card:hover::before{opacity:1;box-shadow:0 0 8px var(--accent)}
+  .card .no{font-family:var(--mono);font-size:11px;color:var(--accent)}
+  .card .nm{font-size:15px;font-weight:600;margin:5px 0 4px}
+  .card .ds{font-size:12.5px;color:var(--muted);line-height:1.5;min-height:38px}
+  .card .fp{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:10px;display:flex;align-items:center;gap:6px}
+  .card:hover .fp{color:var(--fg-2)}
+  .card .fp .go{margin-left:auto;color:var(--accent);opacity:0;transition:.16s}
+  .card:hover .fp .go{opacity:1}
+
+  .ft{font-family:var(--mono);font-size:11.5px;color:var(--faint);text-align:center;margin-top:36px;padding-top:20px;border-top:1px solid var(--line)}
+
+  @media(max-width:880px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <span class="dot"><i></i>tzblog ❯ prototype --phase 1</span>
+      <h1>tzblog <span class="c">原型总入口</span></h1>
+      <p>中文优先的技术与生活博客 · haiden · tzcode.top。全链路 11 屏交互原型，前台阅读体验 + 后台创作控制台，统一终端暗色视觉语言。</p>
+<div class="boot">$ ls screens/ &nbsp;<b>→</b>&nbsp; 7 前台 · 3 入口 · 5 后台 · 全部可交互</div>
+    </div>
+
+    <div class="meta">
+      <span>栈 <b>Next.js · Go · Postgres · Docker</b></span>
+      <span>搜索 <b>Meilisearch</b></span>
+      <span>渲染 <b>Shiki · KaTeX</b></span>
+      <span>登录 <b>GitHub · Google · 魔法链接</b></span>
+    </div>
+
+    <div class="group">
+      <div class="gh">前台 · 读者侧 <small>发现 → 阅读 → 搜索 → 作品 → 归档 → 路径</small></div>
+ <div class="grid" id="front"></div>
+    </div>
+
+    <div class="group">
+      <div class="gh">用户 · 入口 <small>登录 → 个人中心 → 营销主页</small></div>
+      <div class="grid" id="user"></div>
+    </div>
+
+    <div class="group">
+    <div class="gh">后台 · 创作侧 <small>站长每日工作台</small></div>
+      <div class="grid" id="admin"></div>
+    </div>
+
+    <div class="ft">tzblog prototype · 15 screens · 仅交互与信息架构，视觉皮肤后续单独定稿</div>
+  </div>
+
+<script>
+  var front=[
+    {no:'01',nm:'首页',ds:'文章流 + 侧栏：关于 / 热门标签 / 学习路径 / 站点统计 / 最新评论 / 友情链接',fp:'front-home.html'},
+    {no:'02',nm:'文章详情',ds:'TOC scroll-spy + 阅读进度条 + 代码一键复制 + 上下篇 + 评论区',fp:'front-article-tutorial.html'},
+    {no:'03',nm:'搜索',ds:'命令行实时检索：输入即过滤、关键词高亮、分类 chip 叠加',fp:'front-search.html'},
+    {no:'04',nm:'作品集',ds:'开源项目与仓库展示，技术栈过滤',fp:'front-works.html'},
+    {no:'05',nm:'归档 / 书架',ds:'年份时间线归档 + 在读技术书单',fp:'front-library.html'},
+    {no:'06',nm:'学习路径',ds:'三条路径切换 + 进度时间线，done / now / 未读三态',fp:'front-pathways.html'},
+    {no:'07',nm:'关于',ds:'个人介绍 + 技能栈 + 经历时间线 + 联系方式',fp:'front-about.html'}
+  ];
+  var user=[
+    {no:'01',nm:'登录 / 注册',ds:'GitHub / Google OAuth + 邮箱密码 + 魔法链接，tab 切换 + 表单校验',fp:'auth.html'},
+    {no:'02',nm:'个人中心',ds:'已登录态：资料 / 收藏 / 阅读历史 / 偏好设置',fp:'account.html'},
+    {no:'03',nm:'营销主页',ds:'项目落地页：Hero + 卖点 + 数据 + 订阅 CTA',fp:'landing.html'}
+  ];
+  var admin=[
+    {no:'01',nm:'仪表盘',ds:'统计卡 + 最近文章表 + 14 天访客 sparkline + 待审评论队列',fp:'admin-dashboard.html'},
+    {no:'02',nm:'数据分析',ds:'30 天访客 SVG 趋势 + 流量来源 + 热门搜索词 + 分类分布',fp:'admin-analytics.html'},
+    {no:'03',nm:'写文章',ds:'Markdown 编辑器 + 实时预览 + frontmatter + 字数/时长',fp:'admin-editor.html'},
+    {no:'04',nm:'媒体库',ds:'素材网格 + 存储用量 + 拖拽上传 + 类型筛选',fp:'admin-media.html'},
+  {no:'05',nm:'站点设置',ds:'基本信息 / 认证 / 权限分级 / 评论 / 搜索渲染 / 危险区',fp:'admin-settings.html'}
+  ];
+  function cards(id,arr){
+    document.getElementById(id).innerHTML=arr.map(function(c){
+      return '<a class="card" href="'+c.fp+'">'
+        +'<div class="no">'+c.no+'</div><div class="nm">'+c.nm+'</div>'
+        +'<div class="ds">'+c.ds+'</div>'
+        +'<div class="fp">'+c.fp+'<span class="go">↗</span></div></a>';
+    }).join('');
+  }
+  cards('front',front);cards('user',user);cards('admin',admin);
+
+  document.querySelectorAll('.card').forEach(function(el){el.addEventListener('click',function(e){var r=document.createElement('span');var d=Math.max(el.offsetWidth,el.offsetHeight);var x=e.clientX-el.getBoundingClientRect().left-d/2,y=e.clientY-el.getBoundingClientRect().top-d/2;r.style.cssText='position:absolute;border-radius:50%;width:'+d+'px;height:'+d+'px;left:'+x+'px;top:'+y+'px;background:radial-gradient(circle,rgba(63,224,143,.35),transparent 70%);transform:scale(0);animation:rp .5s ease-out;pointer-events:none';el.appendChild(r);setTimeout(function(){r.remove()},500);});});
+  var st=document.createElement('style');st.textContent='@keyframes rp{to{transform:scale(2.2);opacity:0}}';document.head.appendChild(st);
+</script>
+</body>
+</html>

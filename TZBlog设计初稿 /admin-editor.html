@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>写文章 · tzblog 控制台</title>
+<style>
+:root{
+  --bg:#0a0e14; --panel:#0f141c; --panel-2:#121821; --line:#1e2733;
+  --fg:#d7e0ea; --fg-2:#9fb0c0; --muted:#5f7286; --faint:#3a4654;
+  --green:#3fe08f; --green-dim:#1f7a4d; --amber:#e3b84e; --rose:#e36a6a;
+  --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
+  --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--sans);
+  font-size:14px; line-height:1.6; overflow:hidden;
+  display:grid; grid-template-columns:212px 1fr;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(0,0,0,.14) 3px);
+  opacity:.35; mix-blend-mode:overlay;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:rgba(63,224,143,.25)}
+
+/* ── nav ── */
+.nav{
+  background:var(--panel-2); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; height:100vh; position:sticky; top:0;
+}
+.nav-brand{
+  font-family:var(--mono); font-weight:700; letter-spacing:.04em;
+  padding:18px 18px 16px; border-bottom:1px solid var(--line); font-size:15px;
+}
+.nav-brand b{color:var(--green)}
+.nav-grp{padding:14px 12px 4px}
+.nav-grp-t{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);padding:0 8px 8px}
+.nav-i{
+  display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:7px;
+  color:var(--fg-2); font-size:13px; position:relative; cursor:pointer; transition:.16s;
+}
+.nav-i:hover{background:var(--panel-2);color:var(--fg)}
+.nav-i.on{background:rgba(63,224,143,.08);color:var(--fg)}
+.nav-i.on::before{content:"";position:absolute;left:-12px;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:var(--green);box-shadow:0 0 8px var(--green)}
+.nav-i .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+.nav-i.on .dot{background:var(--green);opacity:1;box-shadow:0 0 6px var(--green)}
+.nav-foot{margin-top:auto;padding:14px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.nav-foot .av{width:30px;height:30px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);color:var(--green);font-weight:700;font-size:13px}
+.nav-foot .who{font-size:12px}
+.nav-foot .who span{display:block;color:var(--muted);font-size:11px;font-family:var(--mono)}
+
+/* ── shell ── */
+.main{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.bar{
+  display:flex;align-items:center;gap:12px;padding:0 18px;height:54px;
+  border-bottom:1px solid var(--line);background:var(--panel);flex-shrink:0;
+}
+.bar .crumb{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.bar .crumb b{color:var(--fg-2)}
+.bar .crumb .green{color:var(--green)}
+.bar .grow{flex:1}
+.chip-stat{font-family:var(--mono);font-size:11px;color:var(--amber);display:flex;align-items:center;gap:6px}
+.chip-stat .d{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.btn{
+  font-family:var(--sans);font-size:13px;border:1px solid var(--line);background:var(--panel-2);
+  color:var(--fg-2);padding:7px 14px;border-radius:8px;cursor:pointer;transition:.16s;position:relative;overflow:hidden;
+}
+.btn:hover{border-color:var(--faint);color:var(--fg)}
+.btn-pri{background:var(--green);border-color:var(--green);color:#06140d;font-weight:600}
+.btn-pri:hover{background:#5ff0a8;color:#06140d}
+
+/* toolbar */
+.tools{display:flex;align-items:center;gap:4px;padding:7px 14px;border-bottom:1px solid var(--line);background:var(--panel-2);flex-shrink:0;flex-wrap:wrap}
+.tbtn{
+  font-family:var(--mono);font-size:12px;color:var(--fg-2);background:transparent;border:1px solid transparent;
+  width:30px;height:30px;border-radius:6px;cursor:pointer;display:grid;place-items:center;transition:.14s;
+}
+.tbtn:hover{background:var(--panel);border-color:var(--line);color:var(--green)}
+.tsep{width:1px;height:18px;background:var(--line);margin:0 5px}
+
+/* editor split */
+.work{flex:1;display:grid;grid-template-columns:1fr 1fr 268px;overflow:hidden}
+.col{overflow:auto;border-right:1px solid var(--line)}
+.col::-webkit-scrollbar{width:9px}
+.col::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+.col-head{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding:12px 22px 6px;position:sticky;top:0;background:var(--bg);z-index:2}
+.title-in{
+  width:100%;background:transparent;border:none;color:var(--fg);font-family:var(--sans);font-weight:700;
+  font-size:24px;line-height:1.3;padding:6px 22px 10px;outline:none;
+}
+.title-in::placeholder{color:var(--faint)}
+.md{
+  width:100%;min-height:calc(100% - 96px);background:transparent;border:none;outline:none;resize:none;
+  color:var(--fg-2);font-family:var(--mono);font-size:13.5px;line-height:1.85;padding:4px 22px 60px;
+}
+.prev{padding:6px 26px 60px;font-size:15px;line-height:1.8;color:var(--fg)}
+.prev h1{font-size:26px;font-weight:700;margin:22px 0 12px;color:var(--fg)}
+.prev h2{font-size:20px;font-weight:700;margin:26px 0 10px;color:var(--fg);padding-left:12px;border-left:3px solid var(--green)}
+.prev h3{font-size:16px;font-weight:600;margin:18px 0 8px;color:var(--fg-2)}
+.prev p{margin:12px 0;color:var(--fg-2)}
+.prev strong{color:var(--fg);font-weight:600}
+.prev a{color:var(--green);border-bottom:1px solid var(--green-dim)}
+.prev ul{margin:12px 0;padding-left:22px}
+.prev li{margin:5px 0;color:var(--fg-2)}
+.prev li::marker{color:var(--green)}
+.prev code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);color:var(--green);padding:2px 6px;border-radius:4px;border:1px solid var(--line)}
+.prev pre{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:14px 0;overflow:auto}
+.prev pre code{background:none;border:none;color:var(--fg-2);padding:0}
+.prev blockquote{border-left:3px solid var(--green-dim);background:rgba(63,224,143,.05);padding:8px 16px;margin:14px 0;color:var(--fg-2);border-radius:0 6px 6px 0}
+
+/* meta sidebar */
+.meta{overflow:auto;background:var(--panel);border-right:none}
+.meta-sec{padding:16px 18px;border-bottom:1px solid var(--line)}
+.meta-sec .lab{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.status-row{display:flex;gap:6px}
+.st{flex:1;text-align:center;font-size:12px;padding:7px 0;border-radius:7px;border:1px solid var(--line);color:var(--muted);cursor:pointer;transition:.14s;font-family:var(--mono)}
+.st:hover{color:var(--fg-2)}
+.st.on{background:rgba(227,184,78,.1);border-color:var(--amber);color:var(--amber)}
+.st.pub.on{background:rgba(63,224,143,.1);border-color:var(--green);color:var(--green)}
+.fld{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:7px;color:var(--fg);font-family:var(--sans);font-size:13px;padding:8px 11px;outline:none;transition:.14s}
+.fld:focus{border-color:var(--green-dim)}
+.fld::placeholder{color:var(--faint)}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.tg{font-family:var(--mono);font-size:11px;color:var(--green);background:rgba(63,224,143,.08);border:1px solid var(--green-dim);padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:6px}
+.tg b{color:var(--muted);cursor:pointer}
+.tg b:hover{color:var(--rose)}
+.cover{margin-top:4px;aspect-ratio:16/9;border:1px dashed var(--line);border-radius:8px;display:grid;place-items:center;color:var(--muted);font-family:var(--mono);font-size:12px;background:repeating-linear-gradient(45deg,transparent 0,transparent 9px,rgba(255,255,255,.015) 9px,rgba(255,255,255,.015) 18px);cursor:pointer;transition:.14s}
+.cover:hover{border-color:var(--green-dim);color:var(--fg-2)}
+
+/* status bar */
+.stbar{display:flex;align-items:center;gap:20px;padding:0 22px;height:34px;border-top:1px solid var(--line);background:var(--panel);font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0}
+.stbar .green{color:var(--green-dim)}
+.stbar .grow{flex:1}
+
+/* toast */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--green-dim);color:var(--green);font-family:var(--mono);font-size:13px;padding:10px 20px;border-radius:9px;opacity:0;pointer-events:none;transition:.3s;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:980px){
+  body{grid-template-columns:1fr}
+  .nav{display:none}
+  .work{grid-template-columns:1fr}
+  .col:nth-child(2),.meta{display:none}
+}
+</style>
+<link rel="stylesheet" href="assets/admin-chrome.css">
+<script src="assets/admin-chrome.js" defer></script>
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+
+<aside class="nav">
+  <div class="nav-brand">tzblog<b>_</b>admin</div>
+  <div class="nav-grp">
+    <div class="nav-grp-t">概览</div>
+    <a class="nav-i" href="admin-dashboard.html"><span class="dot"></span>仪表盘</a>
+    <a class="nav-i" href="admin-analytics.html"><span class="dot"></span>数据分析</a>
+  </div>
+  <div class="nav-grp">
+    <div class="nav-grp-t">内容</div>
+    <a class="nav-i on" href="admin-editor.html"><span class="dot"></span>写文章</a>
+    <a class="nav-i" href="admin-media.html"><span class="dot"></span>媒体库</a>
+  </div>
+  <div class="nav-grp">
+    <div class="nav-grp-t">系统</div>
+    <a class="nav-i" href="admin-settings.html"><span class="dot"></span>站点设置</a>
+    <a class="nav-i" href="front-home.html"><span class="dot"></span>← 返回前台</a>
+  </div>
+  <div class="nav-foot">
+    <div class="av">H</div>
+    <div class="who">haiden<span>站长</span></div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="bar">
+    <div class="crumb"><b>内容</b> / 写文章 / <span class="green">draft</span></div>
+    <div class="grow"></div>
+    <span class="chip-stat"><span class="d"></span><span id="saveState">草稿 · 2 分钟前自动保存</span></span>
+    <button class="btn" id="saveBtn">存草稿</button>
+    <button class="btn btn-pri" id="pubBtn">发布</button>
+  </div>
+
+  <div class="tools" id="tools">
+    <button class="tbtn" data-md="h2" title="标题">H</button>
+    <button class="tbtn" data-md="bold" title="加粗"><b>B</b></button>
+    <button class="tbtn" data-md="code" title="行内代码">&lt;/&gt;</button>
+    <span class="tsep"></span>
+    <button class="tbtn" data-md="link" title="链接">↗</button>
+    <button class="tbtn" data-md="ul" title="列表">•</button>
+    <button class="tbtn" data-md="quote" title="引用">"</button>
+    <button class="tbtn" data-md="pre" title="代码块">{ }</button>
+  </div>
+
+  <div class="work">
+    <div class="col">
+  <div class="col-head">$ vim draft.md</div>
+      <input class="title-in" id="title" value="用 Meilisearch 给博客加全文搜索" placeholder="文章标题…">
+      <textarea class="md" id="md" spellcheck="false">博客做大之后，站内搜索是绕不开的需求。我试过直接上 Postgres 全文检索，中文分词体验一般；最后选了 **Meilisearch**——开箱即用、毫秒级响应、对中文友好。
+
+## 为什么不是 Elasticsearch
+
+Elasticsearch 很强，但对个人博客是**杀鸡用牛刀**：JVM 内存占用动辄 1G 起，运维成本高。Meilisearch 用 Rust 写的，单二进制、内存占用小，`docker run` 一条命令就跑起来。
+
+> 选型原则：个人项目优先选「运维负担最小」而不是「功能上限最高」的方案。
+
+## 接入只要三步
+
+1. 起服务，建索引
+2. 把文章 push 进去
+3. 前端调搜索接口
+
+```js
+import { MeiliSearch } from 'meilisearch'
+const client = new MeiliSearch({ host: 'http://127.0.0.1:7700' })
+await client.index('posts').addDocuments(posts)
+```
+
+搜索时直接 `index.search(query)`，返回结果已经带好高亮片段，前端几乎不用处理。
+
+## 中文分词的坑
+
+默认分词对中文支持一般，需要在设置里调整 `separatorTokens`，并把标题、标签的搜索权重调高。调完之后，搜「缓存」能同时命中标题含「缓存」和正文提到缓存的文章。</textarea>
+    </div>
+
+    <div class="col">
+      <div class="col-head">// 实时预览</div>
+      <div class="prev" id="prev"></div>
+    </div>
+
+    <div class="col meta">
+      <div class="meta-sec">
+        <div class="lab">发布状态</div>
+        <div class="status-row">
+          <div class="st on" data-st="draft">草稿</div>
+          <div class="st pub" data-st="pub">已发布</div>
+        </div>
+      </div>
+  <div class="meta-sec">
+        <div class="lab">分类</div>
+   <select class="fld" id="cat">
+    <option>全栈工程</option>
+       <option>AI Coding</option>
+          <option>工具效率</option>
+          <option>思考随笔</option>
+          <option>作品项目</option>
+     </select>
+      </div>
+      <div class="meta-sec">
+  <div class="lab">标签</div>
+   <input class="fld" id="tagIn" placeholder="输入后回车添加…">
+        <div class="tagrow" id="tags">
+          <span class="tg">Meilisearch <b data-x>×</b></span>
+          <span class="tg">搜索 <b data-x>×</b></span>
+          <span class="tg">Rust <b data-x>×</b></span>
+        </div>
+   </div>
+   <div class="meta-sec">
+        <div class="lab">URL Slug</div>
+        <input class="fld" id="slug" value="meilisearch-blog-search">
+      </div>
+      <div class="meta-sec">
+        <div class="lab">摘要</div>
+  <textarea class="fld" id="excerpt" rows="3" style="resize:vertical;font-family:var(--sans)">个人博客站内搜索选型实录：为什么放弃 Postgres FTS 和 Elasticsearch，最终用 Meilisearch 三步接入。</textarea>
+      </div>
+      <div class="meta-sec">
+        <div class="lab">封面图</div>
+        <div class="cover">＋ 上传 / 拖拽</div>
+      </div>
+    </div>
+</div>
+
+  <div class="stbar">
+    <span>UTF-8</span>
+    <span>Markdown</span>
+    <span class="grow"></span>
+    <span id="wc">0 字</span>
+    <span class="green" id="rt">约 0 分钟</span>
+    <span>行 <span id="ln">1</span></span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const md=document.getElementById('md'),prev=document.getElementById('prev');
+const wc=document.getElementById('wc'),rt=document.getElementById('rt'),ln=document.getElementById('ln');
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function render(src){
+  const blocks=src.split(/\n{2,}/);let out='';
+  for(let b of blocks){
+    b=b.trim();if(!b)continue;
+    if(/^```/.test(b)){
+      const body=b.replace(/^```\w*\n?/,'').replace(/```$/,'');
+   out+='<pre><code>'+esc(body)+'</code></pre>';continue;
+    }
+    if(/^> /.test(b)){out+='<blockquote>'+inline(esc(b.replace(/^> ?/gm,'')))+'</blockquote>';continue;}
+    if(/^### /.test(b)){out+='<h3>'+inline(esc(b.slice(4)))+'</h3>';continue;}
+    if(/^## /.test(b)){out+='<h2>'+inline(esc(b.slice(3)))+'</h2>';continue;}
+    if(/^# /.test(b)){out+='<h1>'+inline(esc(b.slice(2)))+'</h1>';continue;}
+    if(/^(\d+\.|- )/.test(b)){
+      const items=b.split('\n').map(l=>'<li>'+inline(esc(l.replace(/^(\d+\.|-)\s*/,'')))+'</li>').join('');
+      out+='<ul>'+items+'</ul>';continue;
+    }
+    out+='<p>'+inline(esc(b)).replace(/\n/g,'<br>')+'</p>';
+  }
+  return out;
+}
+function inline(s){
+  return s.replace(/`([^`]+)`/g,'<code>$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+       .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
+}
+function stats(){
+  const t=md.value;
+  const cn=(t.match(/[一-龥]/g)||[]).length;
+  const en=(t.match(/[a-zA-Z]+/g)||[]).length;
+  const total=cn+en;
+  wc.textContent=total+' 字';
+  rt.textContent='约 '+Math.max(1,Math.ceil(total/350))+' 分钟';
+  ln.textContent=t.substr(0,md.selectionStart).split('\n').length;
+}
+function update(){prev.innerHTML=render(md.value);stats();}
+md.addEventListener('input',update);
+md.addEventListener('keyup',stats);md.addEventListener('click',stats);
+update();
+
+// toolbar insert
+const wraps={bold:['**','**'],code:['`','`'],link:['[','](https://)'],h2:['## ',''],ul:['- ',''],quote:['> ',''],pre:['```js\n','\n```']};
+document.getElementById('tools').addEventListener('click',e=>{
+  const b=e.target.closest('[data-md]');if(!b)return;
+  const [l,r]=wraps[b.dataset.md];const s=md.selectionStart,en2=md.selectionEnd;
+  const sel=md.value.slice(s,en2)||(b.dataset.md==='link'?'链接文字':'');
+  md.value=md.value.slice(0,s)+l+sel+r+md.value.slice(en2);
+  md.focus();md.selectionStart=md.selectionEnd=s+l.length+sel.length;
+  update();
+});
+
+// status toggle
+document.querySelectorAll('.st').forEach(s=>s.addEventListener('click',()=>{
+  document.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));
+  s.classList.add('on');
+}));
+
+// tags
+const tagIn=document.getElementById('tagIn'),tags=document.getElementById('tags');
+tagIn.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&tagIn.value.trim()){
+  const sp=document.createElement('span');sp.className='tg';
+    sp.innerHTML=tagIn.value.trim()+' <b data-x>×</b>';tags.appendChild(sp);tagIn.value='';
+  }
+});
+tags.addEventListener('click',e=>{if(e.target.dataset.x!==undefined)e.target.closest('.tg').remove()});
+
+// cover
+document.querySelector('.cover').addEventListener('click',function(){this.textContent='cover-meilisearch.png ✓';this.style.color='var(--green)'});
+
+// toast helper
+const toast=document.getElementById('toast');
+function flash(m){toast.textContent=m;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)}
+document.getElementById('saveBtn').onclick=()=>{flash('✓ 草稿已保存');document.getElementById('saveState').textContent='草稿 · 刚刚保存'};
+document.getElementById('pubBtn').onclick=()=>flash('✓ 已发布到 tzcode.top');
+
+// autosave indicator
+let t=0;md.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>document.getElementById('saveState').textContent='草稿 · 刚刚自动保存',1500)});
+</script>
+</body>
+</html>

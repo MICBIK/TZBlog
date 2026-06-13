@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>我的 · 个人中心 — tzblog</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0b0f14;--bg-2:#0f151c;--panel:#11171f;--panel-2:#141b24;--line:#1f2730;--line-2:#2a343f;
+    --fg:#c9d4df;--fg-strong:#eef3f8;--muted:#6b7a89;--dim:#7d8a97;--acc:#3fe08f;--acc-dim:#1f7a4d;--amber:#e3b341;
+    --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;--sans:'Noto Sans SC',-apple-system,system-ui,sans-serif;--r:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0 3px,rgba(0,0,0,.18) 3px 4px),radial-gradient(120% 80% at 50% -10%,rgba(63,224,143,.05),transparent 60%);opacity:.5;mix-blend-mode:soft-light}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px;width:100%}
+  a{color:inherit;text-decoration:none}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(11,15,20,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .wrap{display:flex;align-items:center;gap:22px;height:56px}
+  .prompt{color:var(--acc);font-weight:700;white-space:nowrap}.prompt .path{color:var(--fg-strong)}
+  .nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+  .nav a{padding:6px 11px;border-radius:var(--r);color:var(--muted);font-size:13.5px;transition:.16s}
+  .nav a::before{content:"./";color:var(--dim)}
+  .nav a:hover{color:var(--fg-strong);background:var(--panel-2)}
+  main{flex:1;padding:36px 0 60px}
+
+  /* identity */
+  .pcard{border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),var(--bg-2));padding:26px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .ava{width:64px;height:64px;border-radius:12px;display:grid;place-items:center;background:rgba(63,224,143,.1);border:1px solid var(--acc-dim);color:var(--acc);font-weight:700;font-size:24px;font-family:var(--sans)}
+  .pinfo h1{font-family:var(--sans);font-size:22px;color:var(--fg-strong);font-weight:700}
+  .pinfo .uid{font-size:13px;color:var(--muted);margin-top:3px}
+  .pinfo .uid .via{color:var(--acc)}
+  .pinfo .joined{font-size:12px;color:var(--dim);margin-top:6px}
+  .pact{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+  .btn{font-family:var(--mono);font-size:13px;padding:9px 16px;border-radius:var(--r);cursor:pointer;border:1px solid var(--line-2);color:var(--fg);background:transparent;transition:.16s}
+  .btn:hover{border-color:var(--acc-dim);color:var(--acc)}
+  .btn.danger:hover{border-color:#ff7b9c;color:#ff7b9c}
+  .btn:disabled{cursor:default;opacity:.7}
+  .btn.go{border-color:var(--acc-dim);color:var(--acc);background:rgba(63,224,143,.08)}
+  .btn.go:hover{background:rgba(63,224,143,.14)}
+
+  /* panels */
+  .panel{border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),var(--bg-2));padding:20px 22px;margin:22px 0}
+  .panel .ph{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .panel .ph .pp{color:var(--acc);font-weight:700}
+  .panel .ph h2{font-family:var(--mono);font-size:14px;color:var(--fg-strong);font-weight:700;letter-spacing:.01em}
+  .panel .ph .sub{margin-left:auto;font-size:11.5px;color:var(--dim)}
+
+  /* check-in */
+  .ci{display:flex;align-items:center;gap:30px;flex-wrap:wrap}
+  .ci .streak{display:flex;align-items:baseline;gap:9px}
+  .ci .streak .n{font-size:40px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 18px rgba(63,224,143,.35)}
+  .ci .streak .u{font-size:13px;color:var(--muted)}
+  .ci .week{display:flex;gap:8px}
+  .ci .day{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:10.5px;color:var(--dim)}
+  .ci .day .d{width:30px;height:30px;border-radius:8px;border:1px solid var(--line-2);display:grid;place-items:center;font-size:11px;color:var(--muted);font-family:var(--mono);transition:.16s}
+  .ci .day.done .d{background:rgba(63,224,143,.16);border-color:var(--acc-dim);color:var(--acc)}
+  .ci .day.today .d{border-color:var(--acc);box-shadow:0 0 0 3px rgba(63,224,143,.12);color:var(--fg-strong)}
+  .ci .cta{margin-left:auto}
+
+  /* reading heatmap — signature */
+  .heatwrap{overflow-x:auto;padding-bottom:6px}
+  .heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;min-width:max-content}
+  .hc{width:13px;height:13px;border-radius:3px;background:var(--panel-2);border:1px solid rgba(255,255,255,.025);transition:transform .1s}
+  .hc:hover{transform:scale(1.25)}
+  .hc[data-l="1"]{background:rgba(63,224,143,.22)}
+  .hc[data-l="2"]{background:rgba(63,224,143,.44)}
+  .hc[data-l="3"]{background:rgba(63,224,143,.68)}
+  .hc[data-l="4"]{background:rgba(63,224,143,.94);box-shadow:0 0 6px rgba(63,224,143,.4)}
+  .legend{display:flex;align-items:center;gap:6px;margin-top:14px;font-size:11px;color:var(--dim);justify-content:flex-end}
+  .legend .hc:hover{transform:none}
+
+  /* stats — clickable, drive the tabs */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0 8px}
+  .stat{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:16px 18px;cursor:pointer;text-align:left;font-family:var(--mono);transition:.16s}
+  .stat:hover{border-color:var(--acc-dim);background:var(--panel-2);transform:translateY(-2px)}
+  .stat.on{border-color:var(--acc);background:rgba(63,224,143,.06)}
+  .stat .v{font-size:24px;color:var(--acc);font-weight:700;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:6px}
+  .stat .l::after{content:"›";margin-left:auto;color:var(--dim);font-size:15px;transition:.16s}
+  .stat:hover .l::after,.stat.on .l::after{color:var(--acc);transform:translateX(2px)}
+
+  /* tabs + list */
+  .tabs{display:flex;gap:6px;margin:6px 0 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .tab{font-family:var(--mono);font-size:13.5px;color:var(--muted);background:transparent;border:0;border-bottom:2px solid transparent;padding:9px 14px;cursor:pointer;transition:.15s;margin-bottom:-1px}
+  .tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+  .list .row{display:flex;align-items:center;gap:14px;padding:13px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel);margin-bottom:10px;transition:.16s}
+  .list .row:hover{border-color:var(--acc-dim);background:var(--panel-2);transform:translateX(3px)}
+  .list .row .ic{color:var(--acc-dim);font-family:var(--mono)}
+  .list .row .ti{font-family:var(--sans);font-size:14.5px;color:var(--fg)}
+  .list .row:hover .ti{color:var(--acc)}
+  .list .row .meta{margin-left:auto;font-size:11.5px;color:var(--dim);white-space:nowrap}
+  .empty{font-family:var(--sans);color:var(--dim);text-align:center;padding:46px 0;font-size:14px}
+  .empty .pr{font-family:var(--mono);color:var(--acc-dim)}
+
+  footer{position:relative;z-index:1;border-top:1px solid var(--line);background:var(--bg-2);margin-top:40px}
+  @media(max-width:640px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .pact{margin-left:0;width:100%}
+    .ci{gap:20px}.ci .cta{margin-left:0;width:100%}.ci .cta .btn{width:100%}
+  }
+</style>
+<link rel="stylesheet" href="assets/site-chrome.css" />
+<script defer src="assets/site-chrome.js"></script>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <span class="prompt">reader_42@tzblog:<span class="path">~/me</span> $</span>
+  <nav class="nav">
+    <a href="front-home.html">home</a>
+    <a href="front-search.html">search</a>
+    <a href="archive.html">archive</a>
+    <a href="front-about.html">about</a>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+  <section class="pcard">
+    <div class="ava">读</div>
+    <div class="pinfo">
+      <h1>读者 · reader_42</h1>
+      <p class="uid">via <span class="via">GitHub OAuth</span> · reader42@github</p>
+      <p class="joined">注册于 2025-09-12 · 累计阅读 92 篇 · 全站排名前 8%</p>
+    </div>
+    <div class="pact">
+      <button class="btn" data-msg="编辑资料：昵称 / 头像 / 简介（mock）">编辑资料</button>
+      <button class="btn danger" data-msg="退出登录（mock）— 真实环境清除 session 后跳转首页">退出登录</button>
+    </div>
+  </section>
+
+  <!-- check-in / streak — real module -->
+  <section class="panel">
+    <div class="ph"><span class="pp">$</span><h2>checkin --streak</h2><span class="sub">每日签到 · 解锁连读徽章</span></div>
+    <div class="ci">
+      <div class="streak"><span class="n" id="streakn">8</span><span class="u">天<br>连续签到</span></div>
+      <div class="week" id="week"></div>
+      <div class="cta"><button class="btn go" id="cibtn" data-msg="签到成功 · 连续 9 天 — 再坚持 1 天解锁「九日连读」徽章">签到</button></div>
+    </div>
+  </section>
+
+  <!-- reading heatmap — signature flourish -->
+  <section class="panel">
+    <div class="ph"><span class="pp">$</span><h2>git log --reading</h2><span class="sub">最近 18 周 · 共 92 次阅读</span></div>
+    <div class="heatwrap"><div class="heat" id="heat" role="img" aria-label="最近 18 周阅读热力图"></div></div>
+    <div class="legend">少 <span class="hc"></span><span class="hc" data-l="1"></span><span class="hc" data-l="2"></span><span class="hc" data-l="3"></span><span class="hc" data-l="4"></span> 多</div>
+  </section>
+
+  <!-- stats drive the tabs below -->
+  <div class="stats" role="tablist" aria-label="我的内容">
+    <button class="stat on" data-view="fav"><div class="v">36</div><div class="l">收藏文章</div></button>
+    <button class="stat" data-view="like"><div class="v">128</div><div class="l">点赞</div></button>
+    <button class="stat" data-view="cmt"><div class="v">14</div><div class="l">评论</div></button>
+    <button class="stat" data-view="hist"><div class="v">92</div><div class="l">阅读历史</div></button>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-view="fav" role="tab">收藏</button>
+    <button class="tab" data-view="like" role="tab">点赞</button>
+    <button class="tab" data-view="cmt" role="tab">评论</button>
+    <button class="tab" data-view="hist" role="tab">阅读历史</button>
+  </div>
+
+  <div class="list" id="out" aria-live="polite"></div>
+</div></main>
+
+<footer data-site-footer></footer>
+
+<script>
+  // mock — 真实环境：GET /api/me/{collections|likes|comments|history}
+  var DATA={
+    fav:[
+      {ti:"spec-first：让 Claude 连续写对 3000 行代码",m:"收藏于 3 天前"},
+      {ti:"把 Go 后端从 120ms 优化到 18ms",m:"收藏于 1 周前"},
+      {ti:"用 Meilisearch 给博客加全文搜索",m:"收藏于 2 周前"}
+    ],
+    like:[
+      {ti:"Next.js 15 RSC 缓存踩过的 7 个坑",m:"赞于 5 天前"},
+      {ti:"2026 我的终端配置：zsh + tmux + neovim",m:"赞于 2 周前"}
+    ],
+    cmt:[
+      {ti:"在《spec-first》留言：受教了，spec 那段很有启发",m:"2 天前"},
+      {ti:"在《Go 重写后端》留言：pprof 火焰图能展开讲讲吗？",m:"6 天前"}
+    ],
+    hist:[
+      {ti:"Shiki + KaTeX：博客代码与公式渲染管线",m:"刚刚读过"},
+      {ti:"Docker 多阶段构建把镜像砍到 40MB",m:"昨天"},
+      {ti:"写完 100 篇博客后的一些反思",m:"3 天前"}
+    ]
+  };
+  var ICON={fav:"★",like:"♥",cmt:"❯",hist:"⟳"};
+  var out=document.getElementById('out');
+  function esc(s){return s.replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
+  function render(v){
+    var rows=DATA[v]||[];
+    if(!rows.length){out.innerHTML='<p class="empty"><span class="pr">$</span> 这里还空着 — 去首页逛逛吧。</p>';return}
+    out.innerHTML=rows.map(function(r){
+      return '<a class="row" href="front-article-tutorial.html"><span class="ic">'+ICON[v]+'</span><span class="ti">'+esc(r.ti)+'</span><span class="meta">'+esc(r.m)+'</span></a>';
+    }).join('');
+  }
+  // unified view selector — both stat cards and tabs drive it
+  function selectView(v){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.toggle('on',x.dataset.view===v)});
+    document.querySelectorAll('.stat').forEach(function(x){x.classList.toggle('on',x.dataset.view===v)});
+    render(v);
+  }
+  document.querySelectorAll('.tab,.stat').forEach(function(b){
+    b.addEventListener('click',function(){selectView(b.dataset.view)});
+  });
+  render('fav');
+
+  // this-week check-in strip (Mon–Sun): 5 read days, today = Fri, weekend pending
+  (function(){
+    var labels=['一','二','三','四','五','六','日'];
+    var done=[true,true,true,true,false,false,false]; var todayIdx=4;
+    var wk=document.getElementById('week');
+    wk.innerHTML=labels.map(function(l,i){
+      var cls='day'+(done[i]?' done':'')+(i===todayIdx?' today':'');
+      var mark=done[i]?'✓':(i===todayIdx?'·':'');
+      return '<div class="'+cls+'"><span class="d">'+mark+'</span>'+l+'</div>';
+    }).join('');
+  })();
+
+  // signature: 18-week reading heatmap, deterministic (stable across reloads)
+  (function(){
+    var heat=document.getElementById('heat'); if(!heat) return;
+    var W=18,html='';
+    for(var col=0;col<W;col++){
+      for(var row=0;row<7;row++){
+        var i=col*7+row;
+        var h=Math.sin(i*12.9898+col*1.31)*43758.5453; h=h-Math.floor(h); // stable 0..1 hash
+        var v=h + (row>=5?0.18:0) + (col>W-4?0.22:0) - (col<3?0.2:0);
+        var l=v>1.02?4:v>0.8?3:v>0.58?2:v>0.36?1:0;
+        html+='<div class="hc"'+(l?' data-l="'+l+'"':'')+'></div>';
+      }
+    }
+    heat.innerHTML=html;
+  })();
+
+  // check-in action
+  (function(){
+    var btn=document.getElementById('cibtn'); if(!btn) return;
+    btn.addEventListener('click',function(){
+      if(btn.disabled) return;
+      var today=document.querySelector('.ci .day.today');
+      if(today){today.classList.add('done');today.querySelector('.d').textContent='✓';}
+      var n=document.getElementById('streakn'); n.textContent=(+n.textContent+1);
+      btn.textContent='✓ 今日已签'; btn.disabled=true;
+    });
+  })();
+</script>
+</body>
+</html>

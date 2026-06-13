@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据分析 · tzblog</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#11161f; --panel-2:#0d1219; --line:#1d2530;
+    --fg:#e4e8ee; --fg-2:#aab3c0; --muted:#6b7686; --faint:#46505e;
+    --accent:#3fe08f; --accent-dim:#1f7a4d;
+    --warn:#e8b339; --danger:#e06a5a; --info:#56a8e8;
+    --mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,monospace;
+    --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'PingFang SC',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--fg); font-family:var(--sans);
+    font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    display:grid; grid-template-columns:232px 1fr; height:100vh; overflow:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  ::selection{background:rgba(63,224,143,.25)}
+
+  /* sidebar */
+  .side{background:var(--panel-2); border-right:1px solid var(--line); display:flex; flex-direction:column; height:100vh; overflow-y:auto}
+  .brand{padding:18px 20px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:9px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .brand b{font-family:var(--mono);font-size:14px;letter-spacing:.02em}
+  .brand span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .nav{padding:12px 12px;flex:1;display:flex;flex-direction:column;gap:2px}
+  .nav .grp{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;padding:14px 10px 6px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:var(--fg-2);font-size:13px;transition:.15s;position:relative}
+  .nav a .ic{width:15px;text-align:center;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .nav a:hover{background:var(--panel);color:var(--fg)}
+  .nav a.on{background:rgba(63,224,143,.1);color:var(--fg)}
+  .nav a.on .ic{color:var(--accent)}
+  .nav a.on::before{content:"";position:absolute;left:-12px;top:7px;bottom:7px;width:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 6px var(--accent)}
+  .side .me{padding:12px 16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .side .me .av{width:30px;height:30px;border-radius:7px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);color:var(--accent);font-size:13px}
+  .side .me .nm{font-size:13px}.side .me .rl{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  /* main */
+  .main{display:flex;flex-direction:column;min-width:0;height:100vh;overflow-y:auto}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--line);background:rgba(13,18,25,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5}
+  .top .crumb{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .top .crumb b{color:var(--fg-2);font-weight:400}
+  .top .acts{display:flex;gap:10px;align-items:center}
+  .btn{font-family:var(--mono);font-size:12.5px;padding:7px 13px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--fg-2);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;position:relative;overflow:hidden}
+  .btn:hover{border-color:var(--faint);color:var(--fg)}
+  .btn.primary{background:rgba(63,224,143,.12);border-color:var(--accent-dim);color:var(--accent)}
+  .btn.on{background:rgba(63,224,143,.12);border-color:var(--accent-dim);color:var(--accent)}
+  .wrap{padding:24px 26px 40px;max-width:1180px;width:100%}
+
+  /* stat cards */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:16px 17px;position:relative;overflow:hidden}
+  .stat::after{content:"";position:absolute;right:-14px;top:-14px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,rgba(63,224,143,.08),transparent 70%)}
+  .stat .lb{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .stat .v{font-family:var(--mono);font-size:28px;font-weight:600;margin:8px 0 4px;letter-spacing:-.01em}
+  .stat .v small{font-size:14px;color:var(--fg-2);font-weight:400}
+  .stat .d{font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:5px}
+  .stat .d.up{color:var(--accent)}.stat .d.down{color:var(--danger)}.stat .d.good{color:var(--accent)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:20px}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line)}
+  .card .hd .t{font-family:var(--mono);font-size:12.5px;color:var(--fg-2)}
+  .card .hd .rng{display:flex;gap:6px}
+  .card .hd .rng button{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+  .card .hd .rng button.on,.card .hd .rng button:hover{color:var(--accent);border-color:var(--accent-dim);background:rgba(63,224,143,.08)}
+
+  /* chart */
+  .chart{padding:18px 16px 10px}
+  .chart svg{width:100%;height:200px;display:block;overflow:visible}
+  .chart .gl{stroke:var(--line);stroke-width:1}
+  .chart .gtxt{fill:var(--faint);font-family:var(--mono);font-size:10px}
+  .chart .ln{fill:none;stroke:var(--accent);stroke-width:2}
+  .chart .dot{fill:var(--bg);stroke:var(--accent);stroke-width:2;opacity:0;transition:.15s}
+  .chart g:hover .dot{opacity:1}
+  .chart .hit{fill:transparent;cursor:crosshair}
+  .chart g:hover .hit~.col{fill:rgba(63,224,143,.04)}
+  .chart .tip{fill:var(--panel-2);stroke:var(--line)}
+  .chart .tiptxt{fill:var(--fg);font-family:var(--mono);font-size:11px;text-anchor:middle}
+  .chart .tipg{opacity:0;transition:.12s}.chart g:hover .tipg{opacity:1}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+  .cols .card{margin-bottom:0}
+
+  /* bar rows */
+  .rows{padding:8px 16px 14px}
+  .row{padding:10px 0;border-bottom:1px solid var(--panel-2)}
+  .row:last-child{border-bottom:none}
+  .row .rt{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .row .rt .nm{font-size:13px;color:var(--fg-2)}
+  .row .rt .nm .q{font-family:var(--mono);color:var(--accent);margin-right:6px}
+  .row .rt .vv{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .track{height:6px;border-radius:4px;background:var(--panel-2);overflow:hidden}
+  .track .fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent-dim),var(--accent));box-shadow:0 0 8px rgba(63,224,143,.3)}
+
+  /* top posts table */
+  table{width:100%;border-collapse:collapse}
+  thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--faint);text-transform:uppercase;text-align:left;padding:10px 16px;border-bottom:1px solid var(--line)}
+  tbody td{padding:11px 16px;border-bottom:1px solid var(--panel-2);font-size:13px;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel-2)}
+  td .ttl{color:var(--fg);font-weight:500}
+  td .cat{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+  td.num{font-family:var(--mono);color:var(--fg-2);text-align:right;font-variant-numeric:tabular-nums}
+  td.num .up{color:var(--accent);font-size:11px}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:12.5px;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:.25s;z-index:20}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:880px){
+    body{grid-template-columns:1fr}
+    .side{position:fixed;left:-232px;z-index:30;transition:.2s}.side.open{left:0}
+    .stats{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}
+}
+</style>
+<link rel="stylesheet" href="assets/admin-chrome.css">
+<script src="assets/admin-chrome.js" defer></script>
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+  <aside class="side">
+    <div class="brand"><span class="dot"></span><b>tzblog</b><span>/admin</span></div>
+  <nav class="nav">
+      <div class="grp">概览</div>
+      <a href="admin-dashboard.html"><span class="ic">▦</span>仪表盘</a>
+      <a class="on" href="admin-analytics.html"><span class="ic">∿</span>数据分析</a>
+      <div class="grp">内容</div>
+      <a href="admin-editor.html"><span class="ic">✎</span>写文章</a>
+      <a href="admin-media.html"><span class="ic">⊞</span>媒体库</a>
+      <div class="grp">系统</div>
+ <a href="admin-settings.html"><span class="ic">⚙</span>站点设置</a>
+ <a href="front-home.html"><span class="ic">↗</span>查看前台</a>
+    </nav>
+<div class="me"><span class="av">H</span><div><div class="nm">haiden</div><div class="rl">站长</div></div></div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb">admin ❯ <b>analytics</b></div>
+      <div class="acts">
+        <button class="btn" onclick="toast('报表已导出 analytics-2026-05.csv')">↧ 导出报表</button>
+        <button class="btn" onclick="toast('已同步最新数据')">↻ 刷新</button>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="stats">
+        <div class="stat"><div class="lb">本月访客 UV</div><div class="v">1,247</div><div class="d up">↑ 18.4% vs 上月</div></div>
+        <div class="stat"><div class="lb">页面浏览 PV</div><div class="v">4,892</div><div class="d up">↑ 12.1% vs 上月</div></div>
+        <div class="stat"><div class="lb">平均阅读时长</div><div class="v">4:38</div><div class="d up">↑ 32s vs 上月</div></div>
+        <div class="stat"><div class="lb">跳出率</div><div class="v">42.3<small> %</small></div><div class="d good">↓ 5.1% 更好</div></div>
+      </div>
+
+      <div class="card">
+        <div class="hd">
+      <span class="t">$ tail access.log | visitors --daily · 近 30 天</span>
+  <div class="rng"><button>7天</button><button class="on">30天</button><button>90天</button></div>
+        </div>
+    <div class="chart" id="chart"></div>
+ </div>
+
+      <div class="cols">
+   <div class="card">
+  <div class="hd"><span class="t">$ awk referer access.log · 流量来源</span></div>
+          <div class="rows" id="sources"></div>
+        </div>
+      <div class="card">
+          <div class="hd"><span class="t">$ grep query search.log | sort · 热门搜索词</span></div>
+          <div class="rows" id="terms"></div>
+        </div>
+      </div>
+
+      <div class="cols" style="margin-top:20px">
+        <div class="card" style="margin-bottom:0">
+          <div class="hd"><span class="t">$ stat posts/ --by-category · 分类分布</span></div>
+      <div class="rows" id="cats"></div>
+        </div>
+      <div class="card" style="margin-bottom:0">
+          <div class="hd"><span class="t">$ sort -k reads · 阅读 Top 5</span></div>
+          <table>
+        <thead><tr><th>文章</th><th style="text-align:right">阅读</th><th style="text-align:right">趋势</th></tr></thead>
+   <tbody>
+          <tr><td><div class="ttl">spec-first：让 Claude 连续写对 3000 行</div><div class="cat">AI Coding</div></td><td class="num">2,341</td><td class="num"><span class="up">↑ 28%</span></td></tr>
+              <tr><td><div class="ttl">Next.js 15 RSC 缓存的 7 个坑</div><div class="cat">全栈工程</div></td><td class="num">1,876</td><td class="num"><span class="up">↑ 14%</span></td></tr>
+      <tr><td><div class="ttl">Go 重写后端：120ms → 18ms</div><div class="cat">全栈工程</div></td><td class="num">1,503</td><td class="num"><span class="up">↑ 9%</span></td></tr>
+<tr><td><div class="ttl">2026 我的终端配置：从 zsh 到 ghostty</div><div class="cat">工具效率</div></td><td class="num">1,128</td><td class="num"><span class="up">↑ 41%</span></td></tr>
+   <tr><td><div class="ttl">写完 100 篇博客后的反思</div><div class="cat">随笔</div></td><td class="num">967</td><td class="num"><span class="up">↑ 6%</span></td></tr>
+       </tbody>
+    </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+<script>
+  // 30-day visitor trend
+  var d=[62,71,58,84,93,77,68,102,118,96,87,124,109,141,128,116,134,152,147,139,158,166,151,173,168,182,176,191,205,247];
+  var W=900,H=200,pad=10,max=Math.max.apply(null,d),min=Math.min.apply(null,d);
+  var n=d.length,step=(W-pad*2)/(n-1);
+  function X(i){return pad+i*step}
+  function Y(v){return H-pad-(v-min)/(max-min)*(H-pad*2)}
+  var pts=d.map(function(v,i){return X(i)+','+Y(v)}).join(' ');
+  var grid='',gy=[max,Math.round((max+min)/2),min];
+  gy.forEach(function(v){var y=Y(v);grid+='<line class="gl" x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'"/><text class="gtxt" x="2" y="'+(y-4)+'">'+v+'</text>';});
+  var hover='';
+  d.forEach(function(v,i){
+    var x=X(i),y=Y(v),day=(i+2<10?'0':'')+(i+2)+'';
+    hover+='<g><rect class="hit col" x="'+(x-step/2)+'" y="0" width="'+step+'" height="'+H+'"/>'
+      +'<circle class="dot" cx="'+x+'" cy="'+y+'" r="4"/>'
+   +'<g class="tipg" transform="translate('+x+','+(y-14)+')"><rect class="tip" x="-30" y="-22" width="60" height="20" rx="4"/><text class="tiptxt" y="-8">'+v+' UV</text></g></g>';
+  });
+  document.getElementById('chart').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+grid+'<polyline class="ln" points="'+pts+'"/>'+hover+'</svg>';
+
+  function bars(id,rows,fmt){
+    var mx=Math.max.apply(null,rows.map(function(r){return r.v}));
+    document.getElementById(id).innerHTML=rows.map(function(r){
+      return '<div class="row"><div class="rt"><span class="nm">'+(r.q?'<span class="q">'+r.q+'</span>':'')+r.name+'</span><span class="vv">'+fmt(r)+'</span></div>'
+     +'<div class="track"><div class="fill" style="width:'+(r.v/mx*100).toFixed(1)+'%"></div></div></div>';
+    }).join('');
+  }
+  bars('sources',[
+    {name:'搜索引擎 (Google/Bing)',v:512,pct:'41.1%'},
+    {name:'直接访问',v:298,pct:'23.9%'},
+    {name:'掘金 / V2EX',v:201,pct:'16.1%'},
+    {name:'友情链接',v:142,pct:'11.4%'},
+    {name:'RSS 订阅',v:94,pct:'7.5%'}
+  ],function(r){return r.v+' · '+r.pct});
+  bars('terms',[
+    {q:'❯',name:'spec-first 工作流',v:184},
+    {q:'❯',name:'RSC 缓存 force-cache',v:152},
+    {q:'❯',name:'Go 性能优化',v:121},
+    {q:'❯',name:'ghostty 终端配置',v:98},
+    {q:'❯',name:'Meilisearch 全文搜索',v:67}
+  ],function(r){return r.v+' 次'});
+  bars('cats',[
+    {name:'AI Coding',v:34,pct:'26.6%'},
+    {name:'全栈工程',v:41,pct:'32.0%'},
+    {name:'工具效率',v:23,pct:'18.0%'},
+    {name:'随笔',v:18,pct:'14.1%'},
+    {name:'作品',v:12,pct:'9.4%'}
+  ],function(r){return r.v+' 篇 · '+r.pct});
+
+  var t=document.getElementById('toast'),tm;
+  function toast(m){t.textContent=m;t.classList.add('show');clearTimeout(tm);tm=setTimeout(function(){t.classList.remove('show')},1800);}
+  document.querySelectorAll('.btn,.rng button').forEach(function(el){el.addEventListener('click',function(e){var r=document.createElement('span');var dd=Math.max(el.offsetWidth,el.offsetHeight);var x=e.clientX-el.getBoundingClientRect().left-dd/2,y=e.clientY-el.getBoundingClientRect().top-dd/2;r.style.cssText='position:absolute;border-radius:50%;width:'+dd+'px;height:'+dd+'px;left:'+x+'px;top:'+y+'px;background:radial-gradient(circle,rgba(63,224,143,.4),transparent 70%);transform:scale(0);animation:rp .5s ease-out;pointer-events:none';el.appendChild(r);setTimeout(function(){r.remove()},500);});});
+  document.querySelectorAll('.rng button').forEach(function(b){b.addEventListener('click',function(){this.parentNode.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});this.classList.add('on');toast('已切换到 '+this.textContent+' 区间');});});
+  var st=document.createElement('style');st.textContent='@keyframes rp{to{transform:scale(2.2);opacity:0}}';document.head.appendChild(st);
+</script>
+</body>
+</html>

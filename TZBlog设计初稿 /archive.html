@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>归档 · 分类 / 标签 / 年份 — tzblog</title>
+<meta name="description" content="tzblog 全部文章归档，按分类、标签、年份浏览 haiden 的 AI Coding、全栈工程、工具效率与随笔。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0b0f14;--bg-2:#0f151c;--panel:#11171f;--panel-2:#141b24;--line:#1f2730;--line-2:#2a343f;
+    --fg:#c9d4df;--fg-strong:#eef3f8;--muted:#6b7a89;--dim:#7d8a97;--acc:#3fe08f;--acc-dim:#1f7a4d;--amber:#e3b341;
+    --mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;--sans:'Noto Sans SC',-apple-system,system-ui,sans-serif;--r:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--fg);font-family:var(--mono);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0 3px,rgba(0,0,0,.18) 3px 4px),radial-gradient(120% 80% at 50% -10%,rgba(63,224,143,.05),transparent 60%);opacity:.5;mix-blend-mode:soft-light}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px;width:100%}
+  a{color:inherit;text-decoration:none}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(11,15,20,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .wrap{display:flex;align-items:center;gap:22px;height:56px}
+  .prompt{color:var(--acc);font-weight:700;white-space:nowrap}.prompt .path{color:var(--fg-strong)}
+  .nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+  .nav a{padding:6px 11px;border-radius:var(--r);color:var(--muted);font-size:13.5px;transition:.16s}
+.nav a::before{content:"./";color:var(--dim)}
+  .nav a:hover{color:var(--fg-strong);background:var(--panel-2)}
+  .nav a[aria-current]{color:var(--acc);background:rgba(63,224,143,.08)}
+  main{flex:1;padding:40px 0 60px}
+  .head{margin-bottom:22px}
+  .head .cmd{color:var(--muted);font-size:13.5px;margin-bottom:8px}.head .cmd .pr{color:var(--acc)}.head .cmd .arg{color:var(--amber)}
+  .head h1{font-family:var(--sans);font-size:clamp(26px,3.4vw,36px);color:var(--fg-strong);font-weight:700;letter-spacing:-.01em}
+  .head .sub{font-family:var(--sans);color:var(--muted);font-size:14px;margin-top:6px}
+  .views{display:flex;gap:6px;margin:20px 0 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.vt{font-family:var(--mono);font-size:13.5px;color:var(--muted);background:transparent;border:0;border-bottom:2px solid transparent;padding:9px 14px;cursor:pointer;transition:.15s;margin-bottom:-1px}
+  .vt.on{color:var(--acc);border-bottom-color:var(--acc)}
+  .vt::before{content:"--";color:var(--dim);margin-right:5px}
+  .groups{display:flex;flex-direction:column;gap:26px}
+  .grp-h{display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--muted);margin-bottom:10px;border-bottom:1px dashed var(--line);padding-bottom:8px}
+  .grp-h .key{color:var(--acc);font-weight:600;font-size:15px}
+  .grp-h .key::before{content:"# ";color:var(--acc-dim)}
+  .grp-h .ct{color:var(--dim);font-size:12px;margin-left:auto}
+  .post{display:flex;align-items:baseline;gap:14px;padding:10px 14px;border:1px solid transparent;border-radius:7px;transition:.16s}
+  .post:hover{border-color:var(--line);background:var(--panel)}
+  .post .date{color:var(--dim);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:84px}
+  .post .ti{font-family:var(--sans);font-size:15px;color:var(--fg)}
+  .post:hover .ti{color:var(--acc)}
+  .post .cat{margin-left:auto;font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .post .cat::before{content:"#";color:var(--dim)}
+  @media(max-width:560px){.post{flex-wrap:wrap;gap:4px 12px}.post .cat{margin-left:0}}
+  footer{position:relative;z-index:1;border-top:1px solid var(--line);background:var(--bg-2);margin-top:40px}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="assets/site-chrome.css" />
+<script defer src="assets/site-chrome.js"></script>
+<link rel="canonical" href="https://tzcode.top/archive" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="tzblog" />
+<meta property="og:locale" content="zh_CN" />
+<meta property="og:title" content="归档 · 分类 / 标签 / 年份 — tzblog" />
+<meta property="og:description" content="tzblog 全部文章归档，按分类、标签、年份浏览。" />
+<meta property="og:url" content="https://tzcode.top/archive" />
+<meta name="twitter:card" content="summary" />
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <span class="prompt">haiden@tzblog:<span class="path">~/posts</span> $</span>
+  <nav class="nav">
+    <a href="front-home.html">home</a>
+    <a href="front-pathways.html">pathways</a>
+    <a href="front-works.html">works</a>
+    <a href="front-library.html">shelf</a>
+    <a href="front-search.html">search</a>
+    <a aria-current="page" href="archive.html">archive</a>
+    <a href="front-about.html">about</a>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+  <div class="head">
+    <p class="cmd"><span class="pr">$</span> ls -la <span class="arg" id="lscmd">~/posts</span> | sort</p>
+    <h1>文章归档</h1>
+    <p class="sub">全部 <b id="total">0</b> 篇 · 按 <span id="byname">分类</span>聚合</p>
+  </div>
+
+  <div class="views" role="tablist">
+    <button class="vt on" data-by="cat" role="tab">分类</button>
+    <button class="vt" data-by="tag" role="tab">标签</button>
+    <button class="vt" data-by="year" role="tab">年份</button>
+  </div>
+
+  <div class="groups" id="out" aria-live="polite"></div>
+</div></main>
+
+<footer data-site-footer></footer>
+
+<script>
+  // mock 数据源 — 真实环境：GET /api/posts?archive=1 （见交付文档 §接口契约）
+  var POSTS=[
+    {ti:"spec-first：让 Claude 连续写对 3000 行代码",date:"2026-05-18",cat:"AI Coding",tags:["Claude","工作流","spec"]},
+    {ti:"Next.js 15 RSC 缓存踩过的 7 个坑",date:"2026-04-22",cat:"全栈工程",tags:["Next.js","RSC","缓存"]},
+    {ti:"把 Go 后端从 120ms 优化到 18ms",date:"2026-03-09",cat:"全栈工程",tags:["Go","性能","pprof"]},
+    {ti:"2026 我的终端配置：zsh + tmux + neovim",date:"2026-02-14",cat:"工具效率",tags:["终端","zsh","neovim"]},
+    {ti:"写完 100 篇博客后的一些反思",date:"2026-01-03",cat:"随笔思考",tags:["写作","复盘"]},
+    {ti:"用 Meilisearch 给博客加全文搜索",date:"2025-12-20",cat:"全栈工程",tags:["搜索","Meilisearch"]},
+    {ti:"Shiki + KaTeX：博客代码与公式渲染管线",date:"2025-11-11",cat:"工具效率",tags:["Shiki","KaTeX","Markdown"]},
+    {ti:"Docker 多阶段构建把镜像砍到 40MB",date:"2025-10-08",cat:"全栈工程",tags:["Docker","部署"]}
+  ];
+  var out=document.getElementById('out'),NAME={cat:"分类",tag:"标签",year:"年份"};
+  document.getElementById('total').textContent=POSTS.length;
+  function esc(s){return s.replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]})}
+  function group(by){
+    var map={};
+    POSTS.forEach(function(p){
+      var keys = by==='tag' ? p.tags : (by==='year' ? [p.date.slice(0,4)] : [p.cat]);
+      keys.forEach(function(k){(map[k]=map[k]||[]).push(p)});
+    });
+    // 年份倒序，其余按条目数倒序
+    return Object.keys(map).sort(function(a,b){return by==='year'?b.localeCompare(a):map[b].length-map[a].length}).map(function(k){return {key:k,items:map[k]}});
+  }
+  function render(by){
+    document.getElementById('byname').textContent=NAME[by];
+    document.getElementById('lscmd').textContent= by==='year'?'~/posts --by-year':(by==='tag'?'~/posts --by-tag':'~/posts --by-cat');
+    out.innerHTML=group(by).map(function(g){
+      var rows=g.items.map(function(p){
+        return '<a class="post" href="front-article-tutorial.html"><span class="date">'+p.date+'</span><span class="ti">'+esc(p.ti)+'</span><span class="cat">'+esc(p.cat)+'</span></a>';
+      }).join('');
+      return '<section class="grp"><div class="grp-h"><span class="key">'+esc(g.key)+'</span><span class="ct">'+g.items.length+' 篇</span></div>'+rows+'</section>';
+    }).join('');
+  }
+  document.querySelectorAll('.vt').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.vt').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on');render(b.dataset.by);
+    });
+  });
+  // 支持 ?by=tag|year|cat 深链
+  var init=(new URLSearchParams(location.search).get('by'))||'cat';
+  if(!NAME[init])init='cat';
+  var btn=document.querySelector('.vt[data-by="'+init+'"]');if(btn){document.querySelectorAll('.vt').forEach(function(x){x.classList.remove('on')});btn.classList.add('on')}
+  render(init);
+</script>
+</body>
+</html>

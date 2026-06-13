@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>控制台 · tzblog</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#11161f; --panel-2:#0d1219; --line:#1d2530;
+    --fg:#e4e8ee; --fg-2:#aab3c0; --muted:#6b7686; --faint:#46505e;
+    --accent:#3fe08f; --accent-dim:#1f7a4d;
+    --warn:#e8b339; --danger:#e06a5a; --info:#56a8e8;
+    --mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,monospace;
+--sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'PingFang SC',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--fg); font-family:var(--sans);
+font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  display:grid; grid-template-columns:232px 1fr; height:100vh; overflow:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  ::selection{background:rgba(63,224,143,.25)}
+
+  /* sidebar */
+  .side{
+    background:var(--panel-2); border-right:1px solid var(--line);
+    display:flex; flex-direction:column; height:100vh; overflow-y:auto;
+  }
+  .brand{padding:18px 20px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:9px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .brand b{font-family:var(--mono);font-size:14px;letter-spacing:.02em}
+  .brand span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .nav{padding:12px 12px;flex:1;display:flex;flex-direction:column;gap:2px}
+  .nav .grp{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;padding:14px 10px 6px}
+  .nav a{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;
+    color:var(--fg-2);font-size:13px;transition:.15s;position:relative;
+  }
+  .nav a .ic{width:15px;text-align:center;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .nav a:hover{background:var(--panel);color:var(--fg)}
+  .nav a.on{background:rgba(63,224,143,.1);color:var(--fg)}
+  .nav a.on .ic{color:var(--accent)}
+  .nav a.on::before{content:"";position:absolute;left:-12px;top:7px;bottom:7px;width:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 6px var(--accent)}
+  .side .me{padding:12px 16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .side .me .av{width:30px;height:30px;border-radius:7px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);color:var(--accent);font-size:13px}
+  .side .me .nm{font-size:13px}.side .me .rl{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  /* main */
+  .main{display:flex;flex-direction:column;min-width:0;height:100vh;overflow-y:auto}
+  .top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 26px;border-bottom:1px solid var(--line);
+    background:rgba(13,18,25,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5;
+  }
+  .top .crumb{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .top .crumb b{color:var(--fg-2);font-weight:400}
+  .top .acts{display:flex;gap:10px;align-items:center}
+  .btn{
+  font-family:var(--mono);font-size:12.5px;padding:7px 13px;border-radius:7px;
+    border:1px solid var(--line);background:var(--panel);color:var(--fg-2);
+    cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;position:relative;overflow:hidden;
+  }
+  .btn:hover{border-color:var(--faint);color:var(--fg)}
+  .btn.primary{background:rgba(63,224,143,.12);border-color:var(--accent-dim);color:var(--accent)}
+  .btn.primary:hover{background:rgba(63,224,143,.18)}
+  .wrap{padding:24px 26px 40px;max-width:1180px;width:100%}
+  .h{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .h::before{content:"›";color:var(--accent)}
+
+  /* stat cards */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:16px 17px;position:relative;overflow:hidden}
+  .stat::after{content:"";position:absolute;right:-14px;top:-14px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,rgba(63,224,143,.08),transparent 70%)}
+  .stat .lb{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .stat .v{font-family:var(--mono);font-size:28px;font-weight:600;margin:8px 0 4px;letter-spacing:-.01em}
+  .stat .v small{font-size:14px;color:var(--fg-2);font-weight:400}
+  .stat .d{font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:5px}
+  .stat .d.up{color:var(--accent)}.stat .d.down{color:var(--danger)}.stat .d.flat{color:var(--muted)}
+
+  .cols{display:grid;grid-template-columns:1.55fr 1fr;gap:20px;align-items:start}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line)}
+  .card .hd .t{font-family:var(--mono);font-size:12.5px;color:var(--fg-2)}
+  .card .hd a{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .card .hd a:hover{color:var(--accent)}
+
+  /* posts table */
+  table{width:100%;border-collapse:collapse}
+  thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--faint);text-transform:uppercase;text-align:left;padding:10px 16px;border-bottom:1px solid var(--line)}
+  tbody td{padding:11px 16px;border-bottom:1px solid var(--panel-2);font-size:13px;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel-2)}
+  td .ttl{color:var(--fg);font-weight:500}
+  td .cat{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+  td.num{font-family:var(--mono);color:var(--fg-2);text-align:right;font-variant-numeric:tabular-nums}
+  .pill{font-family:var(--mono);font-size:10.5px;padding:3px 8px;border-radius:5px;border:1px solid;display:inline-block}
+  .pill.pub{color:var(--accent);border-color:var(--accent-dim);background:rgba(63,224,143,.08)}
+  .pill.draft{color:var(--warn);border-color:rgba(232,179,57,.4);background:rgba(232,179,57,.08)}
+
+  /* comments queue */
+  .cmt{padding:13px 16px;border-bottom:1px solid var(--panel-2)}
+  .cmt:last-child{border-bottom:none}
+  .cmt .who{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .cmt .who b{font-size:12.5px}.cmt .who .on{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .cmt p{font-size:12.5px;color:var(--fg-2);margin-bottom:7px}
+  .cmt .ops{display:flex;gap:7px}
+  .cmt .ops button{font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:5px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+  .cmt .ops button.ok:hover{color:var(--accent);border-color:var(--accent-dim)}
+  .cmt .ops button.no:hover{color:var(--danger);border-color:rgba(224,106,90,.4)}
+
+  /* activity sparkline */
+  .spark{padding:16px;display:flex;align-items:flex-end;gap:4px;height:96px}
+  .spark .bar{flex:1;background:linear-gradient(var(--accent-dim),rgba(63,224,143,.15));border-radius:3px 3px 0 0;min-height:4px;transition:.2s;position:relative}
+  .spark .bar:hover{background:linear-gradient(var(--accent),rgba(63,224,143,.3))}
+  .sparklab{display:flex;justify-content:space-between;padding:0 16px 14px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:12.5px;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:.25s;z-index:20}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:880px){
+    body{grid-template-columns:1fr}
+    .side{position:fixed;left:-232px;z-index:30;transition:.2s}.side.open{left:0}
+  .stats{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}
+  }
+</style>
+<link rel="stylesheet" href="assets/admin-chrome.css">
+<script src="assets/admin-chrome.js" defer></script>
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+  <aside class="side" id="side">
+    <div class="brand"><span class="dot"></span><b>tzblog</b><span>/admin</span></div>
+    <nav class="nav">
+      <div class="grp">概览</div>
+      <a class="on" href="admin-dashboard.html"><span class="ic">▦</span>仪表盘</a>
+      <a href="admin-analytics.html"><span class="ic">∿</span>数据分析</a>
+      <div class="grp">内容</div>
+    <a href="admin-editor.html"><span class="ic">✎</span>写文章</a>
+      <a href="admin-media.html"><span class="ic">⊞</span>媒体库</a>
+      <div class="grp">系统</div>
+      <a href="admin-settings.html"><span class="ic">⚙</span>站点设置</a>
+      <a href="front-home.html"><span class="ic">↗</span>查看前台</a>
+    </nav>
+    <div class="me"><span class="av">H</span><div><div class="nm">haiden</div><div class="rl">站长</div></div></div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+    <div class="crumb">admin ❯ <b>dashboard</b></div>
+ <div class="acts">
+        <button class="btn" onclick="toast('已同步最新数据')">↻ 刷新</button>
+        <a class="btn primary" href="admin-editor.html">＋ 写文章</a>
+      </div>
+    </header>
+
+ <div class="wrap">
+      <div class="stats" id="stats">
+        <div class="stat"><div class="lb">文章总数</div><div class="v">128</div><div class="d up">↑ 本月 +6</div></div>
+        <div class="stat"><div class="lb">本月访客</div><div class="v">1,247</div><div class="d up">↑ 18.4% vs 上月</div></div>
+        <div class="stat"><div class="lb">全站字数</div><div class="v">38.6<small> 万</small></div><div class="d flat">— 稳定产出</div></div>
+        <div class="stat"><div class="lb">待审评论</div><div class="v">3</div><div class="d down">需处理</div></div>
+      </div>
+
+      <div class="cols">
+        <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+            <div class="hd"><span class="t">$ ls -t posts/ | head</span><a href="admin-editor.html">管理全部 →</a></div>
+    <table>
+              <thead><tr><th>文章</th><th>状态</th><th style="text-align:right">阅读</th><th style="text-align:right">更新</th></tr></thead>
+       <tbody>
+       <tr><td><div class="ttl">spec-first：让 Claude 连续写对 3000 行</div><div class="cat">AI Coding</div></td><td><span class="pill pub">已发布</span></td><td class="num">2,341</td><td class="num">3天前</td></tr>
+       <tr><td><div class="ttl">Next.js 15 RSC 缓存的 7 个坑</div><div class="cat">全栈工程</div></td><td><span class="pill pub">已发布</span></td><td class="num">1,876</td><td class="num">6天前</td></tr>
+     <tr><td><div class="ttl">Go 重写后端：120ms → 18ms</div><div class="cat">全栈工程</div></td><td><span class="pill pub">已发布</span></td><td class="num">1,503</td><td class="num">11天前</td></tr>
+     <tr><td><div class="ttl">用 Meilisearch 给博客加全文搜索</div><div class="cat">全栈工程</div></td><td><span class="pill draft">草稿</span></td><td class="num">—</td><td class="num">1天前</td></tr>
+    <tr><td><div class="ttl">2026 我的终端配置：从 zsh 到 ghostty</div><div class="cat">工具效率</div></td><td><span class="pill draft">草稿</span></td><td class="num">—</td><td class="num">2小时前</td></tr>
+    </tbody>
+     </table>
+     </div>
+
+          <div class="card">
+            <div class="hd"><span class="t">$ tail -f access.log · 近 14 天访客</span><a href="admin-analytics.html">详细分析 →</a></div>
+            <div class="spark" id="spark"></div>
+ <div class="sparklab"><span>05-18</span><span>05-25</span><span>05-31</span></div>
+        </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><span class="t">$ comments --pending</span><span style="font-family:var(--mono);font-size:11px;color:var(--warn)">3 待审</span></div>
+          <div class="cmt"><div class="who"><b>云游君</b><span class="on">on《spec-first》</span></div><p>这个「先写规格再让 AI 写代码」的思路太对了，我一直 vibe coding 结果返工无数次。</p><div class="ops"><button class="ok" onclick="moderate(this,'已通过')">✓ 通过</button><button class="no" onclick="moderate(this,'已删除')">✕ 删除</button></div></div>
+      <div class="cmt"><div class="who"><b>张洪Heo</b><span class="on">on《RSC 缓存 7 坑》</span></div><p>第 4 个坑（fetch 默认 force-cache）我也踩过，排查了一下午，文章里讲得很清楚。</p><div class="ops"><button class="ok" onclick="moderate(this,'已通过')">✓ 通过</button><button class="no" onclick="moderate(this,'已删除')">✕ 删除</button></div></div>
+          <div class="cmt"><div class="who"><b>Innei</b><span class="on">on《Go 重写后端》</span></div><p>120ms→18ms 的提升主要来自哪一块？是连接池还是序列化？想看更细的火焰图。</p><div class="ops"><button class="ok" onclick="moderate(this,'已通过')">✓ 通过</button><button class="no" onclick="moderate(this,'已删除')">✕ 删除</button></div></div>
+    </div>
+      </div>
+ </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+<script>
+  // sparkline data — 14 days visitor counts
+  var data=[62,71,58,84,93,77,68,102,118,96,87,124,109,141];
+  var max=Math.max.apply(null,data),sp=document.getElementById('spark');
+  data.forEach(function(v){var b=document.createElement('div');b.className='bar';b.style.height=(v/max*100)+'%';b.title=v+' 访客';sp.appendChild(b);});
+
+  var t=document.getElementById('toast'),tm;
+  function toast(m){t.textContent=m;t.classList.add('show');clearTimeout(tm);tm=setTimeout(function(){t.classList.remove('show')},1800);}
+function moderate(btn,m){var c=btn.closest('.cmt');c.style.transition='.3s';c.style.opacity='0';c.style.height=c.offsetHeight+'px';setTimeout(function(){c.style.height='0';c.style.padding='0';c.style.overflow='hidden';},10);toast(m);}
+
+  // ripple on buttons
+  document.querySelectorAll('.btn').forEach(function(el){el.addEventListener('click',function(e){var r=document.createElement('span');var d=Math.max(el.offsetWidth,el.offsetHeight);var x=e.clientX-el.getBoundingClientRect().left-d/2,y=e.clientY-el.getBoundingClientRect().top-d/2;r.style.cssText='position:absolute;border-radius:50%;width:'+d+'px;height:'+d+'px;left:'+x+'px;top:'+y+'px;background:radial-gradient(circle,rgba(63,224,143,.4),transparent 70%);transform:scale(0);animation:rp .5s ease-out;pointer-events:none';el.appendChild(r);setTimeout(function(){r.remove()},500);});});
+  var st=document.createElement('style');st.textContent='@keyframes rp{to{transform:scale(2.2);opacity:0}}';document.head.appendChild(st);
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+/* ──────────────────────────────────────────────────────────────
+   admin-chrome.css — single source of truth for the admin sidebar.
+   Injected by admin-chrome.js into every admin page so nav items +
+   styling can never drift across the 6 console screens again.
+   Loaded AFTER each page's inline <style>, so equal-specificity
+   rules win on source order. Tokens inherited from each page :root.
+   ────────────────────────────────────────────────────────────── */
+/* keyboard focus — WCAG 2.4.7/2.4.13: visible phosphor ring on tab-focus, every admin page */
+:focus-visible{outline:2px solid var(--accent,var(--acc,#3fe08f));outline-offset:2px;border-radius:3px}
+.ac-side{display:flex;flex-direction:column;background:var(--panel-2,#141b24);
+  border-right:1px solid var(--line,#1f2730);padding:0;overflow-y:auto;min-height:0}
+.ac-side .ac-brand{display:flex;align-items:center;gap:9px;padding:18px 20px 16px;
+  border-bottom:1px solid var(--line,#1f2730)}
+.ac-side .ac-brand .d{width:9px;height:9px;border-radius:50%;
+  background:var(--accent,var(--acc,#3fe08f));box-shadow:0 0 8px var(--accent,var(--acc,#3fe08f))}
+.ac-side .ac-brand b{font-family:var(--mono);font-size:14px;letter-spacing:.02em;color:var(--fg-strong,var(--fg,#e8eef4))}
+.ac-side .ac-brand span{font-family:var(--mono);font-size:11px;color:var(--muted,#6b7a89)}
+.ac-side nav{padding:8px 12px 10px;display:flex;flex-direction:column;gap:2px;flex:1;min-height:0}
+.ac-side .ac-grp{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted,#6b7a89);opacity:.7;padding:14px 10px 6px}
+.ac-side a.ac-it{position:relative;display:flex;align-items:center;gap:10px;
+  padding:9px 12px;margin:0;border-radius:7px;text-decoration:none;font-size:13.5px;
+  color:var(--fg,#c9d4df);background:transparent;transition:background .15s,color .15s}
+.ac-side a.ac-it:hover{background:var(--panel,#11171f);color:var(--fg-strong,#eef3f8)}
+.ac-side a.ac-it .ac-ic{width:16px;text-align:center;font-family:var(--mono);font-size:13px;color:var(--muted,#6b7a89)}
+.ac-side a.ac-it.on{background:rgba(63,224,143,.09);color:var(--fg-strong,#eef3f8)}
+.ac-side a.ac-it.on .ac-ic{color:var(--accent,var(--acc,#3fe08f))}
+.ac-side a.ac-it.on::before{content:"";position:absolute;left:-12px;top:6px;bottom:6px;width:3px;
+  border-radius:0 3px 3px 0;background:var(--accent,var(--acc,#3fe08f));
+  box-shadow:0 0 8px var(--accent,var(--acc,#3fe08f))}
+.ac-side .ac-me{margin-top:auto;display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-top:1px solid var(--line,#1f2730)}
+.ac-side .ac-me .av{width:30px;height:30px;border-radius:7px;background:var(--panel,#11171f);
+  border:1px solid var(--line,#1f2730);display:grid;place-items:center;
+  font-family:var(--mono);color:var(--accent,var(--acc,#3fe08f));font-size:13px}
+.ac-side .ac-me .nm{font-size:13px;color:var(--fg-strong,var(--fg,#e8eef4))}
+.ac-side .ac-me .rl{font-family:var(--mono);font-size:11px;color:var(--muted,#6b7a89)}
+/* normalize desktop column width across all 6 pages (editor was 212, rest 232) */
+@media(min-width:881px){body{grid-template-columns:232px 1fr}}
+/* mobile: slide-in drawer + injected toggle (also un-hides editor's display:none nav) */
+#ac-burger{display:none}
+@media(max-width:880px){
+  .ac-side{display:flex;position:fixed;top:0;left:-260px;width:232px;height:100vh;z-index:40;transition:left .2s}
+  .ac-side.open{left:0}
+  #ac-burger{display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:41;
+    width:38px;height:38px;border-radius:8px;background:var(--panel-2,#141b24);
+    border:1px solid var(--line,#1f2730);color:var(--accent,var(--acc,#3fe08f));
+    font-family:var(--mono);font-size:17px;cursor:pointer}
+}
+@media(prefers-reduced-motion:reduce){.ac-side{transition:none}}

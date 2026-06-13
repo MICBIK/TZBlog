@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>站点设置 · tzblog</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#11161f; --panel-2:#0d1219; --line:#1d2530;
+    --fg:#e4e8ee; --fg-2:#aab3c0; --muted:#6b7686; --faint:#46505e;
+    --accent:#3fe08f; --accent-dim:#1f7a4d;
+    --warn:#e8b339; --danger:#e06a5a; --info:#56a8e8;
+    --mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,monospace;
+    --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'PingFang SC',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg); color:var(--fg); font-family:var(--sans); font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased; display:grid; grid-template-columns:232px 1fr; height:100vh; overflow:hidden}
+  a{color:inherit;text-decoration:none}
+  ::selection{background:rgba(63,224,143,.25)}
+
+  .side{background:var(--panel-2); border-right:1px solid var(--line); display:flex; flex-direction:column; height:100vh; overflow-y:auto}
+  .brand{padding:18px 20px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:9px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .brand b{font-family:var(--mono);font-size:14px;letter-spacing:.02em}
+  .brand span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .nav{padding:12px 12px;flex:1;display:flex;flex-direction:column;gap:2px}
+  .nav .grp{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;padding:14px 10px 6px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:var(--fg-2);font-size:13px;transition:.15s;position:relative}
+  .nav a .ic{width:15px;text-align:center;font-family:var(--mono);font-size:13px;color:var(--muted)}
+  .nav a:hover{background:var(--panel);color:var(--fg)}
+  .nav a.on{background:rgba(63,224,143,.1);color:var(--fg)}
+  .nav a.on .ic{color:var(--accent)}
+  .nav a.on::before{content:"";position:absolute;left:-12px;top:7px;bottom:7px;width:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 6px var(--accent)}
+  .side .me{padding:12px 16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .side .me .av{width:30px;height:30px;border-radius:7px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);color:var(--accent);font-size:13px}
+  .side .me .nm{font-size:13px}.side .me .rl{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  .main{display:flex;flex-direction:column;min-width:0;height:100vh;overflow-y:auto}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:1px solid var(--line);background:rgba(13,18,25,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5}
+  .top .crumb{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .top .crumb b{color:var(--fg-2);font-weight:400}
+  .top .acts{display:flex;gap:10px;align-items:center}
+  .btn{font-family:var(--mono);font-size:12.5px;padding:7px 13px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--fg-2);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;position:relative;overflow:hidden}
+  .btn:hover{border-color:var(--faint);color:var(--fg)}
+.btn.primary{background:rgba(63,224,143,.12);border-color:var(--accent-dim);color:var(--accent)}
+  .btn.primary:hover{background:rgba(63,224,143,.18)}
+  .wrap{padding:24px 26px 40px;max-width:880px;width:100%}
+
+  .set{background:var(--panel);border:1px solid var(--line);border-radius:11px;margin-bottom:18px;overflow:hidden}
+  .set .sh{padding:13px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+  .set .sh .t{font-family:var(--mono);font-size:12.5px;color:var(--fg-2)}
+  .set .sh .t b{color:var(--accent);font-weight:400}
+  .set .sh .desc{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .field{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 18px;border-bottom:1px solid var(--panel-2)}
+  .field:last-child{border-bottom:none}
+  .field .lab{flex:0 0 auto;max-width:48%}
+  .field .lab .k{font-size:13px;color:var(--fg)}
+  .field .lab .h{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .field .ctl{flex:1;display:flex;justify-content:flex-end}
+  .field input[type=text],.field textarea,.field select{
+    width:100%;max-width:340px;background:var(--panel-2);border:1px solid var(--line);border-radius:7px;
+    color:var(--fg);font-family:var(--mono);font-size:12.5px;padding:8px 11px;transition:.15s;resize:vertical
+  }
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent-dim);box-shadow:0 0 0 3px rgba(63,224,143,.08)}
+.field .pre{font-family:var(--mono);font-size:12px;color:var(--muted);display:inline-flex;align-items:center}
+  .field .pre i{font-style:normal;color:var(--accent);margin-left:4px}
+
+  /* toggle */
+  .switch{position:relative;width:42px;height:24px;flex:0 0 auto;cursor:pointer}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;margin:0}
+  .switch .tr{position:absolute;inset:0;background:var(--panel-2);border:1px solid var(--line);border-radius:13px;transition:.18s}
+  .switch .kn{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:.18s}
+  .switch input:checked~.tr{background:rgba(63,224,143,.15);border-color:var(--accent-dim)}
+  .switch input:checked~.kn{left:21px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+
+  .tag{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:5px;border:1px solid;display:inline-block;margin-left:7px}
+  .tag.pri{color:var(--accent);border-color:var(--accent-dim);background:rgba(63,224,143,.08)}
+  .tag.off{color:var(--faint);border-color:var(--line)}
+
+  .set.danger{border-color:rgba(224,106,90,.3)}
+  .set.danger .sh{border-color:rgba(224,106,90,.2)}
+  .set.danger .sh .t b{color:var(--danger)}
+  .field .btn.warn{color:var(--warn);border-color:rgba(232,179,57,.4)}
+  .field .btn.warn:hover{background:rgba(232,179,57,.08)}
+  .field .btn.dgr{color:var(--danger);border-color:rgba(224,106,90,.4)}
+  .field .btn.dgr:hover{background:rgba(224,106,90,.08)}
+
+  .savebar{position:sticky;bottom:0;background:rgba(13,18,25,.85);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+  .savebar .st{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .savebar .st b{color:var(--warn);font-weight:400}
+
+  .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:12.5px;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:.25s;z-index:20}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:880px){body{grid-template-columns:1fr}.side{position:fixed;left:-232px;z-index:30;transition:.2s}.side.open{left:0}.field{flex-direction:column;align-items:stretch}.field .ctl{justify-content:flex-start}.field .lab{max-width:none}}
+</style>
+<link rel="stylesheet" href="assets/admin-chrome.css">
+<script src="assets/admin-chrome.js" defer></script>
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+  <aside class="side">
+    <div class="brand"><span class="dot"></span><b>tzblog</b><span>/admin</span></div>
+    <nav class="nav">
+      <div class="grp">概览</div>
+   <a href="admin-dashboard.html"><span class="ic">▦</span>仪表盘</a>
+      <a href="admin-analytics.html"><span class="ic">∿</span>数据分析</a>
+  <div class="grp">内容</div>
+   <a href="admin-editor.html"><span class="ic">✎</span>写文章</a>
+ <a href="admin-sections.html"><span class="ic">▤</span>板块与置顶</a>
+      <a href="admin-media.html"><span class="ic">⊞</span>媒体库</a>
+      <div class="grp">系统</div>
+      <a class="on" href="admin-settings.html"><span class="ic">⚙</span>站点设置</a>
+      <a href="front-home.html"><span class="ic">↗</span>查看前台</a>
+</nav>
+  <div class="me"><span class="av">H</span><div><div class="nm">haiden</div><div class="rl">站长</div></div></div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+    <div class="crumb">admin ❯ <b>settings</b></div>
+      <div class="acts">
+        <a class="btn" href="front-home.html">↗ 预览站点</a>
+        <button class="btn primary" onclick="save()">✓ 保存更改</button>
+      </div>
+ </header>
+
+    <div class="wrap">
+      <div class="set">
+        <div class="sh"><span class="t"><b>#</b> 基本信息</span></div>
+        <div class="field"><div class="lab"><div class="k">站点名称</div><div class="h">显示在标题栏与 OG 卡片</div></div><div class="ctl"><input type="text" value="tzblog"></div></div>
+        <div class="field"><div class="lab"><div class="k">主域名</div><div class="h">已绑定 HTTPS，含 www 跳转</div></div><div class="ctl"><span class="pre">https://<i>tzcode.top</i></span></div></div>
+        <div class="field"><div class="lab"><div class="k">作者署名</div></div><div class="ctl"><input type="text" value="haiden"></div></div>
+        <div class="field"><div class="lab"><div class="k">站点描述</div><div class="h">用于首页 meta 与 RSS</div></div><div class="ctl"><textarea rows="2">中文优先的技术与生活博客 · AI Coding / 全栈工程 / 工具效率 / 随笔 / 作品</textarea></div></div>
+        <div class="field"><div class="lab"><div class="k">主语言</div></div><div class="ctl"><select><option>简体中文 (zh-CN)</option><option>English (en)</option></select></div></div>
+      </div>
+
+      <div class="set">
+    <div class="sh"><span class="t"><b>#</b> 登录与认证</span><span class="desc">仅 OAuth + 邮箱 + 魔法链接，不接短信/微信</span></div>
+        <div class="field"><div class="lab"><div class="k">GitHub OAuth<span class="tag pri">优先</span></div><div class="h">技术读者主登录方式</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">Google OAuth</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+      <div class="field"><div class="lab"><div class="k">邮箱 + 密码</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+   <div class="field"><div class="lab"><div class="k">邮箱魔法链接</div><div class="h">免密一次性登录链接</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">短信 / 微信 / 微博 / QQ<span class="tag off">已禁用</span></div><div class="h">本站不接入</div></div><div class="ctl"><label class="switch"><input type="checkbox"><span class="tr"></span><span class="kn"></span></label></div></div>
+      </div>
+
+      <div class="set">
+ <div class="sh"><span class="t"><b>#</b> 内容权限（分级访问）</span></div>
+        <div class="field"><div class="lab"><div class="k">匿名完整阅读</div><div class="h">保证 SEO 可抓取全文，建议常开</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">点赞 / 收藏需登录</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+<div class="field"><div class="lab"><div class="k">资源下载需登录</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">跨设备同步</div><div class="h">阅读进度 / 收藏夹</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+      </div>
+
+      <div class="set">
+        <div class="sh"><span class="t"><b>#</b> 评论</span></div>
+        <div class="field"><div class="lab"><div class="k">开启评论</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+  <div class="field"><div class="lab"><div class="k">先审后发</div><div class="h">新评论进入待审队列</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">仅登录用户可评论</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+      </div>
+
+      <div class="set">
+        <div class="sh"><span class="t"><b>#</b> 搜索与渲染</span></div>
+    <div class="field"><div class="lab"><div class="k">Meilisearch 主机</div><div class="h">全文检索引擎</div></div><div class="ctl"><input type="text" value="http://meili:7700"></div></div>
+        <div class="field"><div class="lab"><div class="k">Shiki 代码高亮</div><div class="h">主题 github-dark</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">KaTeX 公式渲染</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+      </div>
+
+      <div class="set">
+        <div class="sh"><span class="t"><b>#</b> SEO 与备案</span><span class="desc">搜索引擎收录与中国大陆合规</span></div>
+        <div class="field"><div class="lab"><div class="k">SEO 标题后缀</div><div class="h">拼接在每页标题之后</div></div><div class="ctl"><input type="text" value=" · tzblog"></div></div>
+        <div class="field"><div class="lab"><div class="k">Meta 关键词</div></div><div class="ctl"><input type="text" value="AI Coding, 全栈, Next.js, Go, 技术博客"></div></div>
+        <div class="field"><div class="lab"><div class="k">默认 OG 分享图</div><div class="h">无封面时的兜底社交卡片图</div></div><div class="ctl"><input type="text" value="/assets/og-default.png"></div></div>
+        <div class="field"><div class="lab"><div class="k">生成 sitemap.xml</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">允许搜索引擎收录</div><div class="h">robots.txt allow</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+        <div class="field"><div class="lab"><div class="k">ICP 备案号</div><div class="h">显示于前台底栏</div></div><div class="ctl"><input type="text" value="浙ICP备2026000000号-1"></div></div>
+        <div class="field"><div class="lab"><div class="k">公安备案号</div><div class="h">选填</div></div><div class="ctl"><input type="text" value="" placeholder="浙公网安备 00000000000000 号"></div></div>
+      </div>
+
+      <div class="set">
+        <div class="sh"><span class="t"><b>#</b> 社交与订阅</span><span class="desc">前台底栏与文章页展示</span></div>
+        <div class="field"><div class="lab"><div class="k">GitHub</div></div><div class="ctl"><input type="text" value="https://github.com/haiden"></div></div>
+        <div class="field"><div class="lab"><div class="k">X / Twitter</div></div><div class="ctl"><input type="text" value="https://x.com/haiden_dev"></div></div>
+        <div class="field"><div class="lab"><div class="k">联系邮箱</div></div><div class="ctl"><input type="text" value="hi@tzcode.top"></div></div>
+        <div class="field"><div class="lab"><div class="k">输出 RSS / Atom</div><div class="h">/rss.xml</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+      </div>
+
+      <div class="set">
+        <div class="sh"><span class="t"><b>#</b> 统计分析</span><span class="desc">隐私友好的轻量统计</span></div>
+        <div class="field"><div class="lab"><div class="k">统计服务</div></div><div class="ctl"><select><option>Umami（自托管）</option><option>Plausible</option><option>Google Analytics 4</option><option>不启用</option></select></div></div>
+        <div class="field"><div class="lab"><div class="k">站点 ID</div></div><div class="ctl"><input type="text" value="tzblog-prod"></div></div>
+        <div class="field"><div class="lab"><div class="k">上报 Web Vitals</div><div class="h">LCP / INP / CLS</div></div><div class="ctl"><label class="switch"><input type="checkbox" checked><span class="tr"></span><span class="kn"></span></label></div></div>
+      </div>
+
+      <div class="set danger">
+        <div class="sh"><span class="t"><b>!</b> 危险操作</span><span class="desc">以下操作不可撤销</span></div>
+        <div class="field"><div class="lab"><div class="k">导出全站数据</div><div class="h">文章 + 评论 + 媒体清单，JSON 打包</div></div><div class="ctl"><button class="btn" onclick="toast('正在打包导出…')">↧ 导出</button></div></div>
+        <div class="field"><div class="lab"><div class="k">重建搜索索引</div><div class="h">重新索引全部文章到 Meilisearch</div></div><div class="ctl"><button class="btn warn" onclick="toast('已触发索引重建，约 30s')">↻ 重建</button></div></div>
+        <div class="field"><div class="lab"><div class="k">清空 CDN 缓存</div></div><div class="ctl"><button class="btn warn" onclick="toast('CDN 缓存已清空')">⌫ 清缓存</button></div></div>
+    <div class="field"><div class="lab"><div class="k">删除站点</div><div class="h">永久删除全部数据，无法恢复</div></div><div class="ctl"><button class="btn dgr" onclick="toast('需二次确认，已取消')">✕ 删除</button></div></div>
+      </div>
+    </div>
+
+  <div class="savebar">
+      <span class="st" id="st">已保存 · 最后更新 3 分钟前</span>
+  <button class="btn primary" onclick="save()">✓ 保存更改</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+<script>
+  var t=document.getElementById('toast'),tm;
+  function toast(m){t.textContent=m;t.classList.add('show');clearTimeout(tm);tm=setTimeout(function(){t.classList.remove('show')},1800);}
+  var dirty=false,st=document.getElementById('st');
+  function mark(){if(!dirty){dirty=true;st.innerHTML='<b>● 有未保存的更改</b>';}}
+  document.querySelectorAll('input,textarea,select').forEach(function(el){el.addEventListener('change',mark);el.addEventListener('input',mark);});
+  function save(){dirty=false;st.textContent='已保存 · 刚刚';toast('设置已保存');}
+  document.querySelectorAll('.btn').forEach(function(el){el.addEventListener('click',function(e){var r=document.createElement('span');var dd=Math.max(el.offsetWidth,el.offsetHeight);var x=e.clientX-el.getBoundingClientRect().left-dd/2,y=e.clientY-el.getBoundingClientRect().top-dd/2;r.style.cssText='position:absolute;border-radius:50%;width:'+dd+'px;height:'+dd+'px;left:'+x+'px;top:'+y+'px;background:radial-gradient(circle,rgba(63,224,143,.4),transparent 70%);transform:scale(0);animation:rp .5s ease-out;pointer-events:none';el.appendChild(r);setTimeout(function(){r.remove()},500);});});
+  var s=document.createElement('style');s.textContent='@keyframes rp{to{transform:scale(2.2);opacity:0}}';document.head.appendChild(s);
+</script>
+</body>
+</html>
