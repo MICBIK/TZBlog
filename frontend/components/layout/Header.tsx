@@ -8,9 +8,6 @@ import { Menu, X } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
-import { Button } from '@/components/ui/button';
-
-/** 导航项 */
 const NAV_ITEMS = [
   { href: '/', label: 'home' },
   { href: '/articles', label: 'articles' },
@@ -18,40 +15,31 @@ const NAV_ITEMS = [
   { href: '/about', label: 'about' },
 ];
 
-/**
- * 命令行风格顶栏。
- * 磷光绿 prompt + 等宽字体，呼应终端母题。
- */
 export function Header() {
   const pathname = usePathname();
   const { isAuthenticated, handleLogout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [prevPath, setPrevPath] = useState(pathname);
-  // 路由变化时关闭移动端菜单（render 阶段同步，避免 effect 级联渲染）
-  if (pathname !== prevPath) {
-    setPrevPath(pathname);
-    if (mobileOpen) setMobileOpen(false);
-  }
-
   return (
-    <header className="border-border bg-background/80 sticky top-0 z-50 border-b backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        {/* 左：命令行 prompt */}
+    <header className="border-border bg-background/82 sticky top-0 z-20 border-b backdrop-blur-[10px]">
+      <div
+        className="mx-auto flex max-w-[1080px] items-center gap-[22px] px-6"
+        style={{ height: 56 }}
+      >
+        {/* 命令行 prompt */}
         <Link
           href="/"
-          className="group flex items-center gap-1.5 font-mono text-sm"
+          className="flex items-center whitespace-nowrap font-mono text-sm"
         >
-          <span className="text-muted-foreground">haiden@tzblog</span>
+          <span className="text-primary font-bold">haiden@tzblog</span>
           <span className="text-muted-foreground">:</span>
           <span className="text-primary">~</span>
           <span className="text-muted-foreground">$</span>
-          <span className="text-foreground">cd /home</span>
-          <span className="animate-glow-pulse bg-primary ml-0.5 inline-block size-1.5 rounded-full" />
+          <span className="cursor-blink" />
         </Link>
 
-        {/* 中/右：桌面导航 */}
-        <nav className="hidden items-center gap-1 sm:flex">
+        {/* 桌面导航 */}
+        <nav className="ml-auto hidden flex-wrap items-center gap-1 sm:flex">
           {NAV_ITEMS.map((item) => {
             const active =
               item.href === '/'
@@ -61,45 +49,49 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'rounded px-2.5 py-1 font-mono text-sm transition-colors',
+                  'rounded px-[11px] py-1.5 font-mono text-[13.5px] transition-colors',
                   active
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground',
+                    ? 'bg-primary/[0.08] text-primary'
+                    : 'text-muted hover:bg-secondary hover:text-foreground',
                 )}
               >
-                ./{item.label}
+                <span className="mr-px text-[var(--dim)]">./</span>
+                {item.label}
               </Link>
             );
           })}
-          <div className="bg-border mx-2 h-4 w-px" />
+
           {isAuthenticated ? (
             <>
               <Link
                 href="/admin"
-                className="text-muted-foreground hover:text-foreground rounded px-2.5 py-1 font-mono text-sm"
+                className="text-muted hover:bg-secondary hover:text-foreground rounded px-[11px] py-1.5 font-mono text-[13.5px] transition-colors"
               >
-                ./admin
+                <span className="mr-px text-[var(--dim)]">./</span>
+                admin
               </Link>
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={handleLogout}
-                className="text-muted-foreground font-mono text-sm"
+                className="text-foreground hover:text-primary ml-2 rounded border border-[var(--line-2)] px-[13px] py-1.5 font-mono text-[13px] transition-colors hover:border-[var(--acc-dim)]"
               >
                 logout
-              </Button>
+              </button>
             </>
           ) : (
-            <Button asChild variant="outline" size="sm" className="font-mono">
-              <Link href="/login">./login</Link>
-            </Button>
+            <Link
+              href="/login"
+              className="text-foreground hover:text-primary ml-2 rounded border border-[var(--line-2)] px-[13px] py-1.5 font-mono text-[13px] transition-colors hover:border-[var(--acc-dim)]"
+            >
+              ./login
+            </Link>
           )}
         </nav>
 
         {/* 移动端菜单按钮 */}
         <button
-          className="text-muted-foreground sm:hidden"
+          className="text-muted ml-auto sm:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="菜单"
         >
@@ -107,28 +99,42 @@ export function Header() {
         </button>
       </div>
 
-      {/* 移动端展开菜单 */}
+      {/* 移动端展开 */}
       {mobileOpen && (
-        <nav className="border-border border-t px-4 py-3 sm:hidden">
+        <nav className="border-border border-t px-6 py-3 sm:hidden">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-muted-foreground hover:text-foreground block py-2 font-mono text-sm"
+              onClick={() => setMobileOpen(false)}
+              className="text-muted hover:text-primary block py-2 font-mono text-sm"
             >
               ./{item.label}
             </Link>
           ))}
           {isAuthenticated ? (
-            <Link
-              href="/admin"
-              className="text-muted-foreground hover:text-foreground block py-2 font-mono text-sm"
-            >
-              ./admin
-            </Link>
+            <>
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="text-muted hover:text-primary block py-2 font-mono text-sm"
+              >
+                ./admin
+              </Link>
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  handleLogout();
+                }}
+                className="text-muted hover:text-primary block py-2 font-mono text-sm"
+              >
+                ./logout
+              </button>
+            </>
           ) : (
             <Link
               href="/login"
+              onClick={() => setMobileOpen(false)}
               className="text-primary block py-2 font-mono text-sm"
             >
               ./login
