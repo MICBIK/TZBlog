@@ -4,17 +4,21 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
+	"github.com/gosimple/slug"
 )
 
 // ArticleService handles article business logic
 type ArticleService struct {
-	repo article.Repository
+	repo    article.Repository
+	tagRepo tag.TagRepository
 }
 
 // NewArticleService creates a new article service
-func NewArticleService(repo article.Repository) article.Service {
+func NewArticleService(repo article.Repository, tagRepo tag.TagRepository) article.Service {
 	return &ArticleService{
-		repo: repo,
+		repo:    repo,
+		tagRepo: tagRepo,
 	}
 }
 
@@ -61,11 +65,63 @@ func (s *ArticleService) CreateArticle(userID int64, dto *article.CreateArticleD
 		return nil, err
 	}
 
-	// TODO: Handle tags if provided
-	// Tags need to be handled separately after article creation
-	// This will require tag repository and association logic
+	// Handle tags if provided
+	if len(dto.Tags) > 0 {
+		tagIDs, err := s.findOrCreateTags(dto.Tags)
+		if err != nil {
+			// Log error but don't fail article creation
+			// Tags can be added later
+			// TODO: Add proper logging
+		} else {
+			// Attach tags to article
+			if err := s.repo.AttachTags(newArticle.ID, tagIDs); err != nil {
+				// Log error but don't fail article creation
+				// TODO: Add proper logging
+			}
+		}
+	}
 
 	return newArticle, nil
+}
+
+// findOrCreateTags finds existing tags or creates new ones
+func (s *ArticleService) findOrCreateTags(tagNames []string) ([]int64, error) {
+	if len(tagNames) == 0 {
+		return nil, nil
+	}
+
+	// Find existing tags
+	existingTags, err := s.tagRepo.FindByNames(tagNames)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build map of existing tag names
+	existingMap := make(map[string]int64)
+	for _, t := range existingTags {
+		existingMap[t.Name] = t.ID
+	}
+
+	// Collect tag IDs and create missing tags
+	var tagIDs []int64
+	for _, name := range tagNames {
+		if id, exists := existingMap[name]; exists {
+			tagIDs = append(tagIDs, id)
+		} else {
+			// Create new tag
+			newTag := &tag.Tag{
+				Name: name,
+				Slug: slug.Make(name),
+			}
+			if err := s.tagRepo.Create(newTag); err != nil {
+				// Skip this tag if creation fails
+				continue
+			}
+			tagIDs = append(tagIDs, newTag.ID)
+		}
+	}
+
+	return tagIDs, nil
 }
 
 // GetArticleByID retrieves an article by ID

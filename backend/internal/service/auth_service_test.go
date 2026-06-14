@@ -169,7 +169,7 @@ func TestLogin_Success(t *testing.T) {
 	mockRepo.On("UpdateLastLogin", int64(1)).Return(nil).Maybe()
 
 	dto := &user.LoginDTO{
-		Login:    "test@example.com",
+		Email:    "test@example.com",
 		Password: "password123",
 	}
 
@@ -206,7 +206,7 @@ func TestLogin_InvalidCredentials(t *testing.T) {
 	mockRepo.On("FindByEmail", "test@example.com").Return(testUser, nil)
 
 	dto := &user.LoginDTO{
-		Login:    "test@example.com",
+		Email:    "test@example.com",
 		Password: "wrongpassword",
 	}
 
@@ -229,7 +229,7 @@ func TestLogin_UserNotFound(t *testing.T) {
 	mockRepo.On("FindByEmail", "nonexistent@example.com").Return(nil, nil)
 
 	dto := &user.LoginDTO{
-		Login:    "nonexistent@example.com",
+		Email:    "nonexistent@example.com",
 		Password: "password123",
 	}
 
@@ -261,7 +261,7 @@ func TestLogin_AccountBanned(t *testing.T) {
 	mockRepo.On("FindByEmail", "banned@example.com").Return(bannedUser, nil)
 
 	dto := &user.LoginDTO{
-		Login:    "banned@example.com",
+		Email:    "banned@example.com",
 		Password: "password123",
 	}
 

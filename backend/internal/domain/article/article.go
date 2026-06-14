@@ -154,4 +154,6 @@ type ArticleRepository interface {
 	Update(article *Article) error
 	Delete(id int64) error
 	IncrementViewCount(id int64) error
+	AttachTags(articleID int64, tagIDs []int64) error
+	DetachTags(articleID int64) error
 }

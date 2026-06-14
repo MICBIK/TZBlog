@@ -125,7 +125,7 @@ func main() {
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtAuth)
-	articleService := service.NewArticleService(articleRepo)
+	articleService := service.NewArticleService(articleRepo, tagRepo)
 	commentService := service.NewCommentService(commentRepo)
 
 	// Initialize handlers

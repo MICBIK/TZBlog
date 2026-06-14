@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -58,11 +59,79 @@ func (m *MockArticleRepository) IncrementViewCount(id int64) error {
 	return args.Error(0)
 }
 
+func (m *MockArticleRepository) AttachTags(articleID int64, tagIDs []int64) error {
+	args := m.Called(articleID, tagIDs)
+	return args.Error(0)
+}
+
+func (m *MockArticleRepository) DetachTags(articleID int64) error {
+	args := m.Called(articleID)
+	return args.Error(0)
+}
+
+// MockTagRepository is a mock implementation of tag.TagRepository
+type MockTagRepository struct {
+	mock.Mock
+}
+
+func (m *MockTagRepository) Create(t *tag.Tag) error {
+	args := m.Called(t)
+	return args.Error(0)
+}
+
+func (m *MockTagRepository) FindByID(id int64) (*tag.Tag, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*tag.Tag), args.Error(1)
+}
+
+func (m *MockTagRepository) FindBySlug(slug string) (*tag.Tag, error) {
+	args := m.Called(slug)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*tag.Tag), args.Error(1)
+}
+
+func (m *MockTagRepository) List(limit, offset int) ([]*tag.Tag, int64, error) {
+	args := m.Called(limit, offset)
+	return args.Get(0).([]*tag.Tag), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockTagRepository) Update(t *tag.Tag) error {
+	args := m.Called(t)
+	return args.Error(0)
+}
+
+func (m *MockTagRepository) Delete(id int64) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
+func (m *MockTagRepository) FindByNames(names []string) ([]*tag.Tag, error) {
+	args := m.Called(names)
+	if args.Get(0) == nil {
+		return []*tag.Tag{}, args.Error(1)
+	}
+	return args.Get(0).([]*tag.Tag), args.Error(1)
+}
+
+func (m *MockTagRepository) FindByArticleID(articleID int64) ([]*tag.Tag, error) {
+	args := m.Called(articleID)
+	if args.Get(0) == nil {
+		return []*tag.Tag{}, args.Error(1)
+	}
+	return args.Get(0).([]*tag.Tag), args.Error(1)
+}
+
 // TestCreateArticle_Success tests successful article creation
 func TestCreateArticle_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	dto := &article.CreateArticleDTO{
 		Title:   "Test Article",
@@ -90,7 +159,8 @@ func TestCreateArticle_Success(t *testing.T) {
 func TestCreateArticle_Published(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	dto := &article.CreateArticleDTO{
 		Title:   "Published Article",
@@ -114,7 +184,8 @@ func TestCreateArticle_Published(t *testing.T) {
 func TestGetArticleByID_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	expected := &article.Article{
 		ID:    1,
@@ -137,7 +208,8 @@ func TestGetArticleByID_Success(t *testing.T) {
 func TestGetArticleByID_NotFound(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	mockRepo.On("FindByID", int64(999)).Return(nil, nil)
 
@@ -155,7 +227,8 @@ func TestGetArticleByID_NotFound(t *testing.T) {
 func TestGetArticleBySlug_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	expected := &article.Article{
 		ID:    1,
@@ -182,7 +255,8 @@ func TestGetArticleBySlug_Success(t *testing.T) {
 func TestListArticles_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	filter := &article.ListFilter{
 		Page:  1,
@@ -210,7 +284,8 @@ func TestListArticles_Success(t *testing.T) {
 func TestListArticles_DefaultPagination(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	filter := &article.ListFilter{}
 
@@ -232,7 +307,8 @@ func TestListArticles_DefaultPagination(t *testing.T) {
 func TestUpdateArticle_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	existingArticle := &article.Article{
 		ID:       1,
@@ -263,7 +339,8 @@ func TestUpdateArticle_Success(t *testing.T) {
 func TestUpdateArticle_Unauthorized(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	existingArticle := &article.Article{
 		ID:       1,
@@ -293,7 +370,8 @@ func TestUpdateArticle_Unauthorized(t *testing.T) {
 func TestDeleteArticle_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	existingArticle := &article.Article{
 		ID:       1,
@@ -315,7 +393,8 @@ func TestDeleteArticle_Success(t *testing.T) {
 func TestDeleteArticle_Unauthorized(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
-	service := NewArticleService(mockRepo)
+	mockTagRepo := new(MockTagRepository)
+	service := NewArticleService(mockRepo, mockTagRepo)
 
 	existingArticle := &article.Article{
 		ID:       1,
