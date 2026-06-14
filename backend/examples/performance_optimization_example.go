@@ -20,7 +20,7 @@ func Example(db *gorm.DB, redisClient *redis.Client) {
 	ctx := context.Background()
 
 	// 1. Multi-layer cache setup
-	mlCache := cache.NewMultiLayerCache(redisClient, 1000)
+	mlCache := cache.NewMultiLayerCache(redisClient, 1000, 5*time.Minute, 10*time.Minute)
 
 	// 2. Cache warming setup
 	warmer := cache.NewCacheWarmer(mlCache)

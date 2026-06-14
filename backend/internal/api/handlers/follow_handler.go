@@ -76,7 +76,7 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 // @Tags Follow
 // @Security Bearer
 // @Param id path int true "User ID"
-// @Success 200 {object} response.Response{data=gin.H{isFollowing=bool}}
+// @Success 200 {object} response.Response
 // @Router       /api/v1/users/{id}/is-following [get]
 func (h *FollowHandler) IsFollowing(c *gin.Context) {
 	followerID := c.GetInt64("user_id")

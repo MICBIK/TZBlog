@@ -1,13 +1,19 @@
 package logger
 
 import (
+	"fmt"
 	"os"
+	"sync"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var globalLogger *zap.Logger
+var (
+	globalLogger *zap.Logger
+	atomicLevel  zap.AtomicLevel
+	mu           sync.RWMutex
+)
 
 // Init 初始化全局 logger
 func Init(env string) error {
@@ -22,6 +28,9 @@ func Init(env string) error {
 		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 
+	// Store atomic level for dynamic updates
+	atomicLevel = config.Level
+
 	logger, err := config.Build(
 		zap.AddCaller(),
 		zap.AddCallerSkip(1),
@@ -31,18 +40,64 @@ func Init(env string) error {
 		return err
 	}
 
+	mu.Lock()
 	globalLogger = logger
+	mu.Unlock()
+
 	return nil
 }
 
 // GetLogger 获取全局 logger
 func GetLogger() *zap.Logger {
+	mu.RLock()
+	defer mu.RUnlock()
+
 	if globalLogger == nil {
 		// 如果未初始化，使用默认开发配置
 		logger, _ := zap.NewDevelopment()
 		globalLogger = logger
 	}
 	return globalLogger
+}
+
+// SetLevel 动态设置日志级别
+func SetLevel(level string) error {
+	var zapLevel zapcore.Level
+
+	switch level {
+	case "debug":
+		zapLevel = zapcore.DebugLevel
+	case "info":
+		zapLevel = zapcore.InfoLevel
+	case "warn":
+		zapLevel = zapcore.WarnLevel
+	case "error":
+		zapLevel = zapcore.ErrorLevel
+	default:
+		return fmt.Errorf("invalid log level: %s (must be debug, info, warn, or error)", level)
+	}
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	if atomicLevel == (zap.AtomicLevel{}) {
+		return fmt.Errorf("logger not initialized")
+	}
+
+	atomicLevel.SetLevel(zapLevel)
+	return nil
+}
+
+// GetLevel 获取当前日志级别
+func GetLevel() string {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	if atomicLevel == (zap.AtomicLevel{}) {
+		return "unknown"
+	}
+
+	return atomicLevel.Level().String()
 }
 
 // Sync 刷新日志缓冲区

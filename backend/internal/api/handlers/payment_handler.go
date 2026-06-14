@@ -41,7 +41,7 @@ type CreateCheckoutRequest struct {
 // @Tags Payment
 // @Security Bearer
 // @Param request body CreateCheckoutRequest true "Tier"
-// @Success 200 {object} response.Response{data=gin.H{url=string}}
+// @Success 200 {object} response.Response
 // @Router       /api/v1/payment/checkout [post]
 func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
 	userID := c.GetInt64("user_id")
@@ -73,7 +73,7 @@ func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
 // @Summary Create customer portal session
 // @Tags Payment
 // @Security Bearer
-// @Success 200 {object} response.Response{data=gin.H{url=string}}
+// @Success 200 {object} response.Response
 // @Router       /api/v1/payment/portal [post]
 func (h *PaymentHandler) CreatePortalSession(c *gin.Context) {
 	userID := c.GetInt64("user_id")

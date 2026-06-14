@@ -1,0 +1,2420 @@
+basePath: /api/v1
+definitions:
+  article.Article:
+    properties:
+      author:
+        allOf:
+        - $ref: '#/definitions/user.User'
+        description: Relations (not stored in DB, loaded separately)
+      authorId:
+        type: integer
+      categoryId:
+        type: integer
+      commentCount:
+        type: integer
+      content:
+        type: string
+      coverImage:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      isPremium:
+        type: boolean
+      likeCount:
+        type: integer
+      publishedAt:
+        type: string
+      readingTime:
+        description: in minutes
+        type: integer
+      slug:
+        type: string
+      status:
+        description: draft, published, archived
+        type: string
+      summary:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/tag.Tag'
+        type: array
+      title:
+        type: string
+      updatedAt:
+        type: string
+      viewCount:
+        type: integer
+    type: object
+  article.CreateArticleDTO:
+    properties:
+      categoryId:
+        type: integer
+      content:
+        type: string
+      coverImage:
+        type: string
+      isPremium:
+        type: boolean
+      slug:
+        type: string
+      status:
+        enum:
+        - draft
+        - published
+        type: string
+      summary:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        maxLength: 200
+        type: string
+    required:
+    - categoryId
+    - content
+    - status
+    - title
+    type: object
+  article.UpdateArticleDTO:
+    properties:
+      content:
+        type: string
+      cover_image:
+        type: string
+      status:
+        enum:
+        - draft
+        - published
+        - archived
+        type: string
+      summary:
+        type: string
+      title:
+        maxLength: 200
+        type: string
+    type: object
+  category.Category:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  comment.Comment:
+    properties:
+      articleId:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      parentId:
+        type: integer
+      status:
+        description: published, pending, deleted
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+    type: object
+  comment.CreateCommentDTO:
+    properties:
+      article_id:
+        type: integer
+      content:
+        maxLength: 1000
+        type: string
+      parent_id:
+        type: integer
+    required:
+    - article_id
+    - content
+    type: object
+  comment.UpdateCommentDTO:
+    properties:
+      content:
+        maxLength: 1000
+        type: string
+    required:
+    - content
+    type: object
+  handlers.CreateCheckoutRequest:
+    properties:
+      tier:
+        enum:
+        - basic
+        - premium
+        - lifetime
+        type: string
+    required:
+    - tier
+    type: object
+  handlers.SetLogLevelRequest:
+    properties:
+      level:
+        enum:
+        - debug
+        - info
+        - warn
+        - error
+        type: string
+    required:
+    - level
+    type: object
+  handlers.SubscribeRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  payment.Membership:
+    properties:
+      createdAt:
+        type: string
+      endDate:
+        type: string
+      id:
+        type: integer
+      startDate:
+        type: string
+      status:
+        description: active, canceled, expired
+        type: string
+      stripeSubscriptionId:
+        type: string
+      tier:
+        $ref: '#/definitions/payment.MembershipTier'
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+    type: object
+  payment.MembershipTier:
+    enum:
+    - free
+    - basic
+    - premium
+    - lifetime
+    type: string
+    x-enum-varnames:
+    - TierFree
+    - TierBasic
+    - TierPremium
+    - TierLifetime
+  response.Error:
+    properties:
+      code:
+        type: string
+      details: {}
+      message:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/response.Error'
+      success:
+        type: boolean
+    type: object
+  response.Metadata:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  response.PaginatedResponse:
+    properties:
+      data: {}
+      metadata:
+        $ref: '#/definitions/response.Metadata'
+      success:
+        type: boolean
+    type: object
+  response.Response:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/response.Error'
+      metadata:
+        $ref: '#/definitions/response.Metadata'
+      success:
+        type: boolean
+    type: object
+  response.SuccessResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  search.ArticleDocument:
+    properties:
+      author:
+        type: string
+      category:
+        type: string
+      content:
+        type: string
+      id:
+        type: string
+      publishedAt:
+        type: integer
+      slug:
+        type: string
+      summary:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      viewCount:
+        type: integer
+    type: object
+  search.SearchResult:
+    properties:
+      estimatedTotalHits:
+        type: integer
+      hits:
+        items:
+          $ref: '#/definitions/search.ArticleDocument'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      processingTimeMs:
+        type: integer
+      query:
+        type: string
+    type: object
+  seo.MetaTags:
+    properties:
+      author:
+        type: string
+      description:
+        type: string
+      image:
+        type: string
+      keywords:
+        type: string
+      publishedAt:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
+  seo.OpenGraphTags:
+    properties:
+      ogDescription:
+        type: string
+      ogImage:
+        type: string
+      ogSiteName:
+        type: string
+      ogTitle:
+        type: string
+      ogType:
+        type: string
+      ogUrl:
+        type: string
+    type: object
+  seo.SEOData:
+    properties:
+      canonical:
+        type: string
+      meta:
+        $ref: '#/definitions/seo.MetaTags'
+      openGraph:
+        $ref: '#/definitions/seo.OpenGraphTags'
+      structured: {}
+      twitter:
+        $ref: '#/definitions/seo.TwitterCardTags'
+    type: object
+  seo.TwitterCardTags:
+    properties:
+      twitterCard:
+        type: string
+      twitterCreator:
+        type: string
+      twitterDescription:
+        type: string
+      twitterImage:
+        type: string
+      twitterSite:
+        type: string
+      twitterTitle:
+        type: string
+    type: object
+  tag.Tag:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  user.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/user.User'
+    type: object
+  user.ChangePasswordDTO:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  user.LoginDTO:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  user.RegisterDTO:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  user.UpdateProfileDTO:
+    properties:
+      avatar_url:
+        type: string
+      bio:
+        type: string
+      display_name:
+        type: string
+    type: object
+  user.User:
+    properties:
+      avatarUrl:
+        type: string
+      bio:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      displayName:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      isVerified:
+        type: boolean
+      lastLoginAt:
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@tzblog.com
+    name: API Support
+  description: TZBlog 后端 API 文档
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: TZBlog API
+  version: "1.0"
+paths:
+  /api/v1/articles:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取文章列表，支持多种筛选条件
+      parameters:
+      - description: 文章状态
+        enum:
+        - draft
+        - published
+        - archived
+        example: published
+        in: query
+        name: status
+        type: string
+      - description: 作者 ID
+        example: 1
+        in: query
+        name: author_id
+        type: integer
+      - description: 分类 ID
+        example: 1
+        in: query
+        name: category_id
+        type: integer
+      - description: 标签 ID
+        example: 1
+        in: query
+        name: tag_id
+        type: integer
+      - description: 搜索关键词
+        example: '"golang"'
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: 页码
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回文章列表
+          schema:
+            $ref: '#/definitions/response.PaginatedResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 获取文章列表
+      tags:
+      - Articles
+    post:
+      consumes:
+      - application/json
+      description: 创建新文章（需要登录）
+      parameters:
+      - description: 文章数据
+        in: body
+        name: article
+        required: true
+        schema:
+          $ref: '#/definitions/article.CreateArticleDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/article.Article'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: 文章 slug 已存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建文章
+      tags:
+      - Articles
+  /api/v1/articles/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 通过文章 ID 获取文章详情
+      parameters:
+      - description: 文章 ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回文章
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/article.Article'
+              type: object
+        "400":
+          description: 无效的文章 ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 文章不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 根据 ID 获取文章
+      tags:
+      - Articles
+  /api/v1/articles/{id}/comments:
+    get:
+      description: Get all comments for a specific article with pagination
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/comment.Comment'
+                  type: array
+                metadata:
+                  $ref: '#/definitions/response.Metadata'
+              type: object
+        "400":
+          description: Invalid article ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: List article comments
+      tags:
+      - Comments
+  /api/v1/articles/{slug}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除文章（需要是作者本人或管理员）
+      parameters:
+      - description: 文章 slug
+        example: '"my-first-post"'
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: 无效的文章 slug
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: 无权限删除此文章
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 文章不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除文章
+      tags:
+      - Articles
+    patch:
+      consumes:
+      - application/json
+      description: 部分更新文章字段（需要是作者本人），只更新提供的字段
+      parameters:
+      - description: 文章 slug
+        example: '"my-first-post"'
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: 需要更新的字段
+        in: body
+        name: updates
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功" example({"success":true,"data":{"id":1,"title":"新标题","status":"published"}})
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/article.Article'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: 无权限修改此文章
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 文章不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 部分更新文章
+      tags:
+      - Articles
+    put:
+      consumes:
+      - application/json
+      description: 更新已有文章（需要是作者本人）
+      parameters:
+      - description: 文章 slug
+        example: '"my-first-post"'
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: 更新的文章数据
+        in: body
+        name: article
+        required: true
+        schema:
+          $ref: '#/definitions/article.UpdateArticleDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/article.Article'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: 无权限修改此文章
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 文章不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新文章
+      tags:
+      - Articles
+  /api/v1/articles/batch:
+    delete:
+      consumes:
+      - application/json
+      description: 批量删除多篇文章（需要是作者本人），最多100篇
+      parameters:
+      - description: 文章ID列表
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            ids:
+              items:
+                format: int64
+                type: integer
+              type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功" example({"success":true,"data":{"deleted":3,"message":"Successfully
+            deleted 3 articles"}})
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  properties:
+                    deleted:
+                      type: integer
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 批量删除文章
+      tags:
+      - Articles
+  /api/v1/articles/batch/status:
+    put:
+      consumes:
+      - application/json
+      description: 批量更新多篇文章的状态（需要是作者本人），最多100篇
+      parameters:
+      - description: 文章ID列表和目标状态
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            ids:
+              items:
+                format: int64
+                type: integer
+              type: array
+            status:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功" example({"success":true,"data":{"updated":3,"message":"Successfully
+            updated 3 articles to published"}})
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  properties:
+                    updated:
+                      type: integer
+                  type: object
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 批量更新文章状态
+      tags:
+      - Articles
+  /api/v1/articles/slug/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: 通过文章 slug 获取文章详情
+      parameters:
+      - description: 文章 slug
+        example: '"my-first-post"'
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回文章
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/article.Article'
+              type: object
+        "400":
+          description: 文章 slug 为空
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 文章不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 根据 slug 获取文章
+      tags:
+      - Articles
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 使用邮箱和密码登录，返回 JWT token
+      parameters:
+      - description: 登录凭证
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.AuthResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 用户名或密码错误" example({"success":false,"error":"Invalid email or
+            password","code":"INVALID_CREDENTIALS"})
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 用户登录
+      tags:
+      - Auth
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: 登出当前用户（客户端需删除 token）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登出成功
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: 用户登出
+      tags:
+      - Auth
+  /api/v1/auth/me:
+    get:
+      consumes:
+      - application/json
+      description: 获取已登录用户的个人资料
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回用户信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.User'
+              type: object
+        "401":
+          description: 未认证" example({"success":false,"error":"Authentication required","code":"UNAUTHORIZED"})
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - Auth
+  /api/v1/auth/password:
+    put:
+      consumes:
+      - application/json
+      description: 修改已登录用户的密码
+      parameters:
+      - description: 密码信息
+        in: body
+        name: passwords
+        required: true
+        schema:
+          $ref: '#/definitions/user.ChangePasswordDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 密码修改成功
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证或旧密码错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 修改密码
+      tags:
+      - Auth
+  /api/v1/auth/profile:
+    put:
+      consumes:
+      - application/json
+      description: 更新已登录用户的个人资料信息
+      parameters:
+      - description: 用户资料
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateProfileDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.User'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新用户资料
+      tags:
+      - Auth
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 创建新用户账号，返回 JWT token
+      parameters:
+      - description: 用户注册信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 注册成功，返回用户信息和 token
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.AuthResponse'
+              type: object
+        "400":
+          description: 请求参数错误" example({"success":false,"error":"Invalid email address","code":"INVALID_EMAIL"})
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: 用户已存在" example({"success":false,"error":"User already exists","code":"USER_EXISTS"})
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 用户注册
+      tags:
+      - Auth
+  /api/v1/categories:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有分类（支持分页）
+      parameters:
+      - default: 1
+        description: 页码
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回分类列表
+          schema:
+            $ref: '#/definitions/response.PaginatedResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 获取分类列表
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: 创建新分类（需要管理员权限）
+      parameters:
+      - description: 分类数据
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/category.Category'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/category.Category'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: 分类已存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建分类
+      tags:
+      - Categories
+  /api/v1/categories/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 通过分类 ID 获取分类详情
+      parameters:
+      - description: 分类 ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回分类
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/category.Category'
+              type: object
+        "400":
+          description: 无效的分类 ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 分类不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 根据 ID 获取分类
+      tags:
+      - Categories
+  /api/v1/comments:
+    get:
+      description: 分页获取评论列表，支持多种筛选条件
+      parameters:
+      - description: 文章 ID
+        example: 1
+        in: query
+        name: article_id
+        type: integer
+      - description: 用户 ID
+        example: 1
+        in: query
+        name: user_id
+        type: integer
+      - description: 父评论 ID
+        example: 0
+        in: query
+        name: parent_id
+        type: integer
+      - default: 1
+        description: 页码
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回评论列表
+          schema:
+            $ref: '#/definitions/response.PaginatedResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 获取评论列表
+      tags:
+      - Comments
+    post:
+      consumes:
+      - application/json
+      description: 为文章创建新评论（需要登录）
+      parameters:
+      - description: 评论数据
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/comment.CreateCommentDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/comment.Comment'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 文章不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建评论
+      tags:
+      - Comments
+  /api/v1/comments/{id}:
+    delete:
+      description: 删除评论（需要是评论作者本人或管理员）
+      parameters:
+      - description: 评论 ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 删除成功" example({"success":true,"data":{"message":"Comment deleted
+            successfully"}})
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: 无效的评论 ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: 无权限删除此评论
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 评论不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除评论
+      tags:
+      - Comments
+    get:
+      description: 通过评论 ID 获取评论详情
+      parameters:
+      - description: 评论 ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回评论" example({"success":true,"data":{"id":1,"article_id":1,"user_id":1,"content":"很棒的文章！","created_at":"2024-01-01T00:00:00Z"}})
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/comment.Comment'
+              type: object
+        "400":
+          description: 无效的评论 ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 评论不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 根据 ID 获取评论
+      tags:
+      - Comments
+    put:
+      consumes:
+      - application/json
+      description: 更新已有评论（需要是评论作者本人）
+      parameters:
+      - description: 评论 ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新的评论数据
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/comment.UpdateCommentDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/comment.Comment'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: 无权限修改此评论
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 评论不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新评论
+      tags:
+      - Comments
+  /api/v1/health:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check endpoint
+      tags:
+      - Health
+  /api/v1/likes/articles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove like from an article by ID
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully unliked
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Invalid article ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Unlike an article
+      tags:
+      - Likes
+    post:
+      consumes:
+      - application/json
+      description: Like an article by ID
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully liked
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Invalid article ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Like an article
+      tags:
+      - Likes
+  /api/v1/likes/articles/{id}/status:
+    get:
+      consumes:
+      - application/json
+      description: Get like status and count for an article
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Like status
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  properties:
+                    count:
+                      type: integer
+                    liked:
+                      type: boolean
+                  type: object
+              type: object
+        "400":
+          description: Invalid article ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get like status
+      tags:
+      - Likes
+  /api/v1/likes/comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove like from a comment by ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully unliked
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Invalid comment ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Unlike a comment
+      tags:
+      - Likes
+    post:
+      consumes:
+      - application/json
+      description: Like a comment by ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully liked
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Invalid comment ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Like a comment
+      tags:
+      - Likes
+  /api/v1/likes/comments/{id}/status:
+    get:
+      consumes:
+      - application/json
+      description: Get like status and count for a comment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Like status
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  properties:
+                    count:
+                      type: integer
+                    liked:
+                      type: boolean
+                  type: object
+              type: object
+        "400":
+          description: Invalid comment ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get comment like status
+      tags:
+      - Likes
+  /api/v1/live:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Liveness probe
+      tags:
+      - Health
+  /api/v1/membership:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/payment.Membership'
+              type: object
+      security:
+      - Bearer: []
+      summary: Get membership information
+      tags:
+      - Payment
+  /api/v1/membership/cancel:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - Bearer: []
+      summary: Cancel membership
+      tags:
+      - Payment
+  /api/v1/metrics:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Service metrics
+      tags:
+      - Health
+  /api/v1/payment/checkout:
+    post:
+      parameters:
+      - description: Tier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateCheckoutRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - Bearer: []
+      summary: Create checkout session
+      tags:
+      - Payment
+  /api/v1/payment/history:
+    get:
+      parameters:
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - Bearer: []
+      summary: Get payment history
+      tags:
+      - Payment
+  /api/v1/payment/portal:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - Bearer: []
+      summary: Create customer portal session
+      tags:
+      - Payment
+  /api/v1/payment/webhook:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stripe event payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Handle Stripe webhook
+      tags:
+      - Payment
+  /api/v1/ready:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Readiness probe
+      tags:
+      - Health
+  /api/v1/robots.txt:
+    get:
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Robots.txt content
+          schema:
+            type: string
+      summary: Serve robots.txt
+      tags:
+      - SEO
+  /api/v1/search:
+    get:
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Category filter
+        in: query
+        name: category
+        type: string
+      - description: Tag filter
+        in: query
+        name: tag
+        type: string
+      - description: Sort by
+        enum:
+        - publishedAt:desc
+        - publishedAt:asc
+        - viewCount:desc
+        in: query
+        name: sort
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/search.SearchResult'
+      summary: Search articles
+      tags:
+      - Search
+  /api/v1/search/stats:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get search statistics
+      tags:
+      - Search
+  /api/v1/seo/articles/{slug}:
+    get:
+      parameters:
+      - description: Article slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/seo.SEOData'
+      summary: Get article SEO metadata
+      tags:
+      - SEO
+  /api/v1/seo/home:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/seo.SEOData'
+      summary: Get home page SEO metadata
+      tags:
+      - SEO
+  /api/v1/sitemap.xml:
+    get:
+      produces:
+      - text/xml
+      responses:
+        "200":
+          description: XML content
+          schema:
+            type: string
+      summary: Generate sitemap.xml
+      tags:
+      - SEO
+  /api/v1/subscribe:
+    post:
+      parameters:
+      - description: Email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SubscribeRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Subscribe to newsletter
+      tags:
+      - Subscription
+  /api/v1/subscribe/count:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get subscriber count
+      tags:
+      - Subscription
+  /api/v1/subscribe/verify:
+    get:
+      parameters:
+      - description: Verification token
+        in: query
+        name: token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Verify email subscription
+      tags:
+      - Subscription
+  /api/v1/tags:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有标签（支持分页）
+      parameters:
+      - default: 1
+        description: 页码
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 50
+        description: 每页数量
+        example: 50
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回标签列表
+          schema:
+            $ref: '#/definitions/response.PaginatedResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 获取标签列表
+      tags:
+      - Tags
+    post:
+      consumes:
+      - application/json
+      description: 创建新标签（需要管理员权限）
+      parameters:
+      - description: 标签数据
+        in: body
+        name: tag
+        required: true
+        schema:
+          $ref: '#/definitions/tag.Tag'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/tag.Tag'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: 未认证
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: 无权限
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: 标签已存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建标签
+      tags:
+      - Tags
+  /api/v1/tags/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 通过标签 ID 获取标签详情
+      parameters:
+      - description: 标签 ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回标签
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/tag.Tag'
+              type: object
+        "400":
+          description: 无效的标签 ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: 标签不存在
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: 根据 ID 获取标签
+      tags:
+      - Tags
+  /api/v1/unsubscribe:
+    get:
+      parameters:
+      - description: Unsubscribe token
+        in: query
+        name: token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Unsubscribe from newsletter
+      tags:
+      - Subscription
+  /api/v1/uploads/config:
+    get:
+      description: Get upload size limits and allowed file types
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload config
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  properties:
+                    allowedTypes:
+                      items:
+                        type: string
+                      type: array
+                    maxSize:
+                      type: integer
+                  type: object
+              type: object
+      summary: Get upload configuration
+      tags:
+      - Upload
+  /api/v1/uploads/images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an image file to Cloudflare R2 (jpg, png, gif, webp)
+      parameters:
+      - description: Image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload successful
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  properties:
+                    filename:
+                      type: string
+                    size:
+                      type: integer
+                    url:
+                      type: string
+                  type: object
+              type: object
+        "400":
+          description: Invalid file or validation failed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Upload failed
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Upload an image
+      tags:
+      - Upload
+  /api/v1/users/{id}/follow:
+    post:
+      parameters:
+      - description: User ID to follow
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - Bearer: []
+      summary: Follow a user
+      tags:
+      - Follow
+  /api/v1/users/{id}/followers:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get user followers
+      tags:
+      - Follow
+  /api/v1/users/{id}/following:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 20
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get user following
+      tags:
+      - Follow
+  /api/v1/users/{id}/is-following:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - Bearer: []
+      summary: Check if following
+      tags:
+      - Follow
+  /api/v1/users/{id}/unfollow:
+    post:
+      parameters:
+      - description: User ID to unfollow
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - Bearer: []
+      summary: Unfollow a user
+      tags:
+      - Follow
+  /system/log-level:
+    get:
+      description: Returns the current application log level
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current log level
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current log level
+      tags:
+      - system
+    put:
+      consumes:
+      - application/json
+      description: Changes the application log level at runtime
+      parameters:
+      - description: Log level (debug, info, warn, error)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SetLogLevelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Log level updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Set log level dynamically
+      tags:
+      - system
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

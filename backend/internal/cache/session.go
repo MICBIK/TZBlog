@@ -16,9 +16,6 @@ const (
 	// UserSessionsPrefix 用户会话列表前缀
 	UserSessionsPrefix = "user_sessions:"
 
-	// DefaultSessionTimeout 默认会话超时时间（30分钟）
-	DefaultSessionTimeout = 30 * time.Minute
-
 	// MaxConcurrentSessions 最大并发会话数
 	MaxConcurrentSessions = 3
 )
@@ -36,13 +33,15 @@ type Session struct {
 
 // SessionManager 会话管理器
 type SessionManager struct {
-	client *redis.Client
+	client     *redis.Client
+	sessionTTL time.Duration
 }
 
 // NewSessionManager 创建会话管理器
-func NewSessionManager(client *redis.Client) *SessionManager {
+func NewSessionManager(client *redis.Client, sessionTTL time.Duration) *SessionManager {
 	return &SessionManager{
-		client: client,
+		client:     client,
+		sessionTTL: sessionTTL,
 	}
 }
 
@@ -69,7 +68,7 @@ func (m *SessionManager) CreateSession(ctx context.Context, session *Session) er
 
 	// 存储会话信息
 	sessionKey := SessionPrefix + session.SessionID
-	if err := m.client.Set(ctx, sessionKey, data, DefaultSessionTimeout).Err(); err != nil {
+	if err := m.client.Set(ctx, sessionKey, data, m.sessionTTL).Err(); err != nil {
 		return fmt.Errorf("failed to set session: %w", err)
 	}
 
@@ -83,7 +82,7 @@ func (m *SessionManager) CreateSession(ctx context.Context, session *Session) er
 	}
 
 	// 设置用户会话列表过期时间
-	if err := m.client.Expire(ctx, userSessionsKey, DefaultSessionTimeout*2).Err(); err != nil {
+	if err := m.client.Expire(ctx, userSessionsKey, m.sessionTTL*2).Err(); err != nil {
 		return fmt.Errorf("failed to set expire on user sessions: %w", err)
 	}
 
@@ -124,7 +123,7 @@ func (m *SessionManager) UpdateLastSeen(ctx context.Context, sessionID string) e
 	}
 
 	sessionKey := SessionPrefix + sessionID
-	if err := m.client.Set(ctx, sessionKey, data, DefaultSessionTimeout).Err(); err != nil {
+	if err := m.client.Set(ctx, sessionKey, data, m.sessionTTL).Err(); err != nil {
 		return fmt.Errorf("failed to update session: %w", err)
 	}
 
@@ -227,8 +226,8 @@ func (m *SessionManager) CheckSessionTimeout(ctx context.Context, sessionID stri
 		return true, err
 	}
 
-	// 检查最后活动时间是否超过30分钟
-	if time.Since(session.LastSeen) > DefaultSessionTimeout {
+	// 检查最后活动时间是否超过配置的超时时间
+	if time.Since(session.LastSeen) > m.sessionTTL {
 		// 删除超时会话
 		if err := m.DeleteSession(ctx, sessionID); err != nil {
 			return true, err
@@ -247,7 +246,7 @@ func (m *SessionManager) CleanupExpiredSessions(ctx context.Context, userID int6
 	}
 
 	for _, session := range sessions {
-		if time.Since(session.LastSeen) > DefaultSessionTimeout {
+		if time.Since(session.LastSeen) > m.sessionTTL {
 			if err := m.DeleteSession(ctx, session.SessionID); err != nil {
 				return err
 			}
