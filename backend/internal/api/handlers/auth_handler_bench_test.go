@@ -7,17 +7,46 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"github.com/gin-gonic/gin"
 )
 
+// Mock auth service for benchmarking
+type mockAuthServiceBench struct{}
+
+func (m *mockAuthServiceBench) Register(dto *user.RegisterDTO) (*user.AuthResponse, error) {
+	return &user.AuthResponse{
+		User: user.User{ID: 1, Email: dto.Email, Username: dto.Username},
+		Token: "mock_token",
+	}, nil
+}
+
+func (m *mockAuthServiceBench) Login(dto *user.LoginDTO) (*user.AuthResponse, error) {
+	return &user.AuthResponse{
+		User: user.User{ID: 1, Email: dto.Email},
+		Token: "mock_token",
+	}, nil
+}
+
+func (m *mockAuthServiceBench) GetByID(id int64) (*user.User, error) {
+	return &user.User{ID: id, Email: "test@example.com"}, nil
+}
+
+func (m *mockAuthServiceBench) UpdateProfile(id int64, dto *user.UpdateProfileDTO) (*user.User, error) {
+	return &user.User{ID: id}, nil
+}
+
+func (m *mockAuthServiceBench) ChangePassword(id int64, dto *user.ChangePasswordDTO) error {
+	return nil
+}
+
 func setupBenchAuthHandler() *AuthHandler {
 	gin.SetMode(gin.TestMode)
-	mockService := &mockAuthService{}
-	return NewAuthHandler(mockService)
+	return NewAuthHandler(&mockAuthServiceBench{})
 }
 
 func createLoginBenchRequest() *http.Request {
-	loginReq := LoginRequest{
+	loginReq := user.LoginDTO{
 		Email:    "bench@example.com",
 		Password: "password123",
 	}
@@ -48,7 +77,7 @@ func BenchmarkAuthHandler_Login_Concurrent(b *testing.B) {
 func BenchmarkAuthHandler_Register_Concurrent(b *testing.B) {
 	handler := setupBenchAuthHandler()
 
-	registerReq := RegisterRequest{
+	registerReq := user.RegisterDTO{
 		Username: "benchuser",
 		Email:    "bench@example.com",
 		Password: "password123",
@@ -66,29 +95,6 @@ func BenchmarkAuthHandler_Register_Concurrent(b *testing.B) {
 			c.Request = req
 
 			handler.Register(c)
-		}
-	})
-}
-
-func BenchmarkAuthHandler_RefreshToken_Concurrent(b *testing.B) {
-	handler := setupBenchAuthHandler()
-
-	refreshReq := RefreshTokenRequest{
-		RefreshToken: "bench_refresh_token",
-	}
-
-	body, _ := json.Marshal(refreshReq)
-
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			w := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(w)
-
-			req, _ := http.NewRequest("POST", "/api/auth/refresh", bytes.NewBuffer(body))
-			req.Header.Set("Content-Type", "application/json")
-			c.Request = req
-
-			handler.RefreshToken(c)
 		}
 	})
 }
