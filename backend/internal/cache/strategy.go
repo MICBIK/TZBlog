@@ -12,14 +12,12 @@ import (
 // Strategy defines cache strategy
 type Strategy struct {
 	client *redis.Client
-	ctx    context.Context
 }
 
 // NewStrategy creates a new cache strategy
 func NewStrategy(client *redis.Client) *Strategy {
 	return &Strategy{
 		client: client,
-		ctx:    context.Background(),
 	}
 }
 
@@ -29,8 +27,8 @@ func CacheKey(prefix string, id interface{}) string {
 }
 
 // Get retrieves cached data
-func (s *Strategy) Get(key string, dest interface{}) error {
-	data, err := s.client.Get(s.ctx, key).Bytes()
+func (s *Strategy) Get(ctx context.Context, key string, dest interface{}) error {
+	data, err := s.client.Get(ctx, key).Bytes()
 	if err != nil {
 		return err
 	}
@@ -39,39 +37,55 @@ func (s *Strategy) Get(key string, dest interface{}) error {
 }
 
 // Set stores data in cache
-func (s *Strategy) Set(key string, value interface{}, expiration time.Duration) error {
+func (s *Strategy) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
 
-	return s.client.Set(s.ctx, key, data, expiration).Err()
+	return s.client.Set(ctx, key, data, expiration).Err()
 }
 
 // Delete removes cached data
-func (s *Strategy) Delete(key string) error {
-	return s.client.Del(s.ctx, key).Err()
+func (s *Strategy) Delete(ctx context.Context, key string) error {
+	return s.client.Del(ctx, key).Err()
 }
 
-// DeletePattern deletes keys matching pattern
-func (s *Strategy) DeletePattern(pattern string) error {
-	iter := s.client.Scan(s.ctx, 0, pattern, 0).Iterator()
-	for iter.Next(s.ctx) {
-		if err := s.client.Del(s.ctx, iter.Val()).Err(); err != nil {
-			return err
+// DeletePattern deletes keys matching pattern with batch optimization
+func (s *Strategy) DeletePattern(ctx context.Context, pattern string) error {
+	var cursor uint64
+	const batchSize = 1000
+
+	for {
+		keys, nextCursor, err := s.client.Scan(ctx, cursor, pattern, batchSize).Result()
+		if err != nil {
+			return fmt.Errorf("scan failed at cursor %d: %w", cursor, err)
+		}
+
+		if len(keys) > 0 {
+			// Batch delete
+			if err := s.client.Del(ctx, keys...).Err(); err != nil {
+				// Log error but continue cleanup
+				fmt.Printf("delete batch failed: %v, keys: %v\n", err, keys)
+			}
+		}
+
+		cursor = nextCursor
+		if cursor == 0 {
+			break
 		}
 	}
-	return iter.Err()
+	return nil
 }
 
 // Increment increments a counter
-func (s *Strategy) Increment(key string) (int64, error) {
-	return s.client.Incr(s.ctx, key).Result()
+func (s *Strategy) Increment(ctx context.Context, key string) (int64, error) {
+	return s.client.Incr(ctx, key).Result()
 }
 
 // Expire sets expiration on existing key
-func (s *Strategy) Expire(key string, expiration time.Duration) error {
-	return s.client.Expire(s.ctx, key, expiration).Err()
+func (s *Strategy) Expire(ctx context.Context, key string, expiration time.Duration) error {
+	return s.client.Expire(ctx, key, expiration).Err()
 }
 
 // Cache durations
