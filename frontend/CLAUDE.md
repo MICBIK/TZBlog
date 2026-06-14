@@ -25,6 +25,7 @@
 ### 自动检查机制
 
 **Git Hooks 会自动检查**：
+
 - 分支名称是否正确
 - 是否只修改了 frontend/ 目录
 - 提交信息格式是否正确
@@ -88,6 +89,7 @@ git push origin feature/frontend/<功能名>
 ### 5. 创建 PR
 
 在 GitHub 上创建 Pull Request:
+
 - From: `feature/frontend/<功能名>`
 - To: `main`
 
@@ -103,16 +105,16 @@ type(frontend): subject
 
 ### Type 类型
 
-| Type | 使用场景 | 示例 |
-|------|---------|------|
-| feat | 新功能 | `feat(frontend): add user login page` |
-| fix | Bug 修复 | `fix(frontend): resolve navbar overflow` |
-| style | 样式/格式 | `style(frontend): apply responsive design` |
-| refactor | 重构 | `refactor(frontend): extract auth components` |
-| perf | 性能优化 | `perf(frontend): optimize image loading` |
-| test | 测试 | `test(frontend): add unit tests for utils` |
-| docs | 文档 | `docs: update frontend README` |
-| chore | 构建/工具 | `chore: update frontend dependencies` |
+| Type     | 使用场景  | 示例                                          |
+| -------- | --------- | --------------------------------------------- |
+| feat     | 新功能    | `feat(frontend): add user login page`         |
+| fix      | Bug 修复  | `fix(frontend): resolve navbar overflow`      |
+| style    | 样式/格式 | `style(frontend): apply responsive design`    |
+| refactor | 重构      | `refactor(frontend): extract auth components` |
+| perf     | 性能优化  | `perf(frontend): optimize image loading`      |
+| test     | 测试      | `test(frontend): add unit tests for utils`    |
+| docs     | 文档      | `docs: update frontend README`                |
+| chore    | 构建/工具 | `chore: update frontend dependencies`         |
 
 ### ✅ 正确示例
 
@@ -139,34 +141,37 @@ git commit -m "fix(backend): something"    # scope 错误（前端不能用 back
 ### ❌ 不能做的事情
 
 1. **不能在错误的分支工作**
+
    ```bash
    # ❌ 错误
    git checkout feature/frontend-init  # 旧分支
    git checkout main                   # 主分支
    git checkout feature/backend/xxx    # 后端分支
-   
+
    # ✅ 正确
    git checkout feature/frontend/my-feature
    ```
 
 2. **不能修改后端目录**
+
    ```bash
    # ❌ 错误
    git add backend/
    git add .  # 可能包含 backend/
-   
+
    # ✅ 正确
    git add frontend/
    git add frontend/app/
    ```
 
 3. **不能使用错误的提交格式**
+
    ```bash
    # ❌ 错误
    git commit -m "update"
    git commit -m "feat: add feature"
    git commit -m "feat(backend): something"
-   
+
    # ✅ 正确
    git commit -m "feat(frontend): add feature"
    ```
@@ -291,6 +296,7 @@ git commit --amend -m "feat(frontend): correct format"
 前端 AI **不能**修改后端代码！
 
 **正确做法**:
+
 1. 告知用户需要后端修改
 2. 描述需要的接口变更
 3. 等待后端 AI 完成修改

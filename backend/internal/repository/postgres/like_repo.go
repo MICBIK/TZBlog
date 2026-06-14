@@ -20,26 +20,26 @@ func (r *LikeRepository) Create(l *like.Like) error {
 	return r.db.Create(l).Error
 }
 
-// Delete deletes a like by article ID and user ID
-func (r *LikeRepository) Delete(articleID, userID int64) error {
-	return r.db.Where("article_id = ? AND user_id = ?", articleID, userID).
+// Delete deletes a like by user ID, target type and target ID
+func (r *LikeRepository) Delete(userID int64, targetType like.TargetType, targetID int64) error {
+	return r.db.Where("user_id = ? AND target_type = ? AND target_id = ?", userID, targetType, targetID).
 		Delete(&like.Like{}).Error
 }
 
-// IsLiked checks if a user has liked an article
-func (r *LikeRepository) IsLiked(articleID, userID int64) (bool, error) {
+// IsLiked checks if a user has liked a target
+func (r *LikeRepository) IsLiked(userID int64, targetType like.TargetType, targetID int64) (bool, error) {
 	var count int64
 	err := r.db.Model(&like.Like{}).
-		Where("article_id = ? AND user_id = ?", articleID, userID).
+		Where("user_id = ? AND target_type = ? AND target_id = ?", userID, targetType, targetID).
 		Count(&count).Error
 	return count > 0, err
 }
 
-// CountByArticle counts likes for an article
-func (r *LikeRepository) CountByArticle(articleID int64) (int64, error) {
+// CountByTarget counts likes for a target
+func (r *LikeRepository) CountByTarget(targetType like.TargetType, targetID int64) (int64, error) {
 	var count int64
 	err := r.db.Model(&like.Like{}).
-		Where("article_id = ?", articleID).
+		Where("target_type = ? AND target_id = ?", targetType, targetID).
 		Count(&count).Error
 	return count, err
 }

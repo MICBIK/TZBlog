@@ -42,7 +42,7 @@ func (h *LikeHandler) LikeArticle(c *gin.Context) {
 	}
 
 	// Check if already liked
-	exists, err := h.likeRepo.IsLiked(articleID, userID)
+	exists, err := h.likeRepo.IsLiked(userID, like.TargetTypeArticle, articleID)
 	if err != nil {
 		response.InternalError(c, "Failed to check like status")
 		return
@@ -55,8 +55,9 @@ func (h *LikeHandler) LikeArticle(c *gin.Context) {
 
 	// Create like
 	newLike := &like.Like{
-		ArticleID: articleID,
-		UserID:    userID,
+		UserID:     userID,
+		TargetType: like.TargetTypeArticle,
+		TargetID:   articleID,
 	}
 	err = h.likeRepo.Create(newLike)
 	if err != nil {
@@ -65,7 +66,7 @@ func (h *LikeHandler) LikeArticle(c *gin.Context) {
 	}
 
 	// Get updated like count
-	count, err := h.likeRepo.CountByArticle(articleID)
+	count, err := h.likeRepo.CountByTarget(like.TargetTypeArticle, articleID)
 	if err != nil {
 		count = 0 // Fallback
 	}
@@ -99,14 +100,14 @@ func (h *LikeHandler) UnlikeArticle(c *gin.Context) {
 	}
 
 	// Unlike
-	err = h.likeRepo.Delete(articleID, userID)
+	err = h.likeRepo.Delete(userID, like.TargetTypeArticle, articleID)
 	if err != nil {
 		response.InternalError(c, "Failed to unlike article")
 		return
 	}
 
 	// Get updated like count
-	count, err := h.likeRepo.CountByArticle(articleID)
+	count, err := h.likeRepo.CountByTarget(like.TargetTypeArticle, articleID)
 	if err != nil {
 		count = 0 // Fallback
 	}
@@ -140,14 +141,153 @@ func (h *LikeHandler) GetLikeStatus(c *gin.Context) {
 	}
 
 	// Check if liked
-	liked, err := h.likeRepo.IsLiked(articleID, userID)
+	liked, err := h.likeRepo.IsLiked(userID, like.TargetTypeArticle, articleID)
 	if err != nil {
 		response.InternalError(c, "Failed to check like status")
 		return
 	}
 
 	// Get like count
-	count, err := h.likeRepo.CountByArticle(articleID)
+	count, err := h.likeRepo.CountByTarget(like.TargetTypeArticle, articleID)
+	if err != nil {
+		count = 0 // Fallback
+	}
+
+	response.Success(c, gin.H{
+		"liked": liked,
+		"count": count,
+	})
+}
+
+// LikeComment likes a comment
+// @Summary      Like a comment
+// @Description  Like a comment by ID
+// @Tags         Likes
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id path int true "Comment ID"
+// @Success      200 {object} response.Response "Successfully liked"
+// @Failure      400 {object} response.ErrorResponse "Invalid comment ID"
+// @Failure      401 {object} response.ErrorResponse "Unauthorized"
+// @Failure      500 {object} response.ErrorResponse "Internal server error"
+// @Router       /api/v1/likes/comments/{id} [post]
+func (h *LikeHandler) LikeComment(c *gin.Context) {
+	userID := c.GetInt64("userID")
+	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid comment ID")
+		return
+	}
+
+	// Check if already liked
+	exists, err := h.likeRepo.IsLiked(userID, like.TargetTypeComment, commentID)
+	if err != nil {
+		response.InternalError(c, "Failed to check like status")
+		return
+	}
+
+	if exists {
+		response.BadRequest(c, "Already liked this comment")
+		return
+	}
+
+	// Create like
+	newLike := &like.Like{
+		UserID:     userID,
+		TargetType: like.TargetTypeComment,
+		TargetID:   commentID,
+	}
+	err = h.likeRepo.Create(newLike)
+	if err != nil {
+		response.InternalError(c, "Failed to like comment")
+		return
+	}
+
+	// Get updated like count
+	count, err := h.likeRepo.CountByTarget(like.TargetTypeComment, commentID)
+	if err != nil {
+		count = 0 // Fallback
+	}
+
+	response.Success(c, gin.H{
+		"message": "Comment liked successfully",
+		"liked":   true,
+		"count":   count,
+	})
+}
+
+// UnlikeComment unlikes a comment
+// @Summary      Unlike a comment
+// @Description  Remove like from a comment by ID
+// @Tags         Likes
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id path int true "Comment ID"
+// @Success      200 {object} response.Response "Successfully unliked"
+// @Failure      400 {object} response.ErrorResponse "Invalid comment ID"
+// @Failure      401 {object} response.ErrorResponse "Unauthorized"
+// @Failure      500 {object} response.ErrorResponse "Internal server error"
+// @Router       /api/v1/likes/comments/{id} [delete]
+func (h *LikeHandler) UnlikeComment(c *gin.Context) {
+	userID := c.GetInt64("userID")
+	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid comment ID")
+		return
+	}
+
+	// Unlike
+	err = h.likeRepo.Delete(userID, like.TargetTypeComment, commentID)
+	if err != nil {
+		response.InternalError(c, "Failed to unlike comment")
+		return
+	}
+
+	// Get updated like count
+	count, err := h.likeRepo.CountByTarget(like.TargetTypeComment, commentID)
+	if err != nil {
+		count = 0 // Fallback
+	}
+
+	response.Success(c, gin.H{
+		"message": "Comment unliked successfully",
+		"liked":   false,
+		"count":   count,
+	})
+}
+
+// GetCommentLikeStatus gets the like status for a comment
+// @Summary      Get comment like status
+// @Description  Get like status and count for a comment
+// @Tags         Likes
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id path int true "Comment ID"
+// @Success      200 {object} response.Response{data=object{liked=bool,count=int}} "Like status"
+// @Failure      400 {object} response.ErrorResponse "Invalid comment ID"
+// @Failure      401 {object} response.ErrorResponse "Unauthorized"
+// @Failure      500 {object} response.ErrorResponse "Internal server error"
+// @Router       /api/v1/likes/comments/{id}/status [get]
+func (h *LikeHandler) GetCommentLikeStatus(c *gin.Context) {
+	userID := c.GetInt64("userID")
+	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid comment ID")
+		return
+	}
+
+	// Check if liked
+	liked, err := h.likeRepo.IsLiked(userID, like.TargetTypeComment, commentID)
+	if err != nil {
+		response.InternalError(c, "Failed to check like status")
+		return
+	}
+
+	// Get like count
+	count, err := h.likeRepo.CountByTarget(like.TargetTypeComment, commentID)
 	if err != nil {
 		count = 0 // Fallback
 	}

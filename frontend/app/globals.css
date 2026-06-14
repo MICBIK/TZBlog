@@ -3,80 +3,106 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* shadcn/ui theme tokens — neutral base color */
+/* ===========================================================================
+   TZBlog 设计系统 — 终端暗色主题
+   单一真实源：TZBlog设计初稿/docs/DESIGN.md（设计宪法）
+   母题：CRT 磷光终端 — 近黑画布 + 单一磷光绿 + 等宽骨架 + 扫描线肌理
+   ========================================================================= */
+
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* 圆角：终端姿态，锐利 6px */
+  --radius: 0.375rem;
+
+  /* 画布与面（DESIGN.md §2.2）*/
+  --background: #0b0f14; /* 近黑画布，唯一页面背景 */
+  --foreground: #c9d4df; /* 正文 */
+  --card: #11171f; /* 一级面：卡片/区块 */
+  --card-foreground: #c9d4df;
+  --popover: #141b24; /* 二级面：弹层/嵌套 */
+  --popover-foreground: #c9d4df;
+
+  /* 品牌磷光绿（§2.1 唯一品牌色）*/
+  --primary: #3fe08f; /* 磷光绿，全站统一 */
+  --primary-foreground: #0b0f14; /* 绿上的文字返回最深底色 */
+
+  /* 次级面与文字 */
+  --secondary: #141b24; /* 二级面：侧栏/输入框底 */
+  --secondary-foreground: #7d8a97; /* dim 文字（AA 合格）*/
+  --muted: #1f2730; /* muted 背景 */
+  --muted-foreground: #6b7a89; /* 次要文字（AA 合格下限）*/
+  --accent: #1f2730; /* hover/active 强调背景 */
+  --accent-foreground: #3fe08f; /* 强调背景上的文字 = 绿 */
+
+  /* 功能态色（§2.2 铁律：不参与品牌表达）*/
+  --destructive: #e06a5a; /* 删除/错误 */
+  --destructive-foreground: #0b0f14;
+  --amber: #e3b341; /* 警示/草稿态，每屏最多一次 */
+  --info: #56a8e8; /* 链接/信息，谨慎扩散 */
+
+  /* 线 */
+  --border: #1f2730; /* 标准 hairline 边框 */
+  --input: #1f2730; /* 输入框边框 */
+  --ring: #3fe08f; /* focus-visible 环 = 品牌绿 */
+
+  /* 图表色 */
+  --chart-1: #3fe08f; /* 磷光绿 */
+  --chart-2: #e3b341; /* amber */
+  --chart-3: #56a8e8; /* info */
+  --chart-4: #e06a5a; /* danger */
+  --chart-5: #a78bfa; /* 紫色辅助 */
+
+  /* 后台驾驶舱侧栏（cockpit 人格，克制用绿）*/
+  --sidebar: #0d1219; /* 比主背景更深 */
+  --sidebar-foreground: #7d8a97;
+  --sidebar-primary: #3fe08f;
+  --sidebar-primary-foreground: #0b0f14;
+  --sidebar-accent: #1f2730;
+  --sidebar-accent-foreground: #3fe08f;
+  --sidebar-border: #1f2730;
+  --sidebar-ring: #3fe08f;
+
+  /* 设计宪法扩展 token（供组件直接引用）*/
+  --fg-strong: #eef3f8; /* 标题/强调文字 */
+  --line-2: #2a343f; /* 强调/悬停边框 */
+  --acc-dim: #1f7a4d; /* 绿的暗态：边框/hover 底 */
+
+  /* 排版标度（major third 1.25，fluid，§3）*/
+  --t-xs: 12px; /* 标签/计数/版权 */
+  --t-sm: 14px; /* 次要文字/表格 */
+  --t-base: clamp(15px, 0.95rem + 0.1vw, 16px); /* 正文 */
+  --t-md: 20px; /* 卡片标题 */
+  --t-lg: clamp(24px, 1.2rem + 1vw, 32px); /* 区块标题 */
+  --t-xl: clamp(32px, 1.5rem + 2vw, 48px); /* 页面 H1 */
+  --t-hero: clamp(40px, 2rem + 4vw, 72px); /* hero（仅 home）*/
 }
 
+/* 纯暗色：.dark 选择器与 :root 一致（不做亮/暗切换，但保留兼容）*/
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0b0f14;
+  --foreground: #c9d4df;
+  --card: #11171f;
+  --card-foreground: #c9d4df;
+  --popover: #141b24;
+  --popover-foreground: #c9d4df;
+  --primary: #3fe08f;
+  --primary-foreground: #0b0f14;
+  --secondary: #141b24;
+  --secondary-foreground: #7d8a97;
+  --muted: #1f2730;
+  --muted-foreground: #6b7a89;
+  --accent: #1f2730;
+  --accent-foreground: #3fe08f;
+  --destructive: #e06a5a;
+  --destructive-foreground: #0b0f14;
+  --border: #1f2730;
+  --input: #1f2730;
+  --ring: #3fe08f;
 }
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -93,6 +119,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -109,15 +136,121 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-noto-sans-sc), system-ui, -apple-system, sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-size: var(--t-base);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    /* CRT 扫描线肌理（极淡）*/
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(63, 224, 143, 0.015) 2px,
+      rgba(63, 224, 143, 0.015) 3px
+    );
   }
+
+  /* 磷光绿选区 */
+  ::selection {
+    background: rgba(63, 224, 143, 0.25);
+    color: #eef3f8;
+  }
+
+  /* 滚动条（终端姿态）*/
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0b0f14;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1f2730;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a343f;
+  }
+
+  /* 标题用 mono 字体（终端感）*/
+  h1,
+  h2,
+  h3 {
+    color: var(--fg-strong);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+}
+
+/* ===========================================================================
+   关键帧动画（来自设计稿 site-chrome.css）
+   ========================================================================= */
+
+/* 内容渐入（文章段落、卡片）*/
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 点击涟漪 */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* 品牌辉光脉冲（指示灯/激活态）*/
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(63, 224, 143, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(63, 224, 143, 0.45);
+  }
+}
+
+/* 骨架屏脉动 */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* 工具类 */
+.animate-reveal {
+  animation: reveal 0.6s ease-out both;
+}
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+.animate-skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
