@@ -50,37 +50,39 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   return (
     <>
       <ReadingProgress />
-      <main className="mx-auto max-w-3xl px-4 py-12">
+      <main className="mx-auto max-w-3xl px-6 py-12">
         {/* 返回链接 */}
         <Link
           href="/articles"
-          className="text-muted-foreground hover:text-primary mb-6 inline-flex items-center gap-1 font-mono text-sm"
+          className="text-muted hover:text-primary mb-6 inline-flex items-center gap-1 font-mono text-sm transition-colors"
         >
           <ArrowLeft className="size-4" />
-          ../articles
+          cd ../articles
         </Link>
 
         {/* 文章头部 */}
         <header className="border-border mb-8 border-b pb-6">
-          <div className="text-muted-foreground mb-3 flex flex-wrap items-center gap-3 font-mono text-xs">
+          <div className="text-muted mb-3 flex flex-wrap items-center gap-3 font-mono text-xs">
             <span>{date}</span>
             <span className="text-border">·</span>
             <span className="flex items-center gap-1">
               <Clock className="size-3" />
-              {article.readingTime} 分钟阅读
+              {article.readingTime}min read
             </span>
             <span className="text-border">·</span>
             <span className="flex items-center gap-1">
               <Eye className="size-3" />
-              {article.viewCount} 次浏览
+              {article.viewCount} views
             </span>
             {article.isPremium && (
-              <span className="text-amber">· 付费内容</span>
+              <span className="text-[var(--amber)]">· premium</span>
             )}
           </div>
-          <h1 className="text-3xl font-bold leading-tight">{article.title}</h1>
+          <h1 className="font-sans text-3xl font-bold leading-tight text-[var(--fg-strong)]">
+            {article.title}
+          </h1>
           {article.summary && (
-            <p className="text-muted-foreground mt-3">{article.summary}</p>
+            <p className="text-muted mt-3 font-sans">{article.summary}</p>
           )}
         </header>
 
@@ -90,8 +92,8 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
         {/* 底部操作 */}
         <footer className="border-border mt-12 flex items-center justify-between border-t pt-6">
           <LikeButton articleId={article.id} initialCount={article.likeCount} />
-          <span className="text-muted-foreground font-mono text-xs">
-            EOF · {article.readingTime}min read
+          <span className="font-mono text-xs text-[var(--dim)]">
+            <span className="text-primary">EOF</span> · exit 0
           </span>
         </footer>
       </main>

@@ -7,7 +7,7 @@ interface MarkdownContentProps {
   content: string;
 }
 
-/** 代码块渲染（prism-react-renderer 高亮） */
+/** 代码块渲染（终端窗口风格 + prism 高亮 + 行号） */
 const CodeBlock = ({
   className,
   children,
@@ -20,38 +20,46 @@ const CodeBlock = ({
   const language = match?.[1] ?? 'text';
 
   return (
-    <Highlight code={code} language={language} theme={themes.vsDark}>
-      {({ className: cls, style, tokens, getLineProps, getTokenProps }) => (
-        <pre
-          className={`${cls} border-border overflow-x-auto rounded-lg border bg-[#0d1219] p-4 text-sm`}
-          style={style}
-        >
-          <code>
-            {tokens.map((line, i) => {
-              const lineProps = getLineProps({ line, key: i });
-              return (
-                <div key={i} {...lineProps}>
-                  <span className="text-muted-foreground/40 mr-4 inline-block w-8 select-none text-right">
-                    {i + 1}
-                  </span>
-                  {line.map((token, key) => {
-                    const tokenProps = getTokenProps({ token, key });
-                    return <span key={key} {...tokenProps} />;
-                  })}
-                </div>
-              );
-            })}
-          </code>
-        </pre>
-      )}
-    </Highlight>
+    <div className="border-border my-4 overflow-hidden rounded-[10px] border">
+      {/* 终端标题栏 */}
+      <div className="border-border bg-secondary flex items-center gap-2 border-b px-4 py-2">
+        <span className="size-[10px] rounded-full bg-[#ff5f57]" />
+        <span className="size-[10px] rounded-full bg-[#febc2e]" />
+        <span className="size-[10px] rounded-full bg-[#28c840]" />
+        <span className="ml-2 font-mono text-[11px] text-[var(--dim)]">
+          {language} — {code.split('\n').length} lines
+        </span>
+      </div>
+      <Highlight code={code} language={language} theme={themes.vsDark}>
+        {({ className: cls, style, tokens, getLineProps, getTokenProps }) => (
+          <pre
+            className={`${cls} overflow-x-auto bg-[#0d1219] p-4 text-sm`}
+            style={style}
+          >
+            <code>
+              {tokens.map((line, i) => {
+                const lineProps = getLineProps({ line, key: i });
+                return (
+                  <div key={i} {...lineProps}>
+                    <span className="text-muted/30 mr-4 inline-block w-8 select-none text-right">
+                      {i + 1}
+                    </span>
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token, key })} />
+                    ))}
+                  </div>
+                );
+              })}
+            </code>
+          </pre>
+        )}
+      </Highlight>
+    </div>
   );
 };
 
-/** 自定义组件映射（终端暗色风格） */
 const components: Components = {
   code({ className, children, ...props }) {
-    // 行内代码 vs 代码块（react-markdown v10: 有 className 的是代码块）
     if (className) {
       return <CodeBlock className={className}>{children}</CodeBlock>;
     }
@@ -65,7 +73,6 @@ const components: Components = {
     );
   },
   pre({ children }) {
-    // pre 由 code 组件内部处理（避免双层 pre）
     return <>{children}</>;
   },
   a({ href, children }) {
@@ -74,7 +81,7 @@ const components: Components = {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-primary decoration-primary/40 hover:decoration-primary underline underline-offset-2"
+        className="text-primary decoration-primary/40 hover:decoration-primary underline underline-offset-2 transition-colors"
       >
         {children}
       </a>
@@ -82,17 +89,19 @@ const components: Components = {
   },
   blockquote({ children }) {
     return (
-      <blockquote className="border-primary/40 text-muted-foreground my-4 border-l-2 pl-4 italic">
+      <blockquote className="border-primary/40 text-muted my-4 border-l-2 pl-4 italic">
         {children}
       </blockquote>
     );
   },
   h1: ({ children }) => (
-    <h1 className="mb-4 mt-8 text-2xl font-bold">{children}</h1>
+    <h1 className="animate-reveal mb-4 mt-8 font-sans text-2xl font-bold">
+      {children}
+    </h1>
   ),
   h2: ({ children }) => (
     <h2
-      className="mb-3 mt-8 text-xl font-bold"
+      className="animate-reveal mb-3 mt-8 font-sans text-xl font-bold"
       id={
         typeof children === 'string'
           ? children.toLowerCase().replace(/\s+/g, '-')
@@ -103,25 +112,37 @@ const components: Components = {
     </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="mb-2 mt-6 text-lg font-semibold">{children}</h3>
+    <h3 className="animate-reveal mb-2 mt-6 font-sans text-lg font-semibold">
+      {children}
+    </h3>
   ),
-  p: ({ children }) => <p className="my-3 leading-relaxed">{children}</p>,
+  p: ({ children }) => (
+    <p className="animate-reveal my-3 font-sans leading-relaxed">{children}</p>
+  ),
   ul: ({ children }) => (
-    <ul className="my-3 ml-6 list-disc space-y-1">{children}</ul>
+    <ul className="my-3 ml-6 list-disc space-y-1 font-sans">{children}</ul>
   ),
   ol: ({ children }) => (
-    <ol className="my-3 ml-6 list-decimal space-y-1">{children}</ol>
+    <ol className="my-3 ml-6 list-decimal space-y-1 font-sans">{children}</ol>
+  ),
+  table: ({ children }) => (
+    <div className="border-border my-4 overflow-x-auto rounded-lg border">
+      <table className="w-full font-mono text-sm">{children}</table>
+    </div>
+  ),
+  th: ({ children }) => (
+    <th className="border-border bg-secondary text-muted border-b px-4 py-2 text-left font-normal">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="border-border/50 border-b px-4 py-2">{children}</td>
   ),
 };
 
-/**
- * Markdown 内容渲染器。
- * react-markdown + remark-gfm + prism 代码高亮。
- * 注意：react-markdown 默认不执行 HTML（安全），无需额外 sanitize。
- */
 export function MarkdownContent({ content }: MarkdownContentProps) {
   return (
-    <article className="prose prose-invert max-w-none">
+    <article className="max-w-none">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {content}
       </ReactMarkdown>
