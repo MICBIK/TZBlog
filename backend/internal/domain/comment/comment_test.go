@@ -16,28 +16,36 @@ func TestComment_Validate(t *testing.T) {
 		{
 			name: "valid comment",
 			comment: &Comment{
-				Content: "This is a valid comment",
+				Content:   "This is a valid comment",
+				ArticleID: 1,
+				UserID:    1,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "empty content",
 			comment: &Comment{
-				Content: "",
+				Content:   "",
+				ArticleID: 1,
+				UserID:    1,
 			},
 			wantErr: ErrInvalidContent,
 		},
 		{
 			name: "content too long",
 			comment: &Comment{
-				Content: makeString(1001),
+				Content:   makeString(1001),
+				ArticleID: 1,
+				UserID:    1,
 			},
-			wantErr: ErrInvalidContent,
+			wantErr: ErrContentTooLong,
 		},
 		{
 			name: "content at max length",
 			comment: &Comment{
-				Content: makeString(1000),
+				Content:   makeString(1000),
+				ArticleID: 1,
+				UserID:    1,
 			},
 			wantErr: nil,
 		},

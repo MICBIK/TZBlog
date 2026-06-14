@@ -10,9 +10,18 @@ import (
 
 // Response 统一响应结构
 type Response struct {
-	Success bool   `json:"success"`
-	Data    any    `json:"data,omitempty"`
-	Error   *Error `json:"error,omitempty"`
+	Success  bool      `json:"success"`
+	Data     any       `json:"data,omitempty"`
+	Error    *Error    `json:"error,omitempty"`
+	Metadata *Metadata `json:"metadata,omitempty"`
+}
+
+// Metadata 分页元数据
+type Metadata struct {
+	Total      int `json:"total"`
+	Page       int `json:"page"`
+	Limit      int `json:"limit"`
+	TotalPages int `json:"totalPages"`
 }
 
 // Error 错误响应结构
@@ -172,5 +181,29 @@ func TooManyRequests(c *gin.Context, message string) {
 			Code:    "TOO_MANY_REQUESTS",
 			Message: message,
 		},
+	})
+}
+
+// SuccessWithMetadata 成功响应（带分页信息）
+func SuccessWithMetadata(c *gin.Context, data any, metadata *Metadata) {
+	c.JSON(http.StatusOK, Response{
+		Success:  true,
+		Data:     data,
+		Metadata: metadata,
+	})
+}
+
+// Paginated 分页响应（兼容旧接口）
+func Paginated(c *gin.Context, data any, total int64, page, limit int) {
+	totalPages := int((total + int64(limit) - 1) / int64(limit))
+	if totalPages < 1 {
+		totalPages = 1
+	}
+
+	SuccessWithMetadata(c, data, &Metadata{
+		Total:      int(total),
+		Page:       page,
+		Limit:      limit,
+		TotalPages: totalPages,
 	})
 }

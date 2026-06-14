@@ -94,7 +94,9 @@ func TestUserRepository_FindByID(t *testing.T) {
 		WillReturnRows(rows)
 
 	result, err := repo.FindByID(userID)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatalf("FindByID failed: %v", err)
+	}
 	assert.NotNil(t, result)
 	assert.Equal(t, userID, result.ID)
 	assert.NoError(t, mock.ExpectationsWereMet())

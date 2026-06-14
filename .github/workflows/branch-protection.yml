@@ -68,6 +68,8 @@ jobs:
                  [[ ! "$file" =~ ^\.github/ ]] && \
                  [[ ! "$file" =~ ^docker-compose\.yml$ ]] && \
                  [[ ! "$file" =~ ^README\.md$ ]] && \
+                 [[ ! "$file" =~ ^CLAUDE\.md$ ]] && \
+                 [[ ! "$file" =~ ^memory-bank/ ]] && \
                  [[ ! "$file" =~ ^docs/ ]]; then
                 INVALID_FILES="$INVALID_FILES\n  - $file"
               fi
@@ -82,6 +84,8 @@ jobs:
               echo "  - .github/ (CI/CD)"
               echo "  - docker-compose.yml"
               echo "  - docs/ (documentation)"
+              echo "  - CLAUDE.md (project instructions)"
+              echo "  - memory-bank/ (project memory)"
               exit 1
             fi
 
@@ -92,6 +96,8 @@ jobs:
                  [[ ! "$file" =~ ^\.github/ ]] && \
                  [[ ! "$file" =~ ^docker-compose\.yml$ ]] && \
                  [[ ! "$file" =~ ^README\.md$ ]] && \
+                 [[ ! "$file" =~ ^CLAUDE\.md$ ]] && \
+                 [[ ! "$file" =~ ^memory-bank/ ]] && \
                  [[ ! "$file" =~ ^docs/ ]]; then
                 INVALID_FILES="$INVALID_FILES\n  - $file"
               fi
@@ -121,8 +127,12 @@ jobs:
 
           INVALID_COMMITS=""
           while IFS= read -r commit; do
+            # 跳过 GitHub 自动生成的 merge commits
+            if [[ "$commit" =~ ^Merge\ [a-f0-9]{40}\ into\ [a-f0-9]{40}$ ]]; then
+              continue
+            fi
             # 检查提交信息格式: type(scope): subject
-            if [[ ! "$commit" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\(.+\))?:\ .+ ]]; then
+            if [[ ! "$commit" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|revert|merge)(\(.+\))?:\ .+ ]]; then
               INVALID_COMMITS="$INVALID_COMMITS\n  - $commit"
             fi
           done <<< "$COMMITS"
