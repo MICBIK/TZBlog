@@ -341,3 +341,31 @@ like_handler 已改用多态查询（TargetTypeArticle），但点赞仍返回 5
 - ✅ 分类/标签列表
 - ✅ 上传配置
 - ⚠️ 点赞（D2b：userID key bug，前端已乐观更新降级）
+
+---
+
+## 四轮验收（2026-06-14 晚，D2b 修复后）
+
+### 🔴 D2c【致命·阻断启动】路由参数冲突导致 panic
+后端重新编译后**无法启动**，panic：
+```
+panic: ':id' in new path '/api/v1/articles/:id/comments' conflicts
+with existing wildcard ':slug' in existing prefix '/api/v1/articles/:slug'
+```
+
+**根因**：`cmd/server/main.go` 的 articles 路由组在同一层级混用了两种参数名：
+```go
+articles.GET("/:slug", ...)          // GET 文章详情用 :slug
+articles.GET("/:id/comments", ...)   // GET 评论用 :id    ← 冲突
+articles.PUT("/:id", ...)            // PUT 更新用 :id    ← 冲突
+articles.DELETE("/:id", ...)         // DELETE 删除用 :id ← 冲突
+```
+Gin 不允许同一位置 `:slug` 和 `:id` 混用。
+
+**修复方案（任选其一）**：
+- (A) **推荐**：全部统一用 `:slug`。PUT/DELETE 时 handler 内部先按 slug 查出 id 再操作。
+- (B) 全部统一用 `:id`。GET 文章详情也改成按 id 查（但前端用 slug 对 SEO 不友好）。
+- (C) 拆分子路径：文章详情 `/articles/slug/:slug`，CRUD 用 `/articles/:id`。
+
+### 同时确认 D2b 未修复
+like/follow/payment handler 仍是 `c.GetInt64("userID")`（应为 `"user_id"`）。
