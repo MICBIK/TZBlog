@@ -88,17 +88,8 @@ func (s *AuthService) Register(dto *user.RegisterDTO) (*user.AuthResponse, error
 
 // Login authenticates a user and returns a token
 func (s *AuthService) Login(dto *user.LoginDTO) (*user.AuthResponse, error) {
-	// Find user by username or email
-	var usr *user.User
-	var err error
-
-	// Try to find by email first
-	if contains(dto.Login, "@") {
-		usr, err = s.userRepo.FindByEmail(dto.Login)
-	} else {
-		usr, err = s.userRepo.FindByUsername(dto.Login)
-	}
-
+	// Find user by email
+	usr, err := s.userRepo.FindByEmail(dto.Email)
 	if err != nil {
 		return nil, err
 	}

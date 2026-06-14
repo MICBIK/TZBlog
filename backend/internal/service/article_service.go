@@ -27,11 +27,17 @@ func (s *ArticleService) CreateArticle(userID int64, dto *article.CreateArticleD
 		Summary:    dto.Summary,
 		Content:    dto.Content,
 		CoverImage: dto.CoverImage,
+		CategoryID: dto.CategoryID,
+		IsPremium:  dto.IsPremium,
 		Status:     dto.Status,
 	}
 
-	// Generate slug from title
-	newArticle.GenerateSlug()
+	// Use provided slug or generate from title
+	if dto.Slug != "" {
+		newArticle.Slug = dto.Slug
+	} else {
+		newArticle.GenerateSlug()
+	}
 
 	// Calculate reading time
 	newArticle.CalculateReadingTime()
@@ -54,6 +60,10 @@ func (s *ArticleService) CreateArticle(userID int64, dto *article.CreateArticleD
 	if err := s.repo.Create(newArticle); err != nil {
 		return nil, err
 	}
+
+	// TODO: Handle tags if provided
+	// Tags need to be handled separately after article creation
+	// This will require tag repository and association logic
 
 	return newArticle, nil
 }

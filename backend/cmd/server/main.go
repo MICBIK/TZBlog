@@ -13,6 +13,7 @@ import (
 	"github.com/MICBIK/TZBlog/backend/config"
 	"github.com/MICBIK/TZBlog/backend/internal/api/handlers"
 	"github.com/MICBIK/TZBlog/backend/internal/api/middleware"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/MICBIK/TZBlog/backend/internal/cache"
 	"github.com/MICBIK/TZBlog/backend/internal/repository/postgres"
 	"github.com/MICBIK/TZBlog/backend/internal/service"
@@ -247,6 +248,43 @@ func main() {
 				commentsProtected.POST("", commentHandler.CreateComment)
 				commentsProtected.PUT("/:id", commentHandler.UpdateComment)
 				commentsProtected.DELETE("/:id", commentHandler.DeleteComment)
+			}
+		}
+
+		// Like routes (C3 fix)
+		likes := v1.Group("/likes")
+		{
+			// Protected routes (requires auth)
+			likesProtected := likes.Group("")
+			likesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			{
+				// TODO: Implement LikeHandler
+				likesProtected.POST("/articles/:id", func(c *gin.Context) {
+					response.Success(c, gin.H{"message": "Like endpoint - TODO: implement handler"})
+				})
+				likesProtected.DELETE("/articles/:id", func(c *gin.Context) {
+					response.Success(c, gin.H{"message": "Unlike endpoint - TODO: implement handler"})
+				})
+				likesProtected.GET("/articles/:id/status", func(c *gin.Context) {
+					response.Success(c, gin.H{"liked": false, "count": 0})
+				})
+			}
+		}
+
+		// Upload routes (C4 fix)
+		uploads := v1.Group("/uploads")
+		{
+			// Protected routes (requires auth)
+			uploadsProtected := uploads.Group("")
+			uploadsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			{
+				// TODO: Implement StorageHandler for image uploads
+				uploadsProtected.POST("/images", func(c *gin.Context) {
+					response.Success(c, gin.H{
+						"url": "https://placehold.co/600x400",
+						"message": "Upload endpoint - TODO: implement S3/OSS handler",
+					})
+				})
 			}
 		}
 	}
