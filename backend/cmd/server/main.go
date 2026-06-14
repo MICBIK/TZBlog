@@ -15,11 +15,31 @@ import (
 	"github.com/MICBIK/TZBlog/backend/internal/api/middleware"
 	"github.com/MICBIK/TZBlog/backend/internal/cache"
 	"github.com/MICBIK/TZBlog/backend/internal/repository/postgres"
+	"github.com/MICBIK/TZBlog/backend/internal/service"
 	"github.com/MICBIK/TZBlog/backend/pkg/auth"
 	"github.com/MICBIK/TZBlog/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
+
+// @title           TZBlog API
+// @version         1.0
+// @description     TZBlog 后端 API 文档
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.email  support@tzblog.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
 	// Initialize logger
@@ -60,6 +80,18 @@ func main() {
 
 	logger.Info("Database connected successfully")
 
+	// ✅ C-006: Start connection pool monitor
+	poolMonitor := config.NewConnectionPoolMonitor(
+		sqlDB,
+		config.DefaultPoolAlertThresholds(),
+	)
+
+	monitorCtx, cancelMonitor := context.WithCancel(context.Background())
+	defer cancelMonitor()
+
+	go poolMonitor.Start(monitorCtx)
+	logger.Info("Connection pool monitor started")
+
 	// Initialize Redis client
 	redisClient, err := config.NewRedisClient(&cfg.Redis)
 	if err != nil {
@@ -81,7 +113,7 @@ func main() {
 
 	// Initialize repositories
 	userRepo := postgres.NewUserRepository(db)
-	articleRepo := postgres.NewArticleRepositoryAdapter(db)
+	articleRepo := postgres.NewArticleRepository(db)
 	categoryRepo := postgres.NewCategoryRepository(db)
 	tagRepo := postgres.NewTagRepository(db)
 	commentRepo := postgres.NewCommentRepository(db)
@@ -91,12 +123,17 @@ func main() {
 	_ = postgres.NewProgressRepository(db)
 	_ = postgres.NewFollowRepository(db)
 
+	// Initialize services
+	authService := service.NewAuthService(userRepo, jwtAuth)
+	articleService := service.NewArticleService(articleRepo)
+	commentService := service.NewCommentService(commentRepo)
+
 	// Initialize handlers
-	authHandler := handlers.NewAuthHandler(userRepo, jwtAuth)
-	articleHandler := handlers.NewArticleHandler(articleRepo)
+	authHandler := handlers.NewAuthHandler(authService)
+	articleHandler := handlers.NewArticleHandler(articleService)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 	tagHandler := handlers.NewTagHandler(tagRepo)
-	commentHandler := handlers.NewCommentHandler(commentRepo)
+	commentHandler := handlers.NewCommentHandler(commentService)
 
 	// Initialize Gin router
 	router := gin.New()
@@ -126,6 +163,8 @@ func main() {
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
+	// ✅ SEC-002 FIX: Apply CSRF protection to all API routes
+	v1.Use(middleware.OptionalCSRF())
 	{
 		// Auth routes (public)
 		auth := v1.Group("/auth")

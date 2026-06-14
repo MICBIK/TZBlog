@@ -4,20 +4,19 @@ import (
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
-	"github.com/MICBIK/TZBlog/backend/internal/service"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
 // ArticleHandler handles HTTP requests for articles
 type ArticleHandler struct {
-	service *service.ArticleService
+	service article.Service
 }
 
 // NewArticleHandler creates a new article handler
-func NewArticleHandler(repo article.Repository) *ArticleHandler {
+func NewArticleHandler(service article.Service) *ArticleHandler {
 	return &ArticleHandler{
-		service: service.NewArticleService(repo),
+		service: service,
 	}
 }
 
@@ -28,15 +27,15 @@ func NewArticleHandler(repo article.Repository) *ArticleHandler {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        article body service.CreateArticleDTO true "文章数据" example({"title":"文章标题","content":"文章内容","status":"draft"})
+// @Param        article body article.CreateArticleDTO true "文章数据" example({"title":"文章标题","content":"文章内容","status":"draft"})
 // @Success      201 {object} response.Response{data=article.Article} "创建成功"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
 // @Failure      401 {object} response.ErrorResponse "未认证"
 // @Failure      409 {object} response.ErrorResponse "文章 slug 已存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /articles [post]
+// @Router       /api/v1/articles [post]
 func (h *ArticleHandler) CreateArticle(c *gin.Context) {
-	var req service.CreateArticleDTO
+	var req article.CreateArticleDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -68,7 +67,7 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 // @Failure      400 {object} response.ErrorResponse "无效的文章 ID"
 // @Failure      404 {object} response.ErrorResponse "文章不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /articles/{id} [get]
+// @Router       /api/v1/articles/{id} [get]
 func (h *ArticleHandler) GetArticleByID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -96,7 +95,7 @@ func (h *ArticleHandler) GetArticleByID(c *gin.Context) {
 // @Failure      400 {object} response.ErrorResponse "文章 slug 为空"
 // @Failure      404 {object} response.ErrorResponse "文章不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /articles/slug/{slug} [get]
+// @Router       /api/v1/articles/slug/{slug} [get]
 func (h *ArticleHandler) GetArticleBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 	if slug == "" {
@@ -128,7 +127,7 @@ func (h *ArticleHandler) GetArticleBySlug(c *gin.Context) {
 // @Param        limit query int false "每页数量" default(10) example(20)
 // @Success      200 {object} response.PaginatedResponse "成功返回文章列表"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /articles [get]
+// @Router       /api/v1/articles [get]
 func (h *ArticleHandler) ListArticles(c *gin.Context) {
 	var filter article.ListFilter
 
@@ -185,14 +184,14 @@ func (h *ArticleHandler) ListArticles(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path int true "文章 ID" example(1)
-// @Param        article body service.UpdateArticleDTO true "更新的文章数据" example({"title":"新标题","content":"新内容"})
+// @Param        article body article.UpdateArticleDTO true "更新的文章数据" example({"title":"新标题","content":"新内容"})
 // @Success      200 {object} response.Response{data=article.Article} "更新成功"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
 // @Failure      401 {object} response.ErrorResponse "未认证"
 // @Failure      403 {object} response.ErrorResponse "无权限修改此文章"
 // @Failure      404 {object} response.ErrorResponse "文章不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /articles/{id} [put]
+// @Router       /api/v1/articles/{id} [put]
 func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -200,7 +199,7 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 		return
 	}
 
-	var req service.UpdateArticleDTO
+	var req article.UpdateArticleDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -235,7 +234,7 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 // @Failure      403 {object} response.ErrorResponse "无权限删除此文章"
 // @Failure      404 {object} response.ErrorResponse "文章不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /articles/{id} [delete]
+// @Router       /api/v1/articles/{id} [delete]
 func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

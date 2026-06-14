@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/pkg/logger"
@@ -57,6 +58,30 @@ func (p *DatabasePoolConfig) Validate() error {
 	if p.ConnMaxIdleTime > p.ConnMaxLifetime {
 		return fmt.Errorf("conn_max_idle_time (%v) cannot exceed conn_max_lifetime (%v)",
 			p.ConnMaxIdleTime, p.ConnMaxLifetime)
+	}
+
+	return nil
+}
+
+// ValidateDatabasePassword validates database password strength
+// Fixes C-010: Database password validation
+func ValidateDatabasePassword(password string, isProduction bool) error {
+	if password == "" {
+		return fmt.Errorf("database password is required")
+	}
+
+	if isProduction {
+		if len(password) < 32 {
+			return fmt.Errorf("production password must be ≥32 characters (current: %d)", len(password))
+		}
+
+		// 禁止常见弱密码
+		weak := []string{"postgres", "password", "tzblog", "admin", "123456"}
+		for _, w := range weak {
+			if strings.Contains(strings.ToLower(password), w) {
+				return fmt.Errorf("password must not contain common words: %s", w)
+			}
+		}
 	}
 
 	return nil

@@ -64,7 +64,7 @@ func TestCreateArticle_Success(t *testing.T) {
 	mockRepo := new(MockArticleRepository)
 	service := NewArticleService(mockRepo)
 
-	dto := &CreateArticleDTO{
+	dto := &article.CreateArticleDTO{
 		Title:   "Test Article",
 		Summary: "Test summary",
 		Content: "This is test content for the article.",
@@ -92,7 +92,7 @@ func TestCreateArticle_Published(t *testing.T) {
 	mockRepo := new(MockArticleRepository)
 	service := NewArticleService(mockRepo)
 
-	dto := &CreateArticleDTO{
+	dto := &article.CreateArticleDTO{
 		Title:   "Published Article",
 		Content: "Content for published article.",
 		Status:  article.StatusPublished,
@@ -243,7 +243,7 @@ func TestUpdateArticle_Success(t *testing.T) {
 	}
 
 	newTitle := "New Title"
-	dto := &UpdateArticleDTO{
+	dto := &article.UpdateArticleDTO{
 		Title: &newTitle,
 	}
 
@@ -273,7 +273,7 @@ func TestUpdateArticle_Unauthorized(t *testing.T) {
 	}
 
 	newTitle := "New Title"
-	dto := &UpdateArticleDTO{
+	dto := &article.UpdateArticleDTO{
 		Title: &newTitle,
 	}
 

@@ -4,20 +4,19 @@ import (
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/comment"
-	"github.com/MICBIK/TZBlog/backend/internal/service"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
 // CommentHandler handles HTTP requests for comments
 type CommentHandler struct {
-	service *service.CommentService
+	service comment.Service
 }
 
 // NewCommentHandler creates a new comment handler
-func NewCommentHandler(repo comment.Repository) *CommentHandler {
+func NewCommentHandler(service comment.Service) *CommentHandler {
 	return &CommentHandler{
-		service: service.NewCommentService(repo),
+		service: service,
 	}
 }
 
@@ -28,15 +27,15 @@ func NewCommentHandler(repo comment.Repository) *CommentHandler {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        comment body service.CreateCommentDTO true "评论数据" example({"article_id":1,"content":"很棒的文章！","parent_id":0})
+// @Param        comment body comment.CreateCommentDTO true "评论数据" example({"article_id":1,"content":"很棒的文章！","parent_id":0})
 // @Success      201 {object} response.Response{data=comment.Comment} "创建成功"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
 // @Failure      401 {object} response.ErrorResponse "未认证"
 // @Failure      404 {object} response.ErrorResponse "文章不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /comments [post]
+// @Router       /api/v1/comments [post]
 func (h *CommentHandler) CreateComment(c *gin.Context) {
-	var req service.CreateCommentDTO
+	var req comment.CreateCommentDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -63,7 +62,7 @@ func (h *CommentHandler) CreateComment(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Comment ID"
 // @Success 200 {object} comment.Comment
-// @Router /comments/{id} [get]
+// @Router       /api/v1/comments/{id} [get]
 func (h *CommentHandler) GetComment(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -90,7 +89,7 @@ func (h *CommentHandler) GetComment(c *gin.Context) {
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(20)
 // @Success 200 {object} response.PaginatedResponse
-// @Router /comments [get]
+// @Router       /api/v1/comments [get]
 func (h *CommentHandler) ListComments(c *gin.Context) {
 	var filter comment.ListFilter
 
@@ -104,12 +103,6 @@ func (h *CommentHandler) ListComments(c *gin.Context) {
 			filter.UserID = id
 		}
 	}
-	// Note: ParentID filtering not supported in current ListFilter
-	// if parentID := c.Query("parent_id"); parentID != "" {
-	// 	if id, err := strconv.ParseInt(parentID, 10, 64); err == nil {
-	// 		filter.ParentID = &id
-	// 	}
-	// }
 
 	page := 1
 	if p := c.Query("page"); p != "" {
@@ -143,9 +136,9 @@ func (h *CommentHandler) ListComments(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Comment ID"
-// @Param comment body service.UpdateCommentDTO true "Updated comment data"
+// @Param comment body comment.UpdateCommentDTO true "Updated comment data"
 // @Success 200 {object} comment.Comment
-// @Router /comments/{id} [put]
+// @Router       /api/v1/comments/{id} [put]
 func (h *CommentHandler) UpdateComment(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -153,7 +146,7 @@ func (h *CommentHandler) UpdateComment(c *gin.Context) {
 		return
 	}
 
-	var req service.UpdateCommentDTO
+	var req comment.UpdateCommentDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -179,7 +172,7 @@ func (h *CommentHandler) UpdateComment(c *gin.Context) {
 // @Tags Comments
 // @Param id path int true "Comment ID"
 // @Success 200 {object} response.SuccessResponse
-// @Router /comments/{id} [delete]
+// @Router       /api/v1/comments/{id} [delete]
 func (h *CommentHandler) DeleteComment(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/follow"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +24,7 @@ func NewFollowHandler(followRepo follow.FollowRepository) *FollowHandler {
 // @Security Bearer
 // @Param id path int true "User ID to follow"
 // @Success 200 {object} response.Response
-// @Router /users/{id}/follow [post]
+// @Router       /api/v1/users/{id}/follow [post]
 func (h *FollowHandler) Follow(c *gin.Context) {
 	followerID := c.GetInt64("userID")
 	followingID, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -53,7 +53,7 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 // @Security Bearer
 // @Param id path int true "User ID to unfollow"
 // @Success 200 {object} response.Response
-// @Router /users/{id}/unfollow [post]
+// @Router       /api/v1/users/{id}/unfollow [post]
 func (h *FollowHandler) Unfollow(c *gin.Context) {
 	followerID := c.GetInt64("userID")
 	followingID, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -77,7 +77,7 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 // @Security Bearer
 // @Param id path int true "User ID"
 // @Success 200 {object} response.Response{data=gin.H{isFollowing=bool}}
-// @Router /users/{id}/is-following [get]
+// @Router       /api/v1/users/{id}/is-following [get]
 func (h *FollowHandler) IsFollowing(c *gin.Context) {
 	followerID := c.GetInt64("userID")
 	followingID, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -102,7 +102,7 @@ func (h *FollowHandler) IsFollowing(c *gin.Context) {
 // @Param limit query int false "Limit" default(20)
 // @Param offset query int false "Offset" default(0)
 // @Success 200 {object} response.Response
-// @Router /users/{id}/followers [get]
+// @Router       /api/v1/users/{id}/followers [get]
 func (h *FollowHandler) GetFollowers(c *gin.Context) {
 	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -134,7 +134,7 @@ func (h *FollowHandler) GetFollowers(c *gin.Context) {
 // @Param limit query int false "Limit" default(20)
 // @Param offset query int false "Offset" default(0)
 // @Success 200 {object} response.Response
-// @Router /users/{id}/following [get]
+// @Router       /api/v1/users/{id}/following [get]
 func (h *FollowHandler) GetFollowing(c *gin.Context) {
 	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

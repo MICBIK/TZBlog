@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"gorm.io/gorm"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 )
 
 // BatchOperations provides optimized batch insert/update operations
@@ -25,7 +26,7 @@ func (b *BatchOperations) BatchInsert(ctx context.Context, records interface{}, 
 }
 
 // BatchInsertArticles inserts multiple articles efficiently
-func (b *BatchOperations) BatchInsertArticles(ctx context.Context, articles []*Article) error {
+func (b *BatchOperations) BatchInsertArticles(ctx context.Context, articles []*article.Article) error {
 	if len(articles) == 0 {
 		return nil
 	}
@@ -44,7 +45,7 @@ func (b *BatchOperations) BatchUpdateArticleStatus(ctx context.Context, ids []in
 	}
 
 	return b.db.WithContext(ctx).
-		Model(&Article{}).
+		Model(&article.Article{}).
 		Where("id IN ?", ids).
 		Update("status", status).Error
 }
@@ -57,7 +58,7 @@ func (b *BatchOperations) BatchDeleteArticles(ctx context.Context, ids []int64) 
 
 	return b.db.WithContext(ctx).
 		Where("id IN ?", ids).
-		Delete(&Article{}).Error
+		Delete(&article.Article{}).Error
 }
 
 // BatchIncrementViewCounts increments view counts for multiple articles
@@ -77,7 +78,7 @@ func (b *BatchOperations) BatchIncrementViewCounts(ctx context.Context, incremen
 	caseStmt += "END"
 
 	return b.db.WithContext(ctx).
-		Model(&Article{}).
+		Model(&article.Article{}).
 		Where("id IN ?", ids).
 		Update("view_count", gorm.Expr(caseStmt)).Error
 }
@@ -157,12 +158,12 @@ func (b *BatchOperations) BatchUpsertArticleTags(ctx context.Context, articleTag
 
 // BulkFetchArticlesByIDs fetches multiple articles by IDs with preloading
 // Optimized to avoid N+1 queries
-func (b *BatchOperations) BulkFetchArticlesByIDs(ctx context.Context, ids []int64) ([]*Article, error) {
+func (b *BatchOperations) BulkFetchArticlesByIDs(ctx context.Context, ids []int64) ([]*article.Article, error) {
 	if len(ids) == 0 {
-		return []*Article{}, nil
+		return []*article.Article{}, nil
 	}
 
-	var articles []*Article
+	var articles []*article.Article
 
 	err := b.db.WithContext(ctx).
 		Preload("Author", func(db *gorm.DB) *gorm.DB {
@@ -188,7 +189,7 @@ func (b *BatchOperations) BulkUpdateArticleFields(ctx context.Context, updates m
 		// For now, update each article individually in a transaction
 		// This ensures atomicity while still being faster than separate transactions
 		for articleID, fields := range updates {
-			if err := tx.Model(&Article{}).Where("id = ?", articleID).Updates(fields).Error; err != nil {
+			if err := tx.Model(&article.Article{}).Where("id = ?", articleID).Updates(fields).Error; err != nil {
 				return err
 			}
 		}
@@ -225,12 +226,12 @@ func (b *BatchOperations) BatchInsertViews(ctx context.Context, views interface{
 
 // OptimizedArticleListQuery builds an optimized query for article listing
 // with covering indexes
-func (b *BatchOperations) OptimizedArticleListQuery(ctx context.Context, filters ArticleFilters) ([]*Article, int64, error) {
-	var articles []*Article
+func (b *BatchOperations) OptimizedArticleListQuery(ctx context.Context, filters ArticleFilters) ([]*article.Article, int64, error) {
+	var articles []*article.Article
 	var total int64
 
 	// Build base query with hints
-	query := b.db.WithContext(ctx).Model(&Article{})
+	query := b.db.WithContext(ctx).Model(&article.Article{})
 
 	// Apply filters
 	if filters.Status != "" {

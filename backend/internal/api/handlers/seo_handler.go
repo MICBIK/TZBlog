@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/MICBIK/TZBlog/backend/internal/seo"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +23,7 @@ func NewSEOHandler(articleRepo ArticleRepository, baseURL string) *SEOHandler {
 // @Tags SEO
 // @Param slug path string true "Article slug"
 // @Success 200 {object} seo.SEOData
-// @Router /seo/articles/{slug} [get]
+// @Router       /api/v1/seo/articles/{slug} [get]
 func (h *SEOHandler) GetArticleSEO(c *gin.Context) {
 	slug := c.Param("slug")
 
@@ -46,7 +46,7 @@ func (h *SEOHandler) GetArticleSEO(c *gin.Context) {
 // @Summary Get home page SEO metadata
 // @Tags SEO
 // @Success 200 {object} seo.SEOData
-// @Router /seo/home [get]
+// @Router       /api/v1/seo/home [get]
 func (h *SEOHandler) GetHomeSEO(c *gin.Context) {
 	seoData := seo.GenerateHomeSEO(h.baseURL)
 	response.Success(c, seoData)

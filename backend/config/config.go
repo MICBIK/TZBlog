@@ -39,6 +39,17 @@ func Load(configPath string) (*Config, error) {
 		return nil, err
 	}
 
+	// ✅ C-010 FIX: Validate database password strength
+	isProduction := cfg.IsProduction()
+	if err := ValidateDatabasePassword(cfg.Database.Password, isProduction); err != nil {
+		return nil, fmt.Errorf("database config: %w", err)
+	}
+
+	// ✅ C-009 FIX: Validate Redis password strength
+	if err := ValidateRedisConfig(&cfg.Redis, isProduction); err != nil {
+		return nil, fmt.Errorf("redis config: %w", err)
+	}
+
 	return &cfg, nil
 }
 

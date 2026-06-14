@@ -2,21 +2,19 @@ package handlers
 
 import (
 	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
-	"github.com/MICBIK/TZBlog/backend/internal/service"
-	"github.com/MICBIK/TZBlog/backend/pkg/auth"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
 // AuthHandler handles HTTP requests for authentication
 type AuthHandler struct {
-	service *service.AuthService
+	service user.Service
 }
 
 // NewAuthHandler creates a new auth handler
-func NewAuthHandler(userRepo user.UserRepository, jwtAuth *auth.JWTAuth) *AuthHandler {
+func NewAuthHandler(service user.Service) *AuthHandler {
 	return &AuthHandler{
-		service: service.NewAuthService(userRepo, jwtAuth),
+		service: service,
 	}
 }
 
@@ -26,14 +24,14 @@ func NewAuthHandler(userRepo user.UserRepository, jwtAuth *auth.JWTAuth) *AuthHa
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        user body service.RegisterDTO true "用户注册信息" example({"email":"user@example.com","username":"testuser","password":"password123"})
-// @Success      201 {object} response.Response{data=service.AuthResponse} "注册成功，返回用户信息和 token"
+// @Param        user body user.RegisterDTO true "用户注册信息" example({"email":"user@example.com","username":"testuser","password":"password123"})
+// @Success      201 {object} response.Response{data=user.AuthResponse} "注册成功，返回用户信息和 token"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误" example({"success":false,"error":"Invalid email address","code":"INVALID_EMAIL"})
 // @Failure      409 {object} response.ErrorResponse "用户已存在" example({"success":false,"error":"User already exists","code":"USER_EXISTS"})
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /auth/register [post]
+// @Router       /api/v1/auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
-	var req service.RegisterDTO
+	var req user.RegisterDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -54,14 +52,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        credentials body service.LoginDTO true "登录凭证" example({"email":"user@example.com","password":"password123"})
-// @Success      200 {object} response.Response{data=service.AuthResponse} "登录成功"
+// @Param        credentials body user.LoginDTO true "登录凭证" example({"email":"user@example.com","password":"password123"})
+// @Success      200 {object} response.Response{data=user.AuthResponse} "登录成功"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
 // @Failure      401 {object} response.ErrorResponse "用户名或密码错误" example({"success":false,"error":"Invalid email or password","code":"INVALID_CREDENTIALS"})
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /auth/login [post]
+// @Router       /api/v1/auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req service.LoginDTO
+	var req user.LoginDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -87,7 +85,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Failure      401 {object} response.ErrorResponse "未认证" example({"success":false,"error":"Authentication required","code":"UNAUTHORIZED"})
 // @Failure      404 {object} response.ErrorResponse "用户不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /auth/me [get]
+// @Router       /api/v1/auth/me [get]
 func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
@@ -111,12 +109,12 @@ func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        profile body service.UpdateProfileDTO true "用户资料" example({"username":"newname","bio":"My bio"})
+// @Param        profile body user.UpdateProfileDTO true "用户资料" example({"username":"newname","bio":"My bio"})
 // @Success      200 {object} response.Response{data=user.User} "更新成功"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
 // @Failure      401 {object} response.ErrorResponse "未认证"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /auth/profile [put]
+// @Router       /api/v1/auth/profile [put]
 func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
@@ -124,7 +122,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	var req service.UpdateProfileDTO
+	var req user.UpdateProfileDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -146,12 +144,12 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        passwords body service.ChangePasswordDTO true "密码信息" example({"old_password":"oldpass123","new_password":"newpass456"})
+// @Param        passwords body user.ChangePasswordDTO true "密码信息" example({"old_password":"oldpass123","new_password":"newpass456"})
 // @Success      200 {object} response.SuccessResponse "密码修改成功"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
 // @Failure      401 {object} response.ErrorResponse "未认证或旧密码错误"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /auth/change-password [post]
+// @Router       /api/v1/auth/change-password [post]
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
@@ -159,7 +157,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	var req service.ChangePasswordDTO
+	var req user.ChangePasswordDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -181,7 +179,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200 {object} response.SuccessResponse "登出成功"
-// @Router       /auth/logout [post]
+// @Router       /api/v1/auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	// JWT logout is handled client-side by removing the token
 	// This endpoint exists for consistency and future token revocation

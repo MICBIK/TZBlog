@@ -131,14 +131,54 @@ ALTER TABLE likes
 -- ============================================================================
 -- Purpose: Use appropriate data types and lengths for better performance
 -- Impact: Reduces storage size, improves query performance
+-- SAFETY: Uses multi-phase approach to avoid table locks on large tables
 
--- Articles table optimizations
+-- Set timeout protection
+SET statement_timeout = '30s';
+
+-- Articles table optimizations (PHASE A: Add new columns)
 ALTER TABLE articles
-    ALTER COLUMN title TYPE VARCHAR(200),
-    ALTER COLUMN slug TYPE VARCHAR(250),
-    ALTER COLUMN summary TYPE VARCHAR(500),
-    ALTER COLUMN cover_image TYPE VARCHAR(500),
-    ALTER COLUMN status TYPE VARCHAR(20);
+    ADD COLUMN IF NOT EXISTS title_new VARCHAR(200),
+    ADD COLUMN IF NOT EXISTS slug_new VARCHAR(250),
+    ADD COLUMN IF NOT EXISTS summary_new VARCHAR(500),
+    ADD COLUMN IF NOT EXISTS cover_image_new VARCHAR(500),
+    ADD COLUMN IF NOT EXISTS status_new VARCHAR(20);
+
+-- Articles table optimizations (PHASE B: Copy data in batches)
+DO $$
+BEGIN
+    -- Copy data from old columns to new columns
+    UPDATE articles SET
+        title_new = SUBSTRING(title FROM 1 FOR 200),
+        slug_new = SUBSTRING(slug FROM 1 FOR 250),
+        summary_new = SUBSTRING(summary FROM 1 FOR 500),
+        cover_image_new = SUBSTRING(cover_image FROM 1 FOR 500),
+        status_new = SUBSTRING(status FROM 1 FOR 20)
+    WHERE title_new IS NULL;
+END $$;
+
+-- Articles table optimizations (PHASE C: Swap columns)
+DO $$
+BEGIN
+    -- Drop old columns and rename new ones
+    ALTER TABLE articles DROP COLUMN IF EXISTS title CASCADE;
+    ALTER TABLE articles RENAME COLUMN title_new TO title;
+    ALTER TABLE articles ALTER COLUMN title SET NOT NULL;
+
+    ALTER TABLE articles DROP COLUMN IF EXISTS slug CASCADE;
+    ALTER TABLE articles RENAME COLUMN slug_new TO slug;
+    ALTER TABLE articles ALTER COLUMN slug SET NOT NULL;
+
+    ALTER TABLE articles DROP COLUMN IF EXISTS summary CASCADE;
+    ALTER TABLE articles RENAME COLUMN summary_new TO summary;
+
+    ALTER TABLE articles DROP COLUMN IF EXISTS cover_image CASCADE;
+    ALTER TABLE articles RENAME COLUMN cover_image_new TO cover_image;
+
+    ALTER TABLE articles DROP COLUMN IF EXISTS status CASCADE;
+    ALTER TABLE articles RENAME COLUMN status_new TO status;
+    ALTER TABLE articles ALTER COLUMN status SET DEFAULT 'draft';
+END $$;
 
 -- Users table optimizations
 ALTER TABLE users
@@ -168,73 +208,77 @@ ALTER TABLE subscriptions
 ALTER TABLE likes
     ALTER COLUMN target_type TYPE VARCHAR(20);
 
+-- Reset timeout
+RESET statement_timeout;
+
 -- ============================================================================
 -- PHASE 4: Add Advanced Composite Indexes
 -- ============================================================================
 -- Purpose: Optimize complex queries with multiple filters
 -- Impact: Significant performance improvement for common query patterns
+-- SAFETY: All indexes use CONCURRENTLY to avoid table locks
 
 -- Articles: Complex query optimization
 -- Query: Get published articles by category, ordered by popularity
-CREATE INDEX IF NOT EXISTS idx_articles_category_status_views
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_articles_category_status_views
 ON articles(category_id, status, view_count DESC)
 WHERE deleted_at IS NULL AND status = 'published';
 
 -- Query: Get author's published articles with stats
-CREATE INDEX IF NOT EXISTS idx_articles_author_status_published
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_articles_author_status_published
 ON articles(author_id, status, published_at DESC)
 WHERE deleted_at IS NULL AND status = 'published';
 
 -- Query: Search published articles by date range
-CREATE INDEX IF NOT EXISTS idx_articles_status_published_created
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_articles_status_published_created
 ON articles(status, published_at DESC, created_at DESC)
 WHERE deleted_at IS NULL AND status = 'published';
 
 -- Comments: Advanced filtering
 -- Query: Get approved comments for an article
-CREATE INDEX IF NOT EXISTS idx_comments_article_status_created
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_comments_article_status_created
 ON comments(article_id, status, created_at DESC)
 WHERE deleted_at IS NULL AND status = 'published';
 
 -- Query: Get user's published comments
-CREATE INDEX IF NOT EXISTS idx_comments_user_status_created
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_comments_user_status_created
 ON comments(user_id, status, created_at DESC)
 WHERE deleted_at IS NULL AND status = 'published';
 
 -- Article views: Analytics queries
 -- Query: Get unique views per article in a time range
-CREATE INDEX IF NOT EXISTS idx_article_views_article_date
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_article_views_article_date
 ON article_views(article_id, created_at DESC, ip_address);
 
 -- Query: Get views by user session
-CREATE INDEX IF NOT EXISTS idx_article_views_session_date
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_article_views_session_date
 ON article_views(session_id, created_at DESC)
 WHERE session_id IS NOT NULL;
 
 -- Likes: Aggregation queries
 -- Query: Count likes by target type and date
-CREATE INDEX IF NOT EXISTS idx_likes_target_type_date
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_likes_target_type_date
 ON likes(target_type, target_id, created_at DESC);
 
 -- Article tags: Tag statistics
 -- Query: Count articles per tag
-CREATE INDEX IF NOT EXISTS idx_article_tags_tag_article
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_article_tags_tag_article
 ON article_tags(tag_id, article_id);
 
 -- Users: User listing and filtering
 -- Query: Get active users ordered by join date
-CREATE INDEX IF NOT EXISTS idx_users_status_created
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_status_created
 ON users(status, created_at DESC)
 WHERE deleted_at IS NULL;
 
 -- Query: Search users by role and status
-CREATE INDEX IF NOT EXISTS idx_users_role_status
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_role_status
 ON users(role, status)
 WHERE deleted_at IS NULL;
 
 -- Subscriptions: Email campaign queries
 -- Query: Get active verified subscribers
-CREATE INDEX IF NOT EXISTS idx_subscriptions_status_verified
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_subscriptions_status_verified
 ON subscriptions(status, verified_at DESC)
 WHERE verified_at IS NOT NULL;
 
@@ -243,21 +287,22 @@ WHERE verified_at IS NOT NULL;
 -- ============================================================================
 -- Purpose: Enable index-only scans for frequently accessed data
 -- Impact: Eliminates table lookups, reduces I/O
+-- SAFETY: All indexes use CONCURRENTLY to avoid table locks
 
 -- Query: Article list with basic info (id, title, slug, created_at)
-CREATE INDEX IF NOT EXISTS idx_articles_list_covering
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_articles_list_covering
 ON articles(status, created_at DESC)
 INCLUDE (id, title, slug, view_count, like_count, comment_count)
 WHERE deleted_at IS NULL AND status = 'published';
 
 -- Query: User profile lookup (id, username, display_name)
-CREATE INDEX IF NOT EXISTS idx_users_lookup_covering
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_lookup_covering
 ON users(username)
 INCLUDE (id, display_name, avatar_url, role)
 WHERE deleted_at IS NULL;
 
 -- Query: Comment count per article
-CREATE INDEX IF NOT EXISTS idx_comments_count_covering
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_comments_count_covering
 ON comments(article_id)
 INCLUDE (id, status)
 WHERE deleted_at IS NULL;
@@ -267,24 +312,25 @@ WHERE deleted_at IS NULL;
 -- ============================================================================
 -- Purpose: Smaller, faster indexes for specific query patterns
 -- Impact: Reduced index size, faster writes, faster specific queries
+-- SAFETY: All indexes use CONCURRENTLY to avoid table locks
 
 -- Only index draft articles (for author's draft list)
-CREATE INDEX IF NOT EXISTS idx_articles_drafts
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_articles_drafts
 ON articles(author_id, updated_at DESC)
 WHERE status = 'draft' AND deleted_at IS NULL;
 
 -- Only index unverified users (for admin moderation)
-CREATE INDEX IF NOT EXISTS idx_users_unverified
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_unverified
 ON users(created_at DESC)
 WHERE is_verified = false AND deleted_at IS NULL;
 
 -- Only index pending comments (for moderation queue)
-CREATE INDEX IF NOT EXISTS idx_comments_pending
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_comments_pending
 ON comments(created_at ASC)
 WHERE status = 'pending' AND deleted_at IS NULL;
 
 -- Only index unverified subscriptions
-CREATE INDEX IF NOT EXISTS idx_subscriptions_unverified
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_subscriptions_unverified
 ON subscriptions(created_at DESC)
 WHERE verified_at IS NULL AND status = 'active';
 

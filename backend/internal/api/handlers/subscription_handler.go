@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/MICBIK/TZBlog/backend/internal/domain/subscription"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,7 +32,7 @@ type SubscribeRequest struct {
 // @Tags Subscription
 // @Param request body SubscribeRequest true "Email"
 // @Success 200 {object} response.Response
-// @Router /subscribe [post]
+// @Router       /api/v1/subscribe [post]
 func (h *SubscriptionHandler) Subscribe(c *gin.Context) {
 	var req SubscribeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -73,7 +73,7 @@ func (h *SubscriptionHandler) Subscribe(c *gin.Context) {
 // @Tags Subscription
 // @Param token query string true "Verification token"
 // @Success 200 {object} response.Response
-// @Router /subscribe/verify [get]
+// @Router       /api/v1/subscribe/verify [get]
 func (h *SubscriptionHandler) Verify(c *gin.Context) {
 	token := c.Query("token")
 	if token == "" {
@@ -97,7 +97,7 @@ func (h *SubscriptionHandler) Verify(c *gin.Context) {
 // @Tags Subscription
 // @Param token query string true "Unsubscribe token"
 // @Success 200 {object} response.Response
-// @Router /unsubscribe [get]
+// @Router       /api/v1/unsubscribe [get]
 func (h *SubscriptionHandler) Unsubscribe(c *gin.Context) {
 	token := c.Query("token")
 	if token == "" {
@@ -120,7 +120,7 @@ func (h *SubscriptionHandler) Unsubscribe(c *gin.Context) {
 // @Summary Get subscriber count
 // @Tags Subscription
 // @Success 200 {object} response.Response
-// @Router /subscribe/count [get]
+// @Router       /api/v1/subscribe/count [get]
 func (h *SubscriptionHandler) GetSubscriberCount(c *gin.Context) {
 	count, err := h.subscriptionRepo.GetCount()
 	if err != nil {

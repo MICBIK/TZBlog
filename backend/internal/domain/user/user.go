@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"strings"
 	"time"
 
@@ -16,31 +15,8 @@ const (
 	StatusBanned   = "banned"
 )
 
-// Errors
-var (
-	// Validation errors
-	ErrInvalidUsername       = errors.New("username is required")
-	ErrInvalidUsernameLength = errors.New("username must be between 3 and 50 characters")
-	ErrInvalidUsernameFormat = errors.New("username can only contain letters, numbers, underscores, and hyphens")
-	ErrInvalidEmail          = errors.New("email is required")
-	ErrInvalidEmailFormat    = errors.New("invalid email format")
-	ErrPasswordTooShort      = errors.New("password must be at least 8 characters")
-	ErrPasswordTooLong       = errors.New("password must be at most 72 characters")
-	ErrDisplayNameTooLong    = errors.New("display name must be at most 100 characters")
-	ErrBioTooLong            = errors.New("bio must be at most 500 characters")
-
-	// Conflict errors
-	ErrUsernameExists = errors.New("username already exists")
-	ErrEmailExists    = errors.New("email already exists")
-
-	// Not found errors
-	ErrUserNotFound = errors.New("user not found")
-
-	// Authentication errors
-	ErrInvalidCredentials = errors.New("invalid username or password")
-	ErrAccountInactive    = errors.New("account is inactive")
-	ErrAccountBanned      = errors.New("account has been banned")
-)
+// ✅ SEC-006 FIX: Increase bcrypt cost from default (10) to 12 for better security
+const BcryptCost = 12
 
 // User represents a user entity
 type User struct {
@@ -123,7 +99,8 @@ func (u *User) SetPassword(password string) error {
 		return ErrPasswordTooLong
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// ✅ SEC-006 FIX: Use increased bcrypt cost for better security
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), BcryptCost)
 	if err != nil {
 		return err
 	}
