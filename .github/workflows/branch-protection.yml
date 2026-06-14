@@ -68,6 +68,8 @@ jobs:
                  [[ ! "$file" =~ ^\.github/ ]] && \
                  [[ ! "$file" =~ ^docker-compose\.yml$ ]] && \
                  [[ ! "$file" =~ ^README\.md$ ]] && \
+                 [[ ! "$file" =~ ^CLAUDE\.md$ ]] && \
+                 [[ ! "$file" =~ ^memory-bank/ ]] && \
                  [[ ! "$file" =~ ^docs/ ]]; then
                 INVALID_FILES="$INVALID_FILES\n  - $file"
               fi
@@ -82,6 +84,8 @@ jobs:
               echo "  - .github/ (CI/CD)"
               echo "  - docker-compose.yml"
               echo "  - docs/ (documentation)"
+              echo "  - CLAUDE.md (project instructions)"
+              echo "  - memory-bank/ (project memory)"
               exit 1
             fi
 
@@ -92,6 +96,8 @@ jobs:
                  [[ ! "$file" =~ ^\.github/ ]] && \
                  [[ ! "$file" =~ ^docker-compose\.yml$ ]] && \
                  [[ ! "$file" =~ ^README\.md$ ]] && \
+                 [[ ! "$file" =~ ^CLAUDE\.md$ ]] && \
+                 [[ ! "$file" =~ ^memory-bank/ ]] && \
                  [[ ! "$file" =~ ^docs/ ]]; then
                 INVALID_FILES="$INVALID_FILES\n  - $file"
               fi
