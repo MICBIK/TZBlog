@@ -215,3 +215,55 @@ jwt:
 - [ ] `GET /categories` 和 `GET /tags` 返回列表
 - [ ] `POST /upload/image` 能上传图片返回 CDN URL
 - [ ] 401 错误返回规范 `{ success: false, error: { code, message } }`
+
+---
+
+## 联调验收结果（2026-06-14 前端实测）
+
+> 前端负责人已建库（tzblog_dev）+ 跑完 4 个迁移 + 启动 cmd/server 实际 curl 测试。
+
+### ✅ 已通过（10/13）
+
+- [x] GET /health 返回 200
+- [x] POST /auth/register 返回 { user, token }
+- [x] 带 token GET /auth/me 返回当前用户
+- [x] GET /articles 返回列表 + metadata 分页（total/page/limit/totalPages 齐全）
+- [x] GET /articles/:slug 返回详情，字段 camelCase 与前端类型一致
+- [x] GET /categories / GET /tags 返回列表
+- [x] 401 返回规范 { success, error:{ code, message } }
+- [x] 路由分组完整：/api/v1/auth、/articles、/categories、/tags、/comments
+- [x] 响应字段 camelCase（coverImage/authorId/viewCount）与前端一致
+- [x] metadata 字段已加入 Response 结构
+
+### ❌ 未通过 / 需后端修复（2 致命 + 2 次要）
+
+#### 🔴 C1【致命·契约不一致】Login 请求字段名错误
+现象：POST /auth/login 用 {"email":"..."} 返回 400 Invalid request data。
+根因：internal/domain/user/service.go:34 的 LoginDTO 字段是 login（非 email）：
+  type LoginDTO struct {
+      Login    string `json:"login" binding:"required"`   // 后端用 login
+      Password string `json:"password" binding:"required"`
+  }
+api-design.md 与前端约定的是 email。用 {"login":"..."} 可登录成功。
+需要：把 LoginDTO 字段从 login 改为 email（推荐，与文档/前端一致）。
+前端影响：批次 2 登录页依赖，前端会用 email 实现。
+
+#### 🔴 C2【致命·写入失败】文章创建 500 错误
+现象：管理员 token POST /articles 返回 500 Internal server error。
+根因：CreateArticleDTO 缺 categoryId，GORM 用零值 0 插入违反外键：
+  violates foreign key constraint "fk_articles_category" (SQLSTATE 23503)
+且 JSON tag 用 snake_case（cover_image），与响应的 camelCase（coverImage）不一致。还缺 tags/isPremium/slug 字段。
+需要：
+1. CreateArticleDTO/UpdateArticleDTO 补 categoryId（必填）、tags []string、isPremium bool、slug
+2. JSON tag 统一为 camelCase（coverImage/categoryId/isPremium）
+3. 确保创建时 categoryId 指向真实分类
+前端影响：批次 3 文章编辑器依赖。
+
+#### 🟠 C3【路由缺失】点赞接口未注册
+现象：POST /api/v1/articles/1/like 返回 404 page not found。
+根因：cmd/server/main.go 的 articles 路由组未注册 /like 子路由。
+需要：articles 路由组注册 POST /:id/like（需认证中间件）。
+前端影响：批次 4 点赞按钮。前端先 mock，后端补后切真实。
+
+#### ⚠️ C4【待确认】Upload 路由缺失
+main.go 未见 upload/image 路由。前端编辑器图片上传先 mock 占位。
