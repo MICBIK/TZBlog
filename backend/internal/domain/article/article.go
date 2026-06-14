@@ -28,6 +28,7 @@ type Article struct {
 	AuthorID      int64      `json:"authorId" gorm:"not null;index"`
 	CategoryID    int64      `json:"categoryId" gorm:"index"`
 	Status        string     `json:"status" gorm:"default:'draft'"` // draft, published, archived
+	IsPremium     bool       `json:"isPremium" gorm:"default:false"`
 	ReadingTime   int        `json:"readingTime"`                   // in minutes
 	ViewCount     int64      `json:"viewCount" gorm:"default:0"`
 	LikeCount     int64      `json:"likeCount" gorm:"default:0"`

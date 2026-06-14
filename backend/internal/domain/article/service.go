@@ -23,11 +23,15 @@ type Service interface {
 
 // CreateArticleDTO represents the request data for creating an article
 type CreateArticleDTO struct {
-	Title      string `json:"title" binding:"required,max=200"`
-	Summary    string `json:"summary"`
-	Content    string `json:"content" binding:"required"`
-	CoverImage string `json:"cover_image"`
-	Status     string `json:"status" binding:"required,oneof=draft published"`
+	Title      string   `json:"title" binding:"required,max=200"`
+	Summary    string   `json:"summary"`
+	Content    string   `json:"content" binding:"required"`
+	CoverImage string   `json:"coverImage"`
+	CategoryID int64    `json:"categoryId" binding:"required"`
+	Tags       []string `json:"tags"`
+	IsPremium  bool     `json:"isPremium"`
+	Slug       string   `json:"slug"`
+	Status     string   `json:"status" binding:"required,oneof=draft published"`
 }
 
 // UpdateArticleDTO represents the request data for updating an article

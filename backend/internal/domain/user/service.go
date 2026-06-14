@@ -32,7 +32,7 @@ type RegisterDTO struct {
 
 // LoginDTO represents the request data for user login
 type LoginDTO struct {
-	Login    string `json:"login" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
 

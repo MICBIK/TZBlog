@@ -117,8 +117,8 @@ func main() {
 	categoryRepo := postgres.NewCategoryRepository(db)
 	tagRepo := postgres.NewTagRepository(db)
 	commentRepo := postgres.NewCommentRepository(db)
+	likeRepo := postgres.NewLikeRepository(db)
 	// Note: These are initialized but not used yet - will be needed for future features
-	_ = postgres.NewLikeRepository(db)
 	_ = postgres.NewViewRepository(db)
 	_ = postgres.NewProgressRepository(db)
 	_ = postgres.NewFollowRepository(db)
@@ -134,6 +134,8 @@ func main() {
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 	tagHandler := handlers.NewTagHandler(tagRepo)
 	commentHandler := handlers.NewCommentHandler(commentService)
+	likeHandler := handlers.NewLikeHandler(likeRepo)
+	storageHandler := handlers.NewStorageHandler()
 
 	// Initialize Gin router
 	router := gin.New()
@@ -247,6 +249,33 @@ func main() {
 				commentsProtected.POST("", commentHandler.CreateComment)
 				commentsProtected.PUT("/:id", commentHandler.UpdateComment)
 				commentsProtected.DELETE("/:id", commentHandler.DeleteComment)
+			}
+		}
+
+		// Like routes (C3 fix)
+		likes := v1.Group("/likes")
+		{
+			// Protected routes (requires auth)
+			likesProtected := likes.Group("")
+			likesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			{
+				likesProtected.POST("/articles/:id", likeHandler.LikeArticle)
+				likesProtected.DELETE("/articles/:id", likeHandler.UnlikeArticle)
+				likesProtected.GET("/articles/:id/status", likeHandler.GetLikeStatus)
+			}
+		}
+
+		// Upload routes (C4 fix)
+		uploads := v1.Group("/uploads")
+		{
+			// Public config endpoint
+			uploads.GET("/config", storageHandler.GetUploadConfig)
+
+			// Protected routes (requires auth)
+			uploadsProtected := uploads.Group("")
+			uploadsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			{
+				uploadsProtected.POST("/images", storageHandler.UploadImage)
 			}
 		}
 	}
