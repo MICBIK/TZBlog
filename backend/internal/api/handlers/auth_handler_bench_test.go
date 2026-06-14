@@ -16,19 +16,23 @@ type mockAuthServiceBench struct{}
 
 func (m *mockAuthServiceBench) Register(dto *user.RegisterDTO) (*user.AuthResponse, error) {
 	return &user.AuthResponse{
-		User: user.User{ID: 1, Email: dto.Email, Username: dto.Username},
+		User:  &user.User{ID: 1, Email: dto.Email, Username: dto.Username},
 		Token: "mock_token",
 	}, nil
 }
 
 func (m *mockAuthServiceBench) Login(dto *user.LoginDTO) (*user.AuthResponse, error) {
 	return &user.AuthResponse{
-		User: user.User{ID: 1, Email: dto.Email},
+		User:  &user.User{ID: 1, Email: dto.Email},
 		Token: "mock_token",
 	}, nil
 }
 
-func (m *mockAuthServiceBench) GetByID(id int64) (*user.User, error) {
+func (m *mockAuthServiceBench) GetUserByID(id int64) (*user.User, error) {
+	return &user.User{ID: id, Email: "test@example.com"}, nil
+}
+
+func (m *mockAuthServiceBench) GetCurrentUser(id int64) (*user.User, error) {
 	return &user.User{ID: id, Email: "test@example.com"}, nil
 }
 
