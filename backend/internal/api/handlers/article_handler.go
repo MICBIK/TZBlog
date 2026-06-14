@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
@@ -268,4 +269,131 @@ func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 	}
 
 	response.Success(c, gin.H{"message": "Article deleted successfully"})
+}
+
+// PatchArticle partially updates an article
+// @Summary      部分更新文章
+// @Description  部分更新文章字段（需要是作者本人），只更新提供的字段
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        slug path string true "文章 slug" example("my-first-post")
+// @Param        updates body map[string]interface{} true "需要更新的字段" example({"title":"新标题","status":"published"})
+// @Success      200 {object} response.Response{data=article.Article} "更新成功" example({"success":true,"data":{"id":1,"title":"新标题","status":"published"}})
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      403 {object} response.ErrorResponse "无权限修改此文章"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/{slug} [patch]
+func (h *ArticleHandler) PatchArticle(c *gin.Context) {
+	slug := c.Param("slug")
+	if slug == "" {
+		response.BadRequest(c, "Article slug is required")
+		return
+	}
+
+	var updates map[string]interface{}
+	if err := c.ShouldBindJSON(&updates); err != nil {
+		response.BadRequest(c, "Invalid request data")
+		return
+	}
+
+	userID := c.GetInt64("user_id")
+	if userID == 0 {
+		response.Unauthorized(c, "Authentication required")
+		return
+	}
+
+	art, err := h.service.PatchArticle(slug, userID, updates)
+	if err != nil {
+		response.HandleError(c, err)
+		return
+	}
+
+	response.Success(c, art)
+}
+
+// BatchDelete deletes multiple articles
+// @Summary      批量删除文章
+// @Description  批量删除多篇文章（需要是作者本人），最多100篇
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body object{ids=[]int64} true "文章ID列表" example({"ids":[1,2,3]})
+// @Success      200 {object} response.Response{data=object{deleted=int}} "删除成功" example({"success":true,"data":{"deleted":3,"message":"Successfully deleted 3 articles"}})
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/batch [delete]
+func (h *ArticleHandler) BatchDelete(c *gin.Context) {
+	var req struct {
+		IDs []int64 `json:"ids" binding:"required,min=1,max=100"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request data: ids required (1-100 items)")
+		return
+	}
+
+	userID := c.GetInt64("user_id")
+	if userID == 0 {
+		response.Unauthorized(c, "Authentication required")
+		return
+	}
+
+	count, err := h.service.BatchDelete(req.IDs, userID)
+	if err != nil {
+		response.HandleError(c, err)
+		return
+	}
+
+	response.Success(c, gin.H{
+		"deleted": count,
+		"message": fmt.Sprintf("Successfully deleted %d articles", count),
+	})
+}
+
+// BatchUpdateStatus updates status for multiple articles
+// @Summary      批量更新文章状态
+// @Description  批量更新多篇文章的状态（需要是作者本人），最多100篇
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body object{ids=[]int64,status=string} true "文章ID列表和目标状态" example({"ids":[1,2,3],"status":"published"})
+// @Success      200 {object} response.Response{data=object{updated=int}} "更新成功" example({"success":true,"data":{"updated":3,"message":"Successfully updated 3 articles to published"}})
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/batch/status [put]
+func (h *ArticleHandler) BatchUpdateStatus(c *gin.Context) {
+	var req struct {
+		IDs    []int64 `json:"ids" binding:"required,min=1,max=100"`
+		Status string  `json:"status" binding:"required,oneof=draft published archived"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request data: ids (1-100 items) and status (draft/published/archived) required")
+		return
+	}
+
+	userID := c.GetInt64("user_id")
+	if userID == 0 {
+		response.Unauthorized(c, "Authentication required")
+		return
+	}
+
+	count, err := h.service.BatchUpdateStatus(req.IDs, userID, req.Status)
+	if err != nil {
+		response.HandleError(c, err)
+		return
+	}
+
+	response.Success(c, gin.H{
+		"updated": count,
+		"message": fmt.Sprintf("Successfully updated %d articles to %s", count, req.Status),
+	})
 }

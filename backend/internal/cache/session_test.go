@@ -28,7 +28,7 @@ func TestSessionManager_CreateSession(t *testing.T) {
 	defer mr.Close()
 	defer client.Close()
 
-	manager := NewSessionManager(client)
+	manager := NewSessionManager(client, 30*time.Minute)
 	ctx := context.Background()
 
 	session := &Session{
@@ -66,7 +66,7 @@ func TestSessionManager_MaxConcurrentSessions(t *testing.T) {
 	defer mr.Close()
 	defer client.Close()
 
-	manager := NewSessionManager(client)
+	manager := NewSessionManager(client, 30*time.Minute)
 	ctx := context.Background()
 
 	userID := int64(1)
@@ -111,7 +111,7 @@ func TestSessionManager_UpdateLastSeen(t *testing.T) {
 	defer mr.Close()
 	defer client.Close()
 
-	manager := NewSessionManager(client)
+	manager := NewSessionManager(client, 30*time.Minute)
 	ctx := context.Background()
 
 	session := &Session{
@@ -154,7 +154,7 @@ func TestSessionManager_DeleteSession(t *testing.T) {
 	defer mr.Close()
 	defer client.Close()
 
-	manager := NewSessionManager(client)
+	manager := NewSessionManager(client, 30*time.Minute)
 	ctx := context.Background()
 
 	session := &Session{
@@ -190,7 +190,7 @@ func TestSessionManager_DeleteUserSessions(t *testing.T) {
 	defer mr.Close()
 	defer client.Close()
 
-	manager := NewSessionManager(client)
+	manager := NewSessionManager(client, 30*time.Minute)
 	ctx := context.Background()
 
 	userID := int64(1)
@@ -235,7 +235,7 @@ func TestSessionManager_GetUserSessions(t *testing.T) {
 	defer mr.Close()
 	defer client.Close()
 
-	manager := NewSessionManager(client)
+	manager := NewSessionManager(client, 30*time.Minute)
 	ctx := context.Background()
 
 	userID := int64(1)
@@ -274,7 +274,7 @@ func TestSessionManager_CheckSessionTimeout(t *testing.T) {
 	defer mr.Close()
 	defer client.Close()
 
-	manager := NewSessionManager(client)
+	manager := NewSessionManager(client, 30*time.Minute)
 	ctx := context.Background()
 
 	// 创建一个超时的会话
