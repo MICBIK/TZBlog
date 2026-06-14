@@ -4,40 +4,26 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
+	"github.com/gosimple/slug"
 )
 
 // ArticleService handles article business logic
 type ArticleService struct {
-	repo article.Repository
+	repo    article.Repository
+	tagRepo tag.TagRepository
 }
 
 // NewArticleService creates a new article service
-func NewArticleService(repo article.Repository) *ArticleService {
+func NewArticleService(repo article.Repository, tagRepo tag.TagRepository) article.Service {
 	return &ArticleService{
-		repo: repo,
+		repo:    repo,
+		tagRepo: tagRepo,
 	}
 }
 
-// CreateArticleDTO represents the request data for creating an article
-type CreateArticleDTO struct {
-	Title      string `json:"title" binding:"required,max=200"`
-	Summary    string `json:"summary"`
-	Content    string `json:"content" binding:"required"`
-	CoverImage string `json:"cover_image"`
-	Status     string `json:"status" binding:"required,oneof=draft published"`
-}
-
-// UpdateArticleDTO represents the request data for updating an article
-type UpdateArticleDTO struct {
-	Title      *string `json:"title" binding:"omitempty,max=200"`
-	Summary    *string `json:"summary"`
-	Content    *string `json:"content"`
-	CoverImage *string `json:"cover_image"`
-	Status     *string `json:"status" binding:"omitempty,oneof=draft published archived"`
-}
-
 // CreateArticle creates a new article
-func (s *ArticleService) CreateArticle(userID int64, dto *CreateArticleDTO) (*article.Article, error) {
+func (s *ArticleService) CreateArticle(userID int64, dto *article.CreateArticleDTO) (*article.Article, error) {
 	// Create article entity
 	newArticle := &article.Article{
 		AuthorID:   userID,
@@ -45,14 +31,23 @@ func (s *ArticleService) CreateArticle(userID int64, dto *CreateArticleDTO) (*ar
 		Summary:    dto.Summary,
 		Content:    dto.Content,
 		CoverImage: dto.CoverImage,
+		CategoryID: dto.CategoryID,
+		IsPremium:  dto.IsPremium,
 		Status:     dto.Status,
 	}
 
-	// Generate slug from title
-	newArticle.GenerateSlug()
+	// Use provided slug or generate from title
+	if dto.Slug != "" {
+		newArticle.Slug = dto.Slug
+	} else {
+		newArticle.GenerateSlug()
+	}
 
 	// Calculate reading time
 	newArticle.CalculateReadingTime()
+
+	// ✅ SEC-001 FIX: Sanitize content to prevent XSS attacks
+	newArticle.SanitizeContent()
 
 	// Set published time if status is published
 	if dto.Status == article.StatusPublished {
@@ -70,7 +65,63 @@ func (s *ArticleService) CreateArticle(userID int64, dto *CreateArticleDTO) (*ar
 		return nil, err
 	}
 
+	// Handle tags if provided
+	if len(dto.Tags) > 0 {
+		tagIDs, err := s.findOrCreateTags(dto.Tags)
+		if err != nil {
+			// Log error but don't fail article creation
+			// Tags can be added later
+			// TODO: Add proper logging
+		} else {
+			// Attach tags to article
+			if err := s.repo.AttachTags(newArticle.ID, tagIDs); err != nil {
+				// Log error but don't fail article creation
+				// TODO: Add proper logging
+			}
+		}
+	}
+
 	return newArticle, nil
+}
+
+// findOrCreateTags finds existing tags or creates new ones
+func (s *ArticleService) findOrCreateTags(tagNames []string) ([]int64, error) {
+	if len(tagNames) == 0 {
+		return nil, nil
+	}
+
+	// Find existing tags
+	existingTags, err := s.tagRepo.FindByNames(tagNames)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build map of existing tag names
+	existingMap := make(map[string]int64)
+	for _, t := range existingTags {
+		existingMap[t.Name] = t.ID
+	}
+
+	// Collect tag IDs and create missing tags
+	var tagIDs []int64
+	for _, name := range tagNames {
+		if id, exists := existingMap[name]; exists {
+			tagIDs = append(tagIDs, id)
+		} else {
+			// Create new tag
+			newTag := &tag.Tag{
+				Name: name,
+				Slug: slug.Make(name),
+			}
+			if err := s.tagRepo.Create(newTag); err != nil {
+				// Skip this tag if creation fails
+				continue
+			}
+			tagIDs = append(tagIDs, newTag.ID)
+		}
+	}
+
+	return tagIDs, nil
 }
 
 // GetArticleByID retrieves an article by ID
@@ -123,7 +174,7 @@ func (s *ArticleService) ListArticles(filter *article.ListFilter) ([]*article.Ar
 }
 
 // UpdateArticle updates an existing article
-func (s *ArticleService) UpdateArticle(id, userID int64, dto *UpdateArticleDTO) (*article.Article, error) {
+func (s *ArticleService) UpdateArticle(id, userID int64, dto *article.UpdateArticleDTO) (*article.Article, error) {
 	// Fetch existing article
 	art, err := s.repo.FindByID(id)
 	if err != nil {
@@ -173,6 +224,9 @@ func (s *ArticleService) UpdateArticle(id, userID int64, dto *UpdateArticleDTO) 
 	if !updated {
 		return art, nil
 	}
+
+	// ✅ SEC-001 FIX: Sanitize content to prevent XSS attacks
+	art.SanitizeContent()
 
 	// Validate updated article
 	if err := art.Validate(); err != nil {

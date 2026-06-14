@@ -9,6 +9,11 @@ import (
 	"golang.org/x/time/rate"
 )
 
+var (
+	loginLimiterOnce       sync.Once
+	simpleLoginLimiterOnce sync.Once
+)
+
 // LoginRateLimit implements rate limiting for login attempts
 // Limits to 5 attempts per minute per email+IP combination
 func LoginRateLimit() gin.HandlerFunc {
@@ -20,17 +25,19 @@ func LoginRateLimit() gin.HandlerFunc {
 	limiters := make(map[limiterKey]*rate.Limiter)
 	var mu sync.RWMutex
 
-	// Cleanup old limiters every 10 minutes
-	go func() {
-		ticker := time.NewTicker(10 * time.Minute)
-		defer ticker.Stop()
-		for range ticker.C {
-			mu.Lock()
-			// Reset all limiters periodically to prevent memory leak
-			limiters = make(map[limiterKey]*rate.Limiter)
-			mu.Unlock()
-		}
-	}()
+	// ✅ Use sync.Once to ensure cleanup goroutine is started only once
+	loginLimiterOnce.Do(func() {
+		go func() {
+			ticker := time.NewTicker(10 * time.Minute)
+			defer ticker.Stop()
+			for range ticker.C {
+				mu.Lock()
+				// Reset all limiters periodically to prevent memory leak
+				limiters = make(map[limiterKey]*rate.Limiter)
+				mu.Unlock()
+			}
+		}()
+	})
 
 	return func(c *gin.Context) {
 		// Extract email from request
@@ -76,16 +83,18 @@ func SimpleLoginRateLimit() gin.HandlerFunc {
 	limiters := make(map[string]*rate.Limiter)
 	var mu sync.RWMutex
 
-	// Cleanup every 10 minutes
-	go func() {
-		ticker := time.NewTicker(10 * time.Minute)
-		defer ticker.Stop()
-		for range ticker.C {
-			mu.Lock()
-			limiters = make(map[string]*rate.Limiter)
-			mu.Unlock()
-		}
-	}()
+	// ✅ Use sync.Once to ensure cleanup goroutine is started only once
+	simpleLoginLimiterOnce.Do(func() {
+		go func() {
+			ticker := time.NewTicker(10 * time.Minute)
+			defer ticker.Stop()
+			for range ticker.C {
+				mu.Lock()
+				limiters = make(map[string]*rate.Limiter)
+				mu.Unlock()
+			}
+		}()
+	})
 
 	return func(c *gin.Context) {
 		ip := c.ClientIP()

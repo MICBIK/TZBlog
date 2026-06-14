@@ -5,43 +5,32 @@ import (
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"github.com/MICBIK/TZBlog/backend/pkg/auth"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // AuthService handles authentication business logic
 type AuthService struct {
-	userRepo user.UserRepository
-	jwtAuth  *auth.JWTAuth
+	userRepo         user.UserRepository
+	passwordHistRepo user.PasswordHistoryRepository
+	jwtAuth          *auth.JWTAuth
 }
 
 // NewAuthService creates a new auth service
-func NewAuthService(userRepo user.UserRepository, jwtAuth *auth.JWTAuth) *AuthService {
+func NewAuthService(userRepo user.UserRepository, jwtAuth *auth.JWTAuth) user.Service {
 	return &AuthService{
-		userRepo: userRepo,
-		jwtAuth:  jwtAuth,
+		userRepo:         userRepo,
+		passwordHistRepo: nil, // Optional: can be set via setter
+		jwtAuth:          jwtAuth,
 	}
 }
 
-// RegisterDTO represents the request data for user registration
-type RegisterDTO struct {
-	Username string `json:"username" binding:"required,min=3,max=50"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8,max=72"`
-}
-
-// LoginDTO represents the request data for user login
-type LoginDTO struct {
-	Login    string `json:"login" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-// AuthResponse represents the authentication response
-type AuthResponse struct {
-	User  *user.User `json:"user"`
-	Token string     `json:"token"`
+// SetPasswordHistoryRepo sets the password history repository (optional)
+func (s *AuthService) SetPasswordHistoryRepo(repo user.PasswordHistoryRepository) {
+	s.passwordHistRepo = repo
 }
 
 // Register creates a new user account
-func (s *AuthService) Register(dto *RegisterDTO) (*AuthResponse, error) {
+func (s *AuthService) Register(dto *user.RegisterDTO) (*user.AuthResponse, error) {
 	// Check if username already exists
 	existingUser, err := s.userRepo.FindByUsername(dto.Username)
 	if err != nil {
@@ -86,30 +75,21 @@ func (s *AuthService) Register(dto *RegisterDTO) (*AuthResponse, error) {
 	}
 
 	// Generate JWT token
-	token, err := s.jwtAuth.GenerateToken(newUser.ID, newUser.Username)
+	token, err := s.jwtAuth.GenerateToken(newUser.ID, newUser.Role)
 	if err != nil {
 		return nil, err
 	}
 
-	return &AuthResponse{
+	return &user.AuthResponse{
 		User:  newUser,
 		Token: token,
 	}, nil
 }
 
 // Login authenticates a user and returns a token
-func (s *AuthService) Login(dto *LoginDTO) (*AuthResponse, error) {
-	// Find user by username or email
-	var usr *user.User
-	var err error
-
-	// Try to find by email first
-	if contains(dto.Login, "@") {
-		usr, err = s.userRepo.FindByEmail(dto.Login)
-	} else {
-		usr, err = s.userRepo.FindByUsername(dto.Login)
-	}
-
+func (s *AuthService) Login(dto *user.LoginDTO) (*user.AuthResponse, error) {
+	// Find user by email
+	usr, err := s.userRepo.FindByEmail(dto.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -136,12 +116,12 @@ func (s *AuthService) Login(dto *LoginDTO) (*AuthResponse, error) {
 	}()
 
 	// Generate JWT token
-	token, err := s.jwtAuth.GenerateToken(usr.ID, usr.Username)
+	token, err := s.jwtAuth.GenerateToken(usr.ID, usr.Role)
 	if err != nil {
 		return nil, err
 	}
 
-	return &AuthResponse{
+	return &user.AuthResponse{
 		User:  usr,
 		Token: token,
 	}, nil
@@ -164,15 +144,8 @@ func (s *AuthService) GetCurrentUser(userID int64) (*user.User, error) {
 	return s.GetUserByID(userID)
 }
 
-// UpdateProfileDTO represents the request data for updating user profile
-type UpdateProfileDTO struct {
-	DisplayName *string `json:"display_name"`
-	Bio         *string `json:"bio"`
-	AvatarURL   *string `json:"avatar_url"`
-}
-
 // UpdateProfile updates the user's profile information
-func (s *AuthService) UpdateProfile(userID int64, dto *UpdateProfileDTO) (*user.User, error) {
+func (s *AuthService) UpdateProfile(userID int64, dto *user.UpdateProfileDTO) (*user.User, error) {
 	usr, err := s.userRepo.FindByID(userID)
 	if err != nil {
 		return nil, err
@@ -210,14 +183,8 @@ func (s *AuthService) UpdateProfile(userID int64, dto *UpdateProfileDTO) (*user.
 	return usr, nil
 }
 
-// ChangePasswordDTO represents the request data for changing password
-type ChangePasswordDTO struct {
-	CurrentPassword string `json:"current_password" binding:"required"`
-	NewPassword     string `json:"new_password" binding:"required,min=8,max=72"`
-}
-
 // ChangePassword changes the user's password
-func (s *AuthService) ChangePassword(userID int64, dto *ChangePasswordDTO) error {
+func (s *AuthService) ChangePassword(userID int64, dto *user.ChangePasswordDTO) error {
 	usr, err := s.userRepo.FindByID(userID)
 	if err != nil {
 		return err
@@ -229,6 +196,24 @@ func (s *AuthService) ChangePassword(userID int64, dto *ChangePasswordDTO) error
 	// Verify current password
 	if !usr.CheckPassword(dto.CurrentPassword) {
 		return user.ErrInvalidCredentials
+	}
+
+	// Check password history to prevent reuse
+	if s.passwordHistRepo != nil {
+		history, err := s.passwordHistRepo.GetRecentPasswords(userID, 5)
+		if err == nil && len(history) > 0 {
+			for _, ph := range history {
+				if bcrypt.CompareHashAndPassword([]byte(ph.Password), []byte(dto.NewPassword)) == nil {
+					return user.ErrPasswordReused
+				}
+			}
+		}
+
+		oldHash := usr.PasswordHash
+		_ = s.passwordHistRepo.Create(&user.PasswordHistory{
+			UserID:   userID,
+			Password: oldHash,
+		})
 	}
 
 	// Set new password
@@ -244,7 +229,7 @@ func (s *AuthService) ChangePassword(userID int64, dto *ChangePasswordDTO) error
 func contains(s, substr string) bool {
 	return len(s) > 0 && len(substr) > 0 && len(s) >= len(substr) && s != substr &&
 		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-		 len(s) > len(substr) && s[1:len(s)-1] != s && findSubstring(s, substr))
+			len(s) > len(substr) && s[1:len(s)-1] != s && findSubstring(s, substr))
 }
 
 func findSubstring(s, substr string) bool {

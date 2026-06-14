@@ -15,7 +15,7 @@ func NewRobotsHandler() *RobotsHandler {
 // @Tags SEO
 // @Produce plain
 // @Success 200 {string} string "Robots.txt content"
-// @Router /robots.txt [get]
+// @Router       /api/v1/robots.txt [get]
 func (h *RobotsHandler) ServeRobots(c *gin.Context) {
 	content := `User-agent: *
 Allow: /

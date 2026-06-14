@@ -23,8 +23,9 @@ func NewJWTAuth(secret string, expiry time.Duration) *JWTAuth {
 }
 
 // GenerateToken generates a new JWT token for a user
-func (j *JWTAuth) GenerateToken(userID int64, username string) (string, error) {
-	return GenerateToken(userID, username, j.secret, j.expiry)
+// ✅ SEC-004 FIX: Pass role parameter to prevent privilege escalation
+func (j *JWTAuth) GenerateToken(userID int64, role string) (string, error) {
+	return GenerateToken(userID, role, j.secret, j.expiry)
 }
 
 // ValidateToken validates a JWT token

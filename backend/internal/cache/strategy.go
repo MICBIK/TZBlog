@@ -93,7 +93,7 @@ const (
 	CacheArticleDetail    = 10 * time.Minute
 	CacheArticleList      = 5 * time.Minute
 	CacheUserProfile      = 15 * time.Minute
-	CacheStats            = 5 * time.Minute
+	CacheStatsTTL         = 5 * time.Minute
 	CacheTags             = 30 * time.Minute
 	CacheCategories       = 30 * time.Minute
 	CachePopularArticles  = 1 * time.Hour

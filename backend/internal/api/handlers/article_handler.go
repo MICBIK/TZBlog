@@ -4,33 +4,38 @@ import (
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
-	"github.com/MICBIK/TZBlog/backend/internal/service"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
 // ArticleHandler handles HTTP requests for articles
 type ArticleHandler struct {
-	service *service.ArticleService
+	service article.Service
 }
 
 // NewArticleHandler creates a new article handler
-func NewArticleHandler(repo article.Repository) *ArticleHandler {
+func NewArticleHandler(service article.Service) *ArticleHandler {
 	return &ArticleHandler{
-		service: service.NewArticleService(repo),
+		service: service,
 	}
 }
 
 // CreateArticle creates a new article
-// @Summary Create a new article
-// @Tags Articles
-// @Accept json
-// @Produce json
-// @Param article body service.CreateArticleDTO true "Article data"
-// @Success 201 {object} article.Article
-// @Router /articles [post]
+// @Summary      创建文章
+// @Description  创建新文章（需要登录）
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        article body article.CreateArticleDTO true "文章数据" example({"title":"文章标题","content":"文章内容","status":"draft"})
+// @Success      201 {object} response.Response{data=article.Article} "创建成功"
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      409 {object} response.ErrorResponse "文章 slug 已存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles [post]
 func (h *ArticleHandler) CreateArticle(c *gin.Context) {
-	var req service.CreateArticleDTO
+	var req article.CreateArticleDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -52,12 +57,17 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 }
 
 // GetArticleByID retrieves an article by ID
-// @Summary Get article by ID
-// @Tags Articles
-// @Produce json
-// @Param id path int true "Article ID"
-// @Success 200 {object} article.Article
-// @Router /articles/{id} [get]
+// @Summary      根据 ID 获取文章
+// @Description  通过文章 ID 获取文章详情
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "文章 ID" example(1)
+// @Success      200 {object} response.Response{data=article.Article} "成功返回文章"
+// @Failure      400 {object} response.ErrorResponse "无效的文章 ID"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/{id} [get]
 func (h *ArticleHandler) GetArticleByID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -75,12 +85,17 @@ func (h *ArticleHandler) GetArticleByID(c *gin.Context) {
 }
 
 // GetArticleBySlug retrieves an article by slug
-// @Summary Get article by slug
-// @Tags Articles
-// @Produce json
-// @Param slug path string true "Article slug"
-// @Success 200 {object} article.Article
-// @Router /articles/slug/{slug} [get]
+// @Summary      根据 slug 获取文章
+// @Description  通过文章 slug 获取文章详情
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Param        slug path string true "文章 slug" example("my-first-post")
+// @Success      200 {object} response.Response{data=article.Article} "成功返回文章"
+// @Failure      400 {object} response.ErrorResponse "文章 slug 为空"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/slug/{slug} [get]
 func (h *ArticleHandler) GetArticleBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 	if slug == "" {
@@ -98,18 +113,21 @@ func (h *ArticleHandler) GetArticleBySlug(c *gin.Context) {
 }
 
 // ListArticles retrieves a list of articles
-// @Summary List articles
-// @Tags Articles
-// @Produce json
-// @Param status query string false "Filter by status"
-// @Param author_id query int false "Filter by author ID"
-// @Param category_id query int false "Filter by category ID"
-// @Param tag_id query int false "Filter by tag ID"
-// @Param search query string false "Search query"
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} response.PaginatedResponse
-// @Router /articles [get]
+// @Summary      获取文章列表
+// @Description  分页获取文章列表，支持多种筛选条件
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Param        status query string false "文章状态" Enums(draft, published, archived) example(published)
+// @Param        author_id query int false "作者 ID" example(1)
+// @Param        category_id query int false "分类 ID" example(1)
+// @Param        tag_id query int false "标签 ID" example(1)
+// @Param        search query string false "搜索关键词" example("golang")
+// @Param        page query int false "页码" default(1) example(1)
+// @Param        limit query int false "每页数量" default(10) example(20)
+// @Success      200 {object} response.PaginatedResponse "成功返回文章列表"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles [get]
 func (h *ArticleHandler) ListArticles(c *gin.Context) {
 	var filter article.ListFilter
 
@@ -159,14 +177,21 @@ func (h *ArticleHandler) ListArticles(c *gin.Context) {
 }
 
 // UpdateArticle updates an existing article
-// @Summary Update an article
-// @Tags Articles
-// @Accept json
-// @Produce json
-// @Param id path int true "Article ID"
-// @Param article body service.UpdateArticleDTO true "Updated article data"
-// @Success 200 {object} article.Article
-// @Router /articles/{id} [put]
+// @Summary      更新文章
+// @Description  更新已有文章（需要是作者本人）
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "文章 ID" example(1)
+// @Param        article body article.UpdateArticleDTO true "更新的文章数据" example({"title":"新标题","content":"新内容"})
+// @Success      200 {object} response.Response{data=article.Article} "更新成功"
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      403 {object} response.ErrorResponse "无权限修改此文章"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/{id} [put]
 func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -174,7 +199,7 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 		return
 	}
 
-	var req service.UpdateArticleDTO
+	var req article.UpdateArticleDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "Invalid request data")
 		return
@@ -196,11 +221,20 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 }
 
 // DeleteArticle deletes an article
-// @Summary Delete an article
-// @Tags Articles
-// @Param id path int true "Article ID"
-// @Success 200 {object} response.SuccessResponse
-// @Router /articles/{id} [delete]
+// @Summary      删除文章
+// @Description  删除文章（需要是作者本人或管理员）
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "文章 ID" example(1)
+// @Success      200 {object} response.SuccessResponse "删除成功"
+// @Failure      400 {object} response.ErrorResponse "无效的文章 ID"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      403 {object} response.ErrorResponse "无权限删除此文章"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/{id} [delete]
 func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -35,7 +35,7 @@ func NewHealthHandlerWithDeps(db *gorm.DB, redis *redis.Client) *HealthHandler {
 // @Summary Health check endpoint
 // @Tags Health
 // @Success 200 {object} map[string]interface{}
-// @Router /health [get]
+// @Router       /api/v1/health [get]
 func (h *HealthHandler) HealthCheck(c *gin.Context) {
 	response.Success(c, gin.H{
 		"status": "ok",
@@ -48,7 +48,7 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 // @Tags Health
 // @Success 200 {object} map[string]interface{}
 // @Failure 503 {object} map[string]interface{}
-// @Router /ready [get]
+// @Router       /api/v1/ready [get]
 func (h *HealthHandler) Readiness(c *gin.Context) {
 	checks := make(map[string]string)
 	allHealthy := true
@@ -57,10 +57,11 @@ func (h *HealthHandler) Readiness(c *gin.Context) {
 	if h.db != nil {
 		sqlDB, err := h.db.DB()
 		if err != nil {
-			checks["database"] = "error: " + err.Error()
+			// ✅ SEC-005 FIX: Don't expose internal error details
+			checks["database"] = "unhealthy"
 			allHealthy = false
 		} else if err := sqlDB.Ping(); err != nil {
-			checks["database"] = "error: " + err.Error()
+			checks["database"] = "unhealthy"
 			allHealthy = false
 		} else {
 			checks["database"] = "ok"
@@ -72,7 +73,8 @@ func (h *HealthHandler) Readiness(c *gin.Context) {
 	// Check Redis connection
 	if h.redis != nil {
 		if err := h.redis.Ping(c.Request.Context()).Err(); err != nil {
-			checks["redis"] = "error: " + err.Error()
+			// ✅ SEC-005 FIX: Don't expose internal error details
+			checks["redis"] = "unhealthy"
 			allHealthy = false
 		} else {
 			checks["redis"] = "ok"
@@ -97,7 +99,7 @@ func (h *HealthHandler) Readiness(c *gin.Context) {
 // @Summary Liveness probe
 // @Tags Health
 // @Success 200 {object} map[string]interface{}
-// @Router /live [get]
+// @Router       /api/v1/live [get]
 func (h *HealthHandler) Liveness(c *gin.Context) {
 	response.Success(c, gin.H{
 		"alive": true,
@@ -109,7 +111,7 @@ func (h *HealthHandler) Liveness(c *gin.Context) {
 // @Summary Service metrics
 // @Tags Health
 // @Success 200 {object} map[string]interface{}
-// @Router /metrics [get]
+// @Router       /api/v1/metrics [get]
 func (h *HealthHandler) Metrics(c *gin.Context) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)

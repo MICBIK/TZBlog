@@ -63,7 +63,7 @@ func TestCreateComment_Success(t *testing.T) {
 	mockRepo := new(MockCommentRepository)
 	service := NewCommentService(mockRepo)
 
-	dto := &CreateCommentDTO{
+	dto := &comment.CreateCommentDTO{
 		ArticleID: 1,
 		Content:   "This is a test comment",
 	}
@@ -89,7 +89,7 @@ func TestCreateComment_WithParent(t *testing.T) {
 	service := NewCommentService(mockRepo)
 
 	parentID := int64(10)
-	dto := &CreateCommentDTO{
+	dto := &comment.CreateCommentDTO{
 		ArticleID: 1,
 		ParentID:  &parentID,
 		Content:   "This is a reply",
@@ -121,7 +121,7 @@ func TestCreateComment_InvalidParent(t *testing.T) {
 	service := NewCommentService(mockRepo)
 
 	parentID := int64(999)
-	dto := &CreateCommentDTO{
+	dto := &comment.CreateCommentDTO{
 		ArticleID: 1,
 		ParentID:  &parentID,
 		Content:   "This is a reply",
@@ -214,12 +214,13 @@ func TestUpdateComment_Success(t *testing.T) {
 	service := NewCommentService(mockRepo)
 
 	existingComment := &comment.Comment{
-		ID:      1,
-		UserID:  1,
-		Content: "Old content",
+		ID:        1,
+		UserID:    1,
+		ArticleID: 1,
+		Content:   "Old content",
 	}
 
-	dto := &UpdateCommentDTO{
+	dto := &comment.UpdateCommentDTO{
 		Content: "Updated content",
 	}
 
@@ -242,12 +243,13 @@ func TestUpdateComment_Unauthorized(t *testing.T) {
 	service := NewCommentService(mockRepo)
 
 	existingComment := &comment.Comment{
-		ID:      1,
-		UserID:  1,
-		Content: "Content",
+		ID:        1,
+		UserID:    1,
+		ArticleID: 1,
+		Content:   "Content",
 	}
 
-	dto := &UpdateCommentDTO{
+	dto := &comment.UpdateCommentDTO{
 		Content: "Updated content",
 	}
 

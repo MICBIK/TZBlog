@@ -25,7 +25,7 @@ func NewSitemapHandler(articleRepo ArticleRepository, baseURL string) *SitemapHa
 // @Tags SEO
 // @Produce xml
 // @Success 200 {string} string "XML content"
-// @Router /sitemap.xml [get]
+// @Router       /api/v1/sitemap.xml [get]
 func (h *SitemapHandler) GenerateSitemap(c *gin.Context) {
 	// Fetch all published articles
 	filter := &article.ListFilter{

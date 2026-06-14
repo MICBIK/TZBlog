@@ -1,7 +1,6 @@
 package article
 
 import (
-	"errors"
 	"strings"
 	"time"
 
@@ -18,20 +17,6 @@ const (
 	StatusArchived  = "archived"
 )
 
-// Errors
-var (
-	ErrArticleNotFound      = errors.New("article not found")
-	ErrInvalidTitle         = errors.New("article title is required")
-	ErrTitleTooLong         = errors.New("article title is too long (max 200 characters)")
-	ErrInvalidContent       = errors.New("article content is required")
-	ErrContentTooLong       = errors.New("article content is too long (max 100,000 characters)")
-	ErrInvalidSummary       = errors.New("article summary is too long (max 500 characters)")
-	ErrInvalidStatus        = errors.New("invalid article status")
-	ErrInvalidSlug          = errors.New("invalid article slug")
-	ErrInvalidAuthorID      = errors.New("article author ID is required")
-	ErrUnauthorized         = errors.New("unauthorized to perform this action")
-)
-
 // Article represents an article entity
 type Article struct {
 	ID            int64      `json:"id" gorm:"primaryKey"`
@@ -43,6 +28,7 @@ type Article struct {
 	AuthorID      int64      `json:"authorId" gorm:"not null;index"`
 	CategoryID    int64      `json:"categoryId" gorm:"index"`
 	Status        string     `json:"status" gorm:"default:'draft'"` // draft, published, archived
+	IsPremium     bool       `json:"isPremium" gorm:"default:false"`
 	ReadingTime   int        `json:"readingTime"`                   // in minutes
 	ViewCount     int64      `json:"viewCount" gorm:"default:0"`
 	LikeCount     int64      `json:"likeCount" gorm:"default:0"`
@@ -168,4 +154,6 @@ type ArticleRepository interface {
 	Update(article *Article) error
 	Delete(id int64) error
 	IncrementViewCount(id int64) error
+	AttachTags(articleID int64, tagIDs []int64) error
+	DetachTags(articleID int64) error
 }
