@@ -199,19 +199,24 @@ func main() {
 		{
 			// Public routes
 			articles.GET("", articleHandler.ListArticles)
+
+			// Article by ID routes (for internal operations)
+			articlesById := articles.Group("/by-id")
+			{
+				articlesById.GET("/:id/comments", commentHandler.ListArticleComments)
+			}
+
+			// Article by slug (must be last to avoid conflicts)
 			articles.GET("/:slug", articleHandler.GetArticleBySlug)
 
-			// Article comments (public, nested route)
-			articles.GET("/:id/comments", commentHandler.ListArticleComments)
-
-			// Protected routes (admin only)
+			// Protected routes (admin only, use slug for SEO-friendly updates)
 			articlesProtected := articles.Group("")
 			articlesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
-			articlesProtected.Use(AdminOnly()) // TODO: implement role check
+			articlesProtected.Use(AdminOnly())
 			{
 				articlesProtected.POST("", articleHandler.CreateArticle)
-				articlesProtected.PUT("/:id", articleHandler.UpdateArticle)
-				articlesProtected.DELETE("/:id", articleHandler.DeleteArticle)
+				articlesProtected.PUT("/:slug", articleHandler.UpdateArticle)
+				articlesProtected.DELETE("/:slug", articleHandler.DeleteArticle)
 			}
 		}
 

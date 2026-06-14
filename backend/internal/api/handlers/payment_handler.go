@@ -44,7 +44,7 @@ type CreateCheckoutRequest struct {
 // @Success 200 {object} response.Response{data=gin.H{url=string}}
 // @Router       /api/v1/payment/checkout [post]
 func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 
 	var req CreateCheckoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -76,7 +76,7 @@ func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
 // @Success 200 {object} response.Response{data=gin.H{url=string}}
 // @Router       /api/v1/payment/portal [post]
 func (h *PaymentHandler) CreatePortalSession(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 
 	sessionURL, err := h.stripeService.CreatePortalSession(userID)
 	if err != nil {
@@ -126,7 +126,7 @@ func (h *PaymentHandler) StripeWebhook(c *gin.Context) {
 // @Success 200 {object} response.Response
 // @Router       /api/v1/payment/history [get]
 func (h *PaymentHandler) GetPaymentHistory(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 
 	limit := 20
 	offset := 0
@@ -152,7 +152,7 @@ func (h *PaymentHandler) GetPaymentHistory(c *gin.Context) {
 // @Success 200 {object} response.Response{data=payment.Membership}
 // @Router       /api/v1/membership [get]
 func (h *PaymentHandler) GetMembership(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 
 	membership, err := h.membershipRepo.FindByUserID(userID)
 	if err != nil {
@@ -181,7 +181,7 @@ func (h *PaymentHandler) GetMembership(c *gin.Context) {
 // @Success 200 {object} response.Response
 // @Router       /api/v1/membership/cancel [post]
 func (h *PaymentHandler) CancelMembership(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 
 	err := h.membershipRepo.Cancel(userID)
 	if err != nil {
