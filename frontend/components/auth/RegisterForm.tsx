@@ -15,14 +15,7 @@ import { useAuthStore } from '@/lib/store/authStore';
 import { MOCK_USE_MOCK, mockAuthSession, mockDelay } from '@/lib/mock/data';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -31,7 +24,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 
 const registerSchema = z
   .object({
@@ -54,6 +46,9 @@ const registerSchema = z
   });
 type RegisterValues = z.infer<typeof registerSchema>;
 
+const fieldClass =
+  'border-border bg-secondary font-mono focus-visible:border-[var(--acc-dim)] focus-visible:ring-[3px] focus-visible:ring-primary/[0.08]';
+
 export function RegisterForm() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -72,123 +67,126 @@ export function RegisterForm() {
   async function onSubmit(values: RegisterValues) {
     setSubmitting(true);
     try {
-      let session;
-      if (MOCK_USE_MOCK) {
-        await mockDelay();
-        session = mockAuthSession;
-      } else {
-        session = await registerApi({
-          username: values.username,
-          email: values.email,
-          password: values.password,
-        });
-      }
+      const session = MOCK_USE_MOCK
+        ? (await mockDelay(), mockAuthSession)
+        : await registerApi({
+            username: values.username,
+            email: values.email,
+            password: values.password,
+          });
       setAuth(session.user, session.token);
       toast.success('注册成功');
       router.push('/admin');
     } catch (err) {
-      const message =
-        err instanceof ApiRequestError ? err.message : '注册失败，请重试';
-      toast.error(message);
+      toast.error(
+        err instanceof ApiRequestError ? err.message : '注册失败，请重试',
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-mono">注册</CardTitle>
-        <CardDescription>创建你的 TZBlog 账户</CardDescription>
-      </CardHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>用户名</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="zhangsan"
-                      autoComplete="username"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>邮箱</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      autoComplete="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>密码</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="至少 8 位，含字母和数字"
-                      autoComplete="new-password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>确认密码</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      autoComplete="new-password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-          <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting && <Loader2 className="size-4 animate-spin" />}
-              注册
-            </Button>
-            <p className="text-muted-foreground text-sm">
-              已有账户？
-              <Link href="/login" className="text-primary ml-1 hover:underline">
-                登录
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-muted font-mono text-xs">
+                用户名
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="haiden"
+                  autoComplete="username"
+                  className={fieldClass}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-muted font-mono text-xs">
+                邮箱
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className={fieldClass}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-muted font-mono text-xs">
+                密码
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="至少 8 位，含字母和数字"
+                  autoComplete="new-password"
+                  className={fieldClass}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-muted font-mono text-xs">
+                确认密码
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  className={fieldClass}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button
+          type="submit"
+          className="bg-primary w-full font-mono text-sm font-bold text-[#06120b] hover:shadow-[0_0_0_3px_rgba(63,224,143,0.2)]"
+          disabled={submitting}
+        >
+          {submitting && <Loader2 className="size-4 animate-spin" />}
+          <span className="opacity-55">$ </span>
+          注册
+        </Button>
+        <p className="pt-1 text-center font-mono text-[11.5px] text-[var(--dim)]">
+          已有账户？
+          <Link href="/login" className="text-primary ml-1 hover:underline">
+            登录
+          </Link>
+        </p>
+      </form>
+    </Form>
   );
 }

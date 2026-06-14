@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { JetBrains_Mono, Noto_Sans_SC } from 'next/font/google';
 
 import { Providers } from '@/components/providers/Providers';
+import { BackgroundFX } from '@/components/layout/BackgroundFX';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { SITE_URL } from '@/lib/constants';
 import './globals.css';
@@ -44,6 +45,7 @@ export default function RootLayout({
       className={`${jetbrainsMono.variable} ${notoSansSC.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <BackgroundFX />
         <Providers>
           <ErrorBoundary>{children}</ErrorBoundary>
         </Providers>

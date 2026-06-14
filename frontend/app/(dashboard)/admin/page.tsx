@@ -25,22 +25,23 @@ export default async function AdminDashboardPage() {
 
   const stats = [
     {
-      label: '文章总数',
+      label: 'total posts',
       value: articles.length,
-      sub: `${published} 已发布 · ${drafts} 草稿`,
+      sub: `${published} published · ${drafts} draft`,
       icon: FileText,
     },
-    { label: '总浏览', value: totalViews, icon: Eye },
-    { label: '总点赞', value: totalLikes, icon: Heart },
+    { label: 'total views', value: totalViews, icon: Eye },
+    { label: 'total likes', value: totalLikes, icon: Heart },
   ];
 
   const recent = articles.slice(0, 5);
 
   return (
     <main className="p-6">
+      {/* 命令行标题 */}
       <div className="mb-6">
         <h1 className="font-mono text-xl font-bold">
-          <span className="text-primary">~/</span>dashboard
+          <span className="text-primary">$</span> ./dashboard --stats
         </h1>
       </div>
 
@@ -51,21 +52,19 @@ export default async function AdminDashboardPage() {
           return (
             <div
               key={stat.label}
-              className="border-border bg-card rounded-lg border p-4"
+              className="border-border bg-card rounded-[10px] border p-4 transition-colors hover:border-[var(--line-2)]"
             >
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-muted-foreground font-mono text-xs">
+                <span className="font-mono text-xs text-[var(--dim)]">
                   {stat.label}
                 </span>
-                <Icon className="text-muted-foreground size-4" />
+                <Icon className="text-muted size-4" />
               </div>
-              <p className="text-foreground font-mono text-2xl font-bold">
+              <p className="font-mono text-2xl font-bold text-[var(--fg-strong)]">
                 {stat.value}
               </p>
               {stat.sub && (
-                <p className="text-muted-foreground mt-1 font-mono text-xs">
-                  {stat.sub}
-                </p>
+                <p className="text-muted mt-1 font-mono text-xs">{stat.sub}</p>
               )}
             </div>
           );
@@ -77,28 +76,28 @@ export default async function AdminDashboardPage() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-mono text-sm">
             <TrendingUp className="text-primary size-4" />
-            最近文章
+            <span className="text-primary">$</span> ls -lt recent/
           </h2>
           <Link
             href="/admin/articles"
-            className="text-muted-foreground hover:text-primary font-mono text-xs"
+            className="text-muted hover:text-primary font-mono text-xs transition-colors"
           >
-            查看全部 →
+            cat all →
           </Link>
         </div>
 
         {recent.length > 0 ? (
-          <div className="border-border overflow-hidden rounded-lg border">
+          <div className="border-border overflow-hidden rounded-[10px] border">
             <table className="w-full">
               <thead>
-                <tr className="border-border bg-muted/30 text-muted-foreground border-b font-mono text-xs">
-                  <th className="px-4 py-2 text-left font-normal">标题</th>
-                  <th className="px-4 py-2 text-left font-normal">状态</th>
+                <tr className="border-border bg-secondary/30 border-b font-mono text-xs text-[var(--dim)]">
+                  <th className="px-4 py-2 text-left font-normal">title</th>
+                  <th className="px-4 py-2 text-left font-normal">status</th>
                   <th className="hidden px-4 py-2 text-right font-normal sm:table-cell">
-                    浏览
+                    views
                   </th>
                   <th className="hidden px-4 py-2 text-right font-normal sm:table-cell">
-                    点赞
+                    likes
                   </th>
                 </tr>
               </thead>
@@ -106,12 +105,12 @@ export default async function AdminDashboardPage() {
                 {recent.map((article) => (
                   <tr
                     key={article.id}
-                    className="border-border/50 hover:bg-muted/20 border-b last:border-0"
+                    className="border-border/50 hover:bg-secondary/20 border-b transition-colors last:border-0"
                   >
                     <td className="px-4 py-2.5">
                       <Link
                         href={`/admin/articles/${article.id}/edit`}
-                        className="text-foreground hover:text-primary"
+                        className="text-foreground hover:text-primary transition-colors"
                       >
                         {article.title}
                       </Link>
@@ -121,16 +120,16 @@ export default async function AdminDashboardPage() {
                         className={
                           article.status === 'published'
                             ? 'text-primary'
-                            : 'text-amber'
+                            : 'text-[var(--amber)]'
                         }
                       >
                         {article.status}
                       </span>
                     </td>
-                    <td className="text-muted-foreground hidden px-4 py-2.5 text-right sm:table-cell">
+                    <td className="text-muted hidden px-4 py-2.5 text-right sm:table-cell">
                       {article.viewCount}
                     </td>
-                    <td className="text-muted-foreground hidden px-4 py-2.5 text-right sm:table-cell">
+                    <td className="text-muted hidden px-4 py-2.5 text-right sm:table-cell">
                       {article.likeCount}
                     </td>
                   </tr>
@@ -139,13 +138,13 @@ export default async function AdminDashboardPage() {
             </table>
           </div>
         ) : (
-          <div className="border-border text-muted-foreground rounded-lg border border-dashed py-12 text-center font-mono text-sm">
+          <div className="border-border text-muted rounded-[10px] border border-dashed py-12 text-center font-mono text-sm">
             暂无文章，
             <Link
               href="/admin/articles/new"
               className="text-primary hover:underline"
             >
-              写一篇 →
+              vim new-post.md →
             </Link>
           </div>
         )}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil } from 'lucide-react';
 
 import { getArticles } from '@/lib/api/article';
 import { Button } from '@/components/ui/button';
