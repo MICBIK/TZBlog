@@ -6,8 +6,8 @@
 # =============================================================================
 
 FROM node:20-alpine AS base
-# 安装 pnpm 9
-RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+# 启用 corepack；pnpm 版本由 package.json 的 packageManager 字段决定
+RUN corepack enable
 
 # -----------------------------------------------------------------------------
 # Stage 1: 安装依赖（利用 Docker 层缓存）
