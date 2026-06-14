@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/MICBIK/TZBlog/backend/pkg/response"
