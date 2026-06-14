@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"bytes"
+	"io"
 	"sync"
 	"time"
 
@@ -40,20 +42,31 @@ func LoginRateLimit() gin.HandlerFunc {
 	})
 
 	return func(c *gin.Context) {
+		// Read the request body
+		bodyBytes, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			c.Next()
+			return
+		}
+
+		// Restore the body for later use
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 		// Extract email from request
 		var loginReq struct {
 			Email string `json:"email"`
 		}
 
-		// Bind to get email, but don't validate yet
+		// Bind to get email
 		if err := c.ShouldBindJSON(&loginReq); err != nil {
-			// If binding fails, let the handler deal with it
+			// Restore body again after binding attempt
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			c.Next()
 			return
 		}
 
-		// Rewind the request body for the actual handler
-		c.Request.Body = c.Request.Body
+		// Restore the body for the actual handler
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		email := loginReq.Email
 		ip := c.ClientIP()
