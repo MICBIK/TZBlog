@@ -8,7 +8,7 @@ import (
 
 // Client represents a Meilisearch client
 type Client struct {
-	client *meilisearch.Client
+	client meilisearch.ServiceManager
 	index  string
 }
 
@@ -45,10 +45,7 @@ type SearchResult struct {
 
 // NewClient creates a new Meilisearch client
 func NewClient(config *Config) *Client {
-	client := meilisearch.NewClient(meilisearch.ClientConfig{
-		Host:   config.Host,
-		APIKey: config.APIKey,
-	})
+	client := meilisearch.New(config.Host, meilisearch.WithAPIKey(config.APIKey))
 
 	return &Client{
 		client: client,
@@ -58,58 +55,33 @@ func NewClient(config *Config) *Client {
 
 // InitializeIndex initializes the search index
 func (c *Client) InitializeIndex() error {
-	// Create index if not exists
-	_, err := c.client.CreateIndex(&meilisearch.IndexConfig{
-		Uid:        c.index,
-		PrimaryKey: "id",
-	})
-	if err != nil {
-		// Index might already exist, continue
-	}
+	// Get or create index
+	index := c.client.Index(c.index)
 
 	// Configure searchable attributes
-	index := c.client.Index(c.index)
-	_, err = index.UpdateSearchableAttributes(&[]string{
-		"title",
-		"summary",
-		"content",
-		"author",
-		"tags",
-	})
+	searchableAttrs := []string{"title", "summary", "content", "author", "tags"}
+	_, err := index.UpdateSearchableAttributes(&searchableAttrs)
 	if err != nil {
 		return fmt.Errorf("failed to update searchable attributes: %w", err)
 	}
 
 	// Configure filterable attributes
-	_, err = index.UpdateFilterableAttributes(&[]string{
-		"category",
-		"tags",
-		"author",
-		"publishedAt",
-	})
+	filterableAttrs := []interface{}{"category", "tags", "author", "publishedAt"}
+	_, err = index.UpdateFilterableAttributes(&filterableAttrs)
 	if err != nil {
 		return fmt.Errorf("failed to update filterable attributes: %w", err)
 	}
 
 	// Configure sortable attributes
-	_, err = index.UpdateSortableAttributes(&[]string{
-		"publishedAt",
-		"viewCount",
-	})
+	sortableAttrs := []string{"publishedAt", "viewCount"}
+	_, err = index.UpdateSortableAttributes(&sortableAttrs)
 	if err != nil {
 		return fmt.Errorf("failed to update sortable attributes: %w", err)
 	}
 
 	// Configure ranking rules
-	_, err = index.UpdateRankingRules(&[]string{
-		"words",
-		"typo",
-		"proximity",
-		"attribute",
-		"sort",
-		"exactness",
-		"viewCount:desc",
-	})
+	rankingRules := []string{"words", "typo", "proximity", "attribute", "sort", "exactness", "viewCount:desc"}
+	_, err = index.UpdateRankingRules(&rankingRules)
 	if err != nil {
 		return fmt.Errorf("failed to update ranking rules: %w", err)
 	}
@@ -120,7 +92,8 @@ func (c *Client) InitializeIndex() error {
 // IndexArticle adds or updates an article in the search index
 func (c *Client) IndexArticle(doc *ArticleDocument) error {
 	index := c.client.Index(c.index)
-	_, err := index.AddDocuments([]ArticleDocument{*doc}, "id")
+	primaryKey := "id"
+	_, err := index.AddDocuments([]ArticleDocument{*doc}, &meilisearch.DocumentOptions{PrimaryKey: &primaryKey})
 	if err != nil {
 		return fmt.Errorf("failed to index article: %w", err)
 	}
@@ -130,7 +103,8 @@ func (c *Client) IndexArticle(doc *ArticleDocument) error {
 // IndexArticles adds or updates multiple articles in the search index
 func (c *Client) IndexArticles(docs []ArticleDocument) error {
 	index := c.client.Index(c.index)
-	_, err := index.AddDocuments(docs, "id")
+	primaryKey := "id"
+	_, err := index.AddDocuments(docs, &meilisearch.DocumentOptions{PrimaryKey: &primaryKey})
 	if err != nil {
 		return fmt.Errorf("failed to index articles: %w", err)
 	}
@@ -140,7 +114,7 @@ func (c *Client) IndexArticles(docs []ArticleDocument) error {
 // DeleteArticle removes an article from the search index
 func (c *Client) DeleteArticle(id string) error {
 	index := c.client.Index(c.index)
-	_, err := index.DeleteDocument(id)
+	_, err := index.DeleteDocument(id, nil)
 	if err != nil {
 		return fmt.Errorf("failed to delete article: %w", err)
 	}
@@ -180,8 +154,9 @@ func (c *Client) Search(query string, options *SearchOptions) (*SearchResult, er
 	// Convert response
 	hits := make([]ArticleDocument, 0, len(resp.Hits))
 	for _, hit := range resp.Hits {
-		if doc, ok := hit.(map[string]interface{}); ok {
-			hits = append(hits, convertToArticleDocument(doc))
+		var doc ArticleDocument
+		if err := hit.Decode(&doc); err == nil {
+			hits = append(hits, doc)
 		}
 	}
 
@@ -228,53 +203,10 @@ func buildFilters(filters map[string]interface{}) interface{} {
 	return filterStrings
 }
 
-// convertToArticleDocument converts map to ArticleDocument
-func convertToArticleDocument(doc map[string]interface{}) ArticleDocument {
-	result := ArticleDocument{}
-
-	if id, ok := doc["id"].(string); ok {
-		result.ID = id
-	}
-	if slug, ok := doc["slug"].(string); ok {
-		result.Slug = slug
-	}
-	if title, ok := doc["title"].(string); ok {
-		result.Title = title
-	}
-	if summary, ok := doc["summary"].(string); ok {
-		result.Summary = summary
-	}
-	if content, ok := doc["content"].(string); ok {
-		result.Content = content
-	}
-	if author, ok := doc["author"].(string); ok {
-		result.Author = author
-	}
-	if category, ok := doc["category"].(string); ok {
-		result.Category = category
-	}
-	if tags, ok := doc["tags"].([]interface{}); ok {
-		result.Tags = make([]string, len(tags))
-		for i, tag := range tags {
-			if tagStr, ok := tag.(string); ok {
-				result.Tags[i] = tagStr
-			}
-		}
-	}
-	if publishedAt, ok := doc["publishedAt"].(float64); ok {
-		result.PublishedAt = int64(publishedAt)
-	}
-	if viewCount, ok := doc["viewCount"].(float64); ok {
-		result.ViewCount = int64(viewCount)
-	}
-
-	return result
-}
-
 // GetStats returns index statistics
 func (c *Client) GetStats() (map[string]interface{}, error) {
 	index := c.client.Index(c.index)
-	stats, err := index.GetStats()
+	stats, err := index.GetStats(nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stats: %w", err)
 	}

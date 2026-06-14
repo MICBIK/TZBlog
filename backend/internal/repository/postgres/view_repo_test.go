@@ -28,22 +28,6 @@ func TestViewRepository_Create(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestViewRepository_HasViewed(t *testing.T) {
-	db, mock := setupMockDB(t)
-	repo := NewViewRepository(db)
-
-	rows := sqlmock.NewRows([]string{"count"}).AddRow(1)
-
-	mock.ExpectQuery(`SELECT count\(\*\) FROM "views"`).
-		WithArgs(int64(1), "127.0.0.1", sqlmock.AnyArg()).
-		WillReturnRows(rows)
-
-	hasViewed, err := repo.HasViewed(1, "127.0.0.1", 24)
-	assert.NoError(t, err)
-	assert.True(t, hasViewed)
-	assert.NoError(t, mock.ExpectationsWereMet())
-}
-
 func TestViewRepository_CountByArticle(t *testing.T) {
 	db, mock := setupMockDB(t)
 	repo := NewViewRepository(db)

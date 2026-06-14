@@ -1,13 +1,17 @@
-package domain
+package follow
 
-import "time"
+import (
+	"time"
+
+	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
+)
 
 // Follow represents a user follow relationship
 type Follow struct {
-	ID         int64     `json:"id" gorm:"primaryKey"`
-	FollowerID int64     `json:"followerId" gorm:"not null;index:idx_follower_following,unique"`
-	FollowingID int64    `json:"followingId" gorm:"not null;index:idx_follower_following,unique"`
-	CreatedAt  time.Time `json:"createdAt"`
+	ID          int64     `json:"id" gorm:"primaryKey"`
+	FollowerID  int64     `json:"followerId" gorm:"not null;index:idx_follower_following,unique"`
+	FollowingID int64     `json:"followingId" gorm:"not null;index:idx_follower_following,unique"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 // TableName returns the table name
@@ -20,8 +24,8 @@ type FollowRepository interface {
 	Follow(followerID, followingID int64) error
 	Unfollow(followerID, followingID int64) error
 	IsFollowing(followerID, followingID int64) (bool, error)
-	GetFollowers(userID int64, limit, offset int) ([]*User, int64, error)
-	GetFollowing(userID int64, limit, offset int) ([]*User, int64, error)
+	GetFollowers(userID int64, limit, offset int) ([]*user.User, int64, error)
+	GetFollowing(userID int64, limit, offset int) ([]*user.User, int64, error)
 	GetFollowerCount(userID int64) (int64, error)
 	GetFollowingCount(userID int64) (int64, error)
 }

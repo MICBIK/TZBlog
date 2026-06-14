@@ -6,24 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
-
-func setupMockDB(t *testing.T) (*gorm.DB, sqlmock.Sqlmock) {
-	db, mock, err := sqlmock.New()
-	assert.NoError(t, err)
-
-	dialector := postgres.New(postgres.Config{
-		Conn:       db,
-		DriverName: "postgres",
-	})
-
-	gormDB, err := gorm.Open(dialector, &gorm.Config{})
-	assert.NoError(t, err)
-
-	return gormDB, mock
-}
 
 func TestUserRepository_Create(t *testing.T) {
 	db, mock := setupMockDB(t)

@@ -32,6 +32,11 @@ func TestCommentRepository_FindByArticleID(t *testing.T) {
 	db, mock := setupMockDB(t)
 	repo := NewCommentRepository(db)
 
+	countRows := sqlmock.NewRows([]string{"count"}).AddRow(2)
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "comments" WHERE article_id`).
+		WithArgs(int64(1)).
+		WillReturnRows(countRows)
+
 	rows := sqlmock.NewRows([]string{
 		"id", "article_id", "user_id", "content",
 	}).
@@ -42,13 +47,10 @@ func TestCommentRepository_FindByArticleID(t *testing.T) {
 		WithArgs(int64(1)).
 		WillReturnRows(rows)
 
-	// Mock user preload
-	mock.ExpectQuery(`SELECT .* FROM "users"`).
-		WillReturnRows(sqlmock.NewRows([]string{}))
-
-	comments, err := repo.FindByArticleID(1)
+	comments, total, err := repo.FindByArticleID(1, 10, 0)
 	assert.NoError(t, err)
 	assert.Len(t, comments, 2)
+	assert.Equal(t, int64(2), total)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 

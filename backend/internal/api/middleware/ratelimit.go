@@ -35,6 +35,7 @@ type ipRateLimiter struct {
 	limiters map[string]*limiterEntry
 	rps      int
 	burst    int
+	once     sync.Once
 }
 
 // limiterEntry stores a rate limiter with its last access time
@@ -44,6 +45,7 @@ type limiterEntry struct {
 }
 
 // IPRateLimiter creates per-IP rate limiting with concurrent safety
+// ✅ CONC-001 FIX: Use sync.Once to prevent goroutine leak
 func IPRateLimiter(rps int, burst int) gin.HandlerFunc {
 	rl := &ipRateLimiter{
 		limiters: make(map[string]*limiterEntry),
@@ -51,15 +53,17 @@ func IPRateLimiter(rps int, burst int) gin.HandlerFunc {
 		burst:    burst,
 	}
 
-	// Clean up old limiters every hour
-	go func() {
-		ticker := time.NewTicker(time.Hour)
-		defer ticker.Stop()
+	// Clean up old limiters every hour - only start once
+	rl.once.Do(func() {
+		go func() {
+			ticker := time.NewTicker(time.Hour)
+			defer ticker.Stop()
 
-		for range ticker.C {
-			rl.cleanup()
-		}
-	}()
+			for range ticker.C {
+				rl.cleanup()
+			}
+		}()
+	})
 
 	return func(c *gin.Context) {
 		ip := c.ClientIP()

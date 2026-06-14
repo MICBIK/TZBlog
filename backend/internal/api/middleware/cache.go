@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"time"
@@ -31,8 +32,11 @@ func CacheMiddleware(redisClient *redis.Client, duration time.Duration) gin.Hand
 		cacheKey := generateCacheKey(c.Request.URL.String())
 
 		// Try to get from cache
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
 		var cachedResponse CachedResponse
-		err := cacheStrategy.Get(cacheKey, &cachedResponse)
+		err := cacheStrategy.Get(ctx, cacheKey, &cachedResponse)
 		if err == nil {
 			// Cache hit
 			c.Header("X-Cache", "HIT")
@@ -72,7 +76,9 @@ func CacheMiddleware(redisClient *redis.Client, duration time.Duration) gin.Hand
 				}
 			}
 
-			_ = cacheStrategy.Set(cacheKey, cached, duration)
+			setCtx, setCancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer setCancel()
+			_ = cacheStrategy.Set(setCtx, cacheKey, cached, duration)
 		}
 	}
 }

@@ -23,6 +23,7 @@ type DatabaseConfig struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	DBName   string `yaml:"dbname"`
+	SSLMode  string `yaml:"sslmode"`
 }
 
 // RedisConfig represents Redis configuration
@@ -51,10 +52,4 @@ type R2Config struct {
 	SecretAccessKey string `yaml:"secret_access_key"`
 	Bucket          string `yaml:"bucket"`
 	PublicURL       string `yaml:"public_url"`
-}
-
-// Load loads configuration from file
-func Load(configPath string) (*Config, error) {
-	// Implementation in config.go
-	return nil, nil
 }

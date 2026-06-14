@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/MICBIK/TZBlog/backend/internal/seo"
 	"github.com/MICBIK/TZBlog/backend/pkg/response"
 	"github.com/gin-gonic/gin"

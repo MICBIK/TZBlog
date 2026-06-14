@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/xml"
+
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/MICBIK/TZBlog/backend/internal/seo/sitemap"
 	"github.com/gin-gonic/gin"

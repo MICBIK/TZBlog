@@ -42,7 +42,7 @@ func TestLikeRepository_Delete(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestLikeRepository_HasLiked(t *testing.T) {
+func TestLikeRepository_IsLiked(t *testing.T) {
 	db, mock := setupMockDB(t)
 	repo := NewLikeRepository(db)
 
@@ -52,13 +52,13 @@ func TestLikeRepository_HasLiked(t *testing.T) {
 		WithArgs(int64(1), int64(1)).
 		WillReturnRows(rows)
 
-	hasLiked, err := repo.HasLiked(1, 1)
+	isLiked, err := repo.IsLiked(1, 1)
 	assert.NoError(t, err)
-	assert.True(t, hasLiked)
+	assert.True(t, isLiked)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestLikeRepository_HasLiked_False(t *testing.T) {
+func TestLikeRepository_IsLiked_False(t *testing.T) {
 	db, mock := setupMockDB(t)
 	repo := NewLikeRepository(db)
 
@@ -68,9 +68,9 @@ func TestLikeRepository_HasLiked_False(t *testing.T) {
 		WithArgs(int64(1), int64(1)).
 		WillReturnRows(rows)
 
-	hasLiked, err := repo.HasLiked(1, 1)
+	isLiked, err := repo.IsLiked(1, 1)
 	assert.NoError(t, err)
-	assert.False(t, hasLiked)
+	assert.False(t, isLiked)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 

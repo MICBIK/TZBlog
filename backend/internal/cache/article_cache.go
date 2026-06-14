@@ -11,37 +11,48 @@ import (
 // ArticleCache handles article caching
 type ArticleCache struct {
 	strategy *Strategy
-	ctx      context.Context
 }
 
 // NewArticleCache creates a new article cache
 func NewArticleCache(client *redis.Client) *ArticleCache {
 	return &ArticleCache{
 		strategy: NewStrategy(client),
-		ctx:      context.Background(),
 	}
 }
 
 // GetArticleBySlug retrieves cached article by slug
+// ✅ SEC-010 FIX: Add timeout context
 func (c *ArticleCache) GetArticleBySlug(slug string, dest interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixArticle, slug)
-	return c.strategy.Get(key, dest)
+	return c.strategy.Get(ctx, key, dest)
 }
 
 // SetArticle caches an article
 func (c *ArticleCache) SetArticle(slug string, article interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixArticle, slug)
-	return c.strategy.Set(key, article, CacheArticleDetail)
+	return c.strategy.Set(ctx, key, article, CacheArticleDetail)
 }
 
 // DeleteArticle removes article from cache
 func (c *ArticleCache) DeleteArticle(slug string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixArticle, slug)
-	return c.strategy.Delete(key)
+	return c.strategy.Delete(ctx, key)
 }
 
 // InvalidateArticleCache invalidates all article-related caches
 func (c *ArticleCache) InvalidateArticleCache(slug string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	// Delete article detail cache
 	if err := c.DeleteArticle(slug); err != nil {
 		return err
@@ -49,13 +60,16 @@ func (c *ArticleCache) InvalidateArticleCache(slug string) error {
 
 	// Delete article list caches
 	pattern := fmt.Sprintf("tzblog:%s:*", PrefixArticleList)
-	return c.strategy.DeletePattern(pattern)
+	return c.strategy.DeletePattern(ctx, pattern)
 }
 
 // GetViewCount gets article view count
 func (c *ArticleCache) GetViewCount(articleID int64) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixViewCount, articleID)
-	count, err := c.strategy.client.Get(c.ctx, key).Int64()
+	count, err := c.strategy.client.Get(ctx, key).Int64()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -64,15 +78,18 @@ func (c *ArticleCache) GetViewCount(articleID int64) (int64, error) {
 
 // IncrementViewCount increments article view count
 func (c *ArticleCache) IncrementViewCount(articleID int64) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixViewCount, articleID)
-	count, err := c.strategy.Increment(key)
+	count, err := c.strategy.Increment(ctx, key)
 	if err != nil {
 		return 0, err
 	}
 
 	// Set expiration if this is the first increment
 	if count == 1 {
-		_ = c.strategy.Expire(key, 24*time.Hour)
+		_ = c.strategy.Expire(ctx, key, 24*time.Hour)
 	}
 
 	return count, nil
@@ -80,8 +97,11 @@ func (c *ArticleCache) IncrementViewCount(articleID int64) (int64, error) {
 
 // GetLikeCount gets article like count
 func (c *ArticleCache) GetLikeCount(articleID int64) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixLikeCount, articleID)
-	count, err := c.strategy.client.Get(c.ctx, key).Int64()
+	count, err := c.strategy.client.Get(ctx, key).Int64()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -90,13 +110,19 @@ func (c *ArticleCache) GetLikeCount(articleID int64) (int64, error) {
 
 // IncrementLikeCount increments article like count
 func (c *ArticleCache) IncrementLikeCount(articleID int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixLikeCount, articleID)
-	_, err := c.strategy.Increment(key)
+	_, err := c.strategy.Increment(ctx, key)
 	return err
 }
 
 // DecrementLikeCount decrements article like count
 func (c *ArticleCache) DecrementLikeCount(articleID int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	key := CacheKey(PrefixLikeCount, articleID)
-	return c.strategy.client.Decr(c.ctx, key).Err()
+	return c.strategy.client.Decr(ctx, key).Err()
 }

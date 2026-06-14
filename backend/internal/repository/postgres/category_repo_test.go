@@ -27,9 +27,13 @@ func TestCategoryRepository_Create(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestCategoryRepository_FindAll(t *testing.T) {
+func TestCategoryRepository_List(t *testing.T) {
 	db, mock := setupMockDB(t)
 	repo := NewCategoryRepository(db)
+
+	countRows := sqlmock.NewRows([]string{"count"}).AddRow(2)
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "categories"`).
+		WillReturnRows(countRows)
 
 	rows := sqlmock.NewRows([]string{
 		"id", "name", "slug",
@@ -37,12 +41,13 @@ func TestCategoryRepository_FindAll(t *testing.T) {
 		AddRow(1, "Technology", "technology").
 		AddRow(2, "Science", "science")
 
-	mock.ExpectQuery(`SELECT .* FROM "categories"`).
+	mock.ExpectQuery(`SELECT .* FROM "categories" LIMIT`).
 		WillReturnRows(rows)
 
-	categories, err := repo.FindAll()
+	categories, total, err := repo.List(10, 0)
 	assert.NoError(t, err)
 	assert.Len(t, categories, 2)
+	assert.Equal(t, int64(2), total)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 

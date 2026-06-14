@@ -31,9 +31,20 @@ func (m *MockCommentRepository) FindByID(id int64) (*comment.Comment, error) {
 	return args.Get(0).(*comment.Comment), args.Error(1)
 }
 
-func (m *MockCommentRepository) FindByArticleID(articleID int64) ([]*comment.Comment, error) {
-	args := m.Called(articleID)
-	return args.Get(0).([]*comment.Comment), args.Error(1)
+func (m *MockCommentRepository) FindByArticleID(articleID int64, limit, offset int) ([]*comment.Comment, int64, error) {
+	args := m.Called(articleID, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
+	return args.Get(0).([]*comment.Comment), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockCommentRepository) List(filter *comment.ListFilter) ([]*comment.Comment, int64, error) {
+	args := m.Called(filter)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
+	return args.Get(0).([]*comment.Comment), args.Get(1).(int64), args.Error(2)
 }
 
 func (m *MockCommentRepository) Update(c *comment.Comment) error {
@@ -44,6 +55,11 @@ func (m *MockCommentRepository) Update(c *comment.Comment) error {
 func (m *MockCommentRepository) Delete(id int64) error {
 	args := m.Called(id)
 	return args.Error(0)
+}
+
+func (m *MockCommentRepository) CountByArticleID(articleID int64) (int64, error) {
+	args := m.Called(articleID)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 func TestCommentHandler_CreateComment_Success(t *testing.T) {

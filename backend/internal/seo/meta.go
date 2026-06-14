@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
 )
 
 // MetaTags represents SEO meta tags for a page
@@ -157,14 +158,14 @@ func extractDescription(content string, maxLength int) string {
 }
 
 // extractKeywords extracts keywords from tags
-func extractKeywords(tags []*article.Tag) string {
+func extractKeywords(tags []*tag.Tag) string {
 	if len(tags) == 0 {
 		return ""
 	}
 
 	keywords := make([]string, len(tags))
-	for i, tag := range tags {
-		keywords[i] = tag.Name
+	for i, t := range tags {
+		keywords[i] = t.Name
 	}
 
 	return strings.Join(keywords, ",")

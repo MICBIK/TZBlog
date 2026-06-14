@@ -27,9 +27,13 @@ func TestTagRepository_Create(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestTagRepository_FindAll(t *testing.T) {
+func TestTagRepository_List(t *testing.T) {
 	db, mock := setupMockDB(t)
 	repo := NewTagRepository(db)
+
+	countRows := sqlmock.NewRows([]string{"count"}).AddRow(2)
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "tags"`).
+		WillReturnRows(countRows)
 
 	rows := sqlmock.NewRows([]string{
 		"id", "name", "slug",
@@ -37,12 +41,13 @@ func TestTagRepository_FindAll(t *testing.T) {
 		AddRow(1, "Go", "go").
 		AddRow(2, "Python", "python")
 
-	mock.ExpectQuery(`SELECT .* FROM "tags"`).
+	mock.ExpectQuery(`SELECT .* FROM "tags" LIMIT`).
 		WillReturnRows(rows)
 
-	tags, err := repo.FindAll()
+	tags, total, err := repo.List(10, 0)
 	assert.NoError(t, err)
 	assert.Len(t, tags, 2)
+	assert.Equal(t, int64(2), total)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 

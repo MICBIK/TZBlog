@@ -1,20 +1,33 @@
 package handlers
 
 import (
+	"net/http"
 	"runtime"
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/pkg/response"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 type HealthHandler struct {
 	startTime time.Time
+	db        *gorm.DB
+	redis     *redis.Client
 }
 
 func NewHealthHandler() *HealthHandler {
 	return &HealthHandler{
 		startTime: time.Now(),
+	}
+}
+
+func NewHealthHandlerWithDeps(db *gorm.DB, redis *redis.Client) *HealthHandler {
+	return &HealthHandler{
+		startTime: time.Now(),
+		db:        db,
+		redis:     redis,
 	}
 }
 
@@ -34,14 +47,49 @@ func (h *HealthHandler) HealthCheck(c *gin.Context) {
 // @Summary Readiness probe
 // @Tags Health
 // @Success 200 {object} map[string]interface{}
+// @Failure 503 {object} map[string]interface{}
 // @Router /ready [get]
 func (h *HealthHandler) Readiness(c *gin.Context) {
-	// TODO: Check database connection
-	// TODO: Check Redis connection
+	checks := make(map[string]string)
+	allHealthy := true
 
-	response.Success(c, gin.H{
-		"ready": true,
-		"time":  time.Now().Unix(),
+	// Check database connection
+	if h.db != nil {
+		sqlDB, err := h.db.DB()
+		if err != nil {
+			checks["database"] = "error: " + err.Error()
+			allHealthy = false
+		} else if err := sqlDB.Ping(); err != nil {
+			checks["database"] = "error: " + err.Error()
+			allHealthy = false
+		} else {
+			checks["database"] = "ok"
+		}
+	} else {
+		checks["database"] = "not configured"
+	}
+
+	// Check Redis connection
+	if h.redis != nil {
+		if err := h.redis.Ping(c.Request.Context()).Err(); err != nil {
+			checks["redis"] = "error: " + err.Error()
+			allHealthy = false
+		} else {
+			checks["redis"] = "ok"
+		}
+	} else {
+		checks["redis"] = "not configured"
+	}
+
+	status := http.StatusOK
+	if !allHealthy {
+		status = http.StatusServiceUnavailable
+	}
+
+	c.JSON(status, gin.H{
+		"ready":  allHealthy,
+		"time":   time.Now().Unix(),
+		"checks": checks,
 	})
 }
 
