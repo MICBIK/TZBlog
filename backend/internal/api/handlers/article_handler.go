@@ -183,7 +183,7 @@ func (h *ArticleHandler) ListArticles(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id path int true "文章 ID" example(1)
+// @Param        slug path string true "文章 slug" example("my-first-post")
 // @Param        article body article.UpdateArticleDTO true "更新的文章数据" example({"title":"新标题","content":"新内容"})
 // @Success      200 {object} response.Response{data=article.Article} "更新成功"
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
@@ -191,11 +191,18 @@ func (h *ArticleHandler) ListArticles(c *gin.Context) {
 // @Failure      403 {object} response.ErrorResponse "无权限修改此文章"
 // @Failure      404 {object} response.ErrorResponse "文章不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /api/v1/articles/{id} [put]
+// @Router       /api/v1/articles/{slug} [put]
 func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	slug := c.Param("slug")
+	if slug == "" {
+		response.BadRequest(c, "Article slug is required")
+		return
+	}
+
+	// First get the article by slug to obtain its ID
+	existingArticle, err := h.service.GetArticleBySlug(slug)
 	if err != nil {
-		response.BadRequest(c, "Invalid article ID")
+		response.HandleError(c, err)
 		return
 	}
 
@@ -211,7 +218,7 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 		return
 	}
 
-	art, err := h.service.UpdateArticle(id, userID, &req)
+	art, err := h.service.UpdateArticle(existingArticle.ID, userID, &req)
 	if err != nil {
 		response.HandleError(c, err)
 		return
@@ -227,18 +234,25 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id path int true "文章 ID" example(1)
+// @Param        slug path string true "文章 slug" example("my-first-post")
 // @Success      200 {object} response.SuccessResponse "删除成功"
-// @Failure      400 {object} response.ErrorResponse "无效的文章 ID"
+// @Failure      400 {object} response.ErrorResponse "无效的文章 slug"
 // @Failure      401 {object} response.ErrorResponse "未认证"
 // @Failure      403 {object} response.ErrorResponse "无权限删除此文章"
 // @Failure      404 {object} response.ErrorResponse "文章不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /api/v1/articles/{id} [delete]
+// @Router       /api/v1/articles/{slug} [delete]
 func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	slug := c.Param("slug")
+	if slug == "" {
+		response.BadRequest(c, "Article slug is required")
+		return
+	}
+
+	// First get the article by slug to obtain its ID
+	existingArticle, err := h.service.GetArticleBySlug(slug)
 	if err != nil {
-		response.BadRequest(c, "Invalid article ID")
+		response.HandleError(c, err)
 		return
 	}
 
@@ -248,7 +262,7 @@ func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.DeleteArticle(id, userID); err != nil {
+	if err := h.service.DeleteArticle(existingArticle.ID, userID); err != nil {
 		response.HandleError(c, err)
 		return
 	}

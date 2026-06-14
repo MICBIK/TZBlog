@@ -34,7 +34,7 @@ func NewLikeHandler(likeRepo like.LikeRepository) *LikeHandler {
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /api/v1/likes/articles/{id} [post]
 func (h *LikeHandler) LikeArticle(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 	articleID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid article ID")
@@ -92,7 +92,7 @@ func (h *LikeHandler) LikeArticle(c *gin.Context) {
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /api/v1/likes/articles/{id} [delete]
 func (h *LikeHandler) UnlikeArticle(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 	articleID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid article ID")
@@ -133,7 +133,7 @@ func (h *LikeHandler) UnlikeArticle(c *gin.Context) {
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /api/v1/likes/articles/{id}/status [get]
 func (h *LikeHandler) GetLikeStatus(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 	articleID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid article ID")
@@ -173,7 +173,7 @@ func (h *LikeHandler) GetLikeStatus(c *gin.Context) {
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /api/v1/likes/comments/{id} [post]
 func (h *LikeHandler) LikeComment(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid comment ID")
@@ -231,7 +231,7 @@ func (h *LikeHandler) LikeComment(c *gin.Context) {
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /api/v1/likes/comments/{id} [delete]
 func (h *LikeHandler) UnlikeComment(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid comment ID")
@@ -272,7 +272,7 @@ func (h *LikeHandler) UnlikeComment(c *gin.Context) {
 // @Failure      500 {object} response.ErrorResponse "Internal server error"
 // @Router       /api/v1/likes/comments/{id}/status [get]
 func (h *LikeHandler) GetCommentLikeStatus(c *gin.Context) {
-	userID := c.GetInt64("userID")
+	userID := c.GetInt64("user_id")
 	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid comment ID")

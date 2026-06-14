@@ -26,7 +26,7 @@ func NewFollowHandler(followRepo follow.FollowRepository) *FollowHandler {
 // @Success 200 {object} response.Response
 // @Router       /api/v1/users/{id}/follow [post]
 func (h *FollowHandler) Follow(c *gin.Context) {
-	followerID := c.GetInt64("userID")
+	followerID := c.GetInt64("user_id")
 	followingID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid user ID")
@@ -55,7 +55,7 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 // @Success 200 {object} response.Response
 // @Router       /api/v1/users/{id}/unfollow [post]
 func (h *FollowHandler) Unfollow(c *gin.Context) {
-	followerID := c.GetInt64("userID")
+	followerID := c.GetInt64("user_id")
 	followingID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid user ID")
@@ -79,7 +79,7 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 // @Success 200 {object} response.Response{data=gin.H{isFollowing=bool}}
 // @Router       /api/v1/users/{id}/is-following [get]
 func (h *FollowHandler) IsFollowing(c *gin.Context) {
-	followerID := c.GetInt64("userID")
+	followerID := c.GetInt64("user_id")
 	followingID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		response.BadRequest(c, "Invalid user ID")
