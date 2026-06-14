@@ -13,7 +13,6 @@ import (
 	"github.com/MICBIK/TZBlog/backend/config"
 	"github.com/MICBIK/TZBlog/backend/internal/api/handlers"
 	"github.com/MICBIK/TZBlog/backend/internal/api/middleware"
-	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/MICBIK/TZBlog/backend/internal/cache"
 	"github.com/MICBIK/TZBlog/backend/internal/repository/postgres"
 	"github.com/MICBIK/TZBlog/backend/internal/service"
@@ -118,8 +117,8 @@ func main() {
 	categoryRepo := postgres.NewCategoryRepository(db)
 	tagRepo := postgres.NewTagRepository(db)
 	commentRepo := postgres.NewCommentRepository(db)
+	likeRepo := postgres.NewLikeRepository(db)
 	// Note: These are initialized but not used yet - will be needed for future features
-	_ = postgres.NewLikeRepository(db)
 	_ = postgres.NewViewRepository(db)
 	_ = postgres.NewProgressRepository(db)
 	_ = postgres.NewFollowRepository(db)
@@ -135,6 +134,8 @@ func main() {
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 	tagHandler := handlers.NewTagHandler(tagRepo)
 	commentHandler := handlers.NewCommentHandler(commentService)
+	likeHandler := handlers.NewLikeHandler(likeRepo)
+	storageHandler := handlers.NewStorageHandler()
 
 	// Initialize Gin router
 	router := gin.New()
@@ -258,33 +259,23 @@ func main() {
 			likesProtected := likes.Group("")
 			likesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			{
-				// TODO: Implement LikeHandler
-				likesProtected.POST("/articles/:id", func(c *gin.Context) {
-					response.Success(c, gin.H{"message": "Like endpoint - TODO: implement handler"})
-				})
-				likesProtected.DELETE("/articles/:id", func(c *gin.Context) {
-					response.Success(c, gin.H{"message": "Unlike endpoint - TODO: implement handler"})
-				})
-				likesProtected.GET("/articles/:id/status", func(c *gin.Context) {
-					response.Success(c, gin.H{"liked": false, "count": 0})
-				})
+				likesProtected.POST("/articles/:id", likeHandler.LikeArticle)
+				likesProtected.DELETE("/articles/:id", likeHandler.UnlikeArticle)
+				likesProtected.GET("/articles/:id/status", likeHandler.GetLikeStatus)
 			}
 		}
 
 		// Upload routes (C4 fix)
 		uploads := v1.Group("/uploads")
 		{
+			// Public config endpoint
+			uploads.GET("/config", storageHandler.GetUploadConfig)
+
 			// Protected routes (requires auth)
 			uploadsProtected := uploads.Group("")
 			uploadsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			{
-				// TODO: Implement StorageHandler for image uploads
-				uploadsProtected.POST("/images", func(c *gin.Context) {
-					response.Success(c, gin.H{
-						"url": "https://placehold.co/600x400",
-						"message": "Upload endpoint - TODO: implement S3/OSS handler",
-					})
-				})
+				uploadsProtected.POST("/images", storageHandler.UploadImage)
 			}
 		}
 	}
