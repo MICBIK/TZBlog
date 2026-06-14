@@ -201,6 +201,9 @@ func main() {
 			articles.GET("", articleHandler.ListArticles)
 			articles.GET("/:slug", articleHandler.GetArticleBySlug)
 
+			// Article comments (public, nested route)
+			articles.GET("/:id/comments", commentHandler.ListArticleComments)
+
 			// Protected routes (admin only)
 			articlesProtected := articles.Group("")
 			articlesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))

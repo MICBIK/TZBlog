@@ -193,3 +193,51 @@ func (h *CommentHandler) DeleteComment(c *gin.Context) {
 
 	response.Success(c, gin.H{"message": "Comment deleted successfully"})
 }
+
+// ListArticleComments retrieves comments for a specific article
+// @Summary      List article comments
+// @Description  Get all comments for a specific article with pagination
+// @Tags         Comments
+// @Produce      json
+// @Param        id path int true "Article ID"
+// @Param        page query int false "Page number" default(1)
+// @Param        limit query int false "Items per page" default(20)
+// @Success      200 {object} response.Response{data=[]comment.Comment,metadata=response.Metadata}
+// @Failure      400 {object} response.ErrorResponse "Invalid article ID"
+// @Failure      500 {object} response.ErrorResponse "Server error"
+// @Router       /api/v1/articles/{id}/comments [get]
+func (h *CommentHandler) ListArticleComments(c *gin.Context) {
+	articleID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid article ID")
+		return
+	}
+
+	page := 1
+	if p := c.Query("page"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+
+	limit := 20
+	if l := c.Query("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 {
+			limit = parsed
+		}
+	}
+
+	filter := comment.ListFilter{
+		ArticleID: articleID,
+		Limit:     limit,
+		Offset:    (page - 1) * limit,
+	}
+
+	comments, total, err := h.service.ListComments(&filter)
+	if err != nil {
+		response.InternalError(c, "Failed to fetch article comments")
+		return
+	}
+
+	response.Paginated(c, comments, total, page, limit)
+}
