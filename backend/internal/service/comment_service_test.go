@@ -214,9 +214,10 @@ func TestUpdateComment_Success(t *testing.T) {
 	service := NewCommentService(mockRepo)
 
 	existingComment := &comment.Comment{
-		ID:      1,
-		UserID:  1,
-		Content: "Old content",
+		ID:        1,
+		UserID:    1,
+		ArticleID: 1,
+		Content:   "Old content",
 	}
 
 	dto := &UpdateCommentDTO{
@@ -242,9 +243,10 @@ func TestUpdateComment_Unauthorized(t *testing.T) {
 	service := NewCommentService(mockRepo)
 
 	existingComment := &comment.Comment{
-		ID:      1,
-		UserID:  1,
-		Content: "Content",
+		ID:        1,
+		UserID:    1,
+		ArticleID: 1,
+		Content:   "Content",
 	}
 
 	dto := &UpdateCommentDTO{

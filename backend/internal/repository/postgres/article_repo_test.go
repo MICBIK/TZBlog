@@ -34,12 +34,20 @@ func TestArticleRepository_FindAll_NoN1Problem(t *testing.T) {
 	mock.ExpectQuery(`SELECT .* FROM "users" WHERE "users"\."id" IN`).
 		WillReturnRows(authorRows)
 
-	// Mock Tags preload - SINGLE query for all tags
+	// Mock article_tags join table query (GORM queries this first for many2many)
+	articleTagRows := sqlmock.NewRows([]string{"article_id", "tag_id"}).
+		AddRow(1, 1).
+		AddRow(2, 2)
+
+	mock.ExpectQuery(`SELECT .* FROM "article_tags" WHERE "article_tags"\."article_id" IN`).
+		WillReturnRows(articleTagRows)
+
+	// Mock Tags query based on the tag IDs from article_tags
 	tagRows := sqlmock.NewRows([]string{"id", "name", "slug"}).
 		AddRow(1, "Go", "go").
 		AddRow(2, "Performance", "performance")
 
-	mock.ExpectQuery(`SELECT .* FROM "tags"`).
+	mock.ExpectQuery(`SELECT .* FROM "tags" WHERE "tags"\."id" IN`).
 		WillReturnRows(tagRows)
 
 	// Execute the query
@@ -50,11 +58,12 @@ func TestArticleRepository_FindAll_NoN1Problem(t *testing.T) {
 	assert.Equal(t, int64(2), total)
 	assert.Len(t, articles, 2)
 
-	// Verify only 4 queries were executed (not 1 + N + N):
+	// Verify only 5 queries were executed (not 1 + N + N):
 	// 1. COUNT query
 	// 2. Main articles query
 	// 3. Batch author query (not N queries)
-	// 4. Batch tags query (not N queries)
+	// 4. Batch article_tags query (for many2many)
+	// 5. Batch tags query (not N queries)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -62,29 +71,39 @@ func TestArticleRepository_FindByID(t *testing.T) {
 	db, mock := setupMockDB(t)
 	repo := NewArticleRepository(db)
 
-	// Mock main article query
+	// Mock main article query - GORM First() includes LIMIT
 	articleRows := sqlmock.NewRows([]string{
 		"id", "title", "slug", "content", "author_id", "status",
 		"view_count", "like_count", "reading_time", "created_at", "updated_at",
 	}).
 		AddRow(1, "Test Article", "test-article", "Content", 1, "published", 100, 10, 5, 1234567890, 1234567890)
 
-	mock.ExpectQuery(`SELECT .* FROM "articles" WHERE "articles"\."id" = .* ORDER BY`).
-		WithArgs(1).
+	mock.ExpectQuery(`SELECT .* FROM "articles" WHERE "articles"\."id" = .* AND "articles"\."deleted_at" IS NULL ORDER BY`).
+		WithArgs(int64(1), 1). // GORM adds LIMIT 1 as the second argument
 		WillReturnRows(articleRows)
 
 	// Mock Author preload
 	authorRows := sqlmock.NewRows([]string{"id", "username", "avatar"}).
 		AddRow(1, "testauthor", "avatar.jpg")
 
-	mock.ExpectQuery(`SELECT .* FROM "users"`).
+	mock.ExpectQuery(`SELECT .* FROM "users" WHERE "users"\."id" = .*`).
+		WithArgs(int64(1)).
 		WillReturnRows(authorRows)
 
-	// Mock Tags preload
+	// Mock article_tags join table query
+	articleTagRows := sqlmock.NewRows([]string{"article_id", "tag_id"}).
+		AddRow(1, 1)
+
+	mock.ExpectQuery(`SELECT .* FROM "article_tags" WHERE "article_tags"\."article_id" = .*`).
+		WithArgs(int64(1)).
+		WillReturnRows(articleTagRows)
+
+	// Mock Tags query
 	tagRows := sqlmock.NewRows([]string{"id", "name", "slug"}).
 		AddRow(1, "Go", "go")
 
-	mock.ExpectQuery(`SELECT .* FROM "tags"`).
+	mock.ExpectQuery(`SELECT .* FROM "tags" WHERE "tags"\."id" IN .*`).
+		WithArgs(int64(1)).
 		WillReturnRows(tagRows)
 
 	article, err := repo.FindByID(1)
