@@ -11,7 +11,8 @@ export default function AboutPage() {
       <h1 className="mb-6 text-3xl font-bold">关于 TZBlog</h1>
       <div className="prose text-muted-foreground">
         <p>
-          TZBlog 是一个基于 Next.js 16 + React 19 前端与 Go 后端的个人技术博客平台。
+          TZBlog 是一个基于 Next.js 16 + React 19 前端与 Go
+          后端的个人技术博客平台。
         </p>
         <p>本页面内容将在后续迭代中完善。</p>
       </div>

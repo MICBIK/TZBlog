@@ -30,11 +30,11 @@ export function Empty({
         className,
       )}
     >
-      {icon ?? <Inbox className="size-10 text-muted-foreground" />}
+      {icon ?? <Inbox className="text-muted-foreground size-10" />}
       <div className="space-y-1">
         <p className="font-medium">{title}</p>
         {description ? (
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground text-sm">{description}</p>
         ) : null}
       </div>
       {children}

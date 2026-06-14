@@ -25,10 +25,10 @@ export default function Error({
 
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-md flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
-      <AlertTriangle className="size-12 text-destructive" />
+      <AlertTriangle className="text-destructive size-12" />
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">页面出错了</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           抱歉，渲染此页面时发生错误。可以尝试重新加载。
         </p>
       </div>

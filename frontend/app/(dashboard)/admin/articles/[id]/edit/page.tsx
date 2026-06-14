@@ -15,7 +15,9 @@ export const metadata: Metadata = {
  * 编辑文章页（占位）。
  * Phase 2 将根据 params.id 加载文章内容进入编辑器。
  */
-export default async function EditArticlePage({ params }: EditArticlePageProps) {
+export default async function EditArticlePage({
+  params,
+}: EditArticlePageProps) {
   const { id } = await params;
   return (
     <main>

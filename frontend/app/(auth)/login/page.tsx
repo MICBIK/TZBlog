@@ -42,8 +42,11 @@ export default function LoginPage() {
         <Button className="w-full" type="button">
           登录
         </Button>
-        <p className="text-sm text-muted-foreground">
-          还没有账户？<a className="underline" href="/register">注册</a>
+        <p className="text-muted-foreground text-sm">
+          还没有账户？
+          <a className="underline" href="/register">
+            注册
+          </a>
         </p>
       </CardFooter>
     </Card>

@@ -46,8 +46,11 @@ export default function RegisterPage() {
         <Button className="w-full" type="button">
           注册
         </Button>
-        <p className="text-sm text-muted-foreground">
-          已有账户？<a className="underline" href="/login">登录</a>
+        <p className="text-muted-foreground text-sm">
+          已有账户？
+          <a className="underline" href="/login">
+            登录
+          </a>
         </p>
       </CardFooter>
     </Card>

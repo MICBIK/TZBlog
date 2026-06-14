@@ -1,4 +1,10 @@
-import { apiDelete, apiGet, apiGetList, apiPost, apiPut } from '@/lib/api/client';
+import {
+  apiDelete,
+  apiGet,
+  apiGetList,
+  apiPost,
+  apiPut,
+} from '@/lib/api/client';
 import type { ApiMetadata } from '@/types/api';
 import type {
   ArticleDetail,
@@ -29,7 +35,10 @@ export async function getArticleBySlug(slug: string): Promise<ArticleDetail> {
 export async function createArticle(
   body: UpsertArticleRequest,
 ): Promise<{ id: number; slug: string; status: string }> {
-  return apiPost<{ id: number; slug: string; status: string }>('/articles', body);
+  return apiPost<{ id: number; slug: string; status: string }>(
+    '/articles',
+    body,
+  );
 }
 
 /** 更新文章 [需管理员权限] */
@@ -49,6 +58,8 @@ export async function deleteArticle(id: number): Promise<void> {
 }
 
 /** 点赞 / 取消点赞文章 */
-export async function toggleArticleLike(id: number): Promise<ArticleLikeResult> {
+export async function toggleArticleLike(
+  id: number,
+): Promise<ArticleLikeResult> {
   return apiPost<ArticleLikeResult>(`/articles/${id}/like`);
 }

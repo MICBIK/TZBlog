@@ -40,10 +40,10 @@ export function Loading({
         className,
       )}
     >
-      <Loader2 className={cn('animate-spin text-muted-foreground', sizeMap[size])} />
-      {label ? (
-        <p className="text-sm text-muted-foreground">{label}</p>
-      ) : null}
+      <Loader2
+        className={cn('text-muted-foreground animate-spin', sizeMap[size])}
+      />
+      {label ? <p className="text-muted-foreground text-sm">{label}</p> : null}
       <span className="sr-only">加载中…</span>
     </div>
   );

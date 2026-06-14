@@ -106,14 +106,11 @@ apiClient.interceptors.response.use(
     // 后端业务层失败（HTTP 200 但 success=false）：转为错误抛出
     if (payload && payload.success === false) {
       return Promise.reject(
-        new ApiRequestError(
-          payload.error?.message ?? '请求失败，请稍后重试',
-          {
-            status: response.status,
-            code: payload.error?.code ?? 'BUSINESS_ERROR',
-            details: payload.error?.details,
-          },
-        ),
+        new ApiRequestError(payload.error?.message ?? '请求失败，请稍后重试', {
+          status: response.status,
+          code: payload.error?.code ?? 'BUSINESS_ERROR',
+          details: payload.error?.details,
+        }),
       );
     }
     // 成功：把解包后的 { data, metadata } 放进 response.data

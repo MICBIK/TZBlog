@@ -4,20 +4,20 @@ TZBlog 个人技术博客平台的前端应用，基于 Next.js 16 (App Router) 
 
 ## 技术栈
 
-| 分类 | 技术 |
-| --- | --- |
-| 框架 | Next.js 16 (App Router, Turbopack) |
-| UI 库 | React 19 |
-| 语言 | TypeScript (strict mode) |
-| 样式 | Tailwind CSS v4 |
-| 组件库 | shadcn/ui + Radix UI |
-| 动画 | Framer Motion |
-| 状态管理 | Zustand |
-| 数据获取 | TanStack Query |
-| HTTP 客户端 | Axios |
-| 编辑器 | @uiw/react-md-editor |
-| Markdown 渲染 | react-markdown + remark/rehype |
-| 代码高亮 | prism-react-renderer |
+| 分类          | 技术                               |
+| ------------- | ---------------------------------- |
+| 框架          | Next.js 16 (App Router, Turbopack) |
+| UI 库         | React 19                           |
+| 语言          | TypeScript (strict mode)           |
+| 样式          | Tailwind CSS v4                    |
+| 组件库        | shadcn/ui + Radix UI               |
+| 动画          | Framer Motion                      |
+| 状态管理      | Zustand                            |
+| 数据获取      | TanStack Query                     |
+| HTTP 客户端   | Axios                              |
+| 编辑器        | @uiw/react-md-editor               |
+| Markdown 渲染 | react-markdown + remark/rehype     |
+| 代码高亮      | prism-react-renderer               |
 
 ## 环境要求
 
@@ -40,16 +40,16 @@ pnpm dev
 
 ## 可用脚本
 
-| 命令 | 说明 |
-| --- | --- |
-| `pnpm dev` | 启动开发服务器 |
-| `pnpm build` | 生产环境构建 |
-| `pnpm start` | 启动生产服务器（需先 build） |
-| `pnpm lint` | 运行 ESLint 检查 |
-| `pnpm lint:fix` | 自动修复 ESLint 问题 |
-| `pnpm typecheck` | TypeScript 类型检查 |
-| `pnpm format` | 用 Prettier 格式化代码 |
-| `pnpm format:check` | 检查代码格式 |
+| 命令                | 说明                         |
+| ------------------- | ---------------------------- |
+| `pnpm dev`          | 启动开发服务器               |
+| `pnpm build`        | 生产环境构建                 |
+| `pnpm start`        | 启动生产服务器（需先 build） |
+| `pnpm lint`         | 运行 ESLint 检查             |
+| `pnpm lint:fix`     | 自动修复 ESLint 问题         |
+| `pnpm typecheck`    | TypeScript 类型检查          |
+| `pnpm format`       | 用 Prettier 格式化代码       |
+| `pnpm format:check` | 检查代码格式                 |
 
 ## 目录结构
 

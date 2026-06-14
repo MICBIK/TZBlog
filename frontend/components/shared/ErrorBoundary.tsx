@@ -56,10 +56,10 @@ export class ErrorBoundary extends Component<
           role="alert"
           className="flex min-h-[200px] flex-col items-center justify-center gap-4 p-8 text-center"
         >
-          <AlertTriangle className="size-10 text-destructive" />
+          <AlertTriangle className="text-destructive size-10" />
           <div className="space-y-1">
             <h2 className="text-lg font-semibold">出了点问题</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               页面渲染时发生错误，请尝试重新加载。
             </p>
           </div>

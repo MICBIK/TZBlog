@@ -13,7 +13,7 @@ export default function HomePage() {
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           TZBlog
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-muted-foreground text-lg">
           个人技术博客平台 · 分享前端、后端与全栈开发实践
         </p>
       </div>
@@ -25,7 +25,7 @@ export default function HomePage() {
           <Link href="/about">关于</Link>
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         技术栈：Next.js 16 · React 19 · TypeScript · Tailwind CSS v4
       </p>
     </main>
