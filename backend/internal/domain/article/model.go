@@ -1,7 +1,5 @@
 package article
 
-import "time"
-
 // Article 文章模型
 type Article struct {
 	ID           int64     `json:"id" gorm:"primaryKey"`
