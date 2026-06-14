@@ -463,6 +463,19 @@
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
+/* reveal 动画类（用于长叙事页面：首页/文章/关于）*/
+.rv {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rv.in {
+  opacity: 1;
+  transform: none;
+}
+
 /* reduced motion 无障碍 */
 @media (prefers-reduced-motion: reduce) {
   .aurora-bg .aurora,
@@ -472,5 +485,9 @@
   }
   .skeleton-shimmer::after {
     animation: none;
+  }
+  .rv {
+    opacity: 1;
+    transform: none;
   }
 }
