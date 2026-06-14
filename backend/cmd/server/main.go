@@ -18,6 +18,7 @@ import (
 	"github.com/MICBIK/TZBlog/backend/internal/service"
 	"github.com/MICBIK/TZBlog/backend/pkg/auth"
 	"github.com/MICBIK/TZBlog/backend/pkg/logger"
+	"github.com/MICBIK/TZBlog/backend/pkg/storage"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -128,6 +129,14 @@ func main() {
 	articleService := service.NewArticleService(articleRepo, tagRepo)
 	commentService := service.NewCommentService(commentRepo)
 
+	// Initialize R2 storage
+	r2Storage, err := storage.NewR2Storage(&cfg.Storage.R2)
+	if err != nil {
+		logger.Warn("R2 storage not configured, uploads will fail", zap.Error(err))
+		// In development, we can continue without R2
+		// In production, you might want to fail here
+	}
+
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	articleHandler := handlers.NewArticleHandler(articleService)
@@ -135,7 +144,7 @@ func main() {
 	tagHandler := handlers.NewTagHandler(tagRepo)
 	commentHandler := handlers.NewCommentHandler(commentService)
 	likeHandler := handlers.NewLikeHandler(likeRepo)
-	storageHandler := handlers.NewStorageHandler()
+	storageHandler := handlers.NewStorageHandler(r2Storage)
 
 	// Initialize Gin router
 	router := gin.New()

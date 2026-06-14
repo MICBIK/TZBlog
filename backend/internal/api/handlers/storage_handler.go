@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
@@ -8,20 +9,20 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
+	"github.com/MICBIK/TZBlog/backend/pkg/storage"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // StorageHandler handles file upload requests
 type StorageHandler struct {
-	// TODO: Add Cloudflare R2 client (aws-sdk-go-v2, S3-compatible)
-	// client *s3.Client
-	// bucket string
+	r2Storage *storage.R2Storage
 }
 
 // NewStorageHandler creates a new storage handler
-func NewStorageHandler() *StorageHandler {
-	return &StorageHandler{}
+func NewStorageHandler(r2Storage *storage.R2Storage) *StorageHandler {
+	return &StorageHandler{
+		r2Storage: r2Storage,
+	}
 }
 
 // UploadImage handles image upload
@@ -51,50 +52,21 @@ func (h *StorageHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// Generate unique filename (UUID + timestamp + extension)
-	ext := filepath.Ext(file.Filename)
-	filename := fmt.Sprintf("%s-%d%s", uuid.New().String(), time.Now().Unix(), ext)
+	// Upload to R2
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 30*time.Second)
+	defer cancel()
 
-	// TODO: Upload to Cloudflare R2 when configured
-	// Implementation steps:
-	// 1. Install: go get github.com/aws/aws-sdk-go-v2/service/s3
-	// 2. Configure R2 credentials (Account ID, Access Key, Secret Key)
-	// 3. Create S3 client pointing to R2 endpoint
-	// 4. Upload file using PutObject
-	// 5. Return CDN URL
-	//
-	// Example code:
-	// import (
-	//     "github.com/aws/aws-sdk-go-v2/config"
-	//     "github.com/aws/aws-sdk-go-v2/service/s3"
-	//     "github.com/aws/aws-sdk-go-v2/aws"
-	// )
-	//
-	// cfg, _ := config.LoadDefaultConfig(context.Background())
-	// client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-	//     o.BaseEndpoint = aws.String("https://<account-id>.r2.cloudflarestorage.com")
-	// })
-	//
-	// fileReader, _ := file.Open()
-	// defer fileReader.Close()
-	//
-	// _, err = client.PutObject(context.Background(), &s3.PutObjectInput{
-	//     Bucket: aws.String(h.bucket),
-	//     Key:    aws.String("images/" + filename),
-	//     Body:   fileReader,
-	//     ContentType: aws.String("image/" + strings.TrimPrefix(ext, ".")),
-	// })
-	//
-	// Return CDN URL: https://cdn.yourdomain.com/images/{filename}
-
-	// Placeholder URL (replace with actual CDN URL after R2 integration)
-	url := fmt.Sprintf("https://cdn.yourdomain.com/images/%s", filename)
+	url, err := h.r2Storage.UploadImage(ctx, file)
+	if err != nil {
+		response.InternalError(c, fmt.Sprintf("Failed to upload image: %v", err))
+		return
+	}
 
 	response.Success(c, gin.H{
 		"url":      url,
-		"filename": filename,
+		"filename": filepath.Base(url),
 		"size":     file.Size,
-		"message":  "Upload successful (Cloudflare R2 integration pending)",
+		"message":  "Upload successful",
 	})
 }
 
