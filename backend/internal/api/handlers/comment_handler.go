@@ -22,13 +22,19 @@ func NewCommentHandler(repo comment.Repository) *CommentHandler {
 }
 
 // CreateComment creates a new comment
-// @Summary Create a new comment
-// @Tags Comments
-// @Accept json
-// @Produce json
-// @Param comment body service.CreateCommentDTO true "Comment data"
-// @Success 201 {object} comment.Comment
-// @Router /comments [post]
+// @Summary      创建评论
+// @Description  为文章创建新评论（需要登录）
+// @Tags         Comments
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        comment body service.CreateCommentDTO true "评论数据" example({"article_id":1,"content":"很棒的文章！","parent_id":0})
+// @Success      201 {object} response.Response{data=comment.Comment} "创建成功"
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /comments [post]
 func (h *CommentHandler) CreateComment(c *gin.Context) {
 	var req service.CreateCommentDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
