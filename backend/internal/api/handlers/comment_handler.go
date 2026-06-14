@@ -57,11 +57,15 @@ func (h *CommentHandler) CreateComment(c *gin.Context) {
 }
 
 // GetComment retrieves a comment by ID
-// @Summary Get comment by ID
-// @Tags Comments
-// @Produce json
-// @Param id path int true "Comment ID"
-// @Success 200 {object} comment.Comment
+// @Summary      根据 ID 获取评论
+// @Description  通过评论 ID 获取评论详情
+// @Tags         Comments
+// @Produce      json
+// @Param        id path int true "评论 ID" example(1)
+// @Success      200 {object} response.Response{data=comment.Comment} "成功返回评论" example({"success":true,"data":{"id":1,"article_id":1,"user_id":1,"content":"很棒的文章！","created_at":"2024-01-01T00:00:00Z"}})
+// @Failure      400 {object} response.ErrorResponse "无效的评论 ID"
+// @Failure      404 {object} response.ErrorResponse "评论不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
 // @Router       /api/v1/comments/{id} [get]
 func (h *CommentHandler) GetComment(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -80,15 +84,17 @@ func (h *CommentHandler) GetComment(c *gin.Context) {
 }
 
 // ListComments retrieves a list of comments
-// @Summary List comments
-// @Tags Comments
-// @Produce json
-// @Param article_id query int false "Filter by article ID"
-// @Param user_id query int false "Filter by user ID"
-// @Param parent_id query int false "Filter by parent comment ID"
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(20)
-// @Success 200 {object} response.PaginatedResponse
+// @Summary      获取评论列表
+// @Description  分页获取评论列表，支持多种筛选条件
+// @Tags         Comments
+// @Produce      json
+// @Param        article_id query int false "文章 ID" example(1)
+// @Param        user_id query int false "用户 ID" example(1)
+// @Param        parent_id query int false "父评论 ID" example(0)
+// @Param        page query int false "页码" default(1) example(1)
+// @Param        limit query int false "每页数量" default(20) example(20)
+// @Success      200 {object} response.PaginatedResponse "成功返回评论列表"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
 // @Router       /api/v1/comments [get]
 func (h *CommentHandler) ListComments(c *gin.Context) {
 	var filter comment.ListFilter
@@ -131,13 +137,20 @@ func (h *CommentHandler) ListComments(c *gin.Context) {
 }
 
 // UpdateComment updates an existing comment
-// @Summary Update a comment
-// @Tags Comments
-// @Accept json
-// @Produce json
-// @Param id path int true "Comment ID"
-// @Param comment body comment.UpdateCommentDTO true "Updated comment data"
-// @Success 200 {object} comment.Comment
+// @Summary      更新评论
+// @Description  更新已有评论（需要是评论作者本人）
+// @Tags         Comments
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "评论 ID" example(1)
+// @Param        comment body comment.UpdateCommentDTO true "更新的评论数据" example({"content":"更新后的评论内容"})
+// @Success      200 {object} response.Response{data=comment.Comment} "更新成功"
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      403 {object} response.ErrorResponse "无权限修改此评论"
+// @Failure      404 {object} response.ErrorResponse "评论不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
 // @Router       /api/v1/comments/{id} [put]
 func (h *CommentHandler) UpdateComment(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -168,10 +181,17 @@ func (h *CommentHandler) UpdateComment(c *gin.Context) {
 }
 
 // DeleteComment deletes a comment
-// @Summary Delete a comment
-// @Tags Comments
-// @Param id path int true "Comment ID"
-// @Success 200 {object} response.SuccessResponse
+// @Summary      删除评论
+// @Description  删除评论（需要是评论作者本人或管理员）
+// @Tags         Comments
+// @Security     BearerAuth
+// @Param        id path int true "评论 ID" example(1)
+// @Success      200 {object} response.SuccessResponse "删除成功" example({"success":true,"data":{"message":"Comment deleted successfully"}})
+// @Failure      400 {object} response.ErrorResponse "无效的评论 ID"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      403 {object} response.ErrorResponse "无权限删除此评论"
+// @Failure      404 {object} response.ErrorResponse "评论不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
 // @Router       /api/v1/comments/{id} [delete]
 func (h *CommentHandler) DeleteComment(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)

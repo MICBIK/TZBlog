@@ -59,6 +59,11 @@ var (
 		Message: "Unauthorized to perform this action",
 	}
 
+	ErrInvalidInput = &errors.AppError{
+		Code:    "INVALID_INPUT",
+		Message: "Invalid input parameters",
+	}
+
 	// Alias for backward compatibility
 	ErrInvalidStatus = ErrInvalidArticleStatus
 )

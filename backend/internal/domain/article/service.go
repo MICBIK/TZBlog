@@ -19,6 +19,15 @@ type Service interface {
 
 	// DeleteArticle soft deletes an article
 	DeleteArticle(id, userID int64) error
+
+	// PatchArticle partially updates an article
+	PatchArticle(slug string, userID int64, updates map[string]interface{}) (*Article, error)
+
+	// BatchDelete deletes multiple articles
+	BatchDelete(ids []int64, userID int64) (int, error)
+
+	// BatchUpdateStatus updates status for multiple articles
+	BatchUpdateStatus(ids []int64, userID int64, status string) (int, error)
 }
 
 // CreateArticleDTO represents the request data for creating an article

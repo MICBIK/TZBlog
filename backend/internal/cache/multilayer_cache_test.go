@@ -22,7 +22,7 @@ func setupTestCache(t *testing.T) (*MultiLayerCache, *miniredis.Miniredis) {
 	})
 
 	// Create multi-layer cache
-	cache := NewMultiLayerCache(client, 100)
+	cache := NewMultiLayerCache(client, 100, 5*time.Minute, 10*time.Minute)
 
 	return cache, mr
 }

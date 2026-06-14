@@ -11,7 +11,7 @@ import (
 
 func TestArticleCache_DeleteArticle(t *testing.T) {
 	client, mock := redismock.NewClientMock()
-	cache := NewArticleCache(client)
+	cache := NewArticleCache(client, 5*time.Second, 1*time.Hour)
 
 	// Mock Delete
 	mock.ExpectDel("tzblog:article:test-article").SetVal(1)

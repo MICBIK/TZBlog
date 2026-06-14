@@ -20,6 +20,8 @@ type MultiLayerCache struct {
 	stats     *CacheStats
 	warmupFn  func(ctx context.Context) error
 	mu        sync.RWMutex
+	l1TTL     time.Duration
+	l1MaxTTL  time.Duration
 }
 
 // L1Cache is an in-memory cache with TTL support
@@ -46,13 +48,15 @@ type CacheStats struct {
 }
 
 // NewMultiLayerCache creates a new multi-layer cache
-func NewMultiLayerCache(redisClient *redis.Client, l1MaxSize int) *MultiLayerCache {
+func NewMultiLayerCache(redisClient *redis.Client, l1MaxSize int, l1TTL, l1MaxTTL time.Duration) *MultiLayerCache {
 	return &MultiLayerCache{
 		l1: &L1Cache{
 			maxSize: l1MaxSize,
 		},
-		l2:    redisClient,
-		stats: &CacheStats{},
+		l2:       redisClient,
+		stats:    &CacheStats{},
+		l1TTL:    l1TTL,
+		l1MaxTTL: l1MaxTTL,
 	}
 }
 
@@ -92,7 +96,7 @@ func (m *MultiLayerCache) Get(ctx context.Context, key string, dest interface{})
 	// Populate L1 cache
 	var val interface{}
 	if err := json.Unmarshal(data, &val); err == nil {
-		m.l1.Set(key, val, 5*time.Minute) // L1 TTL shorter than L2
+		m.l1.Set(key, val, m.l1TTL) // Use configured L1 TTL
 	}
 
 	return nil
@@ -113,8 +117,8 @@ func (m *MultiLayerCache) Set(ctx context.Context, key string, value interface{}
 
 	// Set in L1 with shorter TTL (1/2 of L2 TTL)
 	l1TTL := l2TTL / 2
-	if l1TTL > 10*time.Minute {
-		l1TTL = 10 * time.Minute // Cap L1 TTL at 10 minutes
+	if l1TTL > m.l1MaxTTL {
+		l1TTL = m.l1MaxTTL // Cap L1 TTL at configured max
 	}
 	m.l1.Set(key, value, l1TTL)
 

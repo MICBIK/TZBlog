@@ -260,3 +260,168 @@ func (s *ArticleService) DeleteArticle(id, userID int64) error {
 	// Delete article
 	return s.repo.Delete(id)
 }
+
+// PatchArticle partially updates an article
+func (s *ArticleService) PatchArticle(slug string, userID int64, updates map[string]interface{}) (*article.Article, error) {
+	// Fetch existing article by slug
+	art, err := s.repo.FindBySlug(slug)
+	if err != nil {
+		return nil, err
+	}
+	if art == nil {
+		return nil, article.ErrArticleNotFound
+	}
+
+	// Check permission
+	if !art.CanBeEditedBy(userID) {
+		return nil, article.ErrUnauthorized
+	}
+
+	// Apply updates
+	updated := false
+
+	if title, ok := updates["title"].(string); ok && title != art.Title {
+		art.Title = title
+		art.GenerateSlug()
+		updated = true
+	}
+
+	if summary, ok := updates["summary"].(string); ok && summary != art.Summary {
+		art.Summary = summary
+		updated = true
+	}
+
+	if content, ok := updates["content"].(string); ok && content != art.Content {
+		art.Content = content
+		art.CalculateReadingTime()
+		updated = true
+	}
+
+	if coverImage, ok := updates["cover_image"].(string); ok && coverImage != art.CoverImage {
+		art.CoverImage = coverImage
+		updated = true
+	}
+
+	if status, ok := updates["status"].(string); ok && status != art.Status {
+		oldStatus := art.Status
+		art.Status = status
+
+		// Set published time when status changes to published
+		if art.Status == article.StatusPublished && oldStatus != article.StatusPublished {
+			now := time.Now()
+			art.PublishedAt = &now
+		}
+		updated = true
+	}
+
+	if !updated {
+		return art, nil
+	}
+
+	// Sanitize content to prevent XSS attacks
+	art.SanitizeContent()
+
+	// Validate updated article
+	if err := art.Validate(); err != nil {
+		return nil, err
+	}
+
+	// Save changes
+	if err := s.repo.Update(art); err != nil {
+		return nil, err
+	}
+
+	return art, nil
+}
+
+// BatchDelete deletes multiple articles
+func (s *ArticleService) BatchDelete(ids []int64, userID int64) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	// Limit batch size
+	if len(ids) > 100 {
+		return 0, article.ErrInvalidInput
+	}
+
+	deleted := 0
+	for _, id := range ids {
+		// Check each article's permission
+		art, err := s.repo.FindByID(id)
+		if err != nil {
+			continue // Skip on error
+		}
+		if art == nil {
+			continue // Skip if not found
+		}
+
+		// Check permission
+		if !art.CanBeEditedBy(userID) {
+			continue // Skip unauthorized
+		}
+
+		// Delete article
+		if err := s.repo.Delete(id); err == nil {
+			deleted++
+		}
+	}
+
+	return deleted, nil
+}
+
+// BatchUpdateStatus updates status for multiple articles
+func (s *ArticleService) BatchUpdateStatus(ids []int64, userID int64, status string) (int, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+
+	// Limit batch size
+	if len(ids) > 100 {
+		return 0, article.ErrInvalidInput
+	}
+
+	// Validate status
+	validStatuses := map[string]bool{
+		article.StatusDraft:     true,
+		article.StatusPublished: true,
+		article.StatusArchived:  true,
+	}
+	if !validStatuses[status] {
+		return 0, article.ErrInvalidInput
+	}
+
+	updated := 0
+	for _, id := range ids {
+		// Check each article's permission
+		art, err := s.repo.FindByID(id)
+		if err != nil {
+			continue // Skip on error
+		}
+		if art == nil {
+			continue // Skip if not found
+		}
+
+		// Check permission
+		if !art.CanBeEditedBy(userID) {
+			continue // Skip unauthorized
+		}
+
+		// Update status
+		oldStatus := art.Status
+		art.Status = status
+
+		// Set published time when status changes to published
+		if art.Status == article.StatusPublished && oldStatus != article.StatusPublished {
+			now := time.Now()
+			art.PublishedAt = &now
+		}
+
+		// Save changes
+		if err := s.repo.Update(art); err == nil {
+			updated++
+		}
+	}
+
+	return updated, nil
+}

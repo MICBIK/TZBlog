@@ -14,12 +14,14 @@ import (
 	"github.com/MICBIK/TZBlog/backend/internal/api/handlers"
 	"github.com/MICBIK/TZBlog/backend/internal/api/middleware"
 	"github.com/MICBIK/TZBlog/backend/internal/cache"
+	"github.com/MICBIK/TZBlog/backend/internal/monitoring"
 	"github.com/MICBIK/TZBlog/backend/internal/repository/postgres"
 	"github.com/MICBIK/TZBlog/backend/internal/service"
 	"github.com/MICBIK/TZBlog/backend/pkg/auth"
 	"github.com/MICBIK/TZBlog/backend/pkg/logger"
 	"github.com/MICBIK/TZBlog/backend/pkg/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
@@ -93,6 +95,21 @@ func main() {
 	go poolMonitor.Start(monitorCtx)
 	logger.Info("Connection pool monitor started")
 
+	// Start Prometheus metrics updater for DB stats
+	go func() {
+		ticker := time.NewTicker(15 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-monitorCtx.Done():
+				return
+			case <-ticker.C:
+				monitoring.UpdateDBMetrics(sqlDB.Stats())
+			}
+		}
+	}()
+	logger.Info("Prometheus DB metrics updater started")
+
 	// Initialize Redis client
 	redisClient, err := config.NewRedisClient(&cfg.Redis)
 	if err != nil {
@@ -145,6 +162,7 @@ func main() {
 	commentHandler := handlers.NewCommentHandler(commentService)
 	likeHandler := handlers.NewLikeHandler(likeRepo)
 	storageHandler := handlers.NewStorageHandler(r2Storage)
+	systemHandler := handlers.NewSystemHandler()
 
 	// Initialize Gin router
 	router := gin.New()
@@ -154,6 +172,7 @@ func main() {
 	router.Use(middleware.RecoveryLogger())   // 2. Recovery
 	router.Use(gin.Recovery())                // 3. Gin's default recovery
 	router.Use(RequestID())                   // 4. Request ID
+	router.Use(monitoring.HTTPMetricsMiddleware()) // 5. Prometheus metrics
 
 	// CORS middleware
 	if cfg.IsDevelopment() {
@@ -171,6 +190,7 @@ func main() {
 	// Health check routes (no auth required)
 	router.GET("/health", HealthCheck(db, redisClient))
 	router.GET("/ready", ReadinessCheck(db, redisClient))
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
@@ -190,7 +210,7 @@ func main() {
 			{
 				authProtected.GET("/me", authHandler.GetCurrentUser)
 				authProtected.PUT("/profile", authHandler.UpdateProfile)
-				authProtected.POST("/change-password", authHandler.ChangePassword)
+				authProtected.PUT("/password", authHandler.ChangePassword) // ✅ P0-1: 修复 RESTful 规范，修改密码应使用 PUT
 			}
 		}
 
@@ -216,7 +236,12 @@ func main() {
 			{
 				articlesProtected.POST("", articleHandler.CreateArticle)
 				articlesProtected.PUT("/:slug", articleHandler.UpdateArticle)
+				articlesProtected.PATCH("/:slug", articleHandler.PatchArticle)
 				articlesProtected.DELETE("/:slug", articleHandler.DeleteArticle)
+
+				// Batch operations
+				articlesProtected.DELETE("/batch", articleHandler.BatchDelete)
+				articlesProtected.PUT("/batch/status", articleHandler.BatchUpdateStatus)
 			}
 		}
 
@@ -300,6 +325,15 @@ func main() {
 			{
 				uploadsProtected.POST("/images", storageHandler.UploadImage)
 			}
+		}
+
+		// System routes (admin only)
+		system := v1.Group("/system")
+		system.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+		system.Use(AdminOnly())
+		{
+			system.PUT("/log-level", systemHandler.SetLogLevel)
+			system.GET("/log-level", systemHandler.GetLogLevel)
 		}
 	}
 

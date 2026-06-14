@@ -97,7 +97,7 @@ func TestLikeHandler_LikeArticle(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
-			c.Set("userID", tt.userID)
+			c.Set("user_id", tt.userID)
 			c.Params = gin.Params{{Key: "id", Value: tt.articleID}}
 			c.Request = httptest.NewRequest(http.MethodPost, "/api/v1/likes/articles/"+tt.articleID, nil)
 
@@ -132,7 +132,7 @@ func TestLikeHandler_LikeComment(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Set("userID", int64(123))
+	c.Set("user_id", int64(123))
 	c.Params = gin.Params{{Key: "id", Value: "1"}}
 	c.Request = httptest.NewRequest(http.MethodPost, "/api/v1/likes/comments/1", nil)
 
@@ -162,7 +162,7 @@ func TestLikeHandler_UnlikeArticle(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Set("userID", int64(123))
+	c.Set("user_id", int64(123))
 	c.Params = gin.Params{{Key: "id", Value: "1"}}
 	c.Request = httptest.NewRequest(http.MethodDelete, "/api/v1/likes/articles/1", nil)
 
@@ -192,7 +192,7 @@ func TestLikeHandler_GetLikeStatus(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Set("userID", int64(123))
+	c.Set("user_id", int64(123))
 	c.Params = gin.Params{{Key: "id", Value: "1"}}
 	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/likes/articles/1/status", nil)
 
