@@ -259,9 +259,15 @@ func main() {
 			likesProtected := likes.Group("")
 			likesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			{
+				// Article likes
 				likesProtected.POST("/articles/:id", likeHandler.LikeArticle)
 				likesProtected.DELETE("/articles/:id", likeHandler.UnlikeArticle)
 				likesProtected.GET("/articles/:id/status", likeHandler.GetLikeStatus)
+
+				// Comment likes
+				likesProtected.POST("/comments/:id", likeHandler.LikeComment)
+				likesProtected.DELETE("/comments/:id", likeHandler.UnlikeComment)
+				likesProtected.GET("/comments/:id/status", likeHandler.GetCommentLikeStatus)
 			}
 		}
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,78 +22,191 @@ func (m *MockLikeRepository) Create(l *like.Like) error {
 	return args.Error(0)
 }
 
-func (m *MockLikeRepository) Delete(userID, articleID int64) error {
-	args := m.Called(userID, articleID)
+func (m *MockLikeRepository) Delete(userID int64, targetType like.TargetType, targetID int64) error {
+	args := m.Called(userID, targetType, targetID)
 	return args.Error(0)
 }
 
-func (m *MockLikeRepository) HasLiked(userID, articleID int64) (bool, error) {
-	args := m.Called(userID, articleID)
+func (m *MockLikeRepository) IsLiked(userID int64, targetType like.TargetType, targetID int64) (bool, error) {
+	args := m.Called(userID, targetType, targetID)
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *MockLikeRepository) CountByArticle(articleID int64) (int64, error) {
-	args := m.Called(articleID)
+func (m *MockLikeRepository) CountByTarget(targetType like.TargetType, targetID int64) (int64, error) {
+	args := m.Called(targetType, targetID)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func TestLikeHandler_ToggleLike_Like(t *testing.T) {
+func TestLikeHandler_LikeArticle(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name           string
+		articleID      string
+		userID         int64
+		mockIsLiked    bool
+		mockIsLikedErr error
+		mockCreateErr  error
+		mockCount      int64
+		mockCountErr   error
+		expectedStatus int
+		expectedLiked  bool
+	}{
+		{
+			name:           "successful like",
+			articleID:      "1",
+			userID:         123,
+			mockIsLiked:    false,
+			mockIsLikedErr: nil,
+			mockCreateErr:  nil,
+			mockCount:      5,
+			mockCountErr:   nil,
+			expectedStatus: http.StatusOK,
+			expectedLiked:  true,
+		},
+		{
+			name:           "already liked",
+			articleID:      "1",
+			userID:         123,
+			mockIsLiked:    true,
+			mockIsLikedErr: nil,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "invalid article ID",
+			articleID:      "invalid",
+			userID:         123,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(MockLikeRepository)
+			handler := NewLikeHandler(mockRepo)
+
+			if tt.articleID == "1" && tt.name != "already liked" {
+				mockRepo.On("IsLiked", tt.userID, like.TargetTypeArticle, int64(1)).Return(tt.mockIsLiked, tt.mockIsLikedErr)
+				if !tt.mockIsLiked {
+					mockRepo.On("Create", mock.AnythingOfType("*like.Like")).Return(tt.mockCreateErr)
+					mockRepo.On("CountByTarget", like.TargetTypeArticle, int64(1)).Return(tt.mockCount, tt.mockCountErr)
+				}
+			} else if tt.name == "already liked" {
+				mockRepo.On("IsLiked", tt.userID, like.TargetTypeArticle, int64(1)).Return(tt.mockIsLiked, tt.mockIsLikedErr)
+			}
+
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Set("userID", tt.userID)
+			c.Params = gin.Params{{Key: "id", Value: tt.articleID}}
+			c.Request = httptest.NewRequest(http.MethodPost, "/api/v1/likes/articles/"+tt.articleID, nil)
+
+			handler.LikeArticle(c)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
+
+			if tt.expectedStatus == http.StatusOK {
+				var response map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				assert.NoError(t, err)
+
+				data := response["data"].(map[string]interface{})
+				assert.Equal(t, tt.expectedLiked, data["liked"])
+				assert.Equal(t, float64(tt.mockCount), data["count"])
+			}
+
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestLikeHandler_LikeComment(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockRepo := new(MockLikeRepository)
 	handler := NewLikeHandler(mockRepo)
 
-	mockRepo.On("HasLiked", int64(1), int64(1)).Return(false, nil)
+	mockRepo.On("IsLiked", int64(123), like.TargetTypeComment, int64(1)).Return(false, nil)
 	mockRepo.On("Create", mock.AnythingOfType("*like.Like")).Return(nil)
+	mockRepo.On("CountByTarget", like.TargetTypeComment, int64(1)).Return(int64(3), nil)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Set("user_id", int64(1))
-	c.Params = gin.Params{{Key: "article_id", Value: "1"}}
-	c.Request, _ = http.NewRequest("POST", "/articles/1/like", nil)
+	c.Set("userID", int64(123))
+	c.Params = gin.Params{{Key: "id", Value: "1"}}
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/v1/likes/comments/1", nil)
 
-	handler.ToggleLike(c)
+	handler.LikeComment(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+
+	data := response["data"].(map[string]interface{})
+	assert.Equal(t, true, data["liked"])
+	assert.Equal(t, float64(3), data["count"])
+
 	mockRepo.AssertExpectations(t)
 }
 
-func TestLikeHandler_ToggleLike_Unlike(t *testing.T) {
+func TestLikeHandler_UnlikeArticle(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockRepo := new(MockLikeRepository)
 	handler := NewLikeHandler(mockRepo)
 
-	mockRepo.On("HasLiked", int64(1), int64(1)).Return(true, nil)
-	mockRepo.On("Delete", int64(1), int64(1)).Return(nil)
+	mockRepo.On("Delete", int64(123), like.TargetTypeArticle, int64(1)).Return(nil)
+	mockRepo.On("CountByTarget", like.TargetTypeArticle, int64(1)).Return(int64(4), nil)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Set("user_id", int64(1))
-	c.Params = gin.Params{{Key: "article_id", Value: "1"}}
-	c.Request, _ = http.NewRequest("POST", "/articles/1/like", nil)
+	c.Set("userID", int64(123))
+	c.Params = gin.Params{{Key: "id", Value: "1"}}
+	c.Request = httptest.NewRequest(http.MethodDelete, "/api/v1/likes/articles/1", nil)
 
-	handler.ToggleLike(c)
+	handler.UnlikeArticle(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+
+	data := response["data"].(map[string]interface{})
+	assert.Equal(t, false, data["liked"])
+	assert.Equal(t, float64(4), data["count"])
+
 	mockRepo.AssertExpectations(t)
 }
 
-func TestLikeHandler_GetLikeCount_Success(t *testing.T) {
+func TestLikeHandler_GetLikeStatus(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockRepo := new(MockLikeRepository)
 	handler := NewLikeHandler(mockRepo)
 
-	mockRepo.On("CountByArticle", int64(1)).Return(int64(42), nil)
+	mockRepo.On("IsLiked", int64(123), like.TargetTypeArticle, int64(1)).Return(true, nil)
+	mockRepo.On("CountByTarget", like.TargetTypeArticle, int64(1)).Return(int64(10), nil)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Params = gin.Params{{Key: "article_id", Value: "1"}}
-	c.Request, _ = http.NewRequest("GET", "/articles/1/likes", nil)
+	c.Set("userID", int64(123))
+	c.Params = gin.Params{{Key: "id", Value: "1"}}
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/v1/likes/articles/1/status", nil)
 
-	handler.GetLikeCount(c)
+	handler.GetLikeStatus(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+
+	data := response["data"].(map[string]interface{})
+	assert.Equal(t, true, data["liked"])
+	assert.Equal(t, float64(10), data["count"])
+
 	mockRepo.AssertExpectations(t)
 }
