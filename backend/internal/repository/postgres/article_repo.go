@@ -116,3 +116,26 @@ func (r *ArticleRepository) IncrementViewCount(id int64) error {
 		Where("id = ?", id).
 		UpdateColumn("view_count", gorm.Expr("view_count + ?", 1)).Error
 }
+
+// AttachTags attaches tags to an article
+func (r *ArticleRepository) AttachTags(articleID int64, tagIDs []int64) error {
+	if len(tagIDs) == 0 {
+		return nil
+	}
+
+	// Create article_tags records
+	var articleTags []article.ArticleTag
+	for _, tagID := range tagIDs {
+		articleTags = append(articleTags, article.ArticleTag{
+			ArticleID: articleID,
+			TagID:     tagID,
+		})
+	}
+
+	return r.db.Create(&articleTags).Error
+}
+
+// DetachTags removes all tags from an article
+func (r *ArticleRepository) DetachTags(articleID int64) error {
+	return r.db.Where("article_id = ?", articleID).Delete(&article.ArticleTag{}).Error
+}
