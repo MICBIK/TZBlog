@@ -1,0 +1,58 @@
+# TZBlog - 开发环境编排
+# 包含前端服务，以及可选的基础设施（PostgreSQL / Redis）。
+# 生产环境编排请使用 backend/docker-compose.prod.yml。
+
+services:
+  # ---------------------------------------------------------------------------
+  # 前端（Next.js 16）
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tzblog-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      # 容器内通过服务名访问后端；开发联调时可改用 host.docker.internal
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+      - NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    ports:
+      - '3000:3000'
+    networks:
+      - tzblog-network
+
+  # ---------------------------------------------------------------------------
+  # 基础设施（可选：本地需要数据库/缓存时取消注释）
+  # ---------------------------------------------------------------------------
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: tzblog-postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: ${DB_USER:-tzblog}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD:-tzblog}
+  #     POSTGRES_DB: ${DB_NAME:-tzblog}
+  #   ports:
+  #     - '5432:5432'
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - tzblog-network
+  #
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: tzblog-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - '6379:6379'
+  #   networks:
+  #     - tzblog-network
+
+networks:
+  tzblog-network:
+    driver: bridge
+
+# volumes:
+#   postgres-data:
+#     driver: local

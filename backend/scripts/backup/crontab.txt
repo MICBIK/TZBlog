@@ -1,0 +1,17 @@
+# Backup crontab configuration
+# Add this to crontab: crontab -e
+
+# Daily backup at 2 AM
+0 2 * * * /app/scripts/backup/backup.sh daily >> /var/log/tzblog/backup.log 2>&1
+
+# Weekly backup every Sunday at 3 AM
+0 3 * * 0 /app/scripts/backup/backup.sh weekly >> /var/log/tzblog/backup.log 2>&1
+
+# Monthly backup on 1st day at 4 AM
+0 4 1 * * /app/scripts/backup/backup.sh monthly >> /var/log/tzblog/backup.log 2>&1
+
+# Clean up old logs every day at 5 AM
+0 5 * * * find /var/log/tzblog -name "*.log" -type f -mtime +30 -delete
+
+# Health check every 5 minutes
+*/5 * * * * curl -f http://localhost:8080/health || echo "Health check failed at $(date)" >> /var/log/tzblog/healthcheck.log
