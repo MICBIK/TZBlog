@@ -3,16 +3,10 @@
 import { create } from 'zustand';
 
 import { TOKEN_STORAGE_KEY } from '@/lib/constants';
+import type { AuthUser } from '@/types/auth';
 
-/** 当前登录用户信息 */
-export interface AuthUser {
-  id: number;
-  username: string;
-  email: string;
-  displayName?: string;
-  avatarUrl?: string;
-  role?: 'admin' | 'user';
-}
+// re-export，保持向后兼容（其他文件可能从 authStore 导入 AuthUser）
+export type { AuthUser };
 
 interface AuthState {
   user: AuthUser | null;

@@ -5,11 +5,10 @@ import {
   apiPost,
   apiPut,
 } from '@/lib/api/client';
-import type { ApiMetadata } from '@/types/api';
 import type {
-  ArticleDetail,
-  ArticleLikeResult,
   ArticleListParams,
+  ArticleListResult,
+  ArticleStatus,
   ArticleSummary,
   UpsertArticleRequest,
 } from '@/types/article';
@@ -22,44 +21,44 @@ import type {
 /** 获取文章列表（含分页元信息） */
 export async function getArticles(
   params: ArticleListParams = {},
-): Promise<{ items: ArticleSummary[]; metadata: ApiMetadata | undefined }> {
-  return apiGetList<ArticleSummary>('/articles', { params });
+): Promise<ArticleListResult> {
+  const { items, metadata } = await apiGetList<ArticleSummary>('/articles', {
+    params,
+  });
+  return { items, metadata };
 }
 
-/** 按 slug 获取文章详情 */
-export async function getArticleBySlug(slug: string): Promise<ArticleDetail> {
-  return apiGet<ArticleDetail>(`/articles/${encodeURIComponent(slug)}`);
+/** 获取文章详情（按 slug） */
+export async function getArticleBySlug(slug: string): Promise<ArticleSummary> {
+  return apiGet<ArticleSummary>(`/articles/${encodeURIComponent(slug)}`);
 }
 
-/** 创建文章 [需管理员权限] */
+/** 创建文章 [需管理员] */
 export async function createArticle(
   body: UpsertArticleRequest,
-): Promise<{ id: number; slug: string; status: string }> {
-  return apiPost<{ id: number; slug: string; status: string }>(
-    '/articles',
-    body,
-  );
+): Promise<ArticleSummary> {
+  return apiPost<ArticleSummary>('/articles', body);
 }
 
-/** 更新文章 [需管理员权限] */
+/** 更新文章 [需管理员] */
 export async function updateArticle(
   id: number,
-  body: UpsertArticleRequest,
-): Promise<{ id: number; slug: string; status: string }> {
-  return apiPut<{ id: number; slug: string; status: string }>(
-    `/articles/${id}`,
-    body,
-  );
+  body: Partial<UpsertArticleRequest>,
+): Promise<ArticleSummary> {
+  return apiPut<ArticleSummary>(`/articles/${id}`, body);
 }
 
-/** 删除文章 [需管理员权限] */
+/** 删除文章 [需管理员] */
 export async function deleteArticle(id: number): Promise<void> {
   await apiDelete(`/articles/${id}`);
 }
 
-/** 点赞 / 取消点赞文章 */
-export async function toggleArticleLike(
-  id: number,
-): Promise<ArticleLikeResult> {
-  return apiPost<ArticleLikeResult>(`/articles/${id}/like`);
+/** 按状态筛选文章数（用于后台统计） */
+export async function getArticleCountByStatus(
+  status: ArticleStatus,
+): Promise<number> {
+  const { metadata } = await apiGetList<ArticleSummary>('/articles', {
+    params: { status, limit: 1 },
+  });
+  return metadata?.total ?? 0;
 }

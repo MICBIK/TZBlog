@@ -1,9 +1,9 @@
 /**
  * 文章相关领域类型定义
- * 字段对齐 docs/superpowers/specs/api-design.md 中文章接口的响应。
+ * 字段对齐后端实测响应（camelCase）。
  */
 
-/** 作者/用户摘要（列表与详情通用） */
+/** 作者/用户摘要 */
 export interface Author {
   id: number;
   username: string;
@@ -24,52 +24,54 @@ export interface Category {
   id: number;
   name: string;
   slug: string;
+  description?: string;
 }
 
 /** 文章状态 */
 export type ArticleStatus = 'draft' | 'published' | 'archived';
 
-/** 文章列表项（精简字段） */
+/** 文章列表项（对齐后端 GET /articles 响应） */
 export interface ArticleSummary {
   id: number;
   title: string;
   slug: string;
+  content: string;
   summary: string;
   coverImage: string;
-  author: Pick<Author, 'id' | 'username' | 'displayName' | 'avatarUrl'>;
-  tags: string[];
+  authorId: number;
+  categoryId: number;
+  status: ArticleStatus;
+  isPremium: boolean;
+  readingTime: number;
   viewCount: number;
   likeCount: number;
-  isPremium: boolean;
-  publishedAt: string;
-}
-
-/** 文章详情（完整字段） */
-export interface ArticleDetail extends Omit<ArticleSummary, 'tags'> {
-  content: string;
-  author: Author;
-  tags: Tag[];
-  category: Category;
   commentCount: number;
-  relatedArticles: Array<{
-    id: number;
-    title: string;
-    slug: string;
-    coverImage: string;
-  }>;
+  publishedAt: string | null;
+  createdAt: string;
   updatedAt: string;
 }
 
-/** 创建/更新文章请求体 */
+/** 文章列表响应（含分页 metadata） */
+export interface ArticleListResult {
+  items: ArticleSummary[];
+  metadata?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+}
+
+/** 创建/更新文章请求体（对齐后端 CreateArticleDTO） */
 export interface UpsertArticleRequest {
   title: string;
-  slug: string;
-  summary: string;
+  slug?: string;
+  summary?: string;
   content: string;
-  coverImage: string;
+  coverImage?: string;
   categoryId: number;
-  tags: string[];
-  isPremium: boolean;
+  tags?: string[];
+  isPremium?: boolean;
   status: ArticleStatus;
 }
 
