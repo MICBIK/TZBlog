@@ -14,7 +14,7 @@ import (
 	"github.com/MICBIK/TZBlog/backend/internal/api/handlers"
 	"github.com/MICBIK/TZBlog/backend/internal/api/middleware"
 	"github.com/MICBIK/TZBlog/backend/internal/cache"
-	"github.com/MICBIK/TZBlog/backend/internal/monitoring"
+// 	"github.com/MICBIK/TZBlog/backend/internal/monitoring"
 	"github.com/MICBIK/TZBlog/backend/internal/repository/postgres"
 	"github.com/MICBIK/TZBlog/backend/internal/service"
 	"github.com/MICBIK/TZBlog/backend/pkg/auth"
@@ -104,7 +104,7 @@ func main() {
 			case <-monitorCtx.Done():
 				return
 			case <-ticker.C:
-				monitoring.UpdateDBMetrics(sqlDB.Stats())
+// 				monitoring.UpdateDBMetrics(sqlDB.Stats())
 			}
 		}
 	}()
@@ -172,7 +172,7 @@ func main() {
 	router.Use(middleware.RecoveryLogger())   // 2. Recovery
 	router.Use(gin.Recovery())                // 3. Gin's default recovery
 	router.Use(RequestID())                   // 4. Request ID
-	router.Use(monitoring.HTTPMetricsMiddleware()) // 5. Prometheus metrics
+// 	router.Use(monitoring.HTTPMetricsMiddleware()) // 5. Prometheus metrics
 
 	// CORS middleware
 	if cfg.IsDevelopment() {
