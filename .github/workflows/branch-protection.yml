@@ -1,0 +1,155 @@
+name: Branch Protection Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  check-branch-scope:
+    name: Check Branch and File Scope
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check branch naming convention
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          echo "Checking branch: $BRANCH_NAME"
+
+          # 允许的分支模式
+          if [[ "$BRANCH_NAME" =~ ^feature/backend/.+ ]]; then
+            echo "✅ Backend feature branch detected"
+            echo "BRANCH_TYPE=backend" >> $GITHUB_ENV
+          elif [[ "$BRANCH_NAME" =~ ^feature/frontend/.+ ]]; then
+            echo "✅ Frontend feature branch detected"
+            echo "BRANCH_TYPE=frontend" >> $GITHUB_ENV
+          elif [[ "$BRANCH_NAME" =~ ^hotfix/.+ ]]; then
+            echo "✅ Hotfix branch detected"
+            echo "BRANCH_TYPE=hotfix" >> $GITHUB_ENV
+          elif [[ "$BRANCH_NAME" =~ ^release/.+ ]]; then
+            echo "✅ Release branch detected"
+            echo "BRANCH_TYPE=release" >> $GITHUB_ENV
+          else
+            echo "❌ Invalid branch name: $BRANCH_NAME"
+            echo ""
+            echo "Branch naming rules:"
+            echo "  - feature/backend/<name> - for backend changes"
+            echo "  - feature/frontend/<name> - for frontend changes"
+            echo "  - hotfix/<name> - for urgent fixes"
+            echo "  - release/<version> - for releases"
+            exit 1
+          fi
+
+      - name: Check file scope for feature branches
+        if: env.BRANCH_TYPE == 'backend' || env.BRANCH_TYPE == 'frontend'
+        run: |
+          BRANCH_TYPE="${{ env.BRANCH_TYPE }}"
+
+          # 获取修改的文件列表
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          # 检查文件范围
+          INVALID_FILES=""
+
+          if [ "$BRANCH_TYPE" = "backend" ]; then
+            # 后端分支只能修改 backend/ 目录和根目录配置文件
+            while IFS= read -r file; do
+              if [[ ! "$file" =~ ^backend/ ]] && \
+                 [[ ! "$file" =~ ^\.github/ ]] && \
+                 [[ ! "$file" =~ ^docker-compose\.yml$ ]] && \
+                 [[ ! "$file" =~ ^README\.md$ ]] && \
+                 [[ ! "$file" =~ ^docs/ ]]; then
+                INVALID_FILES="$INVALID_FILES\n  - $file"
+              fi
+            done <<< "$CHANGED_FILES"
+
+            if [ -n "$INVALID_FILES" ]; then
+              echo "❌ Backend branch contains non-backend files:"
+              echo -e "$INVALID_FILES"
+              echo ""
+              echo "Backend branches should only modify:"
+              echo "  - backend/ directory"
+              echo "  - .github/ (CI/CD)"
+              echo "  - docker-compose.yml"
+              echo "  - docs/ (documentation)"
+              exit 1
+            fi
+
+          elif [ "$BRANCH_TYPE" = "frontend" ]; then
+            # 前端分支只能修改 frontend/ 目录和根目录配置文件
+            while IFS= read -r file; do
+              if [[ ! "$file" =~ ^frontend/ ]] && \
+                 [[ ! "$file" =~ ^\.github/ ]] && \
+                 [[ ! "$file" =~ ^docker-compose\.yml$ ]] && \
+                 [[ ! "$file" =~ ^README\.md$ ]] && \
+                 [[ ! "$file" =~ ^docs/ ]]; then
+                INVALID_FILES="$INVALID_FILES\n  - $file"
+              fi
+            done <<< "$CHANGED_FILES"
+
+            if [ -n "$INVALID_FILES" ]; then
+              echo "❌ Frontend branch contains non-frontend files:"
+              echo -e "$INVALID_FILES"
+              echo ""
+              echo "Frontend branches should only modify:"
+              echo "  - frontend/ directory"
+              echo "  - .github/ (CI/CD)"
+              echo "  - docker-compose.yml"
+              echo "  - docs/ (documentation)"
+              exit 1
+            fi
+          fi
+
+          echo "✅ All files are in the correct scope"
+
+      - name: Check commit message format
+        run: |
+          # 获取所有提交信息
+          COMMITS=$(git log --format=%s origin/${{ github.base_ref }}..HEAD)
+
+          echo "Checking commit messages..."
+
+          INVALID_COMMITS=""
+          while IFS= read -r commit; do
+            # 检查提交信息格式: type(scope): subject
+            if [[ ! "$commit" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\(.+\))?:\ .+ ]]; then
+              INVALID_COMMITS="$INVALID_COMMITS\n  - $commit"
+            fi
+          done <<< "$COMMITS"
+
+          if [ -n "$INVALID_COMMITS" ]; then
+            echo "❌ Invalid commit messages found:"
+            echo -e "$INVALID_COMMITS"
+            echo ""
+            echo "Commit message format: type(scope): subject"
+            echo "Valid types: feat, fix, docs, style, refactor, perf, test, chore, ci, revert"
+            echo "Example: feat(backend): add user authentication"
+            exit 1
+          fi
+
+          echo "✅ All commit messages are valid"
+
+      - name: Summary
+        if: success()
+        run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  ✅ Branch Protection Check Passed"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Branch: ${{ github.head_ref }}"
+          echo "Type: ${{ env.BRANCH_TYPE }}"
+          echo "Target: ${{ github.base_ref }}"
+          echo ""
+          echo "All checks passed! 🎉"
+          echo ""
