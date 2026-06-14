@@ -95,7 +95,7 @@ export default function AboutPage() {
         ref={(el) => {
           rvRefs.current[0] = el;
         }}
-        className="rv py-[54px]"
+        className="rv pb-[36px] pt-[54px]"
       >
         <div className="border-line overflow-hidden rounded-[10px] border bg-gradient-to-b from-panel to-bg-2 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.8)]">
           {/* 终端标题栏 */}
