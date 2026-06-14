@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,9 +28,9 @@ func NewTagHandler(repo tag.TagRepository) *TagHandler {
 // @Produce      json
 // @Param        page query int false "页码" default(1) example(1)
 // @Param        limit query int false "每页数量" default(50) example(50)
-// @Success      200 {object} response.Response{data=[]tag.Tag,metadata=response.Metadata} "成功返回标签列表"
+// @Success      200 {object} response.PaginatedResponse "成功返回标签列表"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /tags [get]
+// @Router       /api/v1/tags [get]
 func (h *TagHandler) List(c *gin.Context) {
 	page := 1
 	if p := c.Query("page"); p != "" {
@@ -71,7 +71,7 @@ func (h *TagHandler) List(c *gin.Context) {
 // @Failure      403 {object} response.ErrorResponse "无权限"
 // @Failure      409 {object} response.ErrorResponse "标签已存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /tags [post]
+// @Router       /api/v1/tags [post]
 func (h *TagHandler) Create(c *gin.Context) {
 	var t tag.Tag
 	if err := c.ShouldBindJSON(&t); err != nil {
@@ -104,7 +104,7 @@ func (h *TagHandler) Create(c *gin.Context) {
 // @Failure      400 {object} response.ErrorResponse "无效的标签 ID"
 // @Failure      404 {object} response.ErrorResponse "标签不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /tags/{id} [get]
+// @Router       /api/v1/tags/{id} [get]
 func (h *TagHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

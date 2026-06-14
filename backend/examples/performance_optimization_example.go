@@ -12,6 +12,7 @@ import (
 	"github.com/MICBIK/TZBlog/backend/internal/repository/postgres"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 )
 
 // Example demonstrates how to use Phase 3 performance optimizations
@@ -73,7 +74,7 @@ func Example(db *gorm.DB, redisClient *redis.Client) {
 	batchOps := postgres.NewBatchOperations(db)
 
 	// Batch insert example
-	articles := []*postgres.Article{
+	articles := []*article.Article{
 		{Title: "Article 1", Slug: "article-1", Content: "Content 1", AuthorID: 1, Status: "published"},
 		{Title: "Article 2", Slug: "article-2", Content: "Content 2", AuthorID: 1, Status: "published"},
 	}

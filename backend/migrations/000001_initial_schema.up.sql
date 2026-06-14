@@ -3,6 +3,27 @@
 -- Created: 2026-06-14
 
 -- ============================================================================
+-- PHASE 0: Idempotency Check
+-- ============================================================================
+-- Purpose: Prevent duplicate execution of initial migration
+-- Impact: Allows safe re-running without errors
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'users'
+    ) THEN
+        RAISE NOTICE 'Tables already exist, skipping initial migration';
+        RAISE NOTICE 'If you need to re-create tables, drop them manually first';
+        -- Exit the migration early
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'No existing tables found, proceeding with initial schema creation';
+END $$;
+
+-- ============================================================================
 -- Users Table
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS users (

@@ -1,22 +1,10 @@
 package comment
 
 import (
-	"errors"
 	"strings"
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/pkg/sanitizer"
-)
-
-// Errors
-var (
-	ErrInvalidParent    = errors.New("invalid parent comment")
-	ErrCommentNotFound  = errors.New("comment not found")
-	ErrUnauthorized     = errors.New("unauthorized to perform this action")
-	ErrInvalidContent   = errors.New("comment content is required")
-	ErrContentTooLong   = errors.New("comment content is too long (max 1000 characters)")
-	ErrInvalidArticleID = errors.New("article ID is required")
-	ErrInvalidUserID    = errors.New("user ID is required")
 )
 
 // Comment represents a comment entity

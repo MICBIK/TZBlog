@@ -8,6 +8,20 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// ValidateRedisConfig validates Redis configuration
+// Fixes C-009: Redis password validation
+func ValidateRedisConfig(cfg *RedisConfig, isProduction bool) error {
+	if isProduction {
+		if cfg.Password == "" {
+			return fmt.Errorf("REDIS_PASSWORD required in production")
+		}
+		if len(cfg.Password) < 16 {
+			return fmt.Errorf("REDIS_PASSWORD must be ≥16 characters in production (current: %d)", len(cfg.Password))
+		}
+	}
+	return nil
+}
+
 // NewRedisClient creates a new Redis client
 func NewRedisClient(cfg *RedisConfig) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{

@@ -1,7 +1,6 @@
 package article
 
 import (
-	"errors"
 	"strings"
 	"time"
 
@@ -16,20 +15,6 @@ const (
 	StatusDraft     = "draft"
 	StatusPublished = "published"
 	StatusArchived  = "archived"
-)
-
-// Errors
-var (
-	ErrArticleNotFound      = errors.New("article not found")
-	ErrInvalidTitle         = errors.New("article title is required")
-	ErrTitleTooLong         = errors.New("article title is too long (max 200 characters)")
-	ErrInvalidContent       = errors.New("article content is required")
-	ErrContentTooLong       = errors.New("article content is too long (max 100,000 characters)")
-	ErrInvalidSummary       = errors.New("article summary is too long (max 500 characters)")
-	ErrInvalidStatus        = errors.New("invalid article status")
-	ErrInvalidSlug          = errors.New("invalid article slug")
-	ErrInvalidAuthorID      = errors.New("article author ID is required")
-	ErrUnauthorized         = errors.New("unauthorized to perform this action")
 )
 
 // Article represents an article entity

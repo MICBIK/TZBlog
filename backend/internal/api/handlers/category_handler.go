@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/category"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,9 +28,9 @@ func NewCategoryHandler(repo category.CategoryRepository) *CategoryHandler {
 // @Produce      json
 // @Param        page query int false "页码" default(1) example(1)
 // @Param        limit query int false "每页数量" default(20) example(20)
-// @Success      200 {object} response.Response{data=[]category.Category,metadata=response.Metadata} "成功返回分类列表"
+// @Success      200 {object} response.PaginatedResponse "成功返回分类列表"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /categories [get]
+// @Router       /api/v1/categories [get]
 func (h *CategoryHandler) List(c *gin.Context) {
 	page := 1
 	if p := c.Query("page"); p != "" {
@@ -71,7 +71,7 @@ func (h *CategoryHandler) List(c *gin.Context) {
 // @Failure      403 {object} response.ErrorResponse "无权限"
 // @Failure      409 {object} response.ErrorResponse "分类已存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /categories [post]
+// @Router       /api/v1/categories [post]
 func (h *CategoryHandler) Create(c *gin.Context) {
 	var cat category.Category
 	if err := c.ShouldBindJSON(&cat); err != nil {
@@ -104,7 +104,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 // @Failure      400 {object} response.ErrorResponse "无效的分类 ID"
 // @Failure      404 {object} response.ErrorResponse "分类不存在"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /categories/{id} [get]
+// @Router       /api/v1/categories/{id} [get]
 func (h *CategoryHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

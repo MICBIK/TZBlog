@@ -10,26 +10,14 @@ type CommentService struct {
 }
 
 // NewCommentService creates a new comment service
-func NewCommentService(repo comment.Repository) *CommentService {
+func NewCommentService(repo comment.Repository) comment.Service {
 	return &CommentService{
 		repo: repo,
 	}
 }
 
-// CreateCommentDTO represents the request data for creating a comment
-type CreateCommentDTO struct {
-	ArticleID int64  `json:"article_id" binding:"required"`
-	ParentID  *int64 `json:"parent_id"`
-	Content   string `json:"content" binding:"required,max=1000"`
-}
-
-// UpdateCommentDTO represents the request data for updating a comment
-type UpdateCommentDTO struct {
-	Content string `json:"content" binding:"required,max=1000"`
-}
-
 // CreateComment creates a new comment
-func (s *CommentService) CreateComment(userID int64, dto *CreateCommentDTO) (*comment.Comment, error) {
+func (s *CommentService) CreateComment(userID int64, dto *comment.CreateCommentDTO) (*comment.Comment, error) {
 	// Create comment entity
 	newComment := &comment.Comment{
 		ArticleID: dto.ArticleID,
@@ -52,6 +40,9 @@ func (s *CommentService) CreateComment(userID int64, dto *CreateCommentDTO) (*co
 			return nil, comment.ErrInvalidParent
 		}
 	}
+
+	// ✅ SEC-001 FIX: Sanitize content to prevent XSS attacks
+	newComment.SanitizeContent()
 
 	// Validate comment
 	if err := newComment.Validate(); err != nil {
@@ -96,7 +87,7 @@ func (s *CommentService) ListComments(filter *comment.ListFilter) ([]*comment.Co
 }
 
 // UpdateComment updates an existing comment
-func (s *CommentService) UpdateComment(id, userID int64, dto *UpdateCommentDTO) (*comment.Comment, error) {
+func (s *CommentService) UpdateComment(id, userID int64, dto *comment.UpdateCommentDTO) (*comment.Comment, error) {
 	// Fetch existing comment
 	c, err := s.repo.FindByID(id)
 	if err != nil {
@@ -113,6 +104,9 @@ func (s *CommentService) UpdateComment(id, userID int64, dto *UpdateCommentDTO) 
 
 	// Update content
 	c.Content = dto.Content
+
+	// ✅ SEC-001 FIX: Sanitize content to prevent XSS attacks
+	c.SanitizeContent()
 
 	// Validate updated comment
 	if err := c.Validate(); err != nil {

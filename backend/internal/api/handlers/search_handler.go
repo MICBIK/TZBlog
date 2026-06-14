@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/MICBIK/TZBlog/backend/internal/search"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +28,7 @@ func NewSearchHandler(searchClient *search.Client) *SearchHandler {
 // @Param tag query string false "Tag filter"
 // @Param sort query string false "Sort by" Enums(publishedAt:desc, publishedAt:asc, viewCount:desc)
 // @Success 200 {object} search.SearchResult
-// @Router /search [get]
+// @Router       /api/v1/search [get]
 func (h *SearchHandler) Search(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {
@@ -74,7 +74,7 @@ func (h *SearchHandler) Search(c *gin.Context) {
 // @Summary Get search statistics
 // @Tags Search
 // @Success 200 {object} map[string]interface{}
-// @Router /search/stats [get]
+// @Router       /api/v1/search/stats [get]
 func (h *SearchHandler) GetSearchStats(c *gin.Context) {
 	stats, err := h.searchClient.GetStats()
 	if err != nil {

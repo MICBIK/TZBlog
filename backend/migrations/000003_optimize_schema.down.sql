@@ -3,38 +3,70 @@
 -- Created: 2026-06-14
 
 -- ============================================================================
+-- PHASE 0: Pre-Rollback Validation
+-- ============================================================================
+-- Purpose: Verify data won't be truncated during rollback
+-- Impact: Prevents data loss
+
+DO $$
+DECLARE
+    long_title_count INT;
+    long_slug_count INT;
+BEGIN
+    -- Check for titles longer than 200 chars
+    SELECT COUNT(*) INTO long_title_count
+    FROM articles
+    WHERE LENGTH(title) > 200;
+
+    IF long_title_count > 0 THEN
+        RAISE EXCEPTION 'Cannot rollback: found % titles longer than 200 chars. Please truncate them first.', long_title_count;
+    END IF;
+
+    -- Check for slugs longer than 250 chars
+    SELECT COUNT(*) INTO long_slug_count
+    FROM articles
+    WHERE LENGTH(slug) > 250;
+
+    IF long_slug_count > 0 THEN
+        RAISE EXCEPTION 'Cannot rollback: found % slugs longer than 250 chars. Please truncate them first.', long_slug_count;
+    END IF;
+
+    RAISE NOTICE 'Pre-rollback validation passed. Proceeding with rollback.';
+END $$;
+
+-- ============================================================================
 -- PHASE 6: Drop Partial Indexes
 -- ============================================================================
 
-DROP INDEX IF EXISTS idx_subscriptions_unverified;
-DROP INDEX IF EXISTS idx_comments_pending;
-DROP INDEX IF EXISTS idx_users_unverified;
-DROP INDEX IF EXISTS idx_articles_drafts;
+DROP INDEX CONCURRENTLY IF EXISTS idx_subscriptions_unverified;
+DROP INDEX CONCURRENTLY IF EXISTS idx_comments_pending;
+DROP INDEX CONCURRENTLY IF EXISTS idx_users_unverified;
+DROP INDEX CONCURRENTLY IF EXISTS idx_articles_drafts;
 
 -- ============================================================================
 -- PHASE 5: Drop Covering Indexes
 -- ============================================================================
 
-DROP INDEX IF EXISTS idx_comments_count_covering;
-DROP INDEX IF EXISTS idx_users_lookup_covering;
-DROP INDEX IF EXISTS idx_articles_list_covering;
+DROP INDEX CONCURRENTLY IF EXISTS idx_comments_count_covering;
+DROP INDEX CONCURRENTLY IF EXISTS idx_users_lookup_covering;
+DROP INDEX CONCURRENTLY IF EXISTS idx_articles_list_covering;
 
 -- ============================================================================
 -- PHASE 4: Drop Advanced Composite Indexes
 -- ============================================================================
 
-DROP INDEX IF EXISTS idx_subscriptions_status_verified;
-DROP INDEX IF EXISTS idx_users_role_status;
-DROP INDEX IF EXISTS idx_users_status_created;
-DROP INDEX IF EXISTS idx_article_tags_tag_article;
-DROP INDEX IF EXISTS idx_likes_target_type_date;
-DROP INDEX IF EXISTS idx_article_views_session_date;
-DROP INDEX IF EXISTS idx_article_views_article_date;
-DROP INDEX IF EXISTS idx_comments_user_status_created;
-DROP INDEX IF EXISTS idx_comments_article_status_created;
-DROP INDEX IF EXISTS idx_articles_status_published_created;
-DROP INDEX IF EXISTS idx_articles_author_status_published;
-DROP INDEX IF EXISTS idx_articles_category_status_views;
+DROP INDEX CONCURRENTLY IF EXISTS idx_subscriptions_status_verified;
+DROP INDEX CONCURRENTLY IF EXISTS idx_users_role_status;
+DROP INDEX CONCURRENTLY IF EXISTS idx_users_status_created;
+DROP INDEX CONCURRENTLY IF EXISTS idx_article_tags_tag_article;
+DROP INDEX CONCURRENTLY IF EXISTS idx_likes_target_type_date;
+DROP INDEX CONCURRENTLY IF EXISTS idx_article_views_session_date;
+DROP INDEX CONCURRENTLY IF EXISTS idx_article_views_article_date;
+DROP INDEX CONCURRENTLY IF EXISTS idx_comments_user_status_created;
+DROP INDEX CONCURRENTLY IF EXISTS idx_comments_article_status_created;
+DROP INDEX CONCURRENTLY IF EXISTS idx_articles_status_published_created;
+DROP INDEX CONCURRENTLY IF EXISTS idx_articles_author_status_published;
+DROP INDEX CONCURRENTLY IF EXISTS idx_articles_category_status_views;
 
 -- ============================================================================
 -- PHASE 3: Revert Data Type Changes

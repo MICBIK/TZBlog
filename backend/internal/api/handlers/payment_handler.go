@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/payment"
-	"github.com/MICBIK/TZBlog/backend/pkg/response"
+	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,7 +42,7 @@ type CreateCheckoutRequest struct {
 // @Security Bearer
 // @Param request body CreateCheckoutRequest true "Tier"
 // @Success 200 {object} response.Response{data=gin.H{url=string}}
-// @Router /payment/checkout [post]
+// @Router       /api/v1/payment/checkout [post]
 func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
 	userID := c.GetInt64("userID")
 
@@ -74,7 +74,7 @@ func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
 // @Tags Payment
 // @Security Bearer
 // @Success 200 {object} response.Response{data=gin.H{url=string}}
-// @Router /payment/portal [post]
+// @Router       /api/v1/payment/portal [post]
 func (h *PaymentHandler) CreatePortalSession(c *gin.Context) {
 	userID := c.GetInt64("userID")
 
@@ -93,7 +93,7 @@ func (h *PaymentHandler) CreatePortalSession(c *gin.Context) {
 // @Accept json
 // @Param payload body string true "Stripe event payload"
 // @Success 200 {string} string "ok"
-// @Router /payment/webhook [post]
+// @Router       /api/v1/payment/webhook [post]
 func (h *PaymentHandler) StripeWebhook(c *gin.Context) {
 	payload, err := c.GetRawData()
 	if err != nil {
@@ -109,7 +109,8 @@ func (h *PaymentHandler) StripeWebhook(c *gin.Context) {
 
 	err = h.stripeService.HandleWebhook(payload, signature)
 	if err != nil {
-		c.String(400, "Webhook error: "+err.Error())
+		// ✅ SEC-005 FIX: Don't expose internal error details
+		c.String(400, "Webhook processing failed")
 		return
 	}
 
@@ -123,7 +124,7 @@ func (h *PaymentHandler) StripeWebhook(c *gin.Context) {
 // @Param limit query int false "Limit" default(20)
 // @Param offset query int false "Offset" default(0)
 // @Success 200 {object} response.Response
-// @Router /payment/history [get]
+// @Router       /api/v1/payment/history [get]
 func (h *PaymentHandler) GetPaymentHistory(c *gin.Context) {
 	userID := c.GetInt64("userID")
 
@@ -149,7 +150,7 @@ func (h *PaymentHandler) GetPaymentHistory(c *gin.Context) {
 // @Tags Payment
 // @Security Bearer
 // @Success 200 {object} response.Response{data=payment.Membership}
-// @Router /membership [get]
+// @Router       /api/v1/membership [get]
 func (h *PaymentHandler) GetMembership(c *gin.Context) {
 	userID := c.GetInt64("userID")
 
@@ -178,7 +179,7 @@ func (h *PaymentHandler) GetMembership(c *gin.Context) {
 // @Tags Payment
 // @Security Bearer
 // @Success 200 {object} response.Response
-// @Router /membership/cancel [post]
+// @Router       /api/v1/membership/cancel [post]
 func (h *PaymentHandler) CancelMembership(c *gin.Context) {
 	userID := c.GetInt64("userID")
 

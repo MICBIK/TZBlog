@@ -12,32 +12,14 @@ type ArticleService struct {
 }
 
 // NewArticleService creates a new article service
-func NewArticleService(repo article.Repository) *ArticleService {
+func NewArticleService(repo article.Repository) article.Service {
 	return &ArticleService{
 		repo: repo,
 	}
 }
 
-// CreateArticleDTO represents the request data for creating an article
-type CreateArticleDTO struct {
-	Title      string `json:"title" binding:"required,max=200"`
-	Summary    string `json:"summary"`
-	Content    string `json:"content" binding:"required"`
-	CoverImage string `json:"cover_image"`
-	Status     string `json:"status" binding:"required,oneof=draft published"`
-}
-
-// UpdateArticleDTO represents the request data for updating an article
-type UpdateArticleDTO struct {
-	Title      *string `json:"title" binding:"omitempty,max=200"`
-	Summary    *string `json:"summary"`
-	Content    *string `json:"content"`
-	CoverImage *string `json:"cover_image"`
-	Status     *string `json:"status" binding:"omitempty,oneof=draft published archived"`
-}
-
 // CreateArticle creates a new article
-func (s *ArticleService) CreateArticle(userID int64, dto *CreateArticleDTO) (*article.Article, error) {
+func (s *ArticleService) CreateArticle(userID int64, dto *article.CreateArticleDTO) (*article.Article, error) {
 	// Create article entity
 	newArticle := &article.Article{
 		AuthorID:   userID,
@@ -53,6 +35,9 @@ func (s *ArticleService) CreateArticle(userID int64, dto *CreateArticleDTO) (*ar
 
 	// Calculate reading time
 	newArticle.CalculateReadingTime()
+
+	// ✅ SEC-001 FIX: Sanitize content to prevent XSS attacks
+	newArticle.SanitizeContent()
 
 	// Set published time if status is published
 	if dto.Status == article.StatusPublished {
@@ -123,7 +108,7 @@ func (s *ArticleService) ListArticles(filter *article.ListFilter) ([]*article.Ar
 }
 
 // UpdateArticle updates an existing article
-func (s *ArticleService) UpdateArticle(id, userID int64, dto *UpdateArticleDTO) (*article.Article, error) {
+func (s *ArticleService) UpdateArticle(id, userID int64, dto *article.UpdateArticleDTO) (*article.Article, error) {
 	// Fetch existing article
 	art, err := s.repo.FindByID(id)
 	if err != nil {
@@ -173,6 +158,9 @@ func (s *ArticleService) UpdateArticle(id, userID int64, dto *UpdateArticleDTO) 
 	if !updated {
 		return art, nil
 	}
+
+	// ✅ SEC-001 FIX: Sanitize content to prevent XSS attacks
+	art.SanitizeContent()
 
 	// Validate updated article
 	if err := art.Validate(); err != nil {
