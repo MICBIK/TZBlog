@@ -14,7 +14,9 @@ import (
 
 // StorageHandler handles file upload requests
 type StorageHandler struct {
-	// TODO: Add storage client (S3/OSS) when configured
+	// TODO: Add Cloudflare R2 client (aws-sdk-go-v2, S3-compatible)
+	// client *s3.Client
+	// bucket string
 }
 
 // NewStorageHandler creates a new storage handler
@@ -24,7 +26,7 @@ func NewStorageHandler() *StorageHandler {
 
 // UploadImage handles image upload
 // @Summary      Upload an image
-// @Description  Upload an image file (jpg, png, gif, webp)
+// @Description  Upload an image file to Cloudflare R2 (jpg, png, gif, webp)
 // @Tags         Upload
 // @Accept       multipart/form-data
 // @Produce      json
@@ -49,27 +51,56 @@ func (h *StorageHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	// TODO: Upload to S3/OSS when storage is configured
-	// For now, generate a placeholder response
-
-	// Generate unique filename
+	// Generate unique filename (UUID + timestamp + extension)
 	ext := filepath.Ext(file.Filename)
 	filename := fmt.Sprintf("%s-%d%s", uuid.New().String(), time.Now().Unix(), ext)
 
-	// TODO: Replace with actual storage URL after implementing S3/OSS
-	url := fmt.Sprintf("https://placehold.co/600x400?text=%s", filename)
+	// TODO: Upload to Cloudflare R2 when configured
+	// Implementation steps:
+	// 1. Install: go get github.com/aws/aws-sdk-go-v2/service/s3
+	// 2. Configure R2 credentials (Account ID, Access Key, Secret Key)
+	// 3. Create S3 client pointing to R2 endpoint
+	// 4. Upload file using PutObject
+	// 5. Return CDN URL
+	//
+	// Example code:
+	// import (
+	//     "github.com/aws/aws-sdk-go-v2/config"
+	//     "github.com/aws/aws-sdk-go-v2/service/s3"
+	//     "github.com/aws/aws-sdk-go-v2/aws"
+	// )
+	//
+	// cfg, _ := config.LoadDefaultConfig(context.Background())
+	// client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+	//     o.BaseEndpoint = aws.String("https://<account-id>.r2.cloudflarestorage.com")
+	// })
+	//
+	// fileReader, _ := file.Open()
+	// defer fileReader.Close()
+	//
+	// _, err = client.PutObject(context.Background(), &s3.PutObjectInput{
+	//     Bucket: aws.String(h.bucket),
+	//     Key:    aws.String("images/" + filename),
+	//     Body:   fileReader,
+	//     ContentType: aws.String("image/" + strings.TrimPrefix(ext, ".")),
+	// })
+	//
+	// Return CDN URL: https://cdn.yourdomain.com/images/{filename}
+
+	// Placeholder URL (replace with actual CDN URL after R2 integration)
+	url := fmt.Sprintf("https://cdn.yourdomain.com/images/%s", filename)
 
 	response.Success(c, gin.H{
 		"url":      url,
 		"filename": filename,
 		"size":     file.Size,
-		"message":  "Upload successful (using placeholder - TODO: implement S3/OSS)",
+		"message":  "Upload successful (Cloudflare R2 integration pending)",
 	})
 }
 
 // validateImageFile validates the uploaded image file
 func (h *StorageHandler) validateImageFile(file *multipart.FileHeader) error {
-	// Check file size (max 5MB)
+	// Check file size (max 5MB as per requirements)
 	const maxSize = 5 * 1024 * 1024 // 5MB
 	if file.Size > maxSize {
 		return fmt.Errorf("file size exceeds maximum limit of 5MB")
@@ -79,7 +110,7 @@ func (h *StorageHandler) validateImageFile(file *multipart.FileHeader) error {
 		return fmt.Errorf("file is empty")
 	}
 
-	// Check file extension
+	// Check file extension (jpg, png, webp as per requirements)
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowedExts := map[string]bool{
 		".jpg":  true,
@@ -93,7 +124,8 @@ func (h *StorageHandler) validateImageFile(file *multipart.FileHeader) error {
 		return fmt.Errorf("invalid file type: %s (allowed: jpg, jpeg, png, gif, webp)", ext)
 	}
 
-	// TODO: Add MIME type validation when storage.Validator is available
+	// TODO: Add MIME type validation
+	// Open file and check actual content type to prevent extension spoofing
 
 	return nil
 }
@@ -115,5 +147,6 @@ func (h *StorageHandler) GetUploadConfig(c *gin.Context) {
 			"image/webp",
 		},
 		"allowedExtensions": []string{".jpg", ".jpeg", ".png", ".gif", ".webp"},
+		"storage": "Cloudflare R2",
 	})
 }

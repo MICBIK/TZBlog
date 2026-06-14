@@ -107,7 +107,7 @@
 - ✅ 配置端点支持
 
 **状态**: ✅ **基础实现完成**  
-**注意**: 返回占位图 URL，需要后续集成 S3/OSS
+**注意**: 返回占位图 URL，需要后续集成 Cloudflare R2
 
 ---
 
@@ -171,7 +171,7 @@ ADD COLUMN is_premium BOOLEAN DEFAULT FALSE;
 
 ### 🟡 中优先级
 
-1. **S3/OSS 集成**
+1. **Cloudflare R2 集成**
    - 集成 AWS S3 或阿里云 OSS
    - 实际文件上传到云存储
    - CDN 加速配置
@@ -280,7 +280,7 @@ curl -X POST http://localhost:8080/api/v1/uploads/images \
 **修复状态**: ✅ **完整实现完成**  
 **编译状态**: ✅ 通过  
 **前端阻塞**: ✅ 已解除  
-**生产就绪**: ✅ 可部署（S3/OSS 集成除外）
+**生产就绪**: ✅ 可部署（Cloudflare R2 集成除外）
 
 ### ✅ C1 - 🔴 致命：Login 字段不一致
 
@@ -402,7 +402,7 @@ type CreateArticleDTO struct {
 **修复内容**:
 1. 注册上传路由组 `/api/v1/uploads`
 2. 添加临时处理函数（返回占位图 URL）
-3. 标记 TODO 需要实现 S3/OSS 集成
+3. 标记 TODO 需要实现 Cloudflare R2 集成
 
 **修改文件**:
 - `cmd/server/main.go`
@@ -413,7 +413,7 @@ type CreateArticleDTO struct {
 **当前实现**:
 - 返回占位图 URL: `https://placehold.co/600x400`
 - 不会实际上传到存储
-- **需要后续实现**: 创建 `StorageHandler` 集成 S3/OSS
+- **需要后续实现**: 创建 `StorageHandler` 集成 Cloudflare R2
 
 ---
 
@@ -456,7 +456,7 @@ type CreateArticleDTO struct {
 
 2. **实现 StorageHandler**
    - 创建 `internal/api/handlers/storage_handler.go`
-   - 集成 S3/阿里云 OSS/腾讯云 COS
+   - 集成 Cloudflare R2 (S3-compatible)
    - 实现图片上传和验证
 
 3. **实现 Tags 关联**
