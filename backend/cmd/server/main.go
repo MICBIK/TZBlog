@@ -190,7 +190,7 @@ func main() {
 			{
 				authProtected.GET("/me", authHandler.GetCurrentUser)
 				authProtected.PUT("/profile", authHandler.UpdateProfile)
-				authProtected.POST("/change-password", authHandler.ChangePassword)
+				authProtected.PUT("/password", authHandler.ChangePassword) // ✅ P0-1: 修复 RESTful 规范，修改密码应使用 PUT
 			}
 		}
 

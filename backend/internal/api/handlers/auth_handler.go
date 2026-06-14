@@ -149,7 +149,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 // @Failure      400 {object} response.ErrorResponse "请求参数错误"
 // @Failure      401 {object} response.ErrorResponse "未认证或旧密码错误"
 // @Failure      500 {object} response.ErrorResponse "服务器错误"
-// @Router       /api/v1/auth/change-password [post]
+// @Router       /api/v1/auth/password [put]
 func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	userID := c.GetInt64("user_id")
 	if userID == 0 {
