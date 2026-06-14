@@ -31,18 +31,20 @@ export default async function ArticlesPage({
   ]);
 
   const totalPages = result.metadata?.totalPages ?? 1;
+  const total = result.metadata?.total ?? 0;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      {/* 标题 */}
-      <div className="mb-8">
-        <h1 className="font-mono text-2xl font-bold">
-          <span className="text-primary">~/</span>articles
+    <main className="mx-auto max-w-[1080px] px-6 py-12">
+      {/* 终端标题 */}
+      <div className="mb-6">
+        <h1 className="font-mono text-xl font-bold">
+          <span className="text-primary">$</span> ls -la{' '}
+          <span className="text-[var(--amber)]">./articles/</span>
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {result.metadata?.total ?? 0} 篇文章
-          {category ? ` · 分类: ${category}` : ''}
-          {tag ? ` · 标签: #${tag}` : ''}
+        <p className="text-muted mt-1 font-mono text-xs">
+          total {total} ·{' '}
+          {category ? `category: ${category}` : 'all categories'}
+          {tag ? ` · tag: #${tag}` : ''}
         </p>
       </div>
 
@@ -54,8 +56,8 @@ export default async function ArticlesPage({
             className={cn(
               'rounded border px-3 py-1 font-mono text-xs transition-colors',
               !category
-                ? 'border-primary/40 bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:text-primary',
+                ? 'bg-primary/10 text-primary border-[var(--acc-dim)]'
+                : 'border-border text-muted hover:text-primary',
             )}
           >
             all
@@ -67,8 +69,8 @@ export default async function ArticlesPage({
               className={cn(
                 'rounded border px-3 py-1 font-mono text-xs transition-colors',
                 category === cat.slug
-                  ? 'border-primary/40 bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:text-primary',
+                  ? 'bg-primary/10 text-primary border-[var(--acc-dim)]'
+                  : 'border-border text-muted hover:text-primary',
               )}
             >
               {cat.name}
