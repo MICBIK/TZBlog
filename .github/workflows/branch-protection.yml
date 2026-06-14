@@ -127,8 +127,12 @@ jobs:
 
           INVALID_COMMITS=""
           while IFS= read -r commit; do
+            # 跳过 GitHub 自动生成的 merge commits
+            if [[ "$commit" =~ ^Merge\ [a-f0-9]{40}\ into\ [a-f0-9]{40}$ ]]; then
+              continue
+            fi
             # 检查提交信息格式: type(scope): subject
-            if [[ ! "$commit" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|revert)(\(.+\))?:\ .+ ]]; then
+            if [[ ! "$commit" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|ci|revert|merge)(\(.+\))?:\ .+ ]]; then
               INVALID_COMMITS="$INVALID_COMMITS\n  - $commit"
             fi
           done <<< "$COMMITS"
