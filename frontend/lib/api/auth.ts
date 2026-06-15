@@ -1,9 +1,11 @@
-import { apiGet, apiPost } from '@/lib/api/client';
+import { apiGet, apiPost, apiPut } from '@/lib/api/client';
 import type {
   AuthSession,
   AuthUser,
   LoginRequest,
   RegisterRequest,
+  UpdateProfileRequest,
+  ChangePasswordRequest,
 } from '@/types/auth';
 
 /**
@@ -29,4 +31,18 @@ export async function getCurrentUser(): Promise<AuthUser> {
 /** 登出（需 token） */
 export async function logout(): Promise<void> {
   await apiPost<void>('/auth/logout');
+}
+
+/** 更新用户资料（需 token） */
+export async function updateProfile(
+  body: UpdateProfileRequest,
+): Promise<AuthUser> {
+  return apiPut<AuthUser>('/auth/profile', body);
+}
+
+/** 修改密码（需 token，成功后 token 将被撤销） */
+export async function changePassword(
+  body: ChangePasswordRequest,
+): Promise<void> {
+  await apiPut<void>('/auth/password', body);
 }

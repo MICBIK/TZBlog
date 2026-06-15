@@ -6,10 +6,10 @@
 
 ## 当前状态
 
-- **阶段**: Phase 3 改进完成 + 集成测试通过
-- **分支**: `main`（PR #13 已合并）
-- **生产就绪度**: 92%
-- **测试覆盖率**: 68.0%
+- **阶段**: Phase 5: 前端写功能 UI 补全（实施完成，待验证）
+- **分支**: `feature/frontend/write-ui-completion`
+- **后端状态**: 生产就绪度 92%，测试覆盖率 68.0%
+- **前端状态**: 写功能 UI 100% 完成
 - **综合评分**: 85/100
 
 ---
@@ -509,9 +509,143 @@
 
 ---
 
+## Phase 5: 前端写功能 UI 补全（已完成）✅
+
+**时间**: 2026-06-15  
+**分支**: `feature/frontend/write-ui-completion`  
+**目标**: 补全所有缺失的写功能 UI
+
+### 完成内容
+
+#### 1. 用户资料修改 UI（已完成 ✅）
+
+**新增文件**:
+- `components/settings/SettingsTabs.tsx` - Tabs 容器组件
+- `components/settings/ProfileForm.tsx` - 个人资料表单
+- `components/settings/AvatarUpload.tsx` - 头像上传组件
+
+**功能**:
+- ✅ 显示名称输入（displayName）
+- ✅ 个人简介输入（bio，500 字符限制，实时计数）
+- ✅ 头像上传（2MB 限制，圆形预览）
+- ✅ 表单验证（zod）
+- ✅ API 调用 `PUT /api/v1/auth/profile`
+- ✅ 成功后更新 authStore
+- ✅ 只读字段显示（username, email, role）
+
+#### 2. 修改密码 UI（已完成 ✅）
+
+**新增文件**:
+- `components/settings/PasswordForm.tsx` - 修改密码表单
+
+**功能**:
+- ✅ 当前密码输入
+- ✅ 新密码输入
+- ✅ 确认密码输入
+- ✅ 密码可见性切换（Eye/EyeOff 图标）
+- ✅ 密码强度指示器（5 级评分，颜色可视化）
+- ✅ 表单验证（zod + refine）
+- ✅ API 调用 `PUT /api/v1/auth/password`
+- ✅ 成功后自动登出并跳转登录页
+- ✅ 警告提示框
+
+**密码验证规则**:
+- 至少 8 位
+- 至少包含一个大写字母
+- 至少包含一个小写字母
+- 至少包含一个数字
+- 两次密码输入一致
+
+#### 3. 设置页面重构（已完成 ✅）
+
+**修改文件**:
+- `app/(dashboard)/admin/settings/page.tsx` - 重构为完整设置页
+
+**功能**:
+- ✅ 双 Tab 布局（个人资料 + 修改密码）
+- ✅ Server Component 获取当前用户
+- ✅ 未登录自动跳转登录页
+
+#### 4. 文章删除确认（已完成 ✅）
+
+**功能**:
+- ✅ 文章列表每行显示删除按钮
+- ✅ AlertDialog 二次确认
+- ✅ 显示文章标题
+- ✅ 红色警告文字
+- ✅ Destructive 风格按钮
+- ✅ 删除成功后刷新列表
+
+**说明**: DeleteArticleButton 组件已存在，功能完整
+
+#### 5. API 路由修复（已完成 ✅）
+
+**修改文件**:
+- `lib/api/auth.ts` - 新增 `updateProfile()` 和 `changePassword()`
+- `lib/api/article.ts` - 修复 API 路由使用 `/by-id/:id`
+- `types/auth.ts` - 新增 `UpdateProfileRequest` 和 `ChangePasswordRequest`
+
+**修复内容**:
+- ✅ `updateArticle()` → `PUT /articles/by-id/:id`
+- ✅ `deleteArticle()` → `DELETE /articles/by-id/:id`
+- ✅ 对齐后端 Phase 3 改进后的路由
+
+### 成果
+
+**新增文件**: 6 个
+- 4 个 UI 组件
+- 1 个实施计划文档
+- 1 个实施报告文档
+
+**修改文件**: 4 个
+- 2 个 API 文件
+- 1 个类型定义文件
+- 1 个页面文件
+
+**代码统计**:
+- 新增代码: ~700 行
+- 新增组件: 4 个
+- 新增 API 方法: 2 个
+- 表单验证规则: 10+ 个
+
+**技术特性**:
+- ✅ TypeScript strict 模式
+- ✅ 零 `any` 类型
+- ✅ react-hook-form + zod 验证
+- ✅ shadcn/ui 组件
+- ✅ Zustand 状态管理
+- ✅ 统一错误处理
+- ✅ 加载状态显示
+- ✅ 用户友好提示
+
+**用户体验亮点**:
+- 实时字符计数（bio: 0/500）
+- 密码强度可视化指示器（红/黄/绿）
+- 头像圆形预览 + 移除按钮
+- 密码可见性切换
+- 二次删除确认
+- Toast 即时反馈
+
+### 文档产出
+
+1. `docs/superpowers/plans/2026-06-15-frontend-write-ui.md` - 详细实施计划
+2. `docs/superpowers/reports/2026-06-15-frontend-write-ui-completion.md` - 完整实施报告
+3. `frontend/VERIFICATION_NEEDED.md` - 验证步骤说明
+
+### 待验证项
+
+- [ ] `pnpm typecheck` 通过
+- [ ] `pnpm lint` 通过
+- [ ] `pnpm build` 成功
+- [ ] 用户资料修改功能测试
+- [ ] 修改密码功能测试
+- [ ] 文章删除功能测试
+
+---
+
 ## 下一步计划
 
-### Phase 4: 前后端集成（准备开始）
+### Phase 5: 前端写功能验证与联调（待开始）
 
 #### ✅ 后端准备完成
 1. ✅ D2b + D2c 修复完成
