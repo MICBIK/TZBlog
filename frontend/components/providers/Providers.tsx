@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { Toaster } from '@/components/ui/sonner';
+import { hydrateAuth } from '@/lib/store/authStore';
 
 /**
  * 全局客户端 Provider 聚合：
  * - TanStack Query（数据获取/缓存）
  * - Sonner Toaster（全局通知）
+ * - Auth Hydration（登录态恢复）
  * 使用 useState 创建 QueryClient，保证每个 SSR 请求一份独立实例。
  */
 export function Providers({ children }: { children: ReactNode }) {
@@ -27,6 +29,11 @@ export function Providers({ children }: { children: ReactNode }) {
         },
       }),
   );
+
+  // 恢复登录态（从 localStorage 的 token 调用 /auth/me）
+  useEffect(() => {
+    hydrateAuth();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
