@@ -25,7 +25,7 @@ export default async function HomePage() {
   return (
     <main className="mx-auto max-w-[1080px] px-6 py-12">
       {/* HERO — 终端窗口（设计稿第 220-244 行）*/}
-      <section className="pb-8 pt-[46px]">
+      <section className="pb-[30px] pt-[46px]">
         <TerminalWindow title="~/welcome.md — pinned">
           {/* cmd 命令行 */}
           <p className="text-muted mb-[18px] font-mono text-[13.5px]">
