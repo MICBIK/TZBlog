@@ -38,3 +38,16 @@ export interface AuthSession {
   user: AuthUser;
   token: string;
 }
+
+/** 更新用户资料请求 */
+export interface UpdateProfileRequest {
+  displayName?: string;
+  bio?: string;
+  avatarUrl?: string;
+}
+
+/** 修改密码请求 */
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}

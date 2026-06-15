@@ -45,12 +45,12 @@ export async function updateArticle(
   id: number,
   body: Partial<UpsertArticleRequest>,
 ): Promise<ArticleSummary> {
-  return apiPut<ArticleSummary>(`/articles/${id}`, body);
+  return apiPut<ArticleSummary>(`/articles/by-id/${id}`, body);
 }
 
 /** 删除文章 [需管理员] */
 export async function deleteArticle(id: number): Promise<void> {
-  await apiDelete(`/articles/${id}`);
+  await apiDelete(`/articles/by-id/${id}`);
 }
 
 /** 按状态筛选文章数（用于后台统计） */
