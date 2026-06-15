@@ -1,10 +1,12 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"time"
@@ -72,30 +74,36 @@ func (r *R2Storage) UploadImage(ctx context.Context, file *multipart.FileHeader)
 	}
 	defer fileReader.Close()
 
-	// Read file content
-	fileContent, err := io.ReadAll(fileReader)
-	if err != nil {
+	// ✅ SEC-1-04: Read first 512 bytes to detect MIME type
+	buf := make([]byte, 512)
+	n, err := fileReader.Read(buf)
+	if err != nil && err != io.EOF {
 		return "", fmt.Errorf("failed to read file: %w", err)
 	}
 
-	// Determine content type
-	contentType := "application/octet-stream"
-	switch strings.ToLower(ext) {
-	case ".jpg", ".jpeg":
-		contentType = "image/jpeg"
-	case ".png":
-		contentType = "image/png"
-	case ".gif":
-		contentType = "image/gif"
-	case ".webp":
-		contentType = "image/webp"
+	// Detect content type from actual file content
+	detectedMIME := http.DetectContentType(buf[:n])
+	if !strings.HasPrefix(detectedMIME, "image/") {
+		return "", fmt.Errorf("invalid file type: %s (expected image/*)", detectedMIME)
 	}
+
+	// Read remaining content
+	remaining, err := io.ReadAll(fileReader)
+	if err != nil {
+		return "", fmt.Errorf("failed to read remaining file content: %w", err)
+	}
+
+	// Combine buffer and remaining content
+	fileContent := append(buf[:n], remaining...)
+
+	// Use detected MIME type
+	contentType := detectedMIME
 
 	// Upload to R2
 	_, err = r.client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(r.bucket),
 		Key:         aws.String(filename),
-		Body:        strings.NewReader(string(fileContent)),
+		Body:        bytes.NewReader(fileContent),
 		ContentType: aws.String(contentType),
 		// Make object publicly readable (optional, depends on your bucket policy)
 		// ACL: types.ObjectCannedACLPublicRead,

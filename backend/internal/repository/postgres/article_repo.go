@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"gorm.io/gorm"
 )
 
@@ -37,6 +39,24 @@ func (r *ArticleRepository) FindByID(id int64) (*article.Article, error) {
 		}
 		return nil, err
 	}
+
+	// Manually load author (B4 fix)
+	if art.AuthorID > 0 {
+		var author user.User
+		if err := r.db.First(&author, art.AuthorID).Error; err == nil {
+			art.Author = &author
+		}
+	}
+
+	// Manually load tags (B4 fix)
+	var tags []*tag.Tag
+	r.db.Table("article_tags").
+		Select("tags.*").
+		Joins("JOIN tags ON tags.id = article_tags.tag_id").
+		Where("article_tags.article_id = ?", art.ID).
+		Find(&tags)
+	art.Tags = tags
+
 	return &art, nil
 }
 
@@ -50,6 +70,24 @@ func (r *ArticleRepository) FindBySlug(slug string) (*article.Article, error) {
 		}
 		return nil, err
 	}
+
+	// Manually load author (B4 fix)
+	if art.AuthorID > 0 {
+		var author user.User
+		if err := r.db.First(&author, art.AuthorID).Error; err == nil {
+			art.Author = &author
+		}
+	}
+
+	// Manually load tags (B4 fix)
+	var tags []*tag.Tag
+	r.db.Table("article_tags").
+		Select("tags.*").
+		Joins("JOIN tags ON tags.id = article_tags.tag_id").
+		Where("article_tags.article_id = ?", art.ID).
+		Find(&tags)
+	art.Tags = tags
+
 	return &art, nil
 }
 
@@ -58,8 +96,8 @@ func (r *ArticleRepository) List(filter *article.ListFilter) ([]*article.Article
 	var articles []*article.Article
 	var total int64
 
-	// Base query
-	query := r.db.Model(&article.Article{})
+	// Base query - omit content for performance (B4 fix)
+	query := r.db.Model(&article.Article{}).Omit("content")
 
 	// Apply filters
 	if filter.Status != "" {

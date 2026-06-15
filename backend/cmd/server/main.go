@@ -147,6 +147,15 @@ func main() {
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtAuth)
+	// ✅ SEC-1-05: Set token blacklist for password change revocation
+	if authSvc, ok := authService.(interface {
+		SetTokenBlacklist(interface {
+			Revoke(tokenID string, expiry time.Duration) error
+			IsRevoked(tokenID string) bool
+		})
+	}); ok {
+		authSvc.SetTokenBlacklist(tokenBlacklist)
+	}
 	articleService := service.NewArticleService(articleRepo, tagRepo)
 	commentService := service.NewCommentService(commentRepo)
 
@@ -203,7 +212,7 @@ func main() {
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
+			auth.POST("/login", middleware.SimpleLoginRateLimit(), authHandler.Login)
 			auth.POST("/logout", authHandler.Logout)
 
 			// Protected auth routes
@@ -242,6 +251,10 @@ func main() {
 				articlesProtected.PUT("/:slug", articleHandler.UpdateArticle)
 				articlesProtected.PATCH("/:slug", articleHandler.PatchArticle)
 				articlesProtected.DELETE("/:slug", articleHandler.DeleteArticle)
+
+				// By-ID routes for frontend compatibility (B2 fix)
+				articlesProtected.PUT("/by-id/:id", articleHandler.UpdateArticleByID)
+				articlesProtected.DELETE("/by-id/:id", articleHandler.DeleteArticleByID)
 
 				// Batch operations
 				articlesProtected.DELETE("/batch", articleHandler.BatchDelete)

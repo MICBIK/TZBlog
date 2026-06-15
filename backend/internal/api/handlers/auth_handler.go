@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
+	"github.com/MICBIK/TZBlog/backend/pkg/auth"
 	"github.com/gin-gonic/gin"
 )
 
@@ -163,7 +164,15 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ChangePassword(userID, &req); err != nil {
+	// ✅ SEC-1-05: Extract JTI from claims to revoke current token
+	jti := ""
+	if claims, exists := c.Get("claims"); exists {
+		if jwtClaims, ok := claims.(*auth.Claims); ok {
+			jti = jwtClaims.JTI
+		}
+	}
+
+	if err := h.service.ChangePassword(userID, jti, &req); err != nil {
 		response.HandleError(c, err)
 		return
 	}

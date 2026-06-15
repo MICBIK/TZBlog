@@ -120,7 +120,7 @@ func TestRegister_UsernameExists(t *testing.T) {
 	// Assert
 	assert.Error(t, err)
 	assert.Nil(t, resp)
-	assert.Equal(t, user.ErrUsernameExists, err)
+	assert.Equal(t, user.ErrInvalidCredentials, err)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -146,7 +146,7 @@ func TestRegister_EmailExists(t *testing.T) {
 	// Assert
 	assert.Error(t, err)
 	assert.Nil(t, resp)
-	assert.Equal(t, user.ErrEmailExists, err)
+	assert.Equal(t, user.ErrInvalidCredentials, err)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -271,7 +271,7 @@ func TestLogin_AccountBanned(t *testing.T) {
 	// Assert
 	assert.Error(t, err)
 	assert.Nil(t, resp)
-	assert.Equal(t, user.ErrAccountBanned, err)
+	assert.Equal(t, user.ErrInvalidCredentials, err)
 	mockRepo.AssertExpectations(t)
 }
 
@@ -400,7 +400,7 @@ func TestChangePassword_Success(t *testing.T) {
 	}
 
 	// Act
-	err := service.ChangePassword(1, dto)
+	err := service.ChangePassword(1, "test-jti", dto)
 
 	// Assert
 	assert.NoError(t, err)
@@ -427,7 +427,7 @@ func TestChangePassword_WrongCurrentPassword(t *testing.T) {
 	}
 
 	// Act
-	err := service.ChangePassword(1, dto)
+	err := service.ChangePassword(1, "test-jti", dto)
 
 	// Assert
 	assert.Error(t, err)

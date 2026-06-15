@@ -48,6 +48,6 @@ type UpdateArticleDTO struct {
 	Title      *string `json:"title" binding:"omitempty,max=200"`
 	Summary    *string `json:"summary"`
 	Content    *string `json:"content"`
-	CoverImage *string `json:"cover_image"`
+	CoverImage *string `json:"coverImage"`
 	Status     *string `json:"status" binding:"omitempty,oneof=draft published archived"`
 }
