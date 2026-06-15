@@ -47,10 +47,26 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 /**
- * 在客户端首次渲染时调用，从 localStorage 标记 hydration 完成。
- * Token 本身由 axios 拦截器直接读取，此处仅刷新 hydrated 标记。
+ * 在客户端首次渲染时调用，从 localStorage 恢复登录态。
+ * 如果 token 存在且有效，则调用 /auth/me 获取用户信息。
  */
-export function hydrateAuth(): void {
+export async function hydrateAuth(): Promise<void> {
   if (typeof window === 'undefined') return;
-  useAuthStore.setState({ hydrated: true });
+
+  const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+  if (!token) {
+    useAuthStore.setState({ hydrated: true });
+    return;
+  }
+
+  try {
+    // 动态导入避免循环依赖
+    const { getCurrentUser } = await import('@/lib/api/auth');
+    const user = await getCurrentUser();
+    useAuthStore.setState({ user, hydrated: true });
+  } catch (error) {
+    // Token 无效或过期，清除
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    useAuthStore.setState({ user: null, hydrated: true });
+  }
 }
