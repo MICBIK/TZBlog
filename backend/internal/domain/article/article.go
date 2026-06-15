@@ -19,24 +19,24 @@ const (
 
 // Article represents an article entity
 type Article struct {
-	ID            int64      `json:"id" gorm:"primaryKey"`
-	Title         string     `json:"title" gorm:"not null"`
-	Slug          string     `json:"slug" gorm:"uniqueIndex;not null"`
-	Content       string     `json:"content" gorm:"type:text"`
-	Summary       string     `json:"summary"`
-	CoverImage    string     `json:"coverImage"`
-	AuthorID      int64      `json:"authorId" gorm:"not null;index"`
-	CategoryID    int64      `json:"categoryId" gorm:"index"`
-	Status        string     `json:"status" gorm:"default:'draft'"` // draft, published, archived
-	IsPremium     bool       `json:"isPremium" gorm:"default:false"`
-	ReadingTime   int        `json:"readingTime"`                   // in minutes
-	ViewCount     int64      `json:"viewCount" gorm:"default:0"`
-	LikeCount     int64      `json:"likeCount" gorm:"default:0"`
-	CommentCount  int64      `json:"commentCount" gorm:"default:0"`
-	PublishedAt   *time.Time `json:"publishedAt,omitempty"`
-	CreatedAt     time.Time  `json:"createdAt"`
-	UpdatedAt     time.Time  `json:"updatedAt"`
-	DeletedAt     *time.Time `json:"deletedAt,omitempty" gorm:"index"`
+	ID           int64      `json:"id" gorm:"primaryKey"`
+	Title        string     `json:"title" gorm:"not null"`
+	Slug         string     `json:"slug" gorm:"uniqueIndex;not null"`
+	Content      string     `json:"content" gorm:"type:text"`
+	Summary      string     `json:"summary"`
+	CoverImage   string     `json:"coverImage"`
+	AuthorID     int64      `json:"authorId" gorm:"not null;index"`
+	CategoryID   int64      `json:"categoryId" gorm:"index"`
+	Status       string     `json:"status" gorm:"default:'draft'"` // draft, published, archived
+	IsPremium    bool       `json:"isPremium" gorm:"default:false"`
+	ReadingTime  int        `json:"readingTime"` // in minutes
+	ViewCount    int64      `json:"viewCount" gorm:"default:0"`
+	LikeCount    int64      `json:"likeCount" gorm:"default:0"`
+	CommentCount int64      `json:"commentCount" gorm:"default:0"`
+	PublishedAt  *time.Time `json:"publishedAt,omitempty"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
+	DeletedAt    *time.Time `json:"deletedAt,omitempty" gorm:"index"`
 
 	// Relations (not stored in DB, loaded separately)
 	Author *user.User `json:"author,omitempty" gorm:"-"`

@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"github.com/MICBIK/TZBlog/backend/pkg/auth"
 	"github.com/gin-gonic/gin"
 )

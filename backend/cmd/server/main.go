@@ -179,10 +179,10 @@ func main() {
 	router := gin.New()
 
 	// Register global middlewares (order matters)
-	router.Use(middleware.RequestLogger())    // 1. Logging
-	router.Use(middleware.RecoveryLogger())   // 2. Recovery
-	router.Use(gin.Recovery())                // 3. Gin's default recovery
-	router.Use(RequestID())                   // 4. Request ID
+	router.Use(middleware.RequestLogger())         // 1. Logging
+	router.Use(middleware.RecoveryLogger())        // 2. Recovery
+	router.Use(gin.Recovery())                     // 3. Gin's default recovery
+	router.Use(RequestID())                        // 4. Request ID
 	router.Use(monitoring.HTTPMetricsMiddleware()) // 5. Prometheus metrics
 
 	// CORS middleware

@@ -77,10 +77,10 @@ func main() {
 	// 健康检查端点（内联实现）
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"db":      db != nil,
-			"redis":   redisClient != nil,
-			"time":    time.Now().Unix(),
+			"status": "ok",
+			"db":     db != nil,
+			"redis":  redisClient != nil,
+			"time":   time.Now().Unix(),
 		})
 	})
 	r.GET("/health/ready", func(c *gin.Context) {

@@ -4,13 +4,13 @@ import "time"
 
 // Subscription represents an email subscription
 type Subscription struct {
-	ID         int64     `json:"id" gorm:"primaryKey"`
-	Email      string    `json:"email" gorm:"uniqueIndex;not null"`
-	Status     string    `json:"status" gorm:"type:varchar(20);default:'active'"`
-	Token      string    `json:"-" gorm:"uniqueIndex;not null"`
+	ID         int64      `json:"id" gorm:"primaryKey"`
+	Email      string     `json:"email" gorm:"uniqueIndex;not null"`
+	Status     string     `json:"status" gorm:"type:varchar(20);default:'active'"`
+	Token      string     `json:"-" gorm:"uniqueIndex;not null"`
 	VerifiedAt *time.Time `json:"verifiedAt"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
+	CreatedAt  time.Time  `json:"createdAt"`
+	UpdatedAt  time.Time  `json:"updatedAt"`
 }
 
 // TableName returns the table name

@@ -9,10 +9,10 @@ import (
 
 	"github.com/MICBIK/TZBlog/backend/config"
 	"github.com/MICBIK/TZBlog/backend/internal/cache"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/MICBIK/TZBlog/backend/internal/repository/postgres"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 )
 
 // Example demonstrates how to use Phase 3 performance optimizations
@@ -108,7 +108,7 @@ func ProductionConfig() (*config.DatabasePoolConfig, config.PoolAlertThresholds)
 	poolConfig := config.OptimizedPoolConfig()
 
 	alertThresholds := config.PoolAlertThresholds{
-		MaxUtilization:  0.7,  // Alert at 70% utilization
+		MaxUtilization:  0.7, // Alert at 70% utilization
 		MaxWaitDuration: 50 * time.Millisecond,
 		MaxWaitCount:    100,
 		MaxIdleClosed:   50,

@@ -547,8 +547,8 @@ func TestArticleHandler_UpdateArticle(t *testing.T) {
 				CreatedAt: now,
 				UpdatedAt: time.Now(),
 			},
-			mockUpdateError:   nil,
-			expectedStatus:    http.StatusOK,
+			mockUpdateError: nil,
+			expectedStatus:  http.StatusOK,
 		},
 		{
 			name:              "empty slug",

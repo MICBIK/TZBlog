@@ -14,23 +14,23 @@ var (
 	registerOnce sync.Once
 
 	// Database metrics
-	dbConnectionsOpen prometheus.Gauge
-	dbConnectionsInUse prometheus.Gauge
-	dbConnectionsIdle prometheus.Gauge
-	dbConnectionsWaitCount prometheus.Counter
-	dbConnectionsWaitDuration prometheus.Counter
-	dbConnectionsMaxIdleClosed prometheus.Counter
+	dbConnectionsOpen              prometheus.Gauge
+	dbConnectionsInUse             prometheus.Gauge
+	dbConnectionsIdle              prometheus.Gauge
+	dbConnectionsWaitCount         prometheus.Counter
+	dbConnectionsWaitDuration      prometheus.Counter
+	dbConnectionsMaxIdleClosed     prometheus.Counter
 	dbConnectionsMaxLifetimeClosed prometheus.Counter
 
 	// HTTP metrics
-	httpRequestsTotal *prometheus.CounterVec
+	httpRequestsTotal   *prometheus.CounterVec
 	httpRequestDuration *prometheus.HistogramVec
-	httpRequestSize *prometheus.HistogramVec
-	httpResponseSize *prometheus.HistogramVec
+	httpRequestSize     *prometheus.HistogramVec
+	httpResponseSize    *prometheus.HistogramVec
 
 	// Cache metrics
-	cacheHits *prometheus.CounterVec
-	cacheMisses *prometheus.CounterVec
+	cacheHits              *prometheus.CounterVec
+	cacheMisses            *prometheus.CounterVec
 	cacheOperationDuration *prometheus.HistogramVec
 )
 

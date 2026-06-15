@@ -33,8 +33,8 @@ var AllowedDocumentTypes = map[string]bool{
 
 // FileValidator validates uploaded files
 type FileValidator struct {
-	MaxSize      int64            // Maximum file size in bytes
-	AllowedTypes map[string]bool  // Allowed MIME types
+	MaxSize      int64           // Maximum file size in bytes
+	AllowedTypes map[string]bool // Allowed MIME types
 }
 
 // NewImageValidator creates a validator for image uploads

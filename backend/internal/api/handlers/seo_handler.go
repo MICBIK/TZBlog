@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/MICBIK/TZBlog/backend/internal/seo"
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
+	"github.com/MICBIK/TZBlog/backend/internal/seo"
 	"github.com/gin-gonic/gin"
 )
 

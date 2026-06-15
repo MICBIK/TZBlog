@@ -69,4 +69,3 @@ func TestCORSMiddleware_UnallowedOrigin(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Empty(t, w.Header().Get("Access-Control-Allow-Origin"))
 }
-

@@ -124,9 +124,9 @@ func TestSanitizeComment(t *testing.T) {
 func TestXSSVectors(t *testing.T) {
 	// 常见 XSS 攻击向量
 	tests := []struct {
-		vector           string
-		mustNotContain   []string
-		allowEscaped     bool // 是否允许 HTML 实体转义后的关键字
+		vector         string
+		mustNotContain []string
+		allowEscaped   bool // 是否允许 HTML 实体转义后的关键字
 	}{
 		{
 			vector:         "<script>alert('XSS')</script>",

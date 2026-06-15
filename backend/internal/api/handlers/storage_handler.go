@@ -119,6 +119,6 @@ func (h *StorageHandler) GetUploadConfig(c *gin.Context) {
 			"image/webp",
 		},
 		"allowedExtensions": []string{".jpg", ".jpeg", ".png", ".gif", ".webp"},
-		"storage": "Cloudflare R2",
+		"storage":           "Cloudflare R2",
 	})
 }

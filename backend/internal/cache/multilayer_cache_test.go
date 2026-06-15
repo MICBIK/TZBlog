@@ -232,7 +232,7 @@ func TestMultiLayerCache_HitRates(t *testing.T) {
 
 	stats = cache.GetStats()
 	assert.Equal(t, float64(10)/float64(20), stats.L1HitRate) // 10 L1 hits out of 20 total
-	assert.Equal(t, 1.0, stats.L2HitRate)                      // All L2 lookups hit
+	assert.Equal(t, 1.0, stats.L2HitRate)                     // All L2 lookups hit
 }
 
 func TestMultiLayerCache_Warmup(t *testing.T) {

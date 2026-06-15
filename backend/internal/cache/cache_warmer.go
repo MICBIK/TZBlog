@@ -11,7 +11,7 @@ import (
 
 // CacheWarmer handles cache warming strategies
 type CacheWarmer struct {
-	cache     *MultiLayerCache
+	cache      *MultiLayerCache
 	strategies []WarmupStrategy
 }
 
@@ -208,12 +208,12 @@ type StatsFetcher interface {
 
 // StatsCacheData represents cached statistics
 type StatsCacheData struct {
-	TotalArticles  int64
-	TotalViews     int64
-	TotalComments  int64
-	TotalLikes     int64
-	TotalUsers     int64
-	TotalFollows   int64
+	TotalArticles int64
+	TotalViews    int64
+	TotalComments int64
+	TotalLikes    int64
+	TotalUsers    int64
+	TotalFollows  int64
 }
 
 // NewStatsWarmupStrategy creates a new stats warmup strategy

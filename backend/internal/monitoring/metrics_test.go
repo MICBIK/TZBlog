@@ -13,12 +13,12 @@ import (
 
 func TestUpdateDBMetrics(t *testing.T) {
 	stats := sql.DBStats{
-		OpenConnections: 10,
-		InUse:           5,
-		Idle:            5,
-		WaitCount:       100,
-		WaitDuration:    time.Second * 10,
-		MaxIdleClosed:   20,
+		OpenConnections:   10,
+		InUse:             5,
+		Idle:              5,
+		WaitCount:         100,
+		WaitDuration:      time.Second * 10,
+		MaxIdleClosed:     20,
 		MaxLifetimeClosed: 15,
 	}
 

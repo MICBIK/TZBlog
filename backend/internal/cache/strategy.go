@@ -90,26 +90,26 @@ func (s *Strategy) Expire(ctx context.Context, key string, expiration time.Durat
 
 // Cache durations
 const (
-	CacheArticleDetail    = 10 * time.Minute
-	CacheArticleList      = 5 * time.Minute
-	CacheUserProfile      = 15 * time.Minute
-	CacheStatsTTL         = 5 * time.Minute
-	CacheTags             = 30 * time.Minute
-	CacheCategories       = 30 * time.Minute
-	CachePopularArticles  = 1 * time.Hour
-	CacheSitemap          = 24 * time.Hour
+	CacheArticleDetail   = 10 * time.Minute
+	CacheArticleList     = 5 * time.Minute
+	CacheUserProfile     = 15 * time.Minute
+	CacheStatsTTL        = 5 * time.Minute
+	CacheTags            = 30 * time.Minute
+	CacheCategories      = 30 * time.Minute
+	CachePopularArticles = 1 * time.Hour
+	CacheSitemap         = 24 * time.Hour
 )
 
 // Cache key prefixes
 const (
-	PrefixArticle         = "article"
-	PrefixArticleList     = "article:list"
-	PrefixUser            = "user"
-	PrefixStats           = "stats"
-	PrefixTag             = "tag"
-	PrefixCategory        = "category"
-	PrefixPopular         = "popular"
-	PrefixSitemap         = "sitemap"
-	PrefixViewCount       = "view_count"
-	PrefixLikeCount       = "like_count"
+	PrefixArticle     = "article"
+	PrefixArticleList = "article:list"
+	PrefixUser        = "user"
+	PrefixStats       = "stats"
+	PrefixTag         = "tag"
+	PrefixCategory    = "category"
+	PrefixPopular     = "popular"
+	PrefixSitemap     = "sitemap"
+	PrefixViewCount   = "view_count"
+	PrefixLikeCount   = "like_count"
 )

@@ -15,13 +15,13 @@ import (
 // L1: In-memory cache (fast, limited size)
 // L2: Redis cache (slower, larger capacity)
 type MultiLayerCache struct {
-	l1        *L1Cache
-	l2        *redis.Client
-	stats     *CacheStats
-	warmupFn  func(ctx context.Context) error
-	mu        sync.RWMutex
-	l1TTL     time.Duration
-	l1MaxTTL  time.Duration
+	l1       *L1Cache
+	l2       *redis.Client
+	stats    *CacheStats
+	warmupFn func(ctx context.Context) error
+	mu       sync.RWMutex
+	l1TTL    time.Duration
+	l1MaxTTL time.Duration
 }
 
 // L1Cache is an in-memory cache with TTL support
@@ -292,12 +292,12 @@ func (s *CacheStats) IncrementL2Misses() {
 
 // CacheStatsSnapshot represents a snapshot of cache statistics
 type CacheStatsSnapshot struct {
-	L1Hits       int64
-	L1Misses     int64
-	L2Hits       int64
-	L2Misses     int64
-	L1HitRate    float64
-	L2HitRate    float64
+	L1Hits         int64
+	L1Misses       int64
+	L2Hits         int64
+	L2Misses       int64
+	L1HitRate      float64
+	L2HitRate      float64
 	OverallHitRate float64
 }
 

@@ -3,8 +3,8 @@ package handlers
 import (
 	"strconv"
 
-	"github.com/MICBIK/TZBlog/backend/internal/search"
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
+	"github.com/MICBIK/TZBlog/backend/internal/search"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,8 +42,8 @@ func (h *SearchHandler) Search(c *gin.Context) {
 
 	// Build search options
 	options := &search.SearchOptions{
-		Limit:  limit,
-		Offset: offset,
+		Limit:   limit,
+		Offset:  offset,
 		Filters: make(map[string]interface{}),
 	}
 

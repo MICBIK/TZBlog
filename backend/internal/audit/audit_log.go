@@ -17,9 +17,9 @@ const (
 	ActionUserDelete         ActionType = "user.delete"
 
 	// 文章相关操作
-	ActionArticleCreate ActionType = "article.create"
-	ActionArticleUpdate ActionType = "article.update"
-	ActionArticleDelete ActionType = "article.delete"
+	ActionArticleCreate  ActionType = "article.create"
+	ActionArticleUpdate  ActionType = "article.update"
+	ActionArticleDelete  ActionType = "article.delete"
 	ActionArticlePublish ActionType = "article.publish"
 
 	// 评论相关操作
@@ -51,17 +51,17 @@ const (
 
 // AuditLog 审计日志
 type AuditLog struct {
-	ID          int64      `json:"id" db:"id"`
-	UserID      *int64     `json:"userId,omitempty" db:"user_id"`
-	Action      ActionType `json:"action" db:"action"`
-	ResourceID  *int64     `json:"resourceId,omitempty" db:"resource_id"`
+	ID           int64      `json:"id" db:"id"`
+	UserID       *int64     `json:"userId,omitempty" db:"user_id"`
+	Action       ActionType `json:"action" db:"action"`
+	ResourceID   *int64     `json:"resourceId,omitempty" db:"resource_id"`
 	ResourceType string     `json:"resourceType,omitempty" db:"resource_type"`
-	IP          string     `json:"ip" db:"ip"`
-	UserAgent   string     `json:"userAgent" db:"user_agent"`
-	Result      ResultType `json:"result" db:"result"`
-	ErrorMsg    string     `json:"errorMsg,omitempty" db:"error_msg"`
-	Metadata    string     `json:"metadata,omitempty" db:"metadata"` // JSON格式的额外信息
-	CreatedAt   time.Time  `json:"createdAt" db:"created_at"`
+	IP           string     `json:"ip" db:"ip"`
+	UserAgent    string     `json:"userAgent" db:"user_agent"`
+	Result       ResultType `json:"result" db:"result"`
+	ErrorMsg     string     `json:"errorMsg,omitempty" db:"error_msg"`
+	Metadata     string     `json:"metadata,omitempty" db:"metadata"` // JSON格式的额外信息
+	CreatedAt    time.Time  `json:"createdAt" db:"created_at"`
 }
 
 // AuditLogRepository 审计日志仓储接口

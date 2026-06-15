@@ -300,15 +300,15 @@ func (qa *QueryAnalyzer) GetTableStats(ctx context.Context) ([]TableStats, error
 
 // TableStats represents table statistics
 type TableStats struct {
-	SchemaName   string
-	TableName    string
-	SeqScan      int64
-	SeqTupRead   int64
-	IdxScan      int64
-	IdxTupFetch  int64
-	TupInserted  int64
-	TupUpdated   int64
-	TupDeleted   int64
+	SchemaName  string
+	TableName   string
+	SeqScan     int64
+	SeqTupRead  int64
+	IdxScan     int64
+	IdxTupFetch int64
+	TupInserted int64
+	TupUpdated  int64
+	TupDeleted  int64
 }
 
 // GetConnectionPoolStats returns connection pool statistics

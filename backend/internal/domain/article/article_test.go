@@ -10,9 +10,9 @@ import (
 // TestArticle_GenerateSlug tests slug generation
 func TestArticle_GenerateSlug(t *testing.T) {
 	tests := []struct {
-		name      string
-		title     string
-		wantSlug  string
+		name     string
+		title    string
+		wantSlug string
 	}{
 		{
 			name:     "simple title",
@@ -43,9 +43,9 @@ func TestArticle_GenerateSlug(t *testing.T) {
 // TestArticle_CalculateReadingTime tests reading time calculation
 func TestArticle_CalculateReadingTime(t *testing.T) {
 	tests := []struct {
-		name             string
-		content          string
-		wantReadingTime  int
+		name            string
+		content         string
+		wantReadingTime int
 	}{
 		{
 			name:            "short content",

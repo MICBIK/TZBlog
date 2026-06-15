@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/gin-gonic/gin"
 )
 

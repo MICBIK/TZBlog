@@ -23,17 +23,17 @@ type ConnectionPoolMonitor struct {
 
 // PoolAlertThresholds defines thresholds for connection pool alerts
 type PoolAlertThresholds struct {
-	MaxUtilization    float64       // Alert if utilization > this (e.g., 0.8 = 80%)
-	MaxWaitDuration   time.Duration // Alert if wait time > this
-	MaxWaitCount      int64         // Alert if wait count > this in interval
-	MaxIdleClosed     int64         // Alert if idle closed > this in interval
-	CheckInterval     time.Duration // How often to check metrics
+	MaxUtilization  float64       // Alert if utilization > this (e.g., 0.8 = 80%)
+	MaxWaitDuration time.Duration // Alert if wait time > this
+	MaxWaitCount    int64         // Alert if wait count > this in interval
+	MaxIdleClosed   int64         // Alert if idle closed > this in interval
+	CheckInterval   time.Duration // How often to check metrics
 }
 
 // DefaultPoolAlertThresholds returns default alert thresholds
 func DefaultPoolAlertThresholds() PoolAlertThresholds {
 	return PoolAlertThresholds{
-		MaxUtilization:  0.8,              // 80% utilization
+		MaxUtilization:  0.8, // 80% utilization
 		MaxWaitDuration: 100 * time.Millisecond,
 		MaxWaitCount:    100,
 		MaxIdleClosed:   50,
@@ -43,11 +43,11 @@ func DefaultPoolAlertThresholds() PoolAlertThresholds {
 
 // PoolMetrics stores historical pool metrics
 type PoolMetrics struct {
-	mu              sync.RWMutex
-	currentStats    sql.DBStats
-	previousStats   sql.DBStats
-	alerts          []PoolAlert
-	lastCheckTime   time.Time
+	mu            sync.RWMutex
+	currentStats  sql.DBStats
+	previousStats sql.DBStats
+	alerts        []PoolAlert
+	lastCheckTime time.Time
 }
 
 // PoolAlert represents a connection pool alert
@@ -154,8 +154,8 @@ func (m *ConnectionPoolMonitor) checkPoolHealth() {
 		alert := PoolAlert{
 			Timestamp: now,
 			Level:     "WARNING",
-			Message: fmt.Sprintf("High average wait duration: %v", avgWaitDuration),
-			Stats: stats,
+			Message:   fmt.Sprintf("High average wait duration: %v", avgWaitDuration),
+			Stats:     stats,
 		}
 		m.addAlert(alert)
 		logger.Warn(alert.Message,
@@ -258,37 +258,37 @@ func (m *ConnectionPoolMonitor) GetHealthReport() PoolHealthReport {
 	}
 
 	return PoolHealthReport{
-		Health:             health,
-		Utilization:        utilization,
-		InUse:              stats.InUse,
-		Idle:               stats.Idle,
-		MaxOpen:            stats.MaxOpenConnections,
-		OpenConnections:    stats.OpenConnections,
-		WaitCount:          stats.WaitCount,
-		WaitDuration:       stats.WaitDuration,
-		AvgWaitDuration:    avgWaitDuration,
-		MaxIdleClosed:      stats.MaxIdleClosed,
-		MaxLifetimeClosed:  stats.MaxLifetimeClosed,
-		RecentAlerts:       alerts,
-		Timestamp:          time.Now(),
+		Health:            health,
+		Utilization:       utilization,
+		InUse:             stats.InUse,
+		Idle:              stats.Idle,
+		MaxOpen:           stats.MaxOpenConnections,
+		OpenConnections:   stats.OpenConnections,
+		WaitCount:         stats.WaitCount,
+		WaitDuration:      stats.WaitDuration,
+		AvgWaitDuration:   avgWaitDuration,
+		MaxIdleClosed:     stats.MaxIdleClosed,
+		MaxLifetimeClosed: stats.MaxLifetimeClosed,
+		RecentAlerts:      alerts,
+		Timestamp:         time.Now(),
 	}
 }
 
 // PoolHealthReport represents a comprehensive pool health report
 type PoolHealthReport struct {
-	Health             string
-	Utilization        float64
-	InUse              int
-	Idle               int
-	MaxOpen            int
-	OpenConnections    int
-	WaitCount          int64
-	WaitDuration       time.Duration
-	AvgWaitDuration    time.Duration
-	MaxIdleClosed      int64
-	MaxLifetimeClosed  int64
-	RecentAlerts       []PoolAlert
-	Timestamp          time.Time
+	Health            string
+	Utilization       float64
+	InUse             int
+	Idle              int
+	MaxOpen           int
+	OpenConnections   int
+	WaitCount         int64
+	WaitDuration      time.Duration
+	AvgWaitDuration   time.Duration
+	MaxIdleClosed     int64
+	MaxLifetimeClosed int64
+	RecentAlerts      []PoolAlert
+	Timestamp         time.Time
 }
 
 // ConnectionLeakDetector detects potential connection leaks

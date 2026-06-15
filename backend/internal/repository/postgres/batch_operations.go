@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"gorm.io/gorm"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
+	"gorm.io/gorm"
 )
 
 // BatchOperations provides optimized batch insert/update operations

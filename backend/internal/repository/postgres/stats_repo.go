@@ -14,12 +14,12 @@ func NewStatsRepository(db *gorm.DB) *StatsRepository {
 
 // StatsResult holds aggregated statistics
 type StatsResult struct {
-	TotalArticles  int64
-	TotalViews     int64
-	TotalComments  int64
-	TotalLikes     int64
-	TotalUsers     int64
-	TotalFollows   int64
+	TotalArticles int64
+	TotalViews    int64
+	TotalComments int64
+	TotalLikes    int64
+	TotalUsers    int64
+	TotalFollows  int64
 }
 
 // GetAllStats retrieves all statistics in a single optimized query

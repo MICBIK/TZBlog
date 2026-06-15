@@ -64,7 +64,7 @@ func TestSearchOptions_DefaultValues(t *testing.T) {
 		Filters: map[string]interface{}{
 			"category": "tech",
 		},
-		Sort: []string{"publishedAt:desc"},
+		Sort:                 []string{"publishedAt:desc"},
 		AttributesToRetrieve: []string{"id", "title", "summary"},
 	}
 

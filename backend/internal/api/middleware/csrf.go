@@ -65,13 +65,13 @@ func SetCSRFToken(c *gin.Context) error {
 
 	// Set cookie with secure flags
 	c.SetCookie(
-		"csrf_token",        // name
-		token,               // value
-		3600,                // max age (1 hour)
-		"/",                 // path
-		"",                  // domain (empty for current domain)
+		"csrf_token",         // name
+		token,                // value
+		3600,                 // max age (1 hour)
+		"/",                  // path
+		"",                   // domain (empty for current domain)
 		c.Request.TLS != nil, // secure (HTTPS only)
-		true,                // httpOnly
+		true,                 // httpOnly
 	)
 
 	// Also return in response header for client to use

@@ -3,8 +3,8 @@ package handlers
 import (
 	"strconv"
 
-	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
+	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
 	"github.com/gin-gonic/gin"
 )
 

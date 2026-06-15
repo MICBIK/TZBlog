@@ -24,9 +24,9 @@ type DatabasePoolConfig struct {
 // DefaultDatabasePoolConfig returns default pool configuration
 func DefaultDatabasePoolConfig() *DatabasePoolConfig {
 	return &DatabasePoolConfig{
-		MaxOpenConns:    25,  // Maximum number of open connections
-		MaxIdleConns:    5,   // Maximum number of idle connections
-		ConnMaxLifetime: time.Hour,      // Maximum lifetime of a connection
+		MaxOpenConns:    25,              // Maximum number of open connections
+		MaxIdleConns:    5,               // Maximum number of idle connections
+		ConnMaxLifetime: time.Hour,       // Maximum lifetime of a connection
 		ConnMaxIdleTime: time.Minute * 5, // Maximum idle time of a connection
 	}
 }
@@ -225,8 +225,8 @@ func OptimizedPoolConfig() *DatabasePoolConfig {
 // HighLoadPoolConfig returns configuration for high-load scenarios
 func HighLoadPoolConfig() *DatabasePoolConfig {
 	return &DatabasePoolConfig{
-		MaxOpenConns:    100,             // Allow up to 100 concurrent connections
-		MaxIdleConns:    25,              // Keep 25 idle connections ready
+		MaxOpenConns:    100,              // Allow up to 100 concurrent connections
+		MaxIdleConns:    25,               // Keep 25 idle connections ready
 		ConnMaxLifetime: time.Minute * 30, // More aggressive connection recycling
 		ConnMaxIdleTime: time.Minute * 3,  // Close idle connections faster
 	}
@@ -235,9 +235,9 @@ func HighLoadPoolConfig() *DatabasePoolConfig {
 // LowLoadPoolConfig returns configuration for low-load scenarios
 func LowLoadPoolConfig() *DatabasePoolConfig {
 	return &DatabasePoolConfig{
-		MaxOpenConns:    10,              // Limit to 10 concurrent connections
-		MaxIdleConns:    2,               // Keep only 2 idle connections
-		ConnMaxLifetime: time.Hour * 2,   // Keep connections longer
+		MaxOpenConns:    10,               // Limit to 10 concurrent connections
+		MaxIdleConns:    2,                // Keep only 2 idle connections
+		ConnMaxLifetime: time.Hour * 2,    // Keep connections longer
 		ConnMaxIdleTime: time.Minute * 10, // Allow longer idle time
 	}
 }

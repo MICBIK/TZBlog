@@ -174,11 +174,11 @@ func (c *Client) Search(query string, options *SearchOptions) (*SearchResult, er
 
 // SearchOptions represents search options
 type SearchOptions struct {
-	Limit                 int64
-	Offset                int64
-	Filters               map[string]interface{}
-	Sort                  []string
-	AttributesToRetrieve  []string
+	Limit                int64
+	Offset               int64
+	Filters              map[string]interface{}
+	Sort                 []string
+	AttributesToRetrieve []string
 }
 
 // buildFilters builds Meilisearch filter string
