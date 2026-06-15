@@ -248,6 +248,298 @@ func TestListFilter_Offset(t *testing.T) {
 	}
 }
 
+// TestArticle_Validate_EdgeCases tests additional validation scenarios
+func TestArticle_Validate_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name    string
+		article *Article
+		wantErr error
+	}{
+		{
+			name: "whitespace only title",
+			article: &Article{
+				Title:    "   ",
+				Content:  "Valid content",
+				Status:   StatusDraft,
+				AuthorID: 1,
+			},
+			wantErr: ErrInvalidTitle,
+		},
+		{
+			name: "whitespace only content",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  "   ",
+				Status:   StatusDraft,
+				AuthorID: 1,
+			},
+			wantErr: ErrInvalidContent,
+		},
+		{
+			name: "content too long",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  makeString(100001),
+				Status:   StatusDraft,
+				AuthorID: 1,
+			},
+			wantErr: ErrContentTooLong,
+		},
+		{
+			name: "summary too long",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  "Valid content",
+				Summary:  makeString(501),
+				Status:   StatusDraft,
+				AuthorID: 1,
+			},
+			wantErr: ErrInvalidSummary,
+		},
+		{
+			name: "zero author ID",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  "Valid content",
+				Status:   StatusDraft,
+				AuthorID: 0,
+			},
+			wantErr: ErrInvalidAuthorID,
+		},
+		{
+			name: "negative author ID",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  "Valid content",
+				Status:   StatusDraft,
+				AuthorID: -1,
+			},
+			wantErr: ErrInvalidAuthorID,
+		},
+		{
+			name: "archived status",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  "Valid content",
+				Status:   StatusArchived,
+				AuthorID: 1,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "published status",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  "Valid content",
+				Status:   StatusPublished,
+				AuthorID: 1,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "title exactly 200 chars",
+			article: &Article{
+				Title:    makeString(200),
+				Content:  "Valid content",
+				Status:   StatusDraft,
+				AuthorID: 1,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "summary exactly 500 chars",
+			article: &Article{
+				Title:    "Valid Title",
+				Content:  "Valid content",
+				Summary:  makeString(500),
+				Status:   StatusDraft,
+				AuthorID: 1,
+			},
+			wantErr: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.article.Validate()
+			if tt.wantErr != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.wantErr, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+// TestArticle_SanitizeContent tests HTML sanitization
+func TestArticle_SanitizeContent(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+	}{
+		{
+			name:    "safe HTML",
+			content: "<p>Hello <strong>World</strong></p>",
+		},
+		{
+			name:    "with script tags",
+			content: "<p>Hello</p><script>alert('xss')</script>",
+		},
+		{
+			name:    "with inline styles",
+			content: "<p style='color:red'>Hello</p>",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			article := &Article{Content: tt.content}
+			article.SanitizeContent()
+			// After sanitization, content should be safe
+			assert.NotEmpty(t, article.Content)
+			// Script tags should be removed
+			assert.NotContains(t, article.Content, "<script>")
+		})
+	}
+}
+
+// TestArticle_GenerateSlug_EdgeCases tests edge cases for slug generation
+func TestArticle_GenerateSlug_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		title    string
+		wantSlug string
+	}{
+		{
+			name:     "unicode characters",
+			title:    "你好世界",
+			wantSlug: "ni-hao-shi-jie",
+		},
+		{
+			name:     "emoji",
+			title:    "Hello 👋 World",
+			wantSlug: "hello-world",
+		},
+		{
+			name:     "multiple spaces",
+			title:    "Hello    World",
+			wantSlug: "hello-world",
+		},
+		{
+			name:     "leading and trailing spaces",
+			title:    "  Hello World  ",
+			wantSlug: "hello-world",
+		},
+		{
+			name:     "all special characters",
+			title:    "!@#$%^&*()",
+			wantSlug: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			article := &Article{Title: tt.title}
+			article.GenerateSlug()
+			assert.Equal(t, tt.wantSlug, article.Slug)
+		})
+	}
+}
+
+// TestArticle_CalculateReadingTime_EdgeCases tests edge cases for reading time
+func TestArticle_CalculateReadingTime_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name            string
+		content         string
+		wantReadingTime int
+	}{
+		{
+			name:            "empty content",
+			content:         "",
+			wantReadingTime: 1, // Minimum 1 minute
+		},
+		{
+			name:            "single word",
+			content:         "word",
+			wantReadingTime: 1,
+		},
+		{
+			name:            "exactly 200 words",
+			content:         makeContent(200),
+			wantReadingTime: 1,
+		},
+		{
+			name:            "201 words",
+			content:         makeContent(201),
+			wantReadingTime: 2,
+		},
+		{
+			name:            "399 words",
+			content:         makeContent(399),
+			wantReadingTime: 2,
+		},
+		{
+			name:            "400 words",
+			content:         makeContent(400),
+			wantReadingTime: 2,
+		},
+		{
+			name:            "multiple newlines",
+			content:         "word\n\n\nword\n\nword",
+			wantReadingTime: 1,
+		},
+		{
+			name:            "multiple spaces between words",
+			content:         "word     word     word",
+			wantReadingTime: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			article := &Article{Content: tt.content}
+			article.CalculateReadingTime()
+			assert.Equal(t, tt.wantReadingTime, article.ReadingTime)
+		})
+	}
+}
+
+// TestArticleTag_TableName tests ArticleTag table name
+func TestArticleTag_TableName(t *testing.T) {
+	articleTag := ArticleTag{}
+	assert.Equal(t, "article_tags", articleTag.TableName())
+}
+
+// TestListFilter_DefaultValues tests default filter values
+func TestListFilter_DefaultValues(t *testing.T) {
+	filter := &ListFilter{}
+
+	t.Run("default page is 1", func(t *testing.T) {
+		offset := filter.Offset()
+		assert.Equal(t, 0, offset)
+	})
+
+	t.Run("limit can be zero", func(t *testing.T) {
+		assert.Equal(t, 0, filter.Limit)
+	})
+
+	t.Run("empty filters", func(t *testing.T) {
+		assert.Empty(t, filter.Status)
+		assert.Zero(t, filter.AuthorID)
+		assert.Zero(t, filter.CategoryID)
+		assert.Empty(t, filter.Search)
+		assert.Empty(t, filter.OrderBy)
+	})
+}
+
+// TestListFilter_LargeOffset tests large page numbers
+func TestListFilter_LargeOffset(t *testing.T) {
+	filter := &ListFilter{Page: 1000, Limit: 100}
+	offset := filter.Offset()
+	assert.Equal(t, 99900, offset)
+}
+
 // Helper functions
 func makeContent(words int) string {
 	content := ""

@@ -303,3 +303,266 @@ func TestArticleRepository_AttachAndDetachTags(t *testing.T) {
 		assert.Equal(t, int64(0), count)
 	})
 }
+
+func TestArticleRepository_FindByID_WithAuthorAndTags(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	// Setup users and tags tables
+	err := db.Exec(`
+		CREATE TABLE users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			username VARCHAR(50) NOT NULL,
+			email VARCHAR(100) NOT NULL
+		)
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		CREATE TABLE tags (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name VARCHAR(50) NOT NULL,
+			slug VARCHAR(50) NOT NULL
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Insert test user
+	err = db.Exec("INSERT INTO users (id, username, email) VALUES (1, 'testuser', 'test@example.com')").Error
+	require.NoError(t, err)
+
+	// Insert test tags
+	err = db.Exec("INSERT INTO tags (id, name, slug) VALUES (1, 'Go', 'go'), (2, 'Testing', 'testing')").Error
+	require.NoError(t, err)
+
+	// Create article
+	art := newTestArticle("Test Article", "test-article", 1)
+	require.NoError(t, repo.Create(art))
+
+	// Attach tags
+	require.NoError(t, repo.AttachTags(art.ID, []int64{1, 2}))
+
+	// FindByID should load author and tags
+	found, err := repo.FindByID(art.ID)
+	require.NoError(t, err)
+	require.NotNil(t, found)
+
+	// Check author is loaded
+	assert.NotNil(t, found.Author)
+	assert.Equal(t, "testuser", found.Author.Username)
+
+	// Check tags are loaded
+	assert.NotNil(t, found.Tags)
+	assert.Len(t, found.Tags, 2)
+}
+
+func TestArticleRepository_FindBySlug_WithAuthorAndTags(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	// Setup users and tags tables
+	err := db.Exec(`
+		CREATE TABLE users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			username VARCHAR(50) NOT NULL,
+			email VARCHAR(100) NOT NULL
+		)
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		CREATE TABLE tags (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name VARCHAR(50) NOT NULL,
+			slug VARCHAR(50) NOT NULL
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Insert test user
+	err = db.Exec("INSERT INTO users (id, username, email) VALUES (1, 'testuser', 'test@example.com')").Error
+	require.NoError(t, err)
+
+	// Insert test tags
+	err = db.Exec("INSERT INTO tags (id, name, slug) VALUES (1, 'Go', 'go'), (2, 'Testing', 'testing')").Error
+	require.NoError(t, err)
+
+	// Create article
+	art := newTestArticle("Test Article", "test-article", 1)
+	require.NoError(t, repo.Create(art))
+
+	// Attach tags
+	require.NoError(t, repo.AttachTags(art.ID, []int64{1, 2}))
+
+	// FindBySlug should load author and tags
+	found, err := repo.FindBySlug("test-article")
+	require.NoError(t, err)
+	require.NotNil(t, found)
+
+	// Check author is loaded
+	assert.NotNil(t, found.Author)
+	assert.Equal(t, "testuser", found.Author.Username)
+
+	// Check tags are loaded
+	assert.NotNil(t, found.Tags)
+	assert.Len(t, found.Tags, 2)
+}
+
+func TestArticleRepository_List_WithMultipleFilters(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	// Create test articles
+	a1 := newTestArticle("Go Tutorial", "go-tutorial", 1)
+	a1.Status = article.StatusPublished
+	a1.CategoryID = 10
+	require.NoError(t, repo.Create(a1))
+
+	a2 := newTestArticle("Go Advanced", "go-advanced", 1)
+	a2.Status = article.StatusPublished
+	a2.CategoryID = 10
+	require.NoError(t, repo.Create(a2))
+
+	a3 := newTestArticle("Python Basics", "python-basics", 2)
+	a3.Status = article.StatusPublished
+	a3.CategoryID = 20
+	require.NoError(t, repo.Create(a3))
+
+	t.Run("filter by status and author", func(t *testing.T) {
+		articles, total, err := repo.List(&article.ListFilter{
+			Status:   article.StatusPublished,
+			AuthorID: 1,
+			Page:     1,
+			Limit:    10,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, int64(2), total)
+		assert.Len(t, articles, 2)
+	})
+
+	t.Run("filter by status and category", func(t *testing.T) {
+		articles, total, err := repo.List(&article.ListFilter{
+			Status:     article.StatusPublished,
+			CategoryID: 10,
+			Page:       1,
+			Limit:      10,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, int64(2), total)
+		assert.Len(t, articles, 2)
+	})
+
+	t.Run("filter by author, category, and search", func(t *testing.T) {
+		articles, total, err := repo.List(&article.ListFilter{
+			AuthorID:   1,
+			CategoryID: 10,
+			Search:     "Advanced",
+			Page:       1,
+			Limit:      10,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), total)
+		assert.Len(t, articles, 1)
+		assert.Equal(t, "Go Advanced", articles[0].Title)
+	})
+
+	t.Run("custom order by", func(t *testing.T) {
+		articles, total, err := repo.List(&article.ListFilter{
+			OrderBy: "title ASC",
+			Page:    1,
+			Limit:   10,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, int64(3), total)
+		assert.Len(t, articles, 3)
+		assert.Equal(t, "Go Advanced", articles[0].Title)
+		assert.Equal(t, "Go Tutorial", articles[1].Title)
+	})
+}
+
+func TestArticleRepository_Update_PartialFields(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	art := newTestArticle("Original Title", "original-slug", 1)
+	require.NoError(t, repo.Create(art))
+	originalCreatedAt := art.CreatedAt
+
+	// Update only specific fields
+	art.Title = "Updated Title"
+	art.Summary = "Updated summary"
+	err := repo.Update(art)
+	require.NoError(t, err)
+
+	// Verify changes
+	found, err := repo.FindByID(art.ID)
+	require.NoError(t, err)
+	require.NotNil(t, found)
+	assert.Equal(t, "Updated Title", found.Title)
+	assert.Equal(t, "Updated summary", found.Summary)
+	assert.Equal(t, "original-slug", found.Slug) // Unchanged
+	assert.Equal(t, originalCreatedAt.Unix(), found.CreatedAt.Unix())
+	assert.True(t, found.UpdatedAt.After(originalCreatedAt))
+}
+
+func TestArticleRepository_IncrementViewCount_Multiple(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	art := newTestArticle("Popular Article", "popular", 1)
+	require.NoError(t, repo.Create(art))
+
+	// Increment multiple times
+	for i := 0; i < 5; i++ {
+		err := repo.IncrementViewCount(art.ID)
+		require.NoError(t, err)
+	}
+
+	found, err := repo.FindByID(art.ID)
+	require.NoError(t, err)
+	require.NotNil(t, found)
+	assert.Equal(t, int64(5), found.ViewCount)
+}
+
+func TestArticleRepository_Delete_NonExistent(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	// Delete non-existent article should not error
+	err := repo.Delete(99999)
+	assert.NoError(t, err)
+}
+
+func TestArticleRepository_IncrementViewCount_NonExistent(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	// Increment view count for non-existent article
+	err := repo.IncrementViewCount(99999)
+	assert.NoError(t, err) // GORM doesn't error on 0 rows affected
+}
+
+func TestArticleRepository_AttachTags_Duplicate(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	art := newTestArticle("Tagged Article", "tagged", 1)
+	require.NoError(t, repo.Create(art))
+
+	// Attach tags
+	err := repo.AttachTags(art.ID, []int64{1, 2})
+	require.NoError(t, err)
+
+	// Try to attach duplicate tags - should error due to PRIMARY KEY constraint
+	err = repo.AttachTags(art.ID, []int64{1, 2})
+	assert.Error(t, err)
+}
+
+func TestArticleRepository_DetachTags_NonExistent(t *testing.T) {
+	db := setupArticleTestDB(t)
+	repo := NewArticleRepository(db)
+
+	// Detach tags from non-existent article
+	err := repo.DetachTags(99999)
+	assert.NoError(t, err) // Should succeed (0 rows deleted)
+}
