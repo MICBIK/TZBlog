@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tzblog-backend-test
+    restart: unless-stopped
+    environment:
+      - GO_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=tzblog
+      - DB_PASSWORD=tzblog_pass_2024
+      - DB_NAME=tzblog_test
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=test_jwt_secret_key_min_32_chars_long_12345
+      - PORT=8080
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - tzblog-test-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tzblog-frontend-test
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+      - NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+    networks:
+      - tzblog-test-network
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: tzblog-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tzblog
+      POSTGRES_PASSWORD: tzblog_pass_2024
+      POSTGRES_DB: tzblog_test
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    networks:
+      - tzblog-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tzblog"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: tzblog-redis-test
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    networks:
+      - tzblog-test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  tzblog-test-network:
+    driver: bridge
+
+volumes:
+  postgres-test-data:

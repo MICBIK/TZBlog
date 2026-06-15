@@ -247,19 +247,3 @@ func (s *AuthService) ChangePassword(userID int64, jti string, dto *user.ChangeP
 
 	return nil
 }
-
-// contains checks if a string contains a substring
-func contains(s, substr string) bool {
-	return len(s) > 0 && len(substr) > 0 && len(s) >= len(substr) && s != substr &&
-		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
-			len(s) > len(substr) && s[1:len(s)-1] != s && findSubstring(s, substr))
-}
-
-func findSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}

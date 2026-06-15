@@ -22,7 +22,9 @@ import (
 	"github.com/MICBIK/TZBlog/backend/pkg/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	redis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 // @title           TZBlog API
@@ -140,10 +142,6 @@ func main() {
 	tagRepo := postgres.NewTagRepository(db)
 	commentRepo := postgres.NewCommentRepository(db)
 	likeRepo := postgres.NewLikeRepository(db)
-	// Note: These are initialized but not used yet - will be needed for future features
-	_ = postgres.NewViewRepository(db)
-	_ = postgres.NewProgressRepository(db)
-	_ = postgres.NewFollowRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtAuth)
@@ -430,14 +428,54 @@ func HealthCheck(db interface{}, redis interface{}) gin.HandlerFunc {
 	}
 }
 
-// ReadinessCheck returns a handler for readiness check
-func ReadinessCheck(db interface{}, redis interface{}) gin.HandlerFunc {
+// ReadinessCheck returns a handler for readiness check with real health checks
+func ReadinessCheck(dbInterface interface{}, redisInterface interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO: check database and Redis connectivity
-		c.JSON(http.StatusOK, gin.H{
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+		defer cancel()
+
+		healthStatus := gin.H{
 			"status": "ready",
 			"time":   time.Now().Unix(),
-		})
+		}
+
+		// Check database connection
+		gormDB, ok := dbInterface.(*gorm.DB)
+		if !ok {
+			logger.Warn("Database type assertion failed", zap.String("type", fmt.Sprintf("%T", dbInterface)))
+		} else {
+			sqlDB, err := gormDB.DB()
+			if err != nil {
+				healthStatus["status"] = "unavailable"
+				healthStatus["database"] = "error"
+				c.JSON(http.StatusServiceUnavailable, healthStatus)
+				return
+			}
+
+			if err := sqlDB.PingContext(ctx); err != nil {
+				healthStatus["status"] = "unavailable"
+				healthStatus["database"] = "down"
+				c.JSON(http.StatusServiceUnavailable, healthStatus)
+				return
+			}
+			healthStatus["database"] = "up"
+		}
+
+		// Check Redis connection
+		redisClient, ok := redisInterface.(*redis.Client)
+		if !ok {
+			logger.Warn("Redis type assertion failed", zap.String("type", fmt.Sprintf("%T", redisInterface)))
+		} else {
+			if _, err := redisClient.Ping(ctx).Result(); err != nil {
+				healthStatus["status"] = "unavailable"
+				healthStatus["redis"] = "down"
+				c.JSON(http.StatusServiceUnavailable, healthStatus)
+				return
+			}
+			healthStatus["redis"] = "up"
+		}
+
+		c.JSON(http.StatusOK, healthStatus)
 	}
 }
 

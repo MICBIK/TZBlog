@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Docs
+docs/
+*.md
+README.md
+
+# Tests
+*_test.go
+testdata/
+
+# Build artifacts
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+server
+monitoring_demo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Misc
+tmp/
+.env
+.env.local
+*.log

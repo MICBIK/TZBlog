@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/config"
-	"github.com/MICBIK/TZBlog/backend/internal/api/handlers"
 	"github.com/MICBIK/TZBlog/backend/internal/api/middleware"
 	"github.com/MICBIK/TZBlog/backend/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -75,11 +74,21 @@ func main() {
 	r.Use(middleware.RequestLogger())
 	r.Use(middleware.Metrics())
 
-	// 健康检查端点
-	healthHandler := handlers.NewHealthHandlerWithDeps(db, redisClient)
-	r.GET("/health", healthHandler.HealthCheck)
-	r.GET("/health/ready", healthHandler.Readiness)
-	r.GET("/health/live", healthHandler.Liveness)
+	// 健康检查端点（内联实现）
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"db":      db != nil,
+			"redis":   redisClient != nil,
+			"time":    time.Now().Unix(),
+		})
+	})
+	r.GET("/health/ready", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ready"})
+	})
+	r.GET("/health/live", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "live"})
+	})
 
 	// Prometheus 指标端点
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
