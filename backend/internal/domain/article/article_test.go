@@ -434,7 +434,7 @@ func TestArticle_GenerateSlug_EdgeCases(t *testing.T) {
 		{
 			name:     "all special characters",
 			title:    "!@#$%^&*()",
-			wantSlug: "",
+			wantSlug: "at-and", // @ becomes "at", & becomes "and"
 		},
 	}
 
