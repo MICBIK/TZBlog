@@ -50,6 +50,12 @@ pnpm-debug.log*
 vendor/
 tmp/
 
+# Binary files (backend compiled executables only, not source directories)
+backend/bin/
+backend/*_demo
+backend/monitoring_demo
+backend/cmd/server/server
+
 # IDE
 .idea/
 .vscode/

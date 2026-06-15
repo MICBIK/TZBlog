@@ -65,6 +65,24 @@ func (m *MockArticleService) DeleteArticle(id, userID int64) error {
 	return args.Error(0)
 }
 
+func (m *MockArticleService) PatchArticle(slug string, userID int64, updates map[string]interface{}) (*article.Article, error) {
+	args := m.Called(slug, userID, updates)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*article.Article), args.Error(1)
+}
+
+func (m *MockArticleService) BatchDelete(ids []int64, userID int64) (int, error) {
+	args := m.Called(ids, userID)
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockArticleService) BatchUpdateStatus(ids []int64, userID int64, status string) (int, error) {
+	args := m.Called(ids, userID, status)
+	return args.Int(0), args.Error(1)
+}
+
 func TestArticleHandler_CreateArticle(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
