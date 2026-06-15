@@ -114,9 +114,29 @@ export default async function HomePage() {
           {/* stat widget */}
           <SidebarWidget command="stat ./site">
             <SidebarWidget.StatRow label="文章总数" value={total} />
+            <SidebarWidget.StatRow label="累计字数" value="38.6 万" />
             <SidebarWidget.StatRow label="建站天数" value={412} />
             <SidebarWidget.StatRow label="本月访客" value="1.2k" />
-            <SidebarWidget.StatRow label="最近更新" value="今天" />
+            <SidebarWidget.StatRow label="最近更新" value="3 天前" />
+          </SidebarWidget>
+
+          {/* comments widget */}
+          <SidebarWidget command="tail comments.log">
+            <SidebarWidget.CommentItem
+              who="@林深"
+              text="spec 那段直接照搬到我们 CI 里了，agent 返工率肉眼可见下降。"
+              on="/ spec-first-workflow"
+            />
+            <SidebarWidget.CommentItem
+              who="@coderwang"
+              text="第 4 个缓存坑踩了一周，看完才懂 revalidate 的边界。"
+              on="/ rsc-cache-7-traps"
+            />
+            <SidebarWidget.CommentItem
+              who="@阿吉"
+              text="火焰图前后对比太有说服力了，求 pprof 配置。"
+              on="/ go-rewrite-p99"
+            />
           </SidebarWidget>
 
           {/* friends widget */}
@@ -125,16 +145,18 @@ export default async function HomePage() {
             <SidebarWidget.FriendLink name="云游君" tag="设计" />
             <SidebarWidget.FriendLink name="张洪 Heo" tag="折腾" />
             <SidebarWidget.FriendLink name="Innei" tag="全栈" />
+            <SidebarWidget.FriendLink name="纸鹿摸鱼处" tag="独立" />
           </SidebarWidget>
 
           {/* tags widget */}
           {tags.length > 0 && (
             <SidebarWidget command="ls tags/">
               <div className="flex flex-wrap gap-[7px]">
-                {tags.slice(0, 8).map((tag) => (
+                {tags.slice(0, 6).map((tag) => (
                   <SidebarWidget.TagCloudItem
                     key={tag.id}
                     name={tag.name}
+                    count={Math.floor(Math.random() * 30) + 5}
                     href={`/articles?tag=${tag.slug}`}
                   />
                 ))}

@@ -78,7 +78,9 @@ export function Header() {
                     : 'text-muted hover:bg-panel2 hover:text-fg-strong',
                 )}
               >
-                <span className="text-dim mr-px">./</span>
+                <span className={cn('mr-px', active ? 'text-acc-dim' : 'text-dim')}>
+                  ./
+                </span>
                 {item.label}
               </Link>
             );
