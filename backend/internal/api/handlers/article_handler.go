@@ -397,3 +397,83 @@ func (h *ArticleHandler) BatchUpdateStatus(c *gin.Context) {
 		"message": fmt.Sprintf("Successfully updated %d articles to %s", count, req.Status),
 	})
 }
+
+// UpdateArticleByID updates an existing article by ID (B2 fix - frontend compatibility)
+// @Summary      通过 ID 更新文章
+// @Description  通过文章 ID 更新已有文章（需要是作者本人）
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "文章 ID" example(1)
+// @Param        article body article.UpdateArticleDTO true "更新的文章数据" example({"title":"新标题","content":"新内容"})
+// @Success      200 {object} response.Response{data=article.Article} "更新成功"
+// @Failure      400 {object} response.ErrorResponse "请求参数错误"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      403 {object} response.ErrorResponse "无权限修改此文章"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/by-id/{id} [put]
+func (h *ArticleHandler) UpdateArticleByID(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid article ID")
+		return
+	}
+
+	var req article.UpdateArticleDTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "Invalid request data")
+		return
+	}
+
+	userID := c.GetInt64("user_id")
+	if userID == 0 {
+		response.Unauthorized(c, "Authentication required")
+		return
+	}
+
+	art, err := h.service.UpdateArticle(id, userID, &req)
+	if err != nil {
+		response.HandleError(c, err)
+		return
+	}
+
+	response.Success(c, art)
+}
+
+// DeleteArticleByID deletes an article by ID (B2 fix - frontend compatibility)
+// @Summary      通过 ID 删除文章
+// @Description  通过文章 ID 删除文章（需要是作者本人或管理员）
+// @Tags         Articles
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "文章 ID" example(1)
+// @Success      200 {object} response.SuccessResponse "删除成功"
+// @Failure      400 {object} response.ErrorResponse "无效的文章 ID"
+// @Failure      401 {object} response.ErrorResponse "未认证"
+// @Failure      403 {object} response.ErrorResponse "无权限删除此文章"
+// @Failure      404 {object} response.ErrorResponse "文章不存在"
+// @Failure      500 {object} response.ErrorResponse "服务器错误"
+// @Router       /api/v1/articles/by-id/{id} [delete]
+func (h *ArticleHandler) DeleteArticleByID(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "Invalid article ID")
+		return
+	}
+
+	userID := c.GetInt64("user_id")
+	if userID == 0 {
+		response.Unauthorized(c, "Authentication required")
+		return
+	}
+
+	if err := h.service.DeleteArticle(id, userID); err != nil {
+		response.HandleError(c, err)
+		return
+	}
+
+	response.Success(c, gin.H{"message": "Article deleted successfully"})
+}

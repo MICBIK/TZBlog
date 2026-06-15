@@ -40,7 +40,7 @@ func (m *mockAuthServiceBench) UpdateProfile(id int64, dto *user.UpdateProfileDT
 	return &user.User{ID: id}, nil
 }
 
-func (m *mockAuthServiceBench) ChangePassword(id int64, dto *user.ChangePasswordDTO) error {
+func (m *mockAuthServiceBench) ChangePassword(userID int64, jti string, dto *user.ChangePasswordDTO) error {
 	return nil
 }
 

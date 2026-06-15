@@ -83,6 +83,10 @@ func main() {
 
 	logger.Info("Database connected successfully")
 
+	// Register Prometheus metrics
+	monitoring.RegisterMetrics()
+	logger.Info("Prometheus metrics registered")
+
 	// ✅ C-006: Start connection pool monitor
 	poolMonitor := config.NewConnectionPoolMonitor(
 		sqlDB,
@@ -143,6 +147,15 @@ func main() {
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtAuth)
+	// ✅ SEC-1-05: Set token blacklist for password change revocation
+	if authSvc, ok := authService.(interface {
+		SetTokenBlacklist(interface {
+			Revoke(tokenID string, expiry time.Duration) error
+			IsRevoked(tokenID string) bool
+		})
+	}); ok {
+		authSvc.SetTokenBlacklist(tokenBlacklist)
+	}
 	articleService := service.NewArticleService(articleRepo, tagRepo)
 	commentService := service.NewCommentService(commentRepo)
 
@@ -194,19 +207,18 @@ func main() {
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
-	// ✅ SEC-002 FIX: Apply CSRF protection to all API routes
-	v1.Use(middleware.OptionalCSRF())
 	{
 		// Auth routes (public)
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
+			auth.POST("/login", middleware.SimpleLoginRateLimit(), authHandler.Login)
 			auth.POST("/logout", authHandler.Logout)
 
 			// Protected auth routes
 			authProtected := auth.Group("")
 			authProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			authProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				authProtected.GET("/me", authHandler.GetCurrentUser)
 				authProtected.PUT("/profile", authHandler.UpdateProfile)
@@ -233,11 +245,16 @@ func main() {
 			articlesProtected := articles.Group("")
 			articlesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			articlesProtected.Use(AdminOnly())
+			articlesProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				articlesProtected.POST("", articleHandler.CreateArticle)
 				articlesProtected.PUT("/:slug", articleHandler.UpdateArticle)
 				articlesProtected.PATCH("/:slug", articleHandler.PatchArticle)
 				articlesProtected.DELETE("/:slug", articleHandler.DeleteArticle)
+
+				// By-ID routes for frontend compatibility (B2 fix)
+				articlesProtected.PUT("/by-id/:id", articleHandler.UpdateArticleByID)
+				articlesProtected.DELETE("/by-id/:id", articleHandler.DeleteArticleByID)
 
 				// Batch operations
 				articlesProtected.DELETE("/batch", articleHandler.BatchDelete)
@@ -256,6 +273,7 @@ func main() {
 			categoriesProtected := categories.Group("")
 			categoriesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			categoriesProtected.Use(AdminOnly())
+			categoriesProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				categoriesProtected.POST("", categoryHandler.Create)
 			}
@@ -272,6 +290,7 @@ func main() {
 			tagsProtected := tags.Group("")
 			tagsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			tagsProtected.Use(AdminOnly())
+			tagsProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				tagsProtected.POST("", tagHandler.Create)
 			}
@@ -287,6 +306,7 @@ func main() {
 			// Protected routes (requires auth)
 			commentsProtected := comments.Group("")
 			commentsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			commentsProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				commentsProtected.POST("", commentHandler.CreateComment)
 				commentsProtected.PUT("/:id", commentHandler.UpdateComment)
@@ -300,6 +320,7 @@ func main() {
 			// Protected routes (requires auth)
 			likesProtected := likes.Group("")
 			likesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			likesProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				// Article likes
 				likesProtected.POST("/articles/:id", likeHandler.LikeArticle)
@@ -322,6 +343,7 @@ func main() {
 			// Protected routes (requires auth)
 			uploadsProtected := uploads.Group("")
 			uploadsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
+			uploadsProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				uploadsProtected.POST("/images", storageHandler.UploadImage)
 			}
@@ -331,6 +353,7 @@ func main() {
 		system := v1.Group("/system")
 		system.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 		system.Use(AdminOnly())
+		system.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 		{
 			system.PUT("/log-level", systemHandler.SetLogLevel)
 			system.GET("/log-level", systemHandler.GetLogLevel)

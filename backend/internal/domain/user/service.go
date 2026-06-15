@@ -20,7 +20,8 @@ type Service interface {
 	UpdateProfile(userID int64, dto *UpdateProfileDTO) (*User, error)
 
 	// ChangePassword changes the user's password
-	ChangePassword(userID int64, dto *ChangePasswordDTO) error
+	// ✅ SEC-1-05: jti parameter allows revoking the current token
+	ChangePassword(userID int64, jti string, dto *ChangePasswordDTO) error
 }
 
 // RegisterDTO represents the request data for user registration
@@ -44,15 +45,15 @@ type AuthResponse struct {
 
 // UpdateProfileDTO represents the request data for updating user profile
 type UpdateProfileDTO struct {
-	DisplayName *string `json:"display_name"`
+	DisplayName *string `json:"displayName"`
 	Bio         *string `json:"bio"`
-	AvatarURL   *string `json:"avatar_url"`
+	AvatarURL   *string `json:"avatarUrl"`
 }
 
 // ChangePasswordDTO represents the request data for changing password
 type ChangePasswordDTO struct {
-	CurrentPassword string `json:"current_password" binding:"required"`
-	NewPassword     string `json:"new_password" binding:"required,min=8,max=72"`
+	CurrentPassword string `json:"currentPassword" binding:"required"`
+	NewPassword     string `json:"newPassword" binding:"required,min=8,max=72"`
 }
 
 // NewService is a constructor function type for creating a Service implementation

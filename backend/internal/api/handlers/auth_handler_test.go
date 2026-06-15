@@ -60,8 +60,8 @@ func (m *MockUserService) UpdateProfile(userID int64, dto *user.UpdateProfileDTO
 	return args.Get(0).(*user.User), args.Error(1)
 }
 
-func (m *MockUserService) ChangePassword(userID int64, dto *user.ChangePasswordDTO) error {
-	args := m.Called(userID, dto)
+func (m *MockUserService) ChangePassword(userID int64, jti string, dto *user.ChangePasswordDTO) error {
+	args := m.Called(userID, jti, dto)
 	return args.Error(0)
 }
 
@@ -550,7 +550,7 @@ func TestAuthHandler_ChangePassword(t *testing.T) {
 			handler := NewAuthHandler(mockService)
 
 			if tt.userID != 0 && tt.expectedStatus != http.StatusBadRequest {
-				mockService.On("ChangePassword", tt.userID, mock.AnythingOfType("*user.ChangePasswordDTO")).
+				mockService.On("ChangePassword", tt.userID, mock.AnythingOfType("string"), mock.AnythingOfType("*user.ChangePasswordDTO")).
 					Return(tt.mockError)
 			}
 

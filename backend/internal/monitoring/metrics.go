@@ -3,52 +3,76 @@ package monitoring
 import (
 	"database/sql"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var (
+	registerOnce sync.Once
+
 	// Database metrics
-	dbConnectionsOpen = promauto.NewGauge(prometheus.GaugeOpts{
+	dbConnectionsOpen prometheus.Gauge
+	dbConnectionsInUse prometheus.Gauge
+	dbConnectionsIdle prometheus.Gauge
+	dbConnectionsWaitCount prometheus.Counter
+	dbConnectionsWaitDuration prometheus.Counter
+	dbConnectionsMaxIdleClosed prometheus.Counter
+	dbConnectionsMaxLifetimeClosed prometheus.Counter
+
+	// HTTP metrics
+	httpRequestsTotal *prometheus.CounterVec
+	httpRequestDuration *prometheus.HistogramVec
+	httpRequestSize *prometheus.HistogramVec
+	httpResponseSize *prometheus.HistogramVec
+
+	// Cache metrics
+	cacheHits *prometheus.CounterVec
+	cacheMisses *prometheus.CounterVec
+	cacheOperationDuration *prometheus.HistogramVec
+)
+
+func init() {
+	// Initialize metrics but don't register them yet
+	dbConnectionsOpen = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "db_connections_open",
 		Help: "Number of open database connections",
 	})
 
-	dbConnectionsInUse = promauto.NewGauge(prometheus.GaugeOpts{
+	dbConnectionsInUse = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "db_connections_in_use",
 		Help: "Number of database connections in use",
 	})
 
-	dbConnectionsIdle = promauto.NewGauge(prometheus.GaugeOpts{
+	dbConnectionsIdle = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "db_connections_idle",
 		Help: "Number of idle database connections",
 	})
 
-	dbConnectionsWaitCount = promauto.NewCounter(prometheus.CounterOpts{
+	dbConnectionsWaitCount = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "db_connections_wait_count_total",
 		Help: "Total number of connections waited for",
 	})
 
-	dbConnectionsWaitDuration = promauto.NewCounter(prometheus.CounterOpts{
+	dbConnectionsWaitDuration = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "db_connections_wait_duration_seconds_total",
 		Help: "Total time blocked waiting for new connections",
 	})
 
-	dbConnectionsMaxIdleClosed = promauto.NewCounter(prometheus.CounterOpts{
+	dbConnectionsMaxIdleClosed = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "db_connections_max_idle_closed_total",
 		Help: "Total number of connections closed due to max idle",
 	})
 
-	dbConnectionsMaxLifetimeClosed = promauto.NewCounter(prometheus.CounterOpts{
+	dbConnectionsMaxLifetimeClosed = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "db_connections_max_lifetime_closed_total",
 		Help: "Total number of connections closed due to max lifetime",
 	})
 
 	// HTTP metrics
-	httpRequestsTotal = promauto.NewCounterVec(
+	httpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
@@ -56,7 +80,7 @@ var (
 		[]string{"method", "endpoint", "status"},
 	)
 
-	httpRequestDuration = promauto.NewHistogramVec(
+	httpRequestDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_seconds",
 			Help:    "HTTP request duration in seconds",
@@ -65,7 +89,7 @@ var (
 		[]string{"method", "endpoint"},
 	)
 
-	httpRequestSize = promauto.NewHistogramVec(
+	httpRequestSize = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_request_size_bytes",
 			Help:    "HTTP request size in bytes",
@@ -74,7 +98,7 @@ var (
 		[]string{"method", "endpoint"},
 	)
 
-	httpResponseSize = promauto.NewHistogramVec(
+	httpResponseSize = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "http_response_size_bytes",
 			Help:    "HTTP response size in bytes",
@@ -84,7 +108,7 @@ var (
 	)
 
 	// Cache metrics
-	cacheHits = promauto.NewCounterVec(
+	cacheHits = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cache_hits_total",
 			Help: "Total number of cache hits",
@@ -92,7 +116,7 @@ var (
 		[]string{"cache_type"},
 	)
 
-	cacheMisses = promauto.NewCounterVec(
+	cacheMisses = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cache_misses_total",
 			Help: "Total number of cache misses",
@@ -100,7 +124,7 @@ var (
 		[]string{"cache_type"},
 	)
 
-	cacheOperationDuration = promauto.NewHistogramVec(
+	cacheOperationDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "cache_operation_duration_seconds",
 			Help:    "Cache operation duration in seconds",
@@ -108,7 +132,30 @@ var (
 		},
 		[]string{"cache_type", "operation"},
 	)
-)
+}
+
+// RegisterMetrics registers all Prometheus metrics
+// This should be called once during application startup
+func RegisterMetrics() {
+	registerOnce.Do(func() {
+		prometheus.MustRegister(
+			dbConnectionsOpen,
+			dbConnectionsInUse,
+			dbConnectionsIdle,
+			dbConnectionsWaitCount,
+			dbConnectionsWaitDuration,
+			dbConnectionsMaxIdleClosed,
+			dbConnectionsMaxLifetimeClosed,
+			httpRequestsTotal,
+			httpRequestDuration,
+			httpRequestSize,
+			httpResponseSize,
+			cacheHits,
+			cacheMisses,
+			cacheOperationDuration,
+		)
+	})
+}
 
 // UpdateDBMetrics updates database connection pool metrics
 func UpdateDBMetrics(stats sql.DBStats) {
