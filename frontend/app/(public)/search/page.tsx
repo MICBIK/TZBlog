@@ -37,9 +37,6 @@ export default function SearchPage() {
 
         {/* 空状态 */}
         <div className="border-line text-muted flex flex-col items-center justify-center rounded-[8px] border bg-panel py-16 text-center">
-=======
-        <div className="border-line text-muted flex flex-col items-center justify-center rounded-[8px] border bg-panel py-16 text-center">
->>>>>>> feature/frontend-phase4-1to1
           <p className="text-acc mb-2 font-mono text-[13px]">
             grep: no matches found
           </p>
