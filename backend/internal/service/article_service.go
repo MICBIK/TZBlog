@@ -1,11 +1,14 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
+	"github.com/MICBIK/TZBlog/backend/pkg/logger"
 	"github.com/gosimple/slug"
+	"go.uber.org/zap"
 )
 
 // ArticleService handles article business logic
@@ -146,9 +149,31 @@ func (s *ArticleService) GetArticleBySlug(slug string) (*article.Article, error)
 		return nil, article.ErrArticleNotFound
 	}
 
-	// Increment view count asynchronously (best effort)
+	// Increment view count asynchronously with timeout (CONTRACT-7-03 fix)
 	go func() {
-		_ = s.repo.IncrementViewCount(art.ID)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		// Create a channel to signal completion
+		done := make(chan error, 1)
+		go func() {
+			done <- s.repo.IncrementViewCount(art.ID)
+		}()
+
+		// Wait for completion or timeout
+		select {
+		case err := <-done:
+			if err != nil {
+				logger.Error("failed to increment view count",
+					zap.Int64("article_id", art.ID),
+					zap.String("slug", art.Slug),
+					zap.Error(err))
+			}
+		case <-ctx.Done():
+			logger.Warn("increment view count timed out",
+				zap.Int64("article_id", art.ID),
+				zap.String("slug", art.Slug))
+		}
 	}()
 
 	return art, nil

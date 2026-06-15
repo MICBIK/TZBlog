@@ -146,12 +146,8 @@ func main() {
 	// Initialize services
 	authService := service.NewAuthService(userRepo, jwtAuth)
 	// ✅ SEC-1-05: Set token blacklist for password change revocation
-	if authSvc, ok := authService.(interface {
-		SetTokenBlacklist(interface {
-			Revoke(tokenID string, expiry time.Duration) error
-			IsRevoked(tokenID string) bool
-		})
-	}); ok {
+	// ✅ SEC-6-02: Use concrete type assertion instead of anonymous interface
+	if authSvc, ok := authService.(*service.AuthService); ok {
 		authSvc.SetTokenBlacklist(tokenBlacklist)
 	}
 	articleService := service.NewArticleService(articleRepo, tagRepo)
@@ -190,9 +186,18 @@ func main() {
 		router.Use(middleware.DevelopmentCORS())
 		logger.Warn("Using development CORS (permissive) - DO NOT USE IN PRODUCTION")
 	} else {
-		// Production: use whitelist CORS
-		allowedOrigins := []string{"https://yourdomain.com"} // Configure this
+		// ✅ SEC-6-03: Production CORS whitelist from config
+		allowedOrigins := []string{cfg.Server.FrontendURL}
+
+		// Validate no placeholder origins
+		for _, origin := range allowedOrigins {
+			if origin == "" || origin == "https://yourdomain.com" || origin == "http://localhost:3000" {
+				logger.Fatal("CORS allowedOrigins contains placeholder or default value, please configure server.frontend_url in config.yaml")
+			}
+		}
+
 		router.Use(middleware.CORS(allowedOrigins))
+		logger.Info("Production CORS configured", zap.Strings("allowed_origins", allowedOrigins))
 	}
 
 	// Global rate limiter
@@ -216,7 +221,6 @@ func main() {
 			// Protected auth routes
 			authProtected := auth.Group("")
 			authProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
-			authProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				authProtected.GET("/me", authHandler.GetCurrentUser)
 				authProtected.PUT("/profile", authHandler.UpdateProfile)
@@ -243,7 +247,6 @@ func main() {
 			articlesProtected := articles.Group("")
 			articlesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			articlesProtected.Use(AdminOnly())
-			articlesProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				articlesProtected.POST("", articleHandler.CreateArticle)
 				articlesProtected.PUT("/:slug", articleHandler.UpdateArticle)
@@ -271,7 +274,6 @@ func main() {
 			categoriesProtected := categories.Group("")
 			categoriesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			categoriesProtected.Use(AdminOnly())
-			categoriesProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				categoriesProtected.POST("", categoryHandler.Create)
 			}
@@ -288,7 +290,6 @@ func main() {
 			tagsProtected := tags.Group("")
 			tagsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 			tagsProtected.Use(AdminOnly())
-			tagsProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				tagsProtected.POST("", tagHandler.Create)
 			}
@@ -304,7 +305,6 @@ func main() {
 			// Protected routes (requires auth)
 			commentsProtected := comments.Group("")
 			commentsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
-			commentsProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				commentsProtected.POST("", commentHandler.CreateComment)
 				commentsProtected.PUT("/:id", commentHandler.UpdateComment)
@@ -318,7 +318,6 @@ func main() {
 			// Protected routes (requires auth)
 			likesProtected := likes.Group("")
 			likesProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
-			likesProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				// Article likes
 				likesProtected.POST("/articles/:id", likeHandler.LikeArticle)
@@ -341,7 +340,6 @@ func main() {
 			// Protected routes (requires auth)
 			uploadsProtected := uploads.Group("")
 			uploadsProtected.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
-			uploadsProtected.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 			{
 				uploadsProtected.POST("/images", storageHandler.UploadImage)
 			}
@@ -351,7 +349,6 @@ func main() {
 		system := v1.Group("/system")
 		system.Use(middleware.AuthMiddleware(cfg.JWT.Secret, tokenBlacklist))
 		system.Use(AdminOnly())
-		system.Use(middleware.OptionalCSRF()) // CSRF protection after auth
 		{
 			system.PUT("/log-level", systemHandler.SetLogLevel)
 			system.GET("/log-level", systemHandler.GetLogLevel)

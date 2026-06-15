@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
-	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
-	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
 	"gorm.io/gorm"
 )
 
@@ -32,30 +30,13 @@ func (r *ArticleRepository) Create(art *article.Article) error {
 // FindByID finds an article by ID
 func (r *ArticleRepository) FindByID(id int64) (*article.Article, error) {
 	var art article.Article
-	err := r.db.First(&art, id).Error
+	err := r.db.Preload("Author").Preload("Tags").First(&art, id).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
 		return nil, err
 	}
-
-	// Manually load author (B4 fix)
-	if art.AuthorID > 0 {
-		var author user.User
-		if err := r.db.First(&author, art.AuthorID).Error; err == nil {
-			art.Author = &author
-		}
-	}
-
-	// Manually load tags (B4 fix)
-	var tags []*tag.Tag
-	r.db.Table("article_tags").
-		Select("tags.*").
-		Joins("JOIN tags ON tags.id = article_tags.tag_id").
-		Where("article_tags.article_id = ?", art.ID).
-		Find(&tags)
-	art.Tags = tags
 
 	return &art, nil
 }
@@ -63,30 +44,16 @@ func (r *ArticleRepository) FindByID(id int64) (*article.Article, error) {
 // FindBySlug finds an article by slug
 func (r *ArticleRepository) FindBySlug(slug string) (*article.Article, error) {
 	var art article.Article
-	err := r.db.Where("slug = ?", slug).First(&art).Error
+	err := r.db.Where("slug = ?", slug).
+		Preload("Author").
+		Preload("Tags").
+		First(&art).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
 		return nil, err
 	}
-
-	// Manually load author (B4 fix)
-	if art.AuthorID > 0 {
-		var author user.User
-		if err := r.db.First(&author, art.AuthorID).Error; err == nil {
-			art.Author = &author
-		}
-	}
-
-	// Manually load tags (B4 fix)
-	var tags []*tag.Tag
-	r.db.Table("article_tags").
-		Select("tags.*").
-		Joins("JOIN tags ON tags.id = article_tags.tag_id").
-		Where("article_tags.article_id = ?", art.ID).
-		Find(&tags)
-	art.Tags = tags
 
 	return &art, nil
 }

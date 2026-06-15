@@ -13,9 +13,10 @@ type Config struct {
 
 // ServerConfig represents server configuration
 type ServerConfig struct {
-	Port    string `yaml:"port"`
-	Mode    string `yaml:"mode"`
-	BaseURL string `yaml:"base_url"`
+	Port        string `yaml:"port"`
+	Mode        string `yaml:"mode"`
+	BaseURL     string `yaml:"base_url"`
+	FrontendURL string `yaml:"frontend_url"`
 }
 
 // DatabaseConfig represents database configuration

@@ -38,9 +38,9 @@ type Article struct {
 	UpdatedAt    time.Time  `json:"updatedAt"`
 	DeletedAt    *time.Time `json:"deletedAt,omitempty" gorm:"index"`
 
-	// Relations (not stored in DB, loaded separately)
-	Author *user.User `json:"author,omitempty" gorm:"-"`
-	Tags   []*tag.Tag `json:"tags,omitempty" gorm:"-"`
+	// Relations (GORM native preload)
+	Author *user.User `json:"author,omitempty" gorm:"foreignKey:AuthorID"`
+	Tags   []*tag.Tag `json:"tags,omitempty" gorm:"many2many:article_tags;"`
 }
 
 // TableName returns the table name
