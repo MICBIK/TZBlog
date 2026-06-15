@@ -2,73 +2,94 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Settings, Terminal } from 'lucide-react';
 
 import { useAuth } from '@/lib/hooks/useAuth';
-import { cn } from '@/lib/utils';
 
-const NAV = [
-  { href: '/admin', label: '仪表盘', icon: LayoutDashboard, exact: true },
-  { href: '/admin/articles', label: '文章', icon: FileText },
-  { href: '/admin/settings', label: '设置', icon: Settings },
+const NAV_ITEMS = [
+  { section: '概览' },
+  { href: '/admin', label: '仪表盘', icon: '▦', exact: true },
+  { href: '/admin/analytics', label: '数据分析', icon: '∿' },
+  { section: '内容' },
+  { href: '/admin/articles/new', label: '写文章', icon: '✎' },
+  { href: '/admin/media', label: '媒体库', icon: '⊞' },
+  { section: '系统' },
+  { href: '/admin/settings', label: '站点设置', icon: '⚙' },
+  { href: '/', label: '查看前台', icon: '↗', external: true },
 ];
 
 /**
- * 后台侧边栏（cockpit 人格）。
- * 克制用绿：仅激活态用品牌色。
+ * 后台侧边栏 - 严格对齐设计稿 admin-dashboard.html
+ * 特征：磷光点品牌、分组标签、激活态左侧磷光条
  */
 export function AdminSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
 
   return (
-    <aside className="border-sidebar-border bg-sidebar flex w-16 flex-col border-r sm:w-56">
-      {/* Logo */}
-      <div className="border-sidebar-border flex h-14 items-center gap-2 border-b px-4">
-        <Terminal className="text-sidebar-primary size-4" />
-        <span className="hidden font-mono text-sm font-semibold sm:inline">
-          tzblog
-        </span>
+    <aside className="flex h-screen w-[232px] flex-col overflow-y-auto border-r border-[#1d2530] bg-[#0d1219]">
+      {/* 品牌区 */}
+      <div className="flex items-center gap-[9px] border-b border-[#1d2530] px-5 pb-4 pt-[18px]">
+        <span className="h-[9px] w-[9px] rounded-full bg-acc shadow-[0_0_8px_var(--acc)]" />
+        <b className="font-mono text-[14px] tracking-[0.02em]">tzblog</b>
+        <span className="font-mono text-[11px] text-muted">/admin</span>
       </div>
 
-      {/* 导航 */}
-      <nav className="flex-1 space-y-1 p-2">
-        {NAV.map((item) => {
+      {/* 导航区 */}
+      <nav className="flex flex-1 flex-col gap-[2px] p-3">
+        {NAV_ITEMS.map((item, idx) => {
+          // 分组标题
+          if ('section' in item) {
+            return (
+              <div
+                key={idx}
+                className="px-[10px] pb-[6px] pt-[14px] font-mono text-[10px] uppercase tracking-[0.12em] text-[#46505e]"
+              >
+                {item.section}
+              </div>
+            );
+          }
+
+          // 导航项
           const active = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
-          const Icon = item.icon;
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded px-3 py-2 font-mono text-sm transition-colors',
+              className={`relative flex items-center gap-[10px] rounded-[7px] px-[10px] py-2 text-[13px] transition-[.15s] ${
                 active
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground',
-              )}
+                  ? 'bg-acc/10 text-fg'
+                  : 'text-[#aab3c0] hover:bg-panel hover:text-fg'
+              }`}
             >
-              <Icon className="size-4 shrink-0" />
-              <span className="hidden sm:inline">{item.label}</span>
+              {/* 激活态左侧磷光条 */}
+              {active && (
+                <span className="absolute -left-3 bottom-[7px] top-[7px] w-[2px] rounded-[2px] bg-acc shadow-[0_0_6px_var(--acc)]" />
+              )}
+              <span
+                className={`w-[15px] text-center font-mono text-[13px] ${
+                  active ? 'text-acc' : 'text-muted'
+                }`}
+              >
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* 用户信息 */}
-      <div className="border-sidebar-border border-t p-3">
-        <div className="flex items-center gap-2">
-          <div className="bg-sidebar-accent text-sidebar-accent-foreground flex size-8 shrink-0 items-center justify-center rounded-full font-mono text-xs">
-            {user?.username?.[0]?.toUpperCase() ?? '?'}
-          </div>
-          <div className="hidden min-w-0 sm:block">
-            <p className="text-sidebar-foreground truncate font-mono text-xs">
-              {user?.username ?? 'unknown'}
-            </p>
-            <p className="text-muted-foreground font-mono text-[10px]">
-              {user?.role ?? 'user'}
-            </p>
+      {/* 用户区 */}
+      <div className="flex items-center gap-[10px] border-t border-[#1d2530] px-4 py-3">
+        <div className="grid h-[30px] w-[30px] place-items-center rounded-[7px] border border-line bg-panel font-mono text-[13px] text-acc">
+          {user?.username?.[0]?.toUpperCase() ?? 'H'}
+        </div>
+        <div>
+          <div className="text-[13px]">{user?.username ?? 'haiden'}</div>
+          <div className="font-mono text-[11px] text-muted">
+            {user?.role === 'admin' ? '站长' : '用户'}
           </div>
         </div>
       </div>

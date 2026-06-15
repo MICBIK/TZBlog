@@ -39,7 +39,7 @@ export function TerminalWindow({
         )}
       </div>
       {/* term-body */}
-      <div className="p-7">{children}</div>
+      <div className="px-[30px] pb-[30px] pt-[26px]">{children}</div>
     </div>
   );
 }

@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 
 export default function SearchPage() {
   return (
-    <main className="mx-auto max-w-[1080px] px-6 py-12">
+    <main className="mx-auto w-full max-w-[1080px] flex-1 px-6 pb-[60px] pt-10">
       {/* 搜索框 — grep 命令行风格（设计稿 front-search.html）*/}
-      <div className="border-line bg-panel rounded-[8px] border p-6">
+      <div className="border-line rounded-[8px] border bg-panel p-6">
         <div className="text-muted mb-4 font-mono text-[13px]">
           <span className="text-acc">$</span> grep -ri{' '}
           <span className="text-amber">&quot;关键词&quot;</span> ./posts
@@ -20,7 +20,7 @@ export default function SearchPage() {
           <input
             type="search"
             placeholder="输入关键词搜索文章..."
-            className="border-line2 bg-panel2 text-fg placeholder:text-dim w-full rounded-[6px] border px-4 py-3 font-mono text-[14px] transition-colors duration-[.16s] focus:border-acc-dim focus:outline-none"
+            className="placeholder:text-dim border-line2 bg-panel2 text-fg w-full rounded-[6px] border px-4 py-3 font-mono text-[14px] transition-colors duration-[.16s] focus:border-acc-dim focus:outline-none"
           />
           <kbd className="border-line text-dim absolute right-3 top-1/2 -translate-y-1/2 rounded-[4px] border px-2 py-1 font-mono text-[11px]">
             ⏎
@@ -36,7 +36,10 @@ export default function SearchPage() {
         </div>
 
         {/* 空状态 */}
-        <div className="border-line bg-panel text-muted flex flex-col items-center justify-center rounded-[8px] border py-16 text-center">
+        <div className="border-line text-muted flex flex-col items-center justify-center rounded-[8px] border bg-panel py-16 text-center">
+=======
+        <div className="border-line text-muted flex flex-col items-center justify-center rounded-[8px] border bg-panel py-16 text-center">
+>>>>>>> feature/frontend-phase4-1to1
           <p className="text-acc mb-2 font-mono text-[13px]">
             grep: no matches found
           </p>

@@ -8,7 +8,7 @@ export function Footer() {
   return (
     <footer className="border-line bg-bg2 relative z-[1] mt-10 border-t font-mono">
       {/* ft-main — 4 列 */}
-      <div className="mx-auto grid max-w-[1080px] grid-cols-2 gap-8 px-6 py-10 sm:grid-cols-[1.6fr_1fr_1fr_1.2fr]">
+      <div className="mx-auto grid max-w-[1080px] grid-cols-2 gap-8 px-6 pb-6 pt-[42px] sm:grid-cols-[1.6fr_1fr_1fr_1.2fr]">
         {/* 品牌区 */}
         <div className="col-span-2 sm:col-span-1">
           <p className="text-acc text-[14px] font-bold">
