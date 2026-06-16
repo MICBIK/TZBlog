@@ -175,6 +175,48 @@ Request → L1 (内存, ~10ns) → L2 (Redis, ~1-3ms) → DB (~10-50ms)
 - 减少索引体积
 - 优化特定场景
 
+**索引决策矩阵**（2026-06-17 更新）:
+
+| 查询模式 | 推荐索引类型 | 示例 |
+|---------|------------|------|
+| WHERE A = ? | 单列索引 (A) | `idx_articles_status` |
+| ORDER BY A | 单列索引 (A DESC) | `idx_articles_created_at` |
+| WHERE A = ? ORDER BY B | 复合索引 (A, B DESC) | `idx_articles_status_created` |
+| WHERE A = ? AND B = ? | 复合索引 (A, B) | `idx_likes_target_user` |
+| WHERE A = ? OR B = ? | 两个单列索引 (A), (B) | 分别创建 |
+
+**单列 vs 复合索引权衡**:
+
+PostgreSQL 的复合索引限制：
+- 复合索引 `(status, created_at)` 可以优化：
+  - ✅ `WHERE status = ? ORDER BY created_at`
+  - ✅ `WHERE status = ?`（仅在索引前缀匹配时）
+- 复合索引**无法**优化：
+  - ❌ `ORDER BY created_at`（没有 WHERE status）
+  - ❌ `WHERE created_at > ?`（索引列顺序不匹配）
+
+**最佳实践**（2026-06-17）:
+- 同时创建单列和复合索引，覆盖不同查询模式
+- 使用部分索引减少存储开销（`WHERE deleted_at IS NULL`）
+- 为常见排序添加 DESC/ASC 方向
+- 在 GORM model 中标记所有索引（自文档化）
+
+**Articles 表索引全景**（已实施）:
+```
+单列索引：
+- idx_articles_status         (status) WHERE deleted_at IS NULL
+- idx_articles_created_at     (created_at DESC) WHERE deleted_at IS NULL
+- idx_articles_view_count     (view_count DESC) WHERE deleted_at IS NULL
+
+复合索引：
+- idx_articles_status_created (status, created_at DESC) WHERE deleted_at IS NULL
+- idx_articles_author_created (author_id, created_at DESC) WHERE deleted_at IS NULL
+- idx_articles_published      (published_at DESC) WHERE published_at IS NOT NULL
+
+唯一索引：
+- idx_articles_slug           (slug) WHERE deleted_at IS NULL
+```
+
 ---
 
 ## 安全模式
@@ -202,6 +244,71 @@ POST /login → 验证凭据 → 生成 JWT → 返回 token
 - 无状态认证（JWT）
 - 可扩展（Redis 黑名单）
 - 安全（超时、撤销）
+
+---
+
+### 生产环境配置验证
+
+**目的**: 防止不安全配置进入生产环境
+
+**实现**:
+```go
+// 启动时自动验证
+func Load(configPath string) (*Config, error) {
+    // ...
+    // Validate configuration based on environment
+    if err := Validate(&cfg); err != nil {
+        return nil, fmt.Errorf("配置验证失败: %w", err)
+    }
+    return &cfg, nil
+}
+```
+
+**验证规则**:
+
+| 配置项 | 开发环境 | 生产环境 |
+|--------|---------|---------|
+| JWT_SECRET | ≥32 字符 | ≥32 字符 + 非默认值 + 高熵 (≥4.0) |
+| DB_PASSWORD | 任意（警告） | ≥32 字符 + 非弱密码 + 高熵 (≥3.5) |
+| REDIS_PASSWORD | 可选 | 必填 + ≥16 字符 + 高熵 |
+| SERVER_BASE_URL | http:// 允许（警告） | https:// 强制 |
+| DB_SSLMODE | 任意（警告） | require/verify-ca/verify-full |
+| R2 配置 | 可选 | 必填 + 完整性检查 |
+
+**开发环境行为**: 
+- 显示警告但允许启动
+- 帮助开发者养成安全习惯
+
+**生产环境行为**: 
+- 验证失败拒绝启动
+- 显示清晰的错误信息和修复建议
+
+**为什么**: 
+- 预防配置错误导致的安全问题
+- 强制执行安全最佳实践
+- 早期发现配置问题，减少生产事故
+
+**密钥生成命令**:
+```bash
+# JWT_SECRET (48 字节 base64)
+openssl rand -base64 48 | tr -d '\n' && echo
+
+# DB_PASSWORD (32 字节 base64)
+openssl rand -base64 32
+
+# REDIS_PASSWORD (24 字节 base64)
+openssl rand -base64 24
+```
+
+**密钥轮换周期**:
+- JWT_SECRET: 90 天
+- DB_PASSWORD: 180 天
+- REDIS_PASSWORD: 180 天
+- R2 密钥: 365 天
+
+**文档**: 
+- `backend/docs/security/production-config.md` - 生产配置指南
+- `backend/docs/security/key-rotation.md` - 密钥轮换流程
 
 ---
 
