@@ -5,12 +5,18 @@ import { usePathname } from 'next/navigation';
 
 import { useAuth } from '@/lib/hooks/useAuth';
 
+/**
+ * 后台导航 — 单一数据源（NAV）。1:1 还原原型 admin-chrome.js 的 NAV 常量。
+ * 概览（仪表盘/数据分析）· 内容（写文章/板块与置顶/媒体库）· 系统（站点设置/查看前台）。
+ * 改菜单只改这里，6 个后台页同步——历史上手写副本导致「板块与置顶」只在 2 页出现。
+ */
 const NAV_ITEMS = [
   { section: '概览' },
   { href: '/admin', label: '仪表盘', icon: '▦', exact: true },
   { href: '/admin/analytics', label: '数据分析', icon: '∿' },
   { section: '内容' },
   { href: '/admin/articles/new', label: '写文章', icon: '✎' },
+  { href: '/admin/sections', label: '板块与置顶', icon: '▤' },
   { href: '/admin/media', label: '媒体库', icon: '⊞' },
   { section: '系统' },
   { href: '/admin/settings', label: '站点设置', icon: '⚙' },

@@ -1,11 +1,30 @@
 # Binaries
 server
 *.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
 *.test
+
+# Output of the go coverage tool
 *.out
 
-# Dependencies
+# Dependency directories
 vendor/
+
+# Go workspace file
+go.work
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.iml
 
 # Environment files
 .env
@@ -20,15 +39,7 @@ logs/
 tmp/
 temp/
 *.tmp
-*.swp
-*.swo
-*~
 
-# IDE
-.vscode/
-.idea/
-*.iml
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db

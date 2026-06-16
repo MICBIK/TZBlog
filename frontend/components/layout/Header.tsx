@@ -6,25 +6,19 @@ import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
 import { useAuth } from '@/lib/hooks/useAuth';
+import { PRIMARY_NAV } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-/** 导航项 — 对照设计稿 front-home.html 第 206-213 行 */
-const NAV_ITEMS = [
-  { href: '/', label: 'home' },
-  { href: '/articles', label: 'articles' },
-  { href: '/archive', label: 'archive' },
-  { href: '/search', label: 'search' },
-  { href: '/about', label: 'about' },
-];
-
-/** 当前路径对应的 prompt path（终端语义）*/
+/** 当前路径对应的 prompt path（终端语义）— 对照原型各页 .path */
 function getPromptPath(pathname: string): string {
-  if (pathname === '/') return '~';
-  if (pathname.startsWith('/articles/')) return '~/posts';
+  if (pathname === '/') return '~/posts';
+  const match = PRIMARY_NAV.find(
+    (item) => item.href !== '/' && pathname.startsWith(item.href),
+  );
+  if (match) return match.path;
   if (pathname.startsWith('/articles')) return '~/posts';
   if (pathname.startsWith('/archive')) return '~/archive';
-  if (pathname.startsWith('/search')) return '~/search';
-  if (pathname.startsWith('/about')) return '~/about';
+  if (pathname.startsWith('/account')) return '~/me';
   if (pathname.startsWith('/admin')) return '~/admin';
   return '~';
 }
@@ -44,7 +38,7 @@ export function Header() {
       className="border-line bg-bg/82 sticky top-0 z-20 border-b backdrop-blur-[10px]"
       style={{ background: 'rgba(11,15,20,0.82)' }}
     >
-      <div className="mx-auto flex max-w-[1080px] items-center gap-[22px] px-6 [height:56px]">
+      <div className="mx-auto flex max-w-[1480px] items-center gap-[22px] px-6 [height:56px]">
         {/* prompt — 设计稿 .prompt */}
         <Link
           href="/"
@@ -61,7 +55,7 @@ export function Header() {
 
         {/* nav — 设计稿 .nav */}
         <nav className="ml-auto hidden flex-wrap items-center gap-1 sm:flex">
-          {NAV_ITEMS.map((item) => {
+          {PRIMARY_NAV.map((item) => {
             const active =
               item.href === '/'
                 ? pathname === '/'
@@ -78,9 +72,6 @@ export function Header() {
                     : 'text-muted hover:bg-panel2 hover:text-fg-strong',
                 )}
               >
-                <span className={cn('mr-px', active ? 'text-acc-dim' : 'text-dim')}>
-                  ./
-                </span>
                 {item.label}
               </Link>
             );
@@ -93,7 +84,7 @@ export function Header() {
                 href="/admin"
                 className="border-line2 text-fg hover:border-acc-dim hover:text-acc ml-2 rounded-[6px] border px-[13px] py-1.5 font-mono text-[13px] transition-colors duration-[.16s]"
               >
-                ./admin
+                admin
               </Link>
               <button
                 onClick={handleLogout}
@@ -125,14 +116,14 @@ export function Header() {
       {/* 移动端展开 */}
       {mobileOpen && (
         <nav className="border-line border-t px-6 py-3 sm:hidden">
-          {NAV_ITEMS.map((item) => (
+          {PRIMARY_NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
               className="text-muted hover:text-acc block py-2 font-mono text-sm"
             >
-              ./{item.label}
+              {item.label}
             </Link>
           ))}
           {isAuthenticated ? (
@@ -142,7 +133,7 @@ export function Header() {
                 onClick={() => setMobileOpen(false)}
                 className="text-muted hover:text-acc block py-2 font-mono text-sm"
               >
-                ./admin
+                admin
               </Link>
               <button
                 onClick={() => {
@@ -151,7 +142,7 @@ export function Header() {
                 }}
                 className="text-muted hover:text-acc block py-2 font-mono text-sm"
               >
-                ./logout
+                logout
               </button>
             </>
           ) : (
@@ -160,7 +151,7 @@ export function Header() {
               onClick={() => setMobileOpen(false)}
               className="text-acc block py-2 font-mono text-sm"
             >
-              ./login
+              login
             </Link>
           )}
         </nav>

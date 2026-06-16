@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 
-import { RegisterForm } from '@/components/auth/RegisterForm';
+import { AuthTerminal } from '@/components/auth/AuthTerminal';
 
 export const metadata: Metadata = {
-  title: '注册',
-  description: '注册 TZBlog 账户',
+  title: '登录 / 注册 · tzblog',
+  robots: { index: false, follow: false },
 };
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return <AuthTerminal initialMode="reg" />;
 }

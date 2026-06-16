@@ -2,10 +2,16 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 import { hydrateAuth, useAuthStore } from '@/lib/store/authStore';
 
+/**
+ * (auth) 布局 — 纯 pass-through + 登录态重定向。
+ * 原型 auth.html 是单层终端窗口；外壳（返回链接 + term-bar + 随 tab 联动的 $ 提示行）
+ * 完全由 AuthTerminal 自渲染（含 min-h-[100dvh] 居中）。此处不再渲染重复的终端外壳，
+ * 避免与 AuthTerminal 叠成双层窗口 / 重复返回链接 / 写死 --login 不随注册 tab 变化。
+ * 同时按 DELIVERY §6.3 不注入 Footer/BackgroundFX 营销底栏（登录页惯例）。
+ */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -21,40 +27,5 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     }
   }, [hydrated, user, router]);
 
-  return (
-    <div className="flex flex-1 items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md">
-        {/* 返回首页 */}
-        <Link
-          href="/"
-          className="text-muted hover:text-primary mb-4 inline-block font-mono text-xs transition-colors"
-        >
-          ← 返回 tzblog
-        </Link>
-
-        {/* 终端窗口外壳 */}
-        <div className="border-border from-card overflow-hidden rounded-[10px] border bg-gradient-to-b to-[#0d1219] shadow-[0_30px_80px_-40px_rgba(0,0,0,0.8)]">
-          {/* 终端标题栏 */}
-          <div className="border-border bg-secondary flex items-center gap-2 border-b px-4 py-[11px]">
-            <span className="size-[11px] rounded-full bg-[#ff5f57]" />
-            <span className="size-[11px] rounded-full bg-[#febc2e]" />
-            <span className="size-[11px] rounded-full bg-[#28c840]" />
-            <span className="ml-2 font-mono text-[12.5px] text-[var(--dim)]">
-              auth — haiden@tzblog
-            </span>
-          </div>
-
-          {/* 终端正文 */}
-          <div className="p-6">
-            <p className="text-muted mb-5 font-mono text-[13px]">
-              <span className="text-primary">$</span>{' '}
-              <span>ssh haiden@tzblog --login</span>
-              <span className="cursor-blink" />
-            </p>
-            {children}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 }
