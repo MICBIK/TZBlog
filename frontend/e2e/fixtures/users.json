@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1",
+    "username": "admin",
+    "email": "admin@example.com",
+    "password": "hashed_password_here",
+    "avatar": "/avatars/admin.jpg",
+    "role": "admin",
+    "bio": "Full-stack developer and tech blogger",
+    "website": "https://example.com",
+    "github": "https://github.com/admin",
+    "twitter": "https://twitter.com/admin",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-06-15T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "hashed_password_here",
+    "avatar": "/avatars/default.jpg",
+    "role": "user",
+    "bio": "Test user for E2E testing",
+    "createdAt": "2026-06-01T00:00:00Z",
+    "updatedAt": "2026-06-15T10:00:00Z"
+  }
+]

@@ -1,0 +1,91 @@
+[
+  {
+    "id": "1",
+    "slug": "getting-started-with-nextjs",
+    "title": "Getting Started with Next.js 15",
+    "excerpt": "Learn how to build modern web applications with Next.js 15 and React 19.",
+    "content": "# Getting Started with Next.js 15\n\nNext.js 15 brings exciting new features...\n\n## Installation\n\n```bash\nnpx create-next-app@latest my-app\n```\n\n## Key Features\n\n- Server Components\n- App Router\n- Turbopack\n\n## Conclusion\n\nNext.js 15 is a powerful framework for building modern web applications.",
+    "coverImage": "/images/nextjs.jpg",
+    "author": {
+      "id": "1",
+      "username": "admin",
+      "email": "admin@example.com",
+      "avatar": "/avatars/admin.jpg"
+    },
+    "category": {
+      "id": "1",
+      "name": "Frontend",
+      "slug": "frontend"
+    },
+    "tags": [
+      { "id": "1", "name": "Next.js", "slug": "nextjs" },
+      { "id": "2", "name": "React", "slug": "react" }
+    ],
+    "viewCount": 1234,
+    "likeCount": 56,
+    "commentCount": 12,
+    "readingTime": 5,
+    "publishedAt": "2026-06-15T10:00:00Z",
+    "createdAt": "2026-06-14T10:00:00Z",
+    "updatedAt": "2026-06-15T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "slug": "typescript-best-practices",
+    "title": "TypeScript Best Practices 2026",
+    "excerpt": "Essential TypeScript patterns and best practices for modern development.",
+    "content": "# TypeScript Best Practices\n\nLet's explore essential TypeScript patterns...",
+    "coverImage": "/images/typescript.jpg",
+    "author": {
+      "id": "1",
+      "username": "admin",
+      "email": "admin@example.com",
+      "avatar": "/avatars/admin.jpg"
+    },
+    "category": {
+      "id": "1",
+      "name": "Frontend",
+      "slug": "frontend"
+    },
+    "tags": [
+      { "id": "3", "name": "TypeScript", "slug": "typescript" }
+    ],
+    "viewCount": 890,
+    "likeCount": 45,
+    "commentCount": 8,
+    "readingTime": 8,
+    "publishedAt": "2026-06-14T10:00:00Z",
+    "createdAt": "2026-06-13T10:00:00Z",
+    "updatedAt": "2026-06-14T10:00:00Z"
+  },
+  {
+    "id": "3",
+    "slug": "testing-with-playwright",
+    "title": "E2E Testing with Playwright",
+    "excerpt": "Comprehensive guide to end-to-end testing using Playwright.",
+    "content": "# E2E Testing with Playwright\n\nPlaywright is a powerful testing framework...",
+    "coverImage": "/images/playwright.jpg",
+    "author": {
+      "id": "1",
+      "username": "admin",
+      "email": "admin@example.com",
+      "avatar": "/avatars/admin.jpg"
+    },
+    "category": {
+      "id": "2",
+      "name": "Testing",
+      "slug": "testing"
+    },
+    "tags": [
+      { "id": "4", "name": "Testing", "slug": "testing" },
+      { "id": "5", "name": "Playwright", "slug": "playwright" }
+    ],
+    "viewCount": 567,
+    "likeCount": 32,
+    "commentCount": 5,
+    "readingTime": 10,
+    "publishedAt": "2026-06-13T10:00:00Z",
+    "createdAt": "2026-06-12T10:00:00Z",
+    "updatedAt": "2026-06-13T10:00:00Z"
+  }
+]
