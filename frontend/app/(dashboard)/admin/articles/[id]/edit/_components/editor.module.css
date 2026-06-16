@@ -1,0 +1,93 @@
+/* admin-editor 实时预览样式 — 1:1 还原原型 .prev 规则。
+   CSS Module 只改写 class 选择器，后代标签选择器原样保留。
+   全部颜色走 globals.css 的 @theme token 变量，无字面色值。 */
+
+.prev {
+  padding: 6px 26px 60px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--fg);
+}
+.prev h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 22px 0 12px;
+  color: var(--fg-strong);
+}
+.prev h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 26px 0 10px;
+  color: var(--fg-strong);
+  padding-left: 12px;
+  border-left: 3px solid var(--acc);
+}
+.prev h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 18px 0 8px;
+  color: var(--fg);
+}
+.prev p {
+  margin: 12px 0;
+  color: var(--fg);
+}
+.prev strong {
+  color: var(--fg-strong);
+  font-weight: 600;
+}
+.prev a {
+  color: var(--acc);
+  border-bottom: 1px solid var(--acc-dim);
+}
+.prev ul {
+  margin: 12px 0;
+  padding-left: 22px;
+}
+.prev li {
+  margin: 5px 0;
+  color: var(--fg);
+}
+.prev li::marker {
+  color: var(--acc);
+}
+.prev code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--panel-2);
+  color: var(--acc);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+.prev pre {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  overflow: auto;
+}
+.prev pre code {
+  background: none;
+  border: none;
+  color: var(--fg);
+  padding: 0;
+}
+.prev blockquote {
+  border-left: 3px solid var(--acc-dim);
+  background: rgba(63, 224, 143, 0.05);
+  padding: 8px 16px;
+  margin: 14px 0;
+  color: var(--fg);
+  border-radius: 0 6px 6px 0;
+}
+
+/* 编辑器列滚动条（还原 .col::-webkit-scrollbar）*/
+.col::-webkit-scrollbar {
+  width: 9px;
+}
+.col::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 5px;
+}

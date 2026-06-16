@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
 
+import { DashboardTopbar } from './_components/DashboardTopbar';
+import { PendingComments } from './_components/PendingComments';
+
 export const metadata: Metadata = {
-  title: '仪表盘 - 后台管理',
+  title: '控制台 · tzblog',
   description: 'TZBlog 后台管理仪表盘',
+  robots: { index: false, follow: false },
 };
 
 // Mock 数据
@@ -62,47 +66,11 @@ const recentPosts = [
   },
 ];
 
-const pendingComments = [
-  {
-    author: '云游君',
-    article: 'spec-first',
-    content:
-      '这个「先写规格再让 AI 写代码」的思路太对了，我一直 vibe coding 结果返工无数次。',
-  },
-  {
-    author: '张洪Heo',
-    article: 'RSC 缓存 7 坑',
-    content:
-      '第 4 个坑（fetch 默认 force-cache）我也踩过，排查了一下午，文章里讲得很清楚。',
-  },
-  {
-    author: 'Innei',
-    article: 'Go 重写后端',
-    content:
-      '120ms→18ms 的提升主要来自哪一块？是连接池还是序列化？想看更细的火焰图。',
-  },
-];
-
 export default function AdminDashboardPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      {/* 顶部工具栏 */}
-      <header className="sticky top-0 z-[5] flex items-center justify-between border-b border-[#1d2530] bg-[rgba(13,18,25,0.7)] px-[26px] py-[14px] backdrop-blur-[8px]">
-        <div className="font-mono text-[12px] text-muted">
-          admin ❯ <b className="text-[#aab3c0] font-normal">dashboard</b>
-        </div>
-        <div className="flex items-center gap-[10px]">
-          <button className="flex items-center gap-[6px] rounded-[7px] border border-line bg-panel px-[13px] py-[7px] font-mono text-[12.5px] text-[#aab3c0] transition-[.15s] hover:border-[#46505e] hover:text-fg">
-            ↻ 刷新
-          </button>
-          <a
-            href="/admin/articles/new"
-            className="flex items-center gap-[6px] rounded-[7px] border border-acc-dim bg-acc/12 px-[13px] py-[7px] font-mono text-[12.5px] text-acc transition-[.15s] hover:bg-acc/18"
-          >
-            ＋ 写文章
-          </a>
-        </div>
-      </header>
+      {/* 顶部工具栏（含刷新 toast / 写文章 / 涟漪） */}
+      <DashboardTopbar />
 
       {/* 主内容区 */}
       <div className="w-full max-w-[1180px] px-[26px] pb-10 pt-6">
@@ -117,7 +85,7 @@ export default function AdminDashboardPage() {
               <div className="pointer-events-none absolute -right-[14px] -top-[14px] h-[60px] w-[60px] rounded-full bg-[radial-gradient(circle,rgba(63,224,143,0.08),transparent_70%)]" />
 
               <div className="relative">
-                <div className="font-mono text-[11px] tracking-[0.04em] text-muted">
+                <div className="font-mono text-[11px] tracking-[0.04em] text-dim">
                   {stat.label}
                 </div>
                 <div className="my-2 font-mono text-[28px] font-semibold tracking-[-0.01em]">
@@ -135,7 +103,7 @@ export default function AdminDashboardPage() {
                       ? 'text-acc'
                       : stat.trendType === 'down'
                         ? 'text-[#e06a5a]'
-                        : 'text-muted'
+                        : 'text-dim'
                   }`}
                 >
                   {stat.trend}
@@ -157,7 +125,7 @@ export default function AdminDashboardPage() {
                 </span>
                 <a
                   href="/admin/articles"
-                  className="font-mono text-[11.5px] text-muted hover:text-acc"
+                  className="font-mono text-[11.5px] text-dim hover:text-acc"
                 >
                   管理全部 →
                 </a>
@@ -188,7 +156,7 @@ export default function AdminDashboardPage() {
                     >
                       <td className="border-b border-[#0d1219] px-4 py-[11px] align-middle text-[13px]">
                         <div className="font-medium text-fg">{post.title}</div>
-                        <div className="mt-[2px] font-mono text-[11px] text-muted">
+                        <div className="mt-[2px] font-mono text-[11px] text-dim">
                           {post.category}
                         </div>
                       </td>
@@ -223,7 +191,7 @@ export default function AdminDashboardPage() {
                 </span>
                 <a
                   href="/admin/analytics"
-                  className="font-mono text-[11.5px] text-muted hover:text-acc"
+                  className="font-mono text-[11.5px] text-dim hover:text-acc"
                 >
                   详细分析 →
                 </a>
@@ -254,42 +222,8 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* 右侧：待审评论 */}
-          <div className="overflow-hidden rounded-[11px] border border-line bg-panel">
-            <div className="flex items-center justify-between border-b border-line px-4 py-[13px]">
-              <span className="font-mono text-[12.5px] text-[#aab3c0]">
-                $ comments --pending
-              </span>
-              <span className="font-mono text-[11px] text-[#e8b339]">
-                {pendingComments.length} 待审
-              </span>
-            </div>
-
-            {pendingComments.map((comment, idx) => (
-              <div
-                key={idx}
-                className="border-b border-[#0d1219] px-4 py-[13px] last:border-b-0"
-              >
-                <div className="mb-[5px] flex items-center gap-2">
-                  <b className="text-[12.5px]">{comment.author}</b>
-                  <span className="font-mono text-[11px] text-muted">
-                    on《{comment.article}》
-                  </span>
-                </div>
-                <p className="mb-[7px] text-[12.5px] text-[#aab3c0]">
-                  {comment.content}
-                </p>
-                <div className="flex gap-[7px]">
-                  <button className="rounded-[5px] border border-line bg-transparent px-[9px] py-1 font-mono text-[11px] text-muted transition-[.15s] hover:border-acc-dim hover:text-acc">
-                    ✓ 通过
-                  </button>
-                  <button className="rounded-[5px] border border-line bg-transparent px-[9px] py-1 font-mono text-[11px] text-muted transition-[.15s] hover:border-[rgba(224,106,90,0.4)] hover:text-[#e06a5a]">
-                    ✕ 删除
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* 右侧：待审评论（moderate 折叠 + toast） */}
+          <PendingComments />
         </div>
       </div>
     </div>

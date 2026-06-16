@@ -29,7 +29,34 @@ export const ROUTES = {
   ARTICLES: '/articles',
   ABOUT: '/about',
   ARCHIVE: '/archive',
+  SEARCH: '/search',
+  PATHWAYS: '/pathways',
+  WORKS: '/works',
+  LIBRARY: '/library',
+  LANDING: '/landing',
+  ACCOUNT: '/account',
   LOGIN: '/login',
   REGISTER: '/register',
   ADMIN: '/admin',
 } as const;
+
+/**
+ * 前台主导航 — 单一数据源（single source of truth）。
+ * 对照原型 front-home.html topbar（第 206-213 行）与 site-chrome.js FOOTER 导航列。
+ * Header 用 `label`（终端英文），Footer 用 `zh`（中文文案）；`path` 是命令行提示符路径。
+ */
+export interface NavItem {
+  readonly href: string;
+  readonly label: string;
+  readonly zh: string;
+  readonly path: string;
+}
+
+export const PRIMARY_NAV: readonly NavItem[] = [
+  { href: '/', label: 'home', zh: '首页', path: '~' },
+  { href: '/pathways', label: 'pathways', zh: '学习路径', path: '~/pathways' },
+  { href: '/works', label: 'works', zh: '作品', path: '~/works' },
+  { href: '/library', label: 'shelf', zh: '归档书架', path: '~/shelf' },
+  { href: '/search', label: 'search', zh: '搜索', path: '~/search' },
+  { href: '/about', label: 'about', zh: '关于', path: '~/about' },
+] as const;
