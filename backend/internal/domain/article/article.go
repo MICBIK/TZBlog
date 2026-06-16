@@ -27,14 +27,14 @@ type Article struct {
 	CoverImage   string     `json:"coverImage"`
 	AuthorID     int64      `json:"authorId" gorm:"not null;index"`
 	CategoryID   int64      `json:"categoryId" gorm:"index"`
-	Status       string     `json:"status" gorm:"default:'draft'"` // draft, published, archived
+	Status       string     `json:"status" gorm:"default:'draft';index:idx_articles_status,where:deleted_at IS NULL;index:idx_articles_status_created,composite:status_created_at,where:deleted_at IS NULL"` // draft, published, archived
 	IsPremium    bool       `json:"isPremium" gorm:"default:false"`
 	ReadingTime  int        `json:"readingTime"` // in minutes
 	ViewCount    int64      `json:"viewCount" gorm:"default:0"`
 	LikeCount    int64      `json:"likeCount" gorm:"default:0"`
 	CommentCount int64      `json:"commentCount" gorm:"default:0"`
 	PublishedAt  *time.Time `json:"publishedAt,omitempty"`
-	CreatedAt    time.Time  `json:"createdAt"`
+	CreatedAt    time.Time  `json:"createdAt" gorm:"index:idx_articles_created_at,sort:desc,where:deleted_at IS NULL;index:idx_articles_status_created,composite:status_created_at,priority:2,sort:desc,where:deleted_at IS NULL"`
 	UpdatedAt    time.Time  `json:"updatedAt"`
 	DeletedAt    *time.Time `json:"deletedAt,omitempty" gorm:"index"`
 

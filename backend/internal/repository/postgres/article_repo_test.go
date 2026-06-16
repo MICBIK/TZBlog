@@ -575,3 +575,93 @@ func TestArticleRepository_DetachTags_NonExistent(t *testing.T) {
 	err := repo.DetachTags(99999)
 	assert.NoError(t, err) // Should succeed (0 rows deleted)
 }
+
+// ============================================================================
+// Benchmark Tests for Index Performance
+// ============================================================================
+
+// setupBenchmarkData creates a dataset for performance testing
+func setupBenchmarkData(b *testing.B, db *gorm.DB, count int) {
+	statuses := []string{article.StatusDraft, article.StatusPublished, article.StatusArchived}
+
+	for i := 0; i < count; i++ {
+		art := &article.Article{
+			Title:      "Benchmark Article " + string(rune(i)),
+			Slug:       "benchmark-article-" + string(rune(i)),
+			Content:    "Content for benchmark testing",
+			Summary:    "Summary",
+			AuthorID:   1,
+			CategoryID: 1,
+			Status:     statuses[i%3],
+		}
+		err := db.Create(art).Error
+		require.NoError(b, err)
+	}
+}
+
+// BenchmarkFindByStatus tests performance of status-only filtering
+// This benchmark validates idx_articles_status index usage
+func BenchmarkFindByStatus(b *testing.B) {
+	db := setupArticleTestDB(&testing.T{})
+	setupBenchmarkData(b, db, 1000)
+	repo := NewArticleRepository(db)
+
+	filter := &article.ListFilter{
+		Page:   1,
+		Limit:  20,
+		Status: article.StatusPublished,
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _, err := repo.List(filter)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkListOrderByCreatedAt tests performance of created_at-only sorting
+// This benchmark validates idx_articles_created_at index usage
+func BenchmarkListOrderByCreatedAt(b *testing.B) {
+	db := setupArticleTestDB(&testing.T{})
+	setupBenchmarkData(b, db, 1000)
+	repo := NewArticleRepository(db)
+
+	filter := &article.ListFilter{
+		Page:    1,
+		Limit:   20,
+		OrderBy: "created_at DESC",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _, err := repo.List(filter)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkListByStatusOrderByCreatedAt tests performance of composite query
+// This benchmark validates idx_articles_status_created composite index usage
+func BenchmarkListByStatusOrderByCreatedAt(b *testing.B) {
+	db := setupArticleTestDB(&testing.T{})
+	setupBenchmarkData(b, db, 1000)
+	repo := NewArticleRepository(db)
+
+	filter := &article.ListFilter{
+		Page:    1,
+		Limit:   20,
+		Status:  article.StatusPublished,
+		OrderBy: "created_at DESC",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _, err := repo.List(filter)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
