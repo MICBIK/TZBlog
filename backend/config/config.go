@@ -34,53 +34,12 @@ func Load(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	// ✅ SEC-003 FIX: Validate JWT secret strength
-	if err := cfg.ValidateJWTSecret(); err != nil {
-		return nil, err
-	}
-
-	// ✅ C-010 FIX: Validate database password strength
-	isProduction := cfg.IsProduction()
-	if err := ValidateDatabasePassword(cfg.Database.Password, isProduction); err != nil {
-		return nil, fmt.Errorf("database config: %w", err)
-	}
-
-	// ✅ C-009 FIX: Validate Redis password strength
-	if err := ValidateRedisConfig(&cfg.Redis, isProduction); err != nil {
-		return nil, fmt.Errorf("redis config: %w", err)
+	// Validate configuration based on environment
+	if err := Validate(&cfg); err != nil {
+		return nil, fmt.Errorf("配置验证失败: %w", err)
 	}
 
 	return &cfg, nil
-}
-
-// ValidateJWTSecret validates JWT secret strength
-func (c *Config) ValidateJWTSecret() error {
-	secret := c.JWT.Secret
-	if secret == "" {
-		return fmt.Errorf("CRITICAL: JWT_SECRET must be set")
-	}
-
-	// Check for default/weak secrets
-	weakSecrets := []string{
-		"your-secret-key-change-in-production",
-		"secret",
-		"changeme",
-		"password",
-		"12345678",
-	}
-
-	for _, weak := range weakSecrets {
-		if secret == weak {
-			return fmt.Errorf("CRITICAL: JWT_SECRET must not be a default value (%s)", weak)
-		}
-	}
-
-	// Enforce minimum length
-	if len(secret) < 32 {
-		return fmt.Errorf("CRITICAL: JWT_SECRET must be at least 32 characters (current: %d)", len(secret))
-	}
-
-	return nil
 }
 
 // GetRedisAddr returns Redis address
