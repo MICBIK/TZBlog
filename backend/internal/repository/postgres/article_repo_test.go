@@ -10,9 +10,42 @@ import (
 	"gorm.io/gorm"
 )
 
-// setupArticleTestDB creates an in-memory SQLite DB with articles and article_tags tables.
+// setupArticleTestDB creates an in-memory SQLite DB with articles, article_tags, users, and tags tables.
 func setupArticleTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+
+	// Create users table for Author preload
+	err = db.Exec(`
+		CREATE TABLE users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			username VARCHAR(50) NOT NULL,
+			email VARCHAR(100) NOT NULL,
+			password_hash VARCHAR(255) NOT NULL,
+			avatar VARCHAR(255),
+			bio TEXT,
+			role VARCHAR(20) DEFAULT 'user',
+			status VARCHAR(20) DEFAULT 'active',
+			created_at DATETIME NOT NULL,
+			updated_at DATETIME NOT NULL,
+			deleted_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Create tags table for Tags preload
+	err = db.Exec(`
+		CREATE TABLE tags (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name VARCHAR(50) NOT NULL,
+			slug VARCHAR(50) NOT NULL UNIQUE,
+			description TEXT,
+			article_count INTEGER DEFAULT 0,
+			created_at DATETIME NOT NULL,
+			updated_at DATETIME NOT NULL,
+			deleted_at DATETIME
+		)
+	`).Error
 	require.NoError(t, err)
 
 	err = db.Exec(`
@@ -45,6 +78,20 @@ func setupArticleTestDB(t *testing.T) *gorm.DB {
 			tag_id INTEGER NOT NULL,
 			PRIMARY KEY (article_id, tag_id)
 		)
+	`).Error
+	require.NoError(t, err)
+
+	// Insert a default test user for articles to reference
+	err = db.Exec(`
+		INSERT INTO users (id, username, email, password_hash, created_at, updated_at)
+		VALUES (1, 'testuser', 'test@example.com', 'hashed_password', datetime('now'), datetime('now'))
+	`).Error
+	require.NoError(t, err)
+
+	// Insert default test user 2
+	err = db.Exec(`
+		INSERT INTO users (id, username, email, password_hash, created_at, updated_at)
+		VALUES (2, 'testuser2', 'test2@example.com', 'hashed_password', datetime('now'), datetime('now'))
 	`).Error
 	require.NoError(t, err)
 
@@ -308,34 +355,15 @@ func TestArticleRepository_FindByID_WithAuthorAndTags(t *testing.T) {
 	db := setupArticleTestDB(t)
 	repo := NewArticleRepository(db)
 
-	// Setup users and tags tables
-	err := db.Exec(`
-		CREATE TABLE users (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			username VARCHAR(50) NOT NULL,
-			email VARCHAR(100) NOT NULL
-		)
-	`).Error
-	require.NoError(t, err)
-
-	err = db.Exec(`
-		CREATE TABLE tags (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name VARCHAR(50) NOT NULL,
-			slug VARCHAR(50) NOT NULL
-		)
-	`).Error
-	require.NoError(t, err)
-
-	// Insert test user
-	err = db.Exec("INSERT INTO users (id, username, email) VALUES (1, 'testuser', 'test@example.com')").Error
-	require.NoError(t, err)
-
 	// Insert test tags
-	err = db.Exec("INSERT INTO tags (id, name, slug) VALUES (1, 'Go', 'go'), (2, 'Testing', 'testing')").Error
+	err := db.Exec(`
+		INSERT INTO tags (id, name, slug, created_at, updated_at)
+		VALUES (1, 'Go', 'go', datetime('now'), datetime('now')),
+		       (2, 'Testing', 'testing', datetime('now'), datetime('now'))
+	`).Error
 	require.NoError(t, err)
 
-	// Create article
+	// Create article (uses default testuser with id=1)
 	art := newTestArticle("Test Article", "test-article", 1)
 	require.NoError(t, repo.Create(art))
 
@@ -360,34 +388,15 @@ func TestArticleRepository_FindBySlug_WithAuthorAndTags(t *testing.T) {
 	db := setupArticleTestDB(t)
 	repo := NewArticleRepository(db)
 
-	// Setup users and tags tables
-	err := db.Exec(`
-		CREATE TABLE users (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			username VARCHAR(50) NOT NULL,
-			email VARCHAR(100) NOT NULL
-		)
-	`).Error
-	require.NoError(t, err)
-
-	err = db.Exec(`
-		CREATE TABLE tags (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name VARCHAR(50) NOT NULL,
-			slug VARCHAR(50) NOT NULL
-		)
-	`).Error
-	require.NoError(t, err)
-
-	// Insert test user
-	err = db.Exec("INSERT INTO users (id, username, email) VALUES (1, 'testuser', 'test@example.com')").Error
-	require.NoError(t, err)
-
 	// Insert test tags
-	err = db.Exec("INSERT INTO tags (id, name, slug) VALUES (1, 'Go', 'go'), (2, 'Testing', 'testing')").Error
+	err := db.Exec(`
+		INSERT INTO tags (id, name, slug, created_at, updated_at)
+		VALUES (1, 'Go', 'go', datetime('now'), datetime('now')),
+		       (2, 'Testing', 'testing', datetime('now'), datetime('now'))
+	`).Error
 	require.NoError(t, err)
 
-	// Create article
+	// Create article (uses default testuser with id=1)
 	art := newTestArticle("Test Article", "test-article", 1)
 	require.NoError(t, repo.Create(art))
 

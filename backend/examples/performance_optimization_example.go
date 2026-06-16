@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Package main demonstrates performance optimization usage
 package main
 
