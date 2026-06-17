@@ -55,7 +55,8 @@ func SentryMiddleware() gin.HandlerFunc {
 		hub.Scope().SetTag("method", c.Request.Method)
 
 		// Add user context if available
-		if userID, exists := c.Get("userID"); exists {
+		// key 必须对齐 AuthMiddleware 写入的 "user_id"（见 middleware/auth.go:48），否则永远绑不上用户
+		if userID, exists := c.Get("user_id"); exists {
 			hub.Scope().SetUser(sentry.User{
 				ID: fmt.Sprintf("%v", userID),
 			})
