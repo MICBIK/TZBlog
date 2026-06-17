@@ -115,6 +115,18 @@ func TestTagHandler_List(t *testing.T) {
 			expectedLimit:  10,
 		},
 		{
+			name:        "list clamps oversized limit",
+			queryParams: "?page=1&limit=1000000",
+			mockTags: []*tag.Tag{
+				{ID: 1, Name: "Go", Slug: "go", CreatedAt: now, UpdatedAt: now},
+			},
+			mockTotal:      1,
+			mockError:      nil,
+			expectedStatus: http.StatusOK,
+			expectedPage:   1,
+			expectedLimit:  100,
+		},
+		{
 			name:           "service error",
 			queryParams:    "",
 			mockTags:       nil,

@@ -76,6 +76,18 @@ func (r *ArticleRepository) List(filter *article.ListFilter) ([]*article.Article
 	if filter.CategoryID > 0 {
 		query = query.Where("category_id = ?", filter.CategoryID)
 	}
+	if filter.Category != "" {
+		query = query.Joins("JOIN categories ON categories.id = articles.category_id").
+			Where("categories.slug = ?", filter.Category)
+	}
+	if filter.TagID > 0 {
+		query = query.Joins("JOIN article_tags ON article_tags.article_id = articles.id").
+			Where("article_tags.tag_id = ?", filter.TagID)
+	} else if filter.Tag != "" {
+		query = query.Joins("JOIN article_tags ON article_tags.article_id = articles.id").
+			Joins("JOIN tags ON tags.id = article_tags.tag_id").
+			Where("tags.slug = ?", filter.Tag)
+	}
 	if filter.Search != "" {
 		searchPattern := "%" + filter.Search + "%"
 		query = query.Where("title LIKE ? OR content LIKE ?", searchPattern, searchPattern)
@@ -90,7 +102,7 @@ func (r *ArticleRepository) List(filter *article.ListFilter) ([]*article.Article
 	if filter.OrderBy != "" {
 		query = query.Order(filter.OrderBy)
 	} else {
-		query = query.Order("created_at DESC")
+		query = query.Order("articles.created_at DESC")
 	}
 
 	// Apply pagination

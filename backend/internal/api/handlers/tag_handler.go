@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const maxTagListLimit = 100
+
 // TagHandler handles HTTP requests for tags
 type TagHandler struct {
 	repo tag.TagRepository
@@ -44,6 +46,9 @@ func (h *TagHandler) List(c *gin.Context) {
 		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 {
 			limit = parsed
 		}
+	}
+	if limit > maxTagListLimit {
+		limit = maxTagListLimit
 	}
 
 	offset := (page - 1) * limit

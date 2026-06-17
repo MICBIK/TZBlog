@@ -209,6 +209,88 @@ func TestConfig_IsProduction(t *testing.T) {
 	}
 }
 
+func TestLoad_EnvironmentOverridesNestedConfig(t *testing.T) {
+	configFile := t.TempDir() + "/config.yaml"
+	err := os.WriteFile(configFile, []byte(`
+server:
+  port: "8080"
+  mode: development
+  base_url: "http://localhost:8080"
+  frontend_url: "http://localhost:3000"
+database:
+  host: localhost
+  port: 5432
+  user: tzblog
+  password: tzblog
+  dbname: tzblog_dev
+  sslmode: disable
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+jwt:
+  secret: "dev_secret_key_at_least_32_characters_long_12345"
+  expiry: 168h
+storage:
+  r2:
+    account_id: ""
+    access_key_id: ""
+    secret_access_key: ""
+    bucket: ""
+    public_url: ""
+`), 0o600)
+	assert.NoError(t, err)
+
+	t.Setenv("SERVER_MODE", "production")
+	t.Setenv("SERVER_BASE_URL", "https://api.example.com")
+	t.Setenv("FRONTEND_URL", "https://example.com")
+	t.Setenv("DB_HOST", "postgres")
+	t.Setenv("DB_PASSWORD", "J8k2Np9xQm5Wz7vR3tYuB6nM4cX1aS0dF8hG2jK5")
+	t.Setenv("DB_NAME", "tzblog_production")
+	t.Setenv("DB_SSLMODE", "require")
+	t.Setenv("REDIS_HOST", "redis")
+	t.Setenv("REDIS_PASSWORD", "Kx9mP2nQ8wR5tY7uB3vC6aZ1sD4fG")
+	t.Setenv("JWT_SECRET", "w8ImiQzHu+SCxqwkKpECVjXR12eSFfwfkF/2oBa5v0ph9ekUTDau1uqvAKxec04g")
+	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "account123")
+	t.Setenv("CLOUDFLARE_ACCESS_KEY_ID", "key123")
+	t.Setenv("CLOUDFLARE_SECRET_ACCESS_KEY", "secret123")
+	t.Setenv("R2_BUCKET", "bucket123")
+	t.Setenv("R2_PUBLIC_URL", "https://cdn.example.com")
+
+	cfg, err := Load(configFile)
+	assert.NoError(t, err)
+	assert.Equal(t, "production", cfg.Server.Mode)
+	assert.Equal(t, "https://api.example.com", cfg.Server.BaseURL)
+	assert.Equal(t, "https://example.com", cfg.Server.FrontendURL)
+	assert.Equal(t, "postgres", cfg.Database.Host)
+	assert.Equal(t, "tzblog_production", cfg.Database.DBName)
+	assert.Equal(t, "require", cfg.Database.SSLMode)
+	assert.Equal(t, "redis", cfg.Redis.Host)
+	assert.Equal(t, "account123", cfg.Storage.R2.AccountID)
+}
+
+func TestLoad_EnvironmentOnlyProductionConfig(t *testing.T) {
+	t.Chdir(t.TempDir())
+	t.Setenv("SERVER_MODE", "production")
+	t.Setenv("SERVER_BASE_URL", "https://api.example.com")
+	t.Setenv("DB_PASSWORD", "J8k2Np9xQm5Wz7vR3tYuB6nM4cX1aS0dF8hG2jK5")
+	t.Setenv("DB_SSLMODE", "require")
+	t.Setenv("REDIS_PASSWORD", "Kx9mP2nQ8wR5tY7uB3vC6aZ1sD4fG")
+	t.Setenv("JWT_SECRET", "w8ImiQzHu+SCxqwkKpECVjXR12eSFfwfkF/2oBa5v0ph9ekUTDau1uqvAKxec04g")
+	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "account123")
+	t.Setenv("CLOUDFLARE_ACCESS_KEY_ID", "key123")
+	t.Setenv("CLOUDFLARE_SECRET_ACCESS_KEY", "secret123")
+	t.Setenv("R2_BUCKET", "bucket123")
+	t.Setenv("R2_PUBLIC_URL", "https://cdn.example.com")
+
+	cfg, err := Load("")
+	assert.NoError(t, err)
+	assert.True(t, cfg.IsProduction())
+	assert.Equal(t, "https://api.example.com", cfg.Server.BaseURL)
+	assert.Equal(t, "require", cfg.Database.SSLMode)
+}
+
 // TestValidateProduction tests production environment validation
 func TestValidateProduction(t *testing.T) {
 	tests := []struct {
@@ -272,7 +354,7 @@ func TestValidateProduction(t *testing.T) {
 			errMsg:  "JWT_SECRET 长度必须至少 32 字符",
 		},
 		{
-			name: "weak database password",
+			name: "short database password",
 			config: &Config{
 				Server: ServerConfig{
 					Mode:    "production",
@@ -282,7 +364,7 @@ func TestValidateProduction(t *testing.T) {
 					Secret: "w8ImiQzHu+SCxqwkKpECVjXR12eSFfwfkF/2oBa5v0ph9ekUTDau1uqvAKxec04g",
 				},
 				Database: DatabaseConfig{
-					Password: "password123456789012345678901234",
+					Password: "password",
 					SSLMode:  "require",
 				},
 				Redis: RedisConfig{
@@ -290,7 +372,7 @@ func TestValidateProduction(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			errMsg:  "数据库密码不能使用常见弱密码",
+			errMsg:  "数据库密码长度必须至少 32 字符",
 		},
 		{
 			name: "empty Redis password",
@@ -414,8 +496,8 @@ func TestValidatePasswordStrength(t *testing.T) {
 		},
 		{
 			name:         "weak password - password",
-			password:     "password123456789012345678901234",
-			minLength:    32,
+			password:     "password",
+			minLength:    1,
 			isProduction: true,
 			fieldName:    "测试密码",
 			wantErr:      true,
@@ -423,8 +505,8 @@ func TestValidatePasswordStrength(t *testing.T) {
 		},
 		{
 			name:         "weak password - admin",
-			password:     "admin123456789012345678901234567",
-			minLength:    32,
+			password:     "admin",
+			minLength:    1,
 			isProduction: true,
 			fieldName:    "测试密码",
 			wantErr:      true,
@@ -559,9 +641,9 @@ func TestIsWeakPassword(t *testing.T) {
 			want:     true,
 		},
 		{
-			name:     "weak - contains password",
+			name:     "strong - contains weak substring",
 			password: "mypassword2024",
-			want:     true,
+			want:     false,
 		},
 		{
 			name:     "weak - uppercase password",

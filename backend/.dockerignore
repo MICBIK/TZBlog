@@ -30,4 +30,6 @@ monitoring_demo
 tmp/
 .env
 .env.local
+.env.production
+config/config.yaml
 *.log

@@ -6,6 +6,24 @@ import type { AuthUser } from '@/types/auth';
 
 import { hydrateAuth, useAuthStore } from './authStore';
 
+function createMockUser(overrides: Partial<AuthUser> = {}): AuthUser {
+  return {
+    id: 1,
+    username: 'testuser',
+    email: 'test@example.com',
+    displayName: 'Test User',
+    bio: '',
+    avatarUrl: '',
+    role: 'user',
+    status: 'active',
+    isVerified: true,
+    lastLoginAt: null,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-01',
+    ...overrides,
+  };
+}
+
 describe('authStore', () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -24,14 +42,7 @@ describe('authStore', () => {
     it('should set auth and store token', () => {
       const { result } = renderHook(() => useAuthStore());
 
-      const mockUser: AuthUser = {
-        id: 1,
-        username: 'testuser',
-        email: 'test@example.com',
-        role: 'user',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01',
-      };
+      const mockUser = createMockUser();
 
       act(() => {
         result.current.setAuth(mockUser, 'test-token');
@@ -45,14 +56,7 @@ describe('authStore', () => {
     it('should update user partially', () => {
       const { result } = renderHook(() => useAuthStore());
 
-      const mockUser: AuthUser = {
-        id: 1,
-        username: 'testuser',
-        email: 'test@example.com',
-        role: 'user',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01',
-      };
+      const mockUser = createMockUser();
 
       act(() => {
         result.current.setAuth(mockUser, 'test-token');
@@ -81,14 +85,7 @@ describe('authStore', () => {
     it('should logout and clear token', () => {
       const { result } = renderHook(() => useAuthStore());
 
-      const mockUser: AuthUser = {
-        id: 1,
-        username: 'testuser',
-        email: 'test@example.com',
-        role: 'user',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01',
-      };
+      const mockUser = createMockUser();
 
       act(() => {
         result.current.setAuth(mockUser, 'test-token');
@@ -117,14 +114,7 @@ describe('authStore', () => {
     it('should fetch user when valid token exists', async () => {
       window.localStorage.setItem(TOKEN_STORAGE_KEY, 'valid-token');
 
-      const mockUser: AuthUser = {
-        id: 1,
-        username: 'testuser',
-        email: 'test@example.com',
-        role: 'user',
-        createdAt: '2024-01-01',
-        updatedAt: '2024-01-01',
-      };
+      const mockUser = createMockUser();
 
       // Mock getCurrentUser
       vi.doMock('@/lib/api/auth', () => ({

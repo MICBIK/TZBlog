@@ -117,6 +117,24 @@ func TestCategoryHandler_List(t *testing.T) {
 			expectedLimit:  10,
 		},
 		{
+			name:        "list clamps oversized limit",
+			queryParams: "?page=1&limit=1000000",
+			mockCategories: []*category.Category{
+				{
+					ID:        1,
+					Name:      "Technology",
+					Slug:      "tech",
+					CreatedAt: now,
+					UpdatedAt: now,
+				},
+			},
+			mockTotal:      1,
+			mockError:      nil,
+			expectedStatus: http.StatusOK,
+			expectedPage:   1,
+			expectedLimit:  100,
+		},
+		{
 			name:           "service error",
 			queryParams:    "",
 			mockCategories: nil,

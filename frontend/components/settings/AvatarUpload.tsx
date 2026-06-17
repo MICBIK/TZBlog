@@ -75,10 +75,11 @@ export function AvatarUpload({ currentUrl, onUploaded }: AvatarUploadProps) {
       <div className="bg-muted relative size-24 overflow-hidden rounded-full">
         {preview ? (
           <>
-            <img
-              src={preview}
-              alt="头像预览"
-              className="size-full object-cover"
+            <div
+              role="img"
+              aria-label="头像预览"
+              className="size-full bg-cover bg-center"
+              style={{ backgroundImage: `url(${JSON.stringify(preview)})` }}
             />
             <button
               type="button"

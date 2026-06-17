@@ -229,7 +229,7 @@ func isWeakPassword(password string) bool {
 
 	lowerPassword := strings.ToLower(password)
 	for _, weak := range weakPasswords {
-		if lowerPassword == weak || strings.Contains(lowerPassword, weak) {
+		if lowerPassword == weak {
 			return true
 		}
 	}

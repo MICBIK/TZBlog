@@ -2,211 +2,85 @@ import { test, expect } from '@playwright/test';
 import { SearchPage } from '../pages/SearchPage';
 import { MockAPI } from '../mocks/handlers';
 
+test.describe.configure({ mode: 'serial' });
+
 test.describe('搜索功能测试', () => {
   let searchPage: SearchPage;
-  let mockAPI: MockAPI;
 
   test.beforeEach(async ({ page }) => {
     searchPage = new SearchPage(page);
-    mockAPI = new MockAPI({ page });
-
-    // 设置 API mocks
+    const mockAPI = new MockAPI({ page });
     await mockAPI.setupAll();
+    await searchPage.goto();
   });
 
-  test('搜索页面加载成功', async () => {
-    await searchPage.goto();
+  test('搜索页加载固定文案', async () => {
     await expect(searchPage.searchInput).toBeVisible();
+    await expect(searchPage.page.locator('h1')).toContainText('全站搜索');
+    await expect(searchPage.page.getByText('128 篇文章，38.6 万字。')).toBeVisible();
   });
 
-  test('搜索功能 - 有结果', async () => {
-    await searchPage.goto();
-    await searchPage.search('Next.js');
+  test('输入 spec-first 后只保留匹配结果', async () => {
+    await searchPage.search('spec-first');
 
-    // 验证有搜索结果
     await searchPage.verifyHasResults();
-
-    const count = await searchPage.getResultCount();
-    expect(count).toBeGreaterThan(0);
+    expect(await searchPage.getResultCount()).toBe(1);
+    await expect(searchPage.resultItems.first()).toContainText(
+      'spec-first：让 Claude 连续写对 3000 行代码',
+    );
   });
 
-  test('搜索功能 - 无结果', async () => {
-    await searchPage.goto();
-    await searchPage.search('非常罕见的关键词XYZ123');
+  test('无结果时显示 empty state', async () => {
+    const query = '非常罕见的关键词XYZ123';
 
-    // 验证显示空结果状态
-    const count = await searchPage.getResultCount();
+    await searchPage.search(query);
 
-    if (count === 0) {
-      await searchPage.verifyEmptyState();
-    }
+    expect(await searchPage.getResultCount()).toBe(0);
+    await searchPage.verifyEmptyState();
+    await expect(searchPage.page.locator('b').filter({ hasText: `"${query}"` })).toBeVisible();
   });
 
-  test('搜索结果标题显示正确', async () => {
-    await searchPage.goto();
-    await searchPage.search('TypeScript');
+  test('关键词会被 mark 高亮', async () => {
+    await searchPage.search('缓存');
+
+    await searchPage.verifyHasResults();
+    await searchPage.verifyHighlight('缓存');
+  });
+
+  test('分类 chip 会收窄结果范围', async () => {
+    await searchPage.selectCategory('工具效率');
 
     const titles = await searchPage.getResultTitles();
-
-    if (titles.length > 0) {
-      expect(titles[0]).toContain('TypeScript');
-    }
+    expect(await searchPage.getResultCount()).toBe(3);
+    expect(titles).toContain('2026 我的终端配置：zsh + tmux + neovim');
+    expect(titles).not.toContain('Go 重写后端：P99 从 120ms 砍到 18ms');
   });
 
-  test('点击搜索结果跳转', async ({ page }) => {
-    await searchPage.goto();
+  test('点击结果进入固定文章页', async ({ page }) => {
+    await searchPage.search('Go');
+    await searchPage.clickResult(0);
+
+    await expect(page).toHaveURL(/\/articles\/spec-first-workflow$/);
+    await expect(page.locator('h1').first()).toContainText('spec-first 工作流');
+  });
+
+  test('清空搜索框会恢复为空字符串', async () => {
     await searchPage.search('Next.js');
-
-    const count = await searchPage.getResultCount();
-
-    if (count > 0) {
-      await searchPage.clickResult(0);
-
-      // 验证跳转到文章详情页
-      await page.waitForURL(/\/articles\/[^/]+/);
-      expect(page.url()).toMatch(/\/articles\/[^/]+/);
-    }
-  });
-
-  test('搜索关键词高亮', async ({ page }) => {
-    await searchPage.goto();
-    await searchPage.search('Next.js');
-
-    const count = await searchPage.getResultCount();
-
-    if (count > 0) {
-      try {
-        // 验证关键词高亮
-        await searchPage.verifyHighlight('Next.js');
-      } catch {
-        // 高亮功能可能未实现
-        console.warn('Keyword highlight not implemented');
-      }
-    }
-  });
-
-  test('清空搜索框', async () => {
-    await searchPage.goto();
-    await searchPage.typeQuery('test query');
-
-    let query = await searchPage.getCurrentQuery();
-    expect(query).toBe('test query');
+    expect(await searchPage.getCurrentQuery()).toBe('Next.js');
 
     await searchPage.clearSearch();
-
-    query = await searchPage.getCurrentQuery();
-    expect(query).toBe('');
-  });
-
-  test('URL 参数搜索', async ({ page }) => {
-    await searchPage.goto('Playwright');
-
-    // 验证 URL 包含搜索参数
-    expect(page.url()).toContain('q=Playwright');
-
-    // 验证搜索框自动填充
-    const query = await searchPage.getCurrentQuery();
-    expect(query).toBe('Playwright');
-  });
-
-  test('搜索不同关键词', async () => {
-    const keywords = ['Next.js', 'React', 'TypeScript'];
-
-    for (const keyword of keywords) {
-      await searchPage.goto();
-      await searchPage.search(keyword);
-
-      const titles = await searchPage.getResultTitles();
-
-      if (titles.length > 0) {
-        // 验证至少有一个结果包含关键词
-        const hasMatch = titles.some(title =>
-          title.toLowerCase().includes(keyword.toLowerCase())
-        );
-        expect(hasMatch).toBeTruthy();
-      }
-    }
-  });
-
-  test('搜索特殊字符', async () => {
-    const specialQueries = ['Next.js', 'C++', '@react', '#typescript'];
-
-    for (const query of specialQueries) {
-      await searchPage.goto();
-      await searchPage.typeQuery(query);
-
-      // 验证输入框接受特殊字符
-      const inputValue = await searchPage.getCurrentQuery();
-      expect(inputValue).toBe(query);
-    }
-  });
-
-  test('空搜索提交', async () => {
-    await searchPage.goto();
-    await searchPage.clearSearch();
-
-    try {
-      await searchPage.searchButton.click();
-      await searchPage.page.waitForLoadState('networkidle');
-
-      // 验证不会崩溃，可能显示提示或保持原状
-      await expect(searchPage.searchInput).toBeVisible();
-    } catch {
-      // 空搜索可能被阻止
-    }
-  });
-
-  test.describe('响应式布局', () => {
-    test('移动端搜索', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await searchPage.goto();
-
-      await expect(searchPage.searchInput).toBeVisible();
-
-      await searchPage.search('Next.js');
-      await searchPage.verifyHasResults();
-    });
-
-    test('平板搜索', async ({ page }) => {
-      await page.setViewportSize({ width: 768, height: 1024 });
-      await searchPage.goto();
-
-      await expect(searchPage.searchInput).toBeVisible();
-
-      await searchPage.search('TypeScript');
-
-      const count = await searchPage.getResultCount();
-      expect(count).toBeGreaterThanOrEqual(0);
-    });
-  });
-
-  test('搜索性能 - 快速响应', async () => {
-    await searchPage.goto();
-
-    const startTime = Date.now();
-    await searchPage.search('Next.js');
-    const endTime = Date.now();
-
-    const responseTime = endTime - startTime;
-
-    // 搜索响应时间应小于 3 秒
-    expect(responseTime).toBeLessThan(3000);
+    expect(await searchPage.getCurrentQuery()).toBe('');
   });
 
   test('搜索大小写不敏感', async () => {
-    const queries = ['next.js', 'Next.js', 'NEXT.JS'];
-    const results: number[] = [];
+    const counts: number[] = [];
 
-    for (const query of queries) {
-      await searchPage.goto();
+    for (const query of ['next.js', 'Next.js', 'NEXT.JS']) {
       await searchPage.search(query);
-
-      const count = await searchPage.getResultCount();
-      results.push(count);
+      counts.push(await searchPage.getResultCount());
+      await searchPage.clearSearch();
     }
 
-    // 验证大小写不同但结果数量相同
-    expect(results[0]).toBe(results[1]);
-    expect(results[1]).toBe(results[2]);
+    expect(counts).toEqual([1, 1, 1]);
   });
 });

@@ -54,6 +54,16 @@ export function clearAuthAndRedirect(): void {
   window.location.href = ROUTES.LOGIN;
 }
 
+function shouldHandleUnauthorizedRedirect(
+  error: AxiosError<ApiResponse<unknown>>,
+): boolean {
+  if (error.response?.status !== 401) {
+    return false;
+  }
+
+  return !!getStoredToken();
+}
+
 /**
  * 从 axios 错误中构造统一的 ApiRequestError。
  * 优先采用后端返回的 error 体，其次回退到 HTTP 状态信息。
@@ -123,8 +133,9 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error: AxiosError<ApiResponse<unknown>>) => {
-    // 401 未授权：清除登录态并跳转
-    if (error.response?.status === 401) {
+    // 仅在当前确实存在登录态时，401 才清除并跳转登录页。
+    // 例如 /auth/login 的凭证错误也会返回 401，但这里应把错误留给页面展示。
+    if (shouldHandleUnauthorizedRedirect(error)) {
       clearAuthAndRedirect();
     }
     return Promise.reject(normalizeError(error));

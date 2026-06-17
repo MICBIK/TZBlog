@@ -12,6 +12,11 @@ export interface Author {
   bio?: string;
 }
 
+export interface ArticleAuthor extends Partial<Author> {
+  email?: string;
+  avatar?: string;
+}
+
 /** 标签 */
 export interface Tag {
   id: number;
@@ -49,6 +54,12 @@ export interface ArticleSummary {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ArticleDetail extends ArticleSummary {
+  author?: ArticleAuthor;
+  category?: Category;
+  tags?: Tag[];
 }
 
 /** 文章列表响应（含分页 metadata） */

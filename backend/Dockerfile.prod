@@ -22,17 +22,17 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o 
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates tzdata
+RUN addgroup -S tzblog && adduser -S tzblog -G tzblog
 
-WORKDIR /root/
+WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /app/server .
 
-# Copy config
-COPY --from=builder /app/config/config.yaml ./config/
-
 # Set timezone
 ENV TZ=Asia/Shanghai
+
+USER tzblog
 
 EXPOSE 8080
 

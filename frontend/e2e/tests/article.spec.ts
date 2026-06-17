@@ -2,204 +2,97 @@ import { test, expect } from '@playwright/test';
 import { ArticlePage } from '../pages/ArticlePage';
 import { MockAPI } from '../mocks/handlers';
 
+test.describe.configure({ mode: 'serial' });
+test.setTimeout(60_000);
+
 test.describe('文章详情页测试', () => {
   let articlePage: ArticlePage;
-  let mockAPI: MockAPI;
 
   test.beforeEach(async ({ page }) => {
     articlePage = new ArticlePage(page);
-    mockAPI = new MockAPI({ page });
-
-    // 设置 API mocks
+    const mockAPI = new MockAPI({ page });
     await mockAPI.setupAll();
+    await articlePage.goto('spec-first-workflow');
   });
 
-  test('文章详情页加载成功', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
+  test('文章详情页加载固定正文', async () => {
     await articlePage.verifyPageLoaded();
-
-    const title = await articlePage.getTitle();
-    expect(title).toContain('Next.js');
+    await expect(articlePage.articleTitle).toContainText(
+      '我用 spec-first 工作流让 Claude 连续写对 3000 行代码',
+    );
+    await expect(articlePage.articleContent).toContainText('失败轨迹回放');
   });
 
-  test('文章标题显示正确', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    const title = await articlePage.getTitle();
-    expect(title.length).toBeGreaterThan(0);
-    expect(title).toBe('Getting Started with Next.js 15');
+  test('TOC 渲染四个固定章节', async () => {
+    expect(await articlePage.getTocLinkCount()).toBe(4);
+    await expect(articlePage.toc).toContainText('为什么 prompt 越写越长反而越糟');
+    await expect(articlePage.toc).toContainText('spec-first：先写验收脚本');
+    await expect(articlePage.toc).toContainText('最便宜的验证层放在哪');
+    await expect(articlePage.toc).toContainText('失败轨迹回放');
   });
 
-  test('文章内容渲染', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    await expect(articlePage.articleContent).toBeVisible();
-    const content = await articlePage.articleContent.textContent();
-    expect(content!.length).toBeGreaterThan(100);
+  test('点击 TOC 会触发页面滚动', async () => {
+    await articlePage.verifyTocScrolling(1);
   });
 
-  test('TOC 目录生成', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
+  test('代码块高亮与复制按钮可用', async ({ context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
-    const tocLinkCount = await articlePage.getTocLinkCount();
+    await articlePage.verifyCodeHighlight();
+    await articlePage.clickCopyButton();
 
-    if (tocLinkCount > 0) {
-      await expect(articlePage.toc).toBeVisible();
-      expect(tocLinkCount).toBeGreaterThan(0);
-    }
+    await expect(articlePage.copyButton).toContainText('copied');
+    const clipboard = await articlePage.page.evaluate(() =>
+      navigator.clipboard.readText(),
+    );
+    expect(clipboard).toContain('pnpm tsc --noEmit');
+    expect(clipboard).toContain('pnpm vitest run spec/checkout');
   });
 
-  test('TOC 点击滚动功能', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    const tocLinkCount = await articlePage.getTocLinkCount();
-
-    if (tocLinkCount > 1) {
-      // 获取初始滚动位置
-      const scrollBefore = await articlePage.getScrollPosition();
-
-      // 点击第二个 TOC 链接
-      await articlePage.clickTocLink(1);
-      await articlePage.page.waitForTimeout(500);
-
-      // 获取点击后的滚动位置
-      const scrollAfter = await articlePage.getScrollPosition();
-
-      // 验证页面发生了滚动
-      expect(scrollAfter).not.toBe(scrollBefore);
-    }
-  });
-
-  test('代码块语法高亮', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    const codeBlockCount = await articlePage.getCodeBlockCount();
-
-    if (codeBlockCount > 0) {
-      await expect(articlePage.codeBlocks.first()).toBeVisible();
-      await articlePage.verifyCodeHighlight(0);
-    }
-  });
-
-  test('代码复制按钮功能', async ({ context }) => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    const codeBlockCount = await articlePage.getCodeBlockCount();
-
-    if (codeBlockCount > 0) {
-      // 授予剪贴板权限
-      await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-
-      try {
-        // 点击复制按钮
-        await articlePage.clickCopyButton(0);
-
-        // 等待复制完成
-        await articlePage.page.waitForTimeout(500);
-
-        // 验证剪贴板内容
-        const clipboardContent = await articlePage.page.evaluate(() => navigator.clipboard.readText());
-        expect(clipboardContent.length).toBeGreaterThan(0);
-      } catch (error) {
-        // 某些环境可能不支持剪贴板 API
-        console.warn('Clipboard API not supported:', error);
-      }
-    }
-  });
-
-  test('作者信息显示', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    try {
-      await expect(articlePage.authorInfo).toBeVisible();
-    } catch {
-      // 作者信息可能不存在
-      console.warn('Author info not found');
-    }
-  });
-
-  test('标签显示', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
-
+  test('标签与作者信息可见', async () => {
     const tags = await articlePage.getTags();
 
-    if (tags.length > 0) {
-      expect(tags).toContain('Next.js');
-    }
+    await expect(articlePage.authorInfo).toBeVisible();
+    expect(tags).toContain('AI Coding');
+    expect(tags).toContain('工作流');
   });
 
-  test('文章不存在返回 404', async ({ page }) => {
-    await articlePage.goto('non-existent-article-slug-12345');
-
-    // 等待页面加载
-    await page.waitForLoadState('networkidle');
-
-    // 验证显示 404 页面或错误信息
-    const pageContent = await page.textContent('body');
-    expect(
-      pageContent?.includes('404') ||
-      pageContent?.includes('Not Found') ||
-      pageContent?.includes('找不到')
-    ).toBeTruthy();
+  test('上一篇下一篇导航渲染', async () => {
+    expect(await articlePage.getRelatedArticleCount()).toBe(2);
+    await expect(articlePage.relatedArticles.first()).toBeVisible();
+    await expect(articlePage.page.getByText('Next.js 15 RSC 缓存的 7 个坑')).toBeVisible();
+    await expect(articlePage.page.getByText('把后端从 Node 重写成 Go')).toBeVisible();
   });
 
-  test('相关文章推荐', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
+  test('评论区发布按钮显示登录提示', async () => {
+    await articlePage.scrollToComments();
+    await expect(articlePage.commentInput).toBeVisible();
 
-    const relatedCount = await articlePage.getRelatedArticleCount();
+    await articlePage.publishButton.click();
+    await expect(
+      articlePage.page.getByText('登录后即可发布评论（GitHub / Google / 邮箱）'),
+    ).toBeVisible();
+  });
 
-    if (relatedCount > 0) {
-      await expect(articlePage.relatedArticles).toBeVisible();
-    }
+  test('页面标题与摘要可见', async () => {
+    await expect(articlePage.articleTitle).toContainText('spec-first 工作流');
+    await expect(articlePage.articleContent).toContainText('规格驱动');
   });
 
   test.describe('响应式布局', () => {
-    test('移动端视口 - 文章可读', async ({ page }) => {
+    test('移动端文章仍可阅读', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
-      await articlePage.goto('getting-started-with-nextjs');
+      await articlePage.goto('spec-first-workflow');
 
-      await articlePage.verifyPageLoaded();
-      await expect(articlePage.articleContent).toBeVisible();
+      await expect(articlePage.articleTitle).toBeVisible();
+      await expect(articlePage.commentInput).toBeVisible();
     });
 
-    test('平板视口 - TOC 正常显示', async ({ page }) => {
+    test('平板端 TOC 仍可见', async ({ page }) => {
       await page.setViewportSize({ width: 768, height: 1024 });
-      await articlePage.goto('getting-started-with-nextjs');
+      await articlePage.goto('spec-first-workflow');
 
-      await articlePage.verifyPageLoaded();
-      const tocCount = await articlePage.getTocLinkCount();
-
-      if (tocCount > 0) {
-        await expect(articlePage.toc).toBeVisible();
-      }
+      await expect(articlePage.toc).toBeVisible();
     });
-  });
-
-  test('代码块多种语言高亮', async () => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    const codeBlockCount = await articlePage.getCodeBlockCount();
-
-    if (codeBlockCount > 0) {
-      // 验证至少有一个代码块
-      await expect(articlePage.codeBlocks.first()).toBeVisible();
-
-      // 验证语法高亮
-      for (let i = 0; i < Math.min(codeBlockCount, 3); i++) {
-        await articlePage.verifyCodeHighlight(i);
-      }
-    }
-  });
-
-  test('页面 SEO 元数据', async ({ page }) => {
-    await articlePage.goto('getting-started-with-nextjs');
-
-    // 验证 title
-    const title = await page.title();
-    expect(title.length).toBeGreaterThan(0);
-
-    // 验证 meta description
-    const description = await page.locator('meta[name="description"]').getAttribute('content');
-    expect(description).toBeTruthy();
   });
 });

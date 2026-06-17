@@ -30,6 +30,9 @@ func CacheKey(prefix string, id interface{}) string {
 func (s *Strategy) Get(ctx context.Context, key string, dest interface{}) error {
 	data, err := s.client.Get(ctx, key).Bytes()
 	if err != nil {
+		if err == redis.Nil {
+			return ErrCacheMiss
+		}
 		return err
 	}
 

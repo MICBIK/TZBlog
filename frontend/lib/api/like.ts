@@ -6,6 +6,19 @@ export interface LikeStatus {
   likeCount: number;
 }
 
+interface LikeStatusResponse {
+  liked: boolean;
+  likeCount?: number;
+  count?: number;
+}
+
+function normalizeLikeStatus(data: LikeStatusResponse): LikeStatus {
+  return {
+    liked: data.liked,
+    likeCount: data.likeCount ?? data.count ?? 0,
+  };
+}
+
 /**
  * 点赞相关 API。
  * 后端路由为 /likes/articles/:id（多态设计）。
@@ -15,15 +28,20 @@ export interface LikeStatus {
 
 /** 点赞文章 */
 export async function likeArticle(articleId: number): Promise<LikeStatus> {
-  return apiPost<LikeStatus>(`/likes/articles/${articleId}`);
+  const data = await apiPost<LikeStatusResponse>(`/likes/articles/${articleId}`);
+  return normalizeLikeStatus(data);
 }
 
 /** 取消点赞 */
 export async function unlikeArticle(articleId: number): Promise<LikeStatus> {
-  return apiDelete<LikeStatus>(`/likes/articles/${articleId}`);
+  const data = await apiDelete<LikeStatusResponse>(`/likes/articles/${articleId}`);
+  return normalizeLikeStatus(data);
 }
 
 /** 查询点赞状态 */
 export async function getLikeStatus(articleId: number): Promise<LikeStatus> {
-  return apiGet<LikeStatus>(`/likes/articles/${articleId}/status`);
+  const data = await apiGet<LikeStatusResponse>(
+    `/likes/articles/${articleId}/status`,
+  );
+  return normalizeLikeStatus(data);
 }

@@ -129,6 +129,7 @@ type ListFilter struct {
 	AuthorID   int64
 	CategoryID int64
 	TagID      int64
+	Category   string
 	Tag        string
 	Search     string
 	OrderBy    string

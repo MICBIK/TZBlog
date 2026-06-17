@@ -13,6 +13,18 @@ type LikeHandler struct {
 	likeRepo like.LikeRepository
 }
 
+func likeStatusPayload(liked bool, count int64, message string) gin.H {
+	payload := gin.H{
+		"liked":     liked,
+		"count":     count,
+		"likeCount": count,
+	}
+	if message != "" {
+		payload["message"] = message
+	}
+	return payload
+}
+
 // NewLikeHandler creates a new like handler
 func NewLikeHandler(likeRepo like.LikeRepository) *LikeHandler {
 	return &LikeHandler{
@@ -71,11 +83,7 @@ func (h *LikeHandler) LikeArticle(c *gin.Context) {
 		count = 0 // Fallback
 	}
 
-	response.Success(c, gin.H{
-		"message": "Article liked successfully",
-		"liked":   true,
-		"count":   count,
-	})
+	response.Success(c, likeStatusPayload(true, count, "Article liked successfully"))
 }
 
 // UnlikeArticle unlikes an article
@@ -112,11 +120,7 @@ func (h *LikeHandler) UnlikeArticle(c *gin.Context) {
 		count = 0 // Fallback
 	}
 
-	response.Success(c, gin.H{
-		"message": "Article unliked successfully",
-		"liked":   false,
-		"count":   count,
-	})
+	response.Success(c, likeStatusPayload(false, count, "Article unliked successfully"))
 }
 
 // GetLikeStatus gets the like status for an article
@@ -153,10 +157,7 @@ func (h *LikeHandler) GetLikeStatus(c *gin.Context) {
 		count = 0 // Fallback
 	}
 
-	response.Success(c, gin.H{
-		"liked": liked,
-		"count": count,
-	})
+	response.Success(c, likeStatusPayload(liked, count, ""))
 }
 
 // LikeComment likes a comment
@@ -210,11 +211,7 @@ func (h *LikeHandler) LikeComment(c *gin.Context) {
 		count = 0 // Fallback
 	}
 
-	response.Success(c, gin.H{
-		"message": "Comment liked successfully",
-		"liked":   true,
-		"count":   count,
-	})
+	response.Success(c, likeStatusPayload(true, count, "Comment liked successfully"))
 }
 
 // UnlikeComment unlikes a comment
@@ -251,11 +248,7 @@ func (h *LikeHandler) UnlikeComment(c *gin.Context) {
 		count = 0 // Fallback
 	}
 
-	response.Success(c, gin.H{
-		"message": "Comment unliked successfully",
-		"liked":   false,
-		"count":   count,
-	})
+	response.Success(c, likeStatusPayload(false, count, "Comment unliked successfully"))
 }
 
 // GetCommentLikeStatus gets the like status for a comment
@@ -292,8 +285,5 @@ func (h *LikeHandler) GetCommentLikeStatus(c *gin.Context) {
 		count = 0 // Fallback
 	}
 
-	response.Success(c, gin.H{
-		"liked": liked,
-		"count": count,
-	})
+	response.Success(c, likeStatusPayload(liked, count, ""))
 }

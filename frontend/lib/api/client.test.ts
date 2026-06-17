@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import axios, { type AxiosResponse } from 'axios';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { TOKEN_STORAGE_KEY } from '@/lib/constants';
 import { ApiRequestError } from '@/types/api';
@@ -14,9 +14,63 @@ import {
   clearAuthAndRedirect,
 } from './client';
 
+interface HeaderConfig {
+  headers: {
+    set: Mock<(name: string, value: string) => void>;
+  };
+}
+
+interface MockAxiosCreate extends Mock<() => unknown> {
+  requestInterceptor?: (config: HeaderConfig) => HeaderConfig;
+  responseInterceptor?: (response: {
+    data: unknown;
+    status: number;
+  }) => AxiosResponse<unknown> | Promise<never>;
+  responseErrorInterceptor?: (error: unknown) => Promise<never>;
+}
+
+function unwrappedResponse<T>(
+  data: T,
+  metadata?: Record<string, number>,
+): AxiosResponse<{ data: T; metadata?: Record<string, number> }> {
+  return { data: { data, metadata } } as AxiosResponse<{
+    data: T;
+    metadata?: Record<string, number>;
+  }>;
+}
+
+function getRequestInterceptor(): (config: HeaderConfig) => HeaderConfig {
+  const interceptor = (axios.create as MockAxiosCreate).requestInterceptor;
+  if (!interceptor) {
+    throw new Error('request interceptor was not registered');
+  }
+  return interceptor;
+}
+
+function getResponseInterceptor(): NonNullable<
+  MockAxiosCreate['responseInterceptor']
+> {
+  const interceptor = (axios.create as MockAxiosCreate).responseInterceptor;
+  if (!interceptor) {
+    throw new Error('response interceptor was not registered');
+  }
+  return interceptor;
+}
+
+function getResponseErrorInterceptor(): NonNullable<
+  MockAxiosCreate['responseErrorInterceptor']
+> {
+  const interceptor = (axios.create as MockAxiosCreate)
+    .responseErrorInterceptor;
+  if (!interceptor) {
+    throw new Error('response error interceptor was not registered');
+  }
+  return interceptor;
+}
+
 // Mock axios
-vi.mock('axios', () => {
-  const actualAxios = vi.importActual('axios') as any;
+vi.mock('axios', async () => {
+  const actualAxios = await vi.importActual<typeof import('axios')>('axios');
   const mockCreate = vi.fn(() => ({
     get: vi.fn(),
     post: vi.fn(),
@@ -26,17 +80,17 @@ vi.mock('axios', () => {
       request: {
         use: vi.fn((onFulfilled) => {
           // 存储拦截器以便测试
-          (mockCreate as any).requestInterceptor = onFulfilled;
+          mockCreate.requestInterceptor = onFulfilled;
         }),
       },
       response: {
         use: vi.fn((onFulfilled, onRejected) => {
-          (mockCreate as any).responseInterceptor = onFulfilled;
-          (mockCreate as any).responseErrorInterceptor = onRejected;
+          mockCreate.responseInterceptor = onFulfilled;
+          mockCreate.responseErrorInterceptor = onRejected;
         }),
       },
     },
-  }));
+  })) as MockAxiosCreate;
 
   return {
     ...actualAxios,
@@ -64,7 +118,7 @@ describe('API Client', () => {
         },
       };
 
-      const interceptor = (axios.create as any).requestInterceptor;
+      const interceptor = getRequestInterceptor();
       interceptor(config);
 
       expect(config.headers.set).toHaveBeenCalledWith(
@@ -80,7 +134,7 @@ describe('API Client', () => {
         },
       };
 
-      const interceptor = (axios.create as any).requestInterceptor;
+      const interceptor = getRequestInterceptor();
       interceptor(config);
 
       expect(config.headers.set).not.toHaveBeenCalled();
@@ -98,8 +152,11 @@ describe('API Client', () => {
         status: 200,
       };
 
-      const interceptor = (axios.create as any).responseInterceptor;
-      const result = interceptor(response);
+      const interceptor = getResponseInterceptor();
+      const result = interceptor(response) as AxiosResponse<{
+        data: unknown;
+        metadata?: unknown;
+      }>;
 
       expect(result.data).toEqual({
         data: { id: 1, name: 'Test' },
@@ -119,7 +176,7 @@ describe('API Client', () => {
         status: 200,
       };
 
-      const interceptor = (axios.create as any).responseInterceptor;
+      const interceptor = getResponseInterceptor();
 
       await expect(interceptor(response)).rejects.toThrow(ApiRequestError);
       await expect(interceptor(response)).rejects.toMatchObject({
@@ -130,7 +187,6 @@ describe('API Client', () => {
 
     it('should handle 401 error and clear auth', () => {
       window.localStorage.setItem(TOKEN_STORAGE_KEY, 'test-token');
-      const originalHref = window.location.href;
 
       const error = {
         response: {
@@ -140,9 +196,32 @@ describe('API Client', () => {
         message: 'Unauthorized',
       };
 
-      const errorInterceptor = (axios.create as any).responseErrorInterceptor;
+      const errorInterceptor = getResponseErrorInterceptor();
 
       expect(() => errorInterceptor(error)).rejects.toThrow();
+      expect(window.localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
+    });
+
+    it('should not clear auth on 401 when no token exists', () => {
+      const error = {
+        response: {
+          status: 401,
+          data: {
+            error: {
+              message: 'Invalid email or password',
+              code: 'INVALID_CREDENTIALS',
+            },
+          },
+        },
+        message: 'Unauthorized',
+      };
+
+      const errorInterceptor = getResponseErrorInterceptor();
+
+      expect(() => errorInterceptor(error)).rejects.toMatchObject({
+        message: 'Invalid email or password',
+        code: 'INVALID_CREDENTIALS',
+      });
       expect(window.localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
     });
 
@@ -161,7 +240,7 @@ describe('API Client', () => {
         message: 'Request failed',
       };
 
-      const errorInterceptor = (axios.create as any).responseErrorInterceptor;
+      const errorInterceptor = getResponseErrorInterceptor();
 
       expect(() => errorInterceptor(error)).rejects.toMatchObject({
         message: 'Validation failed',
@@ -189,9 +268,7 @@ describe('API Client', () => {
 
     it('apiGet should return unwrapped data', async () => {
       const mockData = { id: 1, name: 'Test' };
-      vi.mocked(apiClient.get).mockResolvedValue({
-        data: { data: mockData },
-      } as any);
+      vi.mocked(apiClient.get).mockResolvedValue(unwrappedResponse(mockData));
 
       const result = await apiGet('/test');
       expect(result).toEqual(mockData);
@@ -200,9 +277,9 @@ describe('API Client', () => {
     it('apiGetList should return items and metadata', async () => {
       const mockItems = [{ id: 1 }, { id: 2 }];
       const mockMetadata = { total: 10, page: 1, limit: 10 };
-      vi.mocked(apiClient.get).mockResolvedValue({
-        data: { data: mockItems, metadata: mockMetadata },
-      } as any);
+      vi.mocked(apiClient.get).mockResolvedValue(
+        unwrappedResponse(mockItems, mockMetadata),
+      );
 
       const result = await apiGetList('/test');
       expect(result).toEqual({
@@ -213,9 +290,7 @@ describe('API Client', () => {
 
     it('apiPost should return unwrapped data', async () => {
       const mockData = { id: 1, name: 'Created' };
-      vi.mocked(apiClient.post).mockResolvedValue({
-        data: { data: mockData },
-      } as any);
+      vi.mocked(apiClient.post).mockResolvedValue(unwrappedResponse(mockData));
 
       const result = await apiPost('/test', { name: 'Created' });
       expect(result).toEqual(mockData);
@@ -223,9 +298,7 @@ describe('API Client', () => {
 
     it('apiPut should return unwrapped data', async () => {
       const mockData = { id: 1, name: 'Updated' };
-      vi.mocked(apiClient.put).mockResolvedValue({
-        data: { data: mockData },
-      } as any);
+      vi.mocked(apiClient.put).mockResolvedValue(unwrappedResponse(mockData));
 
       const result = await apiPut('/test/1', { name: 'Updated' });
       expect(result).toEqual(mockData);
@@ -233,9 +306,7 @@ describe('API Client', () => {
 
     it('apiDelete should return unwrapped data', async () => {
       const mockData = { success: true };
-      vi.mocked(apiClient.delete).mockResolvedValue({
-        data: { data: mockData },
-      } as any);
+      vi.mocked(apiClient.delete).mockResolvedValue(unwrappedResponse(mockData));
 
       const result = await apiDelete('/test/1');
       expect(result).toEqual(mockData);

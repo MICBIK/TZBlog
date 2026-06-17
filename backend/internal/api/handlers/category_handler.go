@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const maxCategoryListLimit = 100
+
 // CategoryHandler handles HTTP requests for categories
 type CategoryHandler struct {
 	repo category.CategoryRepository
@@ -44,6 +46,9 @@ func (h *CategoryHandler) List(c *gin.Context) {
 		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 {
 			limit = parsed
 		}
+	}
+	if limit > maxCategoryListLimit {
+		limit = maxCategoryListLimit
 	}
 
 	offset := (page - 1) * limit
