@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	"go.uber.org/zap"
@@ -103,9 +104,26 @@ func GetLevel() string {
 // Sync 刷新日志缓冲区
 func Sync() error {
 	if globalLogger != nil {
-		return globalLogger.Sync()
+		err := globalLogger.Sync()
+		if isIgnorableSyncError(err) {
+			return nil
+		}
+		return err
 	}
 	return nil
+}
+
+func isIgnorableSyncError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	msg := err.Error()
+	if !(strings.Contains(msg, "/dev/stderr") || strings.Contains(msg, "/dev/stdout")) {
+		return false
+	}
+
+	return strings.Contains(msg, "bad file descriptor") || strings.Contains(msg, "invalid argument")
 }
 
 // Debug 输出 Debug 级别日志
