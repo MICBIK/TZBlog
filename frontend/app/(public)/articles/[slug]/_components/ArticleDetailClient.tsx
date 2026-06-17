@@ -181,7 +181,7 @@ export function ArticleDetailClient({ slug }: ArticleDetailClientProps) {
 
               <div className="mt-12 grid grid-cols-1 gap-3.5 md:grid-cols-2">
                 <Link
-                  href="/articles/nextjs-15-rsc-cache"
+                  href="/articles/rsc-cache-7-traps"
                   className="border-line bg-panel hover:bg-panel2 rounded-lg border px-4 py-3.5 transition-colors duration-150 hover:border-[var(--acc-dim)]"
                 >
                   <div className="text-[var(--acc-dim)] font-mono text-[11.5px]">
@@ -192,7 +192,7 @@ export function ArticleDetailClient({ slug }: ArticleDetailClientProps) {
                   </div>
                 </Link>
                 <Link
-                  href="/articles/rewrite-backend-node-to-go"
+                  href="/articles/go-rewrite-p99"
                   className="border-line bg-panel hover:bg-panel2 rounded-lg border px-4 py-3.5 text-right transition-colors duration-150 hover:border-[var(--acc-dim)]"
                 >
                   <div className="text-[var(--acc-dim)] font-mono text-[11.5px]">
