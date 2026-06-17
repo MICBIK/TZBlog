@@ -10,29 +10,35 @@ export class ArticlePage {
   readonly articleContent: Locator;
   readonly toc: Locator;
   readonly tocLinks: Locator;
-  readonly codeBlocks: Locator;
-  readonly copyButtons: Locator;
+  readonly codeBlock: Locator;
+  readonly copyButton: Locator;
   readonly authorInfo: Locator;
   readonly tags: Locator;
   readonly likeButton: Locator;
   readonly shareButton: Locator;
   readonly commentSection: Locator;
+  readonly commentInput: Locator;
+  readonly publishButton: Locator;
   readonly relatedArticles: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.articleTitle = page.locator('h1').first();
-    this.articleContent = page.locator('[data-testid="article-content"]').or(page.locator('article').first());
-    this.toc = page.locator('[data-testid="toc"]').or(page.locator('nav').filter({ hasText: /目录|table of contents/i }));
+    this.articleContent = page.locator('main article').first();
+    this.toc = page.locator('aside nav').first();
     this.tocLinks = this.toc.locator('a');
-    this.codeBlocks = page.locator('pre code');
-    this.copyButtons = page.locator('[data-testid="copy-button"]').or(page.locator('button').filter({ hasText: /copy/i }));
-    this.authorInfo = page.locator('[data-testid="author-info"]').or(page.locator('[class*="author"]').first());
-    this.tags = page.locator('[data-testid="tags"]').or(page.locator('a[href*="/tags/"]'));
-    this.likeButton = page.getByRole('button', { name: /like|点赞/i });
-    this.shareButton = page.getByRole('button', { name: /share|分享/i });
-    this.commentSection = page.locator('[data-testid="comments"]').or(page.locator('section').filter({ hasText: /comment|评论/i }));
-    this.relatedArticles = page.locator('[data-testid="related-articles"]');
+    this.codeBlock = page.locator('pre').first();
+    this.copyButton = page.getByRole('button', { name: /copy|copied/i }).first();
+    this.authorInfo = page.getByText('haiden').first();
+    this.tags = page
+      .locator('article a[href^="/articles?tag="]')
+      .filter({ hasText: /AI Coding|prompt|agent|工作流/ });
+    this.likeButton = page.getByRole('button', { name: /赞/ });
+    this.shareButton = page.getByRole('button', { name: /分享/ });
+    this.commentSection = page.locator('section').filter({ hasText: /comments\.log|条评论/ }).first();
+    this.commentInput = page.getByPlaceholder('// 写下你的想法… 登录后发布');
+    this.publishButton = page.getByRole('button', { name: '发布' });
+    this.relatedArticles = page.locator('article a[href^="/articles/"]').filter({ hasText: /Next\.js 15 RSC 缓存的 7 个坑|把后端从 Node 重写成 Go/ });
   }
 
   /**
@@ -40,15 +46,15 @@ export class ArticlePage {
    */
   async goto(slug: string) {
     await this.page.goto(`/articles/${slug}`);
-    await this.page.waitForLoadState('networkidle');
+    await this.waitForLoad();
   }
 
   /**
    * 等待页面加载完成
    */
   async waitForLoad() {
-    await this.page.waitForLoadState('load');
-    await this.articleTitle.waitFor({ state: 'visible' });
+    await expect(this.articleTitle).toBeVisible();
+    await expect(this.articleContent).toBeVisible();
   }
 
   /**
@@ -63,86 +69,57 @@ export class ArticlePage {
    */
   async clickTocLink(index: number) {
     await this.tocLinks.nth(index).click();
-    // 等待滚动动画完成
-    await this.page.waitForTimeout(300);
   }
 
   /**
    * 获取 TOC 链接数量
    */
   async getTocLinkCount(): Promise<number> {
-    try {
-      return await this.tocLinks.count();
-    } catch {
-      return 0;
-    }
+    return this.tocLinks.count();
   }
 
   /**
    * 点击代码块的复制按钮
    */
-  async clickCopyButton(index: number = 0) {
-    const button = this.copyButtons.nth(index);
-    await button.waitFor({ state: 'visible' });
-    await button.click();
+  async clickCopyButton() {
+    await this.copyButton.click();
   }
 
   /**
    * 获取代码块数量
    */
   async getCodeBlockCount(): Promise<number> {
-    return await this.codeBlocks.count();
+    return this.page.locator('pre').count();
   }
 
   /**
    * 验证代码块高亮
    */
-  async verifyCodeHighlight(index: number = 0) {
-    const codeBlock = this.codeBlocks.nth(index);
-    await expect(codeBlock).toBeVisible();
-
-    // 检查是否有语法高亮的类名或内联样式
-    const hasHighlight = await codeBlock.evaluate(el => {
-      const hasClass = el.className.length > 0;
-      const hasChildren = el.children.length > 0;
-      return hasClass || hasChildren;
-    });
-
-    expect(hasHighlight).toBeTruthy();
+  async verifyCodeHighlight() {
+    await expect(this.codeBlock).toBeVisible();
+    const hasHighlight = await this.codeBlock.locator('span').count();
+    expect(hasHighlight).toBeGreaterThan(0);
   }
 
   /**
    * 点击点赞按钮
    */
   async clickLike() {
-    try {
-      await this.likeButton.click();
-    } catch {
-      // 点赞按钮可能不存在
-    }
+    await this.likeButton.click();
   }
 
   /**
    * 滚动到评论区
    */
   async scrollToComments() {
-    try {
-      await this.commentSection.scrollIntoViewIfNeeded();
-    } catch {
-      // 评论区可能不存在
-    }
+    await this.commentSection.scrollIntoViewIfNeeded();
   }
 
   /**
    * 获取相关文章数量
    */
   async getRelatedArticleCount(): Promise<number> {
-    try {
-      const articles = this.relatedArticles.locator('article, a');
-      return await articles.count();
-    } catch {
-      return 0;
-    }
+    return this.relatedArticles.count();
   }
 
   /**
@@ -179,12 +156,21 @@ export class ArticlePage {
    * 验证 TOC 点击后滚动
    */
   async verifyTocScrolling(linkIndex: number) {
-    const scrollBefore = await this.getScrollPosition();
-    await this.clickTocLink(linkIndex);
-    await this.page.waitForTimeout(500);
-    const scrollAfter = await this.getScrollPosition();
+    await this.commentSection.scrollIntoViewIfNeeded();
 
-    // 验证滚动位置改变
-    expect(scrollAfter).not.toBe(scrollBefore);
+    const href = await this.tocLinks.nth(linkIndex).getAttribute('href');
+    expect(href).toBeTruthy();
+
+    await this.clickTocLink(linkIndex);
+    const expectedHash = href ? encodeURI(href) : '';
+    await expect(this.page).toHaveURL(new RegExp(`${expectedHash}$`));
+
+    await expect
+      .poll(async () => {
+        return this.page.locator(href!).evaluate((el) => {
+          return Math.abs(el.getBoundingClientRect().top);
+        });
+      })
+      .toBeLessThan(220);
   }
 }

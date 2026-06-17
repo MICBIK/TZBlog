@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Save } from 'lucide-react';
@@ -38,10 +38,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const updateUser = useAuthStore((state) => state.updateUser);
 
   const {
+    control,
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -52,7 +52,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
     },
   });
 
-  const avatarUrl = watch('avatarUrl');
+  const avatarUrl = useWatch({
+    control,
+    name: 'avatarUrl',
+    defaultValue: user.avatarUrl || '',
+  });
+  const bio = useWatch({
+    control,
+    name: 'bio',
+    defaultValue: user.bio || '',
+  });
 
   async function onSubmit(data: ProfileFormValues) {
     setSubmitting(true);
@@ -115,7 +124,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           <p className="text-destructive text-sm">{errors.bio.message}</p>
         )}
         <p className="text-muted-foreground text-xs">
-          {watch('bio')?.length ?? 0} / 500
+          {bio?.length ?? 0} / 500
         </p>
       </div>
 

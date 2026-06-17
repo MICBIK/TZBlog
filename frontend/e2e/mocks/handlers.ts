@@ -1,6 +1,5 @@
 import { Page, Route } from '@playwright/test';
 import articles from '../fixtures/articles.json';
-import users from '../fixtures/users.json';
 
 /**
  * API Mock Handlers for E2E Tests
@@ -10,6 +9,34 @@ import users from '../fixtures/users.json';
 export interface MockAPIOptions {
   page: Page;
   baseURL?: string;
+}
+
+function buildAuthUser(overrides?: Partial<Record<string, unknown>>) {
+  return {
+    id: 1,
+    username: 'haiden',
+    email: 'test@example.com',
+    displayName: 'haiden',
+    bio: 'E2E admin user',
+    avatarUrl: '/avatars/admin.jpg',
+    role: 'admin',
+    status: 'active',
+    isVerified: true,
+    lastLoginAt: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-06-15T10:00:00Z',
+    ...overrides,
+  };
+}
+
+function normalizeArticleDetail(article: Record<string, unknown>) {
+  return {
+    ...article,
+    summary:
+      (article.summary as string | undefined) ??
+      (article.excerpt as string | undefined) ??
+      '',
+  };
 }
 
 export class MockAPI {
@@ -25,8 +52,8 @@ export class MockAPI {
    * 设置所有 API mocks
    */
   async setupAll() {
-    await this.mockArticlesList();
     await this.mockArticleDetail();
+    await this.mockArticlesList();
     await this.mockSearch();
     await this.mockAuth();
     await this.mockCategories();
@@ -37,7 +64,7 @@ export class MockAPI {
    * Mock 文章列表 API
    */
   async mockArticlesList() {
-    await this.page.route('**/api/v1/articles*', async (route: Route) => {
+    await this.page.route(/\/api\/v1\/articles(\?.*)?$/, async (route: Route) => {
       const url = new URL(route.request().url());
       const page = parseInt(url.searchParams.get('page') || '1');
       const limit = parseInt(url.searchParams.get('limit') || '10');
@@ -67,7 +94,7 @@ export class MockAPI {
    * Mock 文章详情 API
    */
   async mockArticleDetail() {
-    await this.page.route('**/api/v1/articles/*', async (route: Route) => {
+    await this.page.route('**/api/v1/articles/slug/*', async (route: Route) => {
       const url = route.request().url();
       const slug = url.split('/').pop()?.split('?')[0];
 
@@ -79,7 +106,7 @@ export class MockAPI {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            data: article,
+            data: normalizeArticleDetail(article as Record<string, unknown>),
           }),
         });
       } else {
@@ -143,7 +170,11 @@ export class MockAPI {
             success: true,
             data: {
               token: 'mock_jwt_token_123456789',
-              user: users[1],
+              user: buildAuthUser({
+                email: postData.email,
+                username: 'testuser',
+                displayName: 'testuser',
+              }),
             },
           }),
         });
@@ -174,13 +205,12 @@ export class MockAPI {
           success: true,
           data: {
             token: 'mock_jwt_token_new_user',
-            user: {
-              id: '999',
+            user: buildAuthUser({
+              id: 999,
               username: postData.username,
               email: postData.email,
-              avatar: '/avatars/default.jpg',
-              role: 'user',
-            },
+              displayName: postData.displayName || postData.username,
+            }),
           },
         }),
       });
@@ -208,7 +238,7 @@ export class MockAPI {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            data: users[1],
+            data: buildAuthUser(),
           }),
         });
       } else {

@@ -7,22 +7,16 @@ import { Page, Locator, expect } from '@playwright/test';
 export class SearchPage {
   readonly page: Page;
   readonly searchInput: Locator;
-  readonly searchButton: Locator;
-  readonly searchResults: Locator;
+  readonly resultsSection: Locator;
   readonly resultItems: Locator;
   readonly emptyState: Locator;
-  readonly resultCount: Locator;
-  readonly loadingSpinner: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.searchInput = page.getByRole('textbox', { name: /search/i }).or(page.locator('input[type="search"]'));
-    this.searchButton = page.getByRole('button', { name: /search/i });
-    this.searchResults = page.locator('[data-testid="search-results"]').or(page.locator('[class*="search-results"]'));
-    this.resultItems = page.locator('[data-testid="search-result-item"]').or(page.locator('article'));
-    this.emptyState = page.locator('[data-testid="empty-state"]').or(page.getByText(/no results|没有结果/i));
-    this.resultCount = page.locator('[data-testid="result-count"]');
-    this.loadingSpinner = page.locator('[data-testid="loading"]').or(page.locator('[role="status"]'));
+    this.searchInput = page.getByRole('textbox', { name: '搜索文章' });
+    this.resultsSection = page.locator('main section').last();
+    this.resultItems = this.resultsSection.locator('a[href="/articles/spec-first-workflow"]');
+    this.emptyState = page.getByText(/没有匹配/);
   }
 
   /**
@@ -31,7 +25,7 @@ export class SearchPage {
   async goto(query?: string) {
     const url = query ? `/search?q=${encodeURIComponent(query)}` : '/search';
     await this.page.goto(url);
-    await this.page.waitForLoadState('networkidle');
+    await expect(this.searchInput).toBeVisible();
   }
 
   /**
@@ -46,27 +40,14 @@ export class SearchPage {
    */
   async search(query: string) {
     await this.typeQuery(query);
-    await this.searchButton.click();
-
-    // 等待搜索完成
-    try {
-      await this.loadingSpinner.waitFor({ state: 'hidden', timeout: 5000 });
-    } catch {
-      // Loading spinner 可能不存在
-    }
-
-    await this.page.waitForLoadState('networkidle');
+    await expect(this.searchInput).toHaveValue(query);
   }
 
   /**
    * 获取搜索结果数量
    */
   async getResultCount(): Promise<number> {
-    try {
-      return await this.resultItems.count();
-    } catch {
-      return 0;
-    }
+    return this.resultItems.count();
   }
 
   /**
@@ -110,9 +91,16 @@ export class SearchPage {
    * 验证搜索关键词高亮
    */
   async verifyHighlight(keyword: string) {
-    const highlightedText = this.page.locator('mark, [class*="highlight"]').filter({ hasText: keyword });
+    const highlightedText = this.page.locator('mark').filter({ hasText: keyword });
     const count = await highlightedText.count();
     expect(count).toBeGreaterThan(0);
+  }
+
+  /**
+   * 选择分类
+   */
+  async selectCategory(label: string) {
+    await this.page.getByRole('button', { name: label }).click();
   }
 
   /**

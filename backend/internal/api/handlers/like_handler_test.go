@@ -113,6 +113,7 @@ func TestLikeHandler_LikeArticle(t *testing.T) {
 				data := response["data"].(map[string]interface{})
 				assert.Equal(t, tt.expectedLiked, data["liked"])
 				assert.Equal(t, float64(tt.mockCount), data["count"])
+				assert.Equal(t, float64(tt.mockCount), data["likeCount"])
 			}
 
 			mockRepo.AssertExpectations(t)
@@ -147,6 +148,7 @@ func TestLikeHandler_LikeComment(t *testing.T) {
 	data := response["data"].(map[string]interface{})
 	assert.Equal(t, true, data["liked"])
 	assert.Equal(t, float64(3), data["count"])
+	assert.Equal(t, float64(3), data["likeCount"])
 
 	mockRepo.AssertExpectations(t)
 }
@@ -177,6 +179,7 @@ func TestLikeHandler_UnlikeArticle(t *testing.T) {
 	data := response["data"].(map[string]interface{})
 	assert.Equal(t, false, data["liked"])
 	assert.Equal(t, float64(4), data["count"])
+	assert.Equal(t, float64(4), data["likeCount"])
 
 	mockRepo.AssertExpectations(t)
 }
@@ -207,6 +210,7 @@ func TestLikeHandler_GetLikeStatus(t *testing.T) {
 	data := response["data"].(map[string]interface{})
 	assert.Equal(t, true, data["liked"])
 	assert.Equal(t, float64(10), data["count"])
+	assert.Equal(t, float64(10), data["likeCount"])
 
 	mockRepo.AssertExpectations(t)
 }

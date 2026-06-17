@@ -14,7 +14,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   /* 并行工作线程数 */
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
 
   /* Reporter 配置 */
   reporter: [

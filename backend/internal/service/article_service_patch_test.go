@@ -12,7 +12,9 @@ import (
 func TestPatchArticle(t *testing.T) {
 	mockRepo := new(MockArticleRepository)
 	mockTagRepo := new(MockTagRepository)
-	service := NewArticleService(mockRepo, mockTagRepo)
+	mockCache := new(MockArticleCache)
+	service := NewArticleService(mockRepo, mockTagRepo).(*ArticleService)
+	service.SetArticleCache(mockCache)
 
 	now := time.Now()
 	existingArticle := &article.Article{
@@ -29,6 +31,8 @@ func TestPatchArticle(t *testing.T) {
 	t.Run("successful patch", func(t *testing.T) {
 		mockRepo.On("FindBySlug", "original-title").Return(existingArticle, nil).Once()
 		mockRepo.On("Update", mock.Anything).Return(nil).Once()
+		mockCache.On("InvalidateArticleCache", "original-title").Return(nil).Once()
+		mockCache.On("InvalidateArticleCache", "new-title").Return(nil).Once()
 
 		updates := map[string]interface{}{
 			"title":  "New Title",
@@ -43,6 +47,7 @@ func TestPatchArticle(t *testing.T) {
 		assert.Equal(t, article.StatusPublished, result.Status)
 		assert.NotNil(t, result.PublishedAt)
 		mockRepo.AssertExpectations(t)
+		mockCache.AssertExpectations(t)
 	})
 
 	t.Run("unauthorized patch", func(t *testing.T) {

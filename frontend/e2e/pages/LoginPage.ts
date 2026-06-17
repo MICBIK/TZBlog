@@ -6,31 +6,31 @@ import { Page, Locator, expect } from '@playwright/test';
  */
 export class LoginPage {
   readonly page: Page;
+  readonly form: Locator;
   readonly emailInput: Locator;
   readonly passwordInput: Locator;
-  readonly loginButton: Locator;
-  readonly registerButton: Locator;
   readonly usernameInput: Locator;
   readonly confirmPasswordInput: Locator;
-  readonly errorMessage: Locator;
-  readonly successMessage: Locator;
-  readonly switchToRegisterLink: Locator;
-  readonly switchToLoginLink: Locator;
-  readonly forgotPasswordLink: Locator;
+  readonly submitButton: Locator;
+  readonly loginTab: Locator;
+  readonly registerTab: Locator;
+  readonly rememberCheckbox: Locator;
+  readonly agreeCheckbox: Locator;
+  readonly forgotPasswordButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.emailInput = page.getByLabel(/email/i).or(page.locator('input[type="email"]'));
-    this.passwordInput = page.getByLabel(/^password/i).or(page.locator('input[type="password"]').first());
-    this.loginButton = page.getByRole('button', { name: /log in|登录/i });
-    this.registerButton = page.getByRole('button', { name: /register|sign up|注册/i });
-    this.usernameInput = page.getByLabel(/username/i).or(page.locator('input[name="username"]'));
-    this.confirmPasswordInput = page.getByLabel(/confirm password/i).or(page.locator('input[type="password"]').nth(1));
-    this.errorMessage = page.locator('[role="alert"]').or(page.locator('[class*="error"]'));
-    this.successMessage = page.locator('[role="status"]').or(page.locator('[class*="success"]'));
-    this.switchToRegisterLink = page.getByRole('link', { name: /sign up|register|注册/i });
-    this.switchToLoginLink = page.getByRole('link', { name: /log in|sign in|登录/i });
-    this.forgotPasswordLink = page.getByRole('link', { name: /forgot password/i });
+    this.form = page.locator('form');
+    this.emailInput = page.locator('input[placeholder="you@example.com"]');
+    this.passwordInput = page.locator('input[placeholder="至少 8 位"]').first();
+    this.usernameInput = page.locator('input[placeholder="haiden"]');
+    this.confirmPasswordInput = page.locator('input[placeholder="再输一次"]');
+    this.submitButton = this.form.locator('button[type="submit"]');
+    this.loginTab = page.getByRole('button', { name: '登录' }).first();
+    this.registerTab = page.getByRole('button', { name: '注册' }).first();
+    this.rememberCheckbox = page.getByRole('checkbox', { name: '记住我' });
+    this.agreeCheckbox = page.getByRole('checkbox', { name: '我已阅读并同意服务条款' });
+    this.forgotPasswordButton = page.getByRole('button', { name: '忘记密码？' });
   }
 
   /**
@@ -38,7 +38,7 @@ export class LoginPage {
    */
   async gotoLogin() {
     await this.page.goto('/login');
-    await this.page.waitForLoadState('networkidle');
+    await expect(this.emailInput).toBeVisible();
   }
 
   /**
@@ -46,7 +46,7 @@ export class LoginPage {
    */
   async gotoRegister() {
     await this.page.goto('/register');
-    await this.page.waitForLoadState('networkidle');
+    await expect(this.usernameInput).toBeVisible();
   }
 
   /**
@@ -62,8 +62,7 @@ export class LoginPage {
    */
   async submitLogin(email: string, password: string) {
     await this.fillLoginForm(email, password);
-    await this.loginButton.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.submitButton.click();
   }
 
   /**
@@ -75,11 +74,7 @@ export class LoginPage {
     await this.passwordInput.fill(password);
 
     if (confirmPassword !== undefined) {
-      try {
-        await this.confirmPasswordInput.fill(confirmPassword);
-      } catch {
-        // Confirm password field may not exist
-      }
+      await this.confirmPasswordInput.fill(confirmPassword);
     }
   }
 
@@ -88,82 +83,51 @@ export class LoginPage {
    */
   async submitRegister(username: string, email: string, password: string, confirmPassword?: string) {
     await this.fillRegisterForm(username, email, password, confirmPassword);
-    await this.registerButton.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.submitButton.click();
   }
 
   /**
-   * 验证错误信息显示
+   * 同意条款
    */
-  async verifyErrorMessage(expectedMessage?: string) {
-    await expect(this.errorMessage).toBeVisible();
-
-    if (expectedMessage) {
-      await expect(this.errorMessage).toContainText(expectedMessage);
-    }
+  async acceptTerms() {
+    await this.agreeCheckbox.check();
   }
 
   /**
-   * 验证成功信息显示
+   * 验证状态消息
    */
-  async verifySuccessMessage() {
-    await expect(this.successMessage).toBeVisible();
+  async expectStatusMessage(message: string | RegExp) {
+    await expect(this.page.getByText(message)).toBeVisible();
   }
 
   /**
-   * 验证登录成功（跳转到首页）
+   * 验证字段错误
    */
-  async verifyLoginSuccess() {
-    await this.page.waitForURL(/\/$|\/home/, { timeout: 5000 });
+  async expectFieldError(message: string | RegExp) {
+    await expect(this.page.getByText(message)).toBeVisible();
   }
 
   /**
    * 切换到注册页面
    */
   async switchToRegister() {
-    await this.switchToRegisterLink.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.registerTab.click();
+    await expect(this.usernameInput).toBeVisible();
   }
 
   /**
    * 切换到登录页面
    */
   async switchToLogin() {
-    await this.switchToLoginLink.click();
-    await this.page.waitForLoadState('networkidle');
-  }
-
-  /**
-   * 验证表单验证错误
-   */
-  async verifyValidationError(field: 'email' | 'password' | 'username') {
-    let input: Locator;
-
-    switch (field) {
-      case 'email':
-        input = this.emailInput;
-        break;
-      case 'password':
-        input = this.passwordInput;
-        break;
-      case 'username':
-        input = this.usernameInput;
-        break;
-    }
-
-    // 检查 HTML5 验证或自定义验证消息
-    const isInvalid = await input.evaluate((el: HTMLInputElement) => {
-      return !el.validity.valid || el.getAttribute('aria-invalid') === 'true';
-    });
-
-    expect(isInvalid).toBeTruthy();
+    await this.loginTab.click();
+    await expect(this.emailInput).toBeVisible();
   }
 
   /**
    * 检查是否已登录（通过检查 localStorage token）
    */
   async isLoggedIn(): Promise<boolean> {
-    const token = await this.page.evaluate(() => localStorage.getItem('token'));
+    const token = await this.page.evaluate(() => localStorage.getItem('tzblog_token'));
     return token !== null;
   }
 
@@ -171,6 +135,7 @@ export class LoginPage {
    * 登出（清除 token）
    */
   async logout() {
-    await this.page.evaluate(() => localStorage.removeItem('token'));
+    await this.page.goto('/');
+    await this.page.evaluate(() => localStorage.removeItem('tzblog_token'));
   }
 }

@@ -134,6 +134,9 @@ func (h *ArticleHandler) ListArticles(c *gin.Context) {
 
 	filter.Status = c.Query("status")
 	filter.Search = c.Query("search")
+	filter.Category = c.Query("category")
+	filter.Tag = c.Query("tag")
+	filter.OrderBy = c.Query("sort")
 
 	if authorID := c.Query("author_id"); authorID != "" {
 		if id, err := strconv.ParseInt(authorID, 10, 64); err == nil {

@@ -2,6 +2,11 @@
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { login, register } from '@/lib/api/auth';
+import { useAuthStore } from '@/lib/store/authStore';
+import { ApiRequestError } from '@/types/api';
 
 type Mode = 'login' | 'reg';
 type Errors = { name?: string; email?: string; pw?: string; pw2?: string };
@@ -23,6 +28,8 @@ const FIELD_INPUT =
   'w-full rounded-[6px] border bg-[var(--panel-2)] px-3 py-[10px] font-mono text-[13.5px] text-[var(--fg-strong)] transition-colors duration-150 focus:border-[var(--acc-dim)] focus:shadow-[0_0_0_3px_rgba(63,224,143,0.08)] focus:outline-none motion-reduce:transition-none';
 
 export function AuthTerminal({ initialMode = 'login' }: { initialMode?: Mode } = {}) {
+  const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -33,6 +40,7 @@ export function AuthTerminal({ initialMode = 'login' }: { initialMode?: Mode } =
   const [errors, setErrors] = useState<Errors>({});
   const [ok, setOk] = useState<Ok | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isReg = mode === 'reg';
 
@@ -47,7 +55,7 @@ export function AuthTerminal({ initialMode = 'login' }: { initialMode?: Mode } =
     window.setTimeout(() => setToast((cur) => (cur === msg ? null : cur)), TOAST_MS);
   }
 
-  function handleSubmit(ev: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault();
     const next: Errors = {};
     let valid = true;
@@ -84,10 +92,39 @@ export function AuthTerminal({ initialMode = 'login' }: { initialMode?: Mode } =
       return;
     }
 
-    setOk({
-      text: isReg ? '✓ 账号创建成功，正在跳转…' : '✓ 登录成功，正在跳转…',
-      color: OK_GREEN,
-    });
+    setIsSubmitting(true);
+    setOk(null);
+
+    try {
+      const session = isReg
+        ? await register({
+            username: name.trim(),
+            email: email.trim(),
+            password: pw,
+            displayName: name.trim(),
+          })
+        : await login({
+            email: email.trim(),
+            password: pw,
+          });
+
+      setAuth(session.user, session.token);
+      setOk({
+        text: isReg ? '✓ 账号创建成功，正在跳转…' : '✓ 登录成功，正在跳转…',
+        color: OK_GREEN,
+      });
+      router.replace('/admin');
+    } catch (error) {
+      const message =
+        error instanceof ApiRequestError
+          ? error.message
+          : isReg
+            ? '注册失败，请稍后重试'
+            : '登录失败，请稍后重试';
+      setOk({ text: message, color: OK_RED });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const cmd = isReg ? 'useradd haiden --register' : 'ssh haiden@tzblog --login';
@@ -255,10 +292,11 @@ export function AuthTerminal({ initialMode = 'login' }: { initialMode?: Mode } =
 
               <button
                 type="submit"
-                className="relative w-full overflow-hidden rounded-[6px] bg-[var(--acc)] p-3 font-mono text-[14px] font-bold text-[#06120b] transition-shadow duration-150 hover:shadow-[0_0_0_3px_rgba(63,224,143,0.2)] motion-reduce:transition-none"
+                disabled={isSubmitting}
+                className="relative w-full overflow-hidden rounded-[6px] bg-[var(--acc)] p-3 font-mono text-[14px] font-bold text-[#06120b] transition-shadow duration-150 hover:shadow-[0_0_0_3px_rgba(63,224,143,0.2)] disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
               >
                 <span className="opacity-55">$ </span>
-                {isReg ? '创建账号' : '登录'}
+                {isSubmitting ? '处理中…' : isReg ? '创建账号' : '登录'}
               </button>
 
               <button

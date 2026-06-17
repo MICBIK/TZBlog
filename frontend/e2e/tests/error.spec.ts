@@ -1,116 +1,52 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('错误页面测试', () => {
-  test('404 页面渲染', async ({ page }) => {
+  test('404 页面渲染真实恢复屏', async ({ page }) => {
     await page.goto('/non-existent-page-12345');
-    await page.waitForLoadState('networkidle');
 
-    // 验证页面包含 404 相关内容
-    const bodyText = await page.textContent('body');
-    expect(
-      bodyText?.includes('404') ||
-      bodyText?.includes('Not Found') ||
-      bodyText?.includes('找不到') ||
-      bodyText?.includes('页面不存在')
-    ).toBeTruthy();
+    await expect(page.locator('main').getByText('404', { exact: true })).toBeVisible();
+    await expect(
+      page.getByText('zsh: no such file or directory — 你要找的页面走失了。'),
+    ).toBeVisible();
+    await expect(page.locator('main')).toBeVisible();
   });
 
-  test('404 页面显示返回首页链接', async ({ page }) => {
+  test('404 页面会回显请求路径', async ({ page }) => {
     await page.goto('/non-existent-page-12345');
-    await page.waitForLoadState('networkidle');
 
-    // 查找返回首页的链接
-    const homeLink = page.getByRole('link', { name: /home|首页|返回/i }).first();
-
-    try {
-      await expect(homeLink).toBeVisible();
-
-      // 点击返回首页
-      await homeLink.click();
-      await page.waitForLoadState('networkidle');
-
-      // 验证跳转到首页
-      expect(page.url()).toMatch(/\/$|\/home/);
-    } catch {
-      // 返回首页链接可能不存在
-      console.warn('Home link not found on 404 page');
-    }
+    await expect(page.getByText('/non-existent-page-12345')).toBeVisible();
   });
 
-  test('404 页面响应状态码', async ({ page }) => {
-    const response = await page.goto('/non-existent-page-12345');
+  test('from 参数优先于 pathname 被回显', async ({ page }) => {
+    await page.goto('/missing?from=%2Farticles%2Fghost-post');
 
-    // Next.js 可能返回 200 但显示 404 页面
-    // 或者返回真实的 404 状态码
-    if (response) {
-      const status = response.status();
-      expect([200, 404]).toContain(status);
-    }
+    await expect(page.getByText('/articles/ghost-post')).toBeVisible();
   });
 
-  test('404 页面基本元素', async ({ page }) => {
+  test('恢复命令可返回首页', async ({ page }) => {
     await page.goto('/non-existent-page-12345');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('link', { name: 'cd ~/home' }).click();
 
-    // 验证页面有标题
-    const title = await page.title();
-    expect(title.length).toBeGreaterThan(0);
-
-    // 验证页面有主要内容
-    const mainContent = page.locator('main, [role="main"]').first();
-    await expect(mainContent).toBeVisible();
+    await expect(page).toHaveURL('/');
+    await expect(page.locator('h1').first()).toContainText('spec-first 工作流');
   });
 
-  test.describe('响应式 404 页面', () => {
-    test('移动端 404 页面', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto('/non-existent-page-12345');
-      await page.waitForLoadState('networkidle');
-
-      const bodyText = await page.textContent('body');
-      expect(bodyText?.includes('404') || bodyText?.includes('Not Found')).toBeTruthy();
-    });
-
-    test('平板 404 页面', async ({ page }) => {
-      await page.setViewportSize({ width: 768, height: 1024 });
-      await page.goto('/non-existent-page-12345');
-      await page.waitForLoadState('networkidle');
-
-      const bodyText = await page.textContent('body');
-      expect(bodyText?.includes('404') || bodyText?.includes('Not Found')).toBeTruthy();
-    });
-  });
-
-  test('不存在的文章 slug', async ({ page }) => {
-    await page.goto('/articles/non-existent-article-slug-xyz');
-    await page.waitForLoadState('networkidle');
-
-    // 验证显示错误信息或 404 页面
-    const bodyText = await page.textContent('body');
-    expect(
-      bodyText?.includes('404') ||
-      bodyText?.includes('Not Found') ||
-      bodyText?.includes('找不到') ||
-      bodyText?.includes('文章不存在')
-    ).toBeTruthy();
-  });
-
-  test('导航栏在 404 页面仍然可用', async ({ page }) => {
+  test('404 顶栏导航仍可用', async ({ page }) => {
     await page.goto('/non-existent-page-12345');
-    await page.waitForLoadState('networkidle');
 
-    // 查找导航栏
-    const nav = page.locator('nav').first();
+    const nav = page.locator('header nav');
+    await expect(nav).toBeVisible();
+    await expect(nav.getByRole('link', { name: './home' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: './search' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: './archive' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: './about' })).toBeVisible();
+  });
 
-    try {
-      await expect(nav).toBeVisible();
+  test('移动端 404 页面仍保留主操作', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/non-existent-page-12345');
 
-      // 验证导航栏包含链接
-      const navLinks = nav.locator('a');
-      const linkCount = await navLinks.count();
-      expect(linkCount).toBeGreaterThan(0);
-    } catch {
-      console.warn('Navigation not found on 404 page');
-    }
+    await expect(page.getByRole('link', { name: 'cd ~/home' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'grep 全站搜索' })).toBeVisible();
   });
 });

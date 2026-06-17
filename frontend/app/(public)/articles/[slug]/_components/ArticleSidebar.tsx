@@ -9,24 +9,30 @@ interface TocItem {
   text: string;
 }
 
-const TOC: TocItem[] = [
-  { id: 's1', text: '为什么 prompt 越写越长反而越糟' },
-  { id: 's2', text: 'spec-first：先写验收脚本' },
-  { id: 's3', text: '最便宜的验证层放在哪' },
-  { id: 's4', text: '失败轨迹回放' },
-];
+interface ArticleSidebarProps {
+  items: TocItem[];
+  likeCount: number;
+  favoriteCount?: number;
+}
 
 /**
  * 文章右侧栏 —— 1:1 还原原型 <aside>：TOC scroll-spy + 赞/收藏/分享。
  * scroll-spy 用 IntersectionObserver（rootMargin -72px / -65%）高亮当前章节。
  */
-export function ArticleSidebar() {
+export function ArticleSidebar({
+  items,
+  likeCount,
+  favoriteCount = Math.max(0, Math.round(likeCount * 0.6)),
+}: ArticleSidebarProps) {
   const [active, setActive] = useState('');
 
   useEffect(() => {
-    const heads = TOC.map((t) => document.getElementById(t.id)).filter(
+    const heads = items.map((t) => document.getElementById(t.id)).filter(
       (el): el is HTMLElement => el !== null,
     );
+    if (heads.length === 0) {
+      return;
+    }
     const spy = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
@@ -36,7 +42,7 @@ export function ArticleSidebar() {
     );
     heads.forEach((h) => spy.observe(h));
     return () => spy.disconnect();
-  }, []);
+  }, [items]);
 
   function handleShare() {
     if (navigator.clipboard) {
@@ -52,7 +58,7 @@ export function ArticleSidebar() {
           <span className="text-acc">$</span> grep &apos;^##&apos; article
         </div>
         <div className="px-1.5 py-2">
-          {TOC.map((item) => (
+          {items.map((item) => (
             <a
               key={item.id}
               href={`#${item.id}`}
@@ -70,12 +76,16 @@ export function ArticleSidebar() {
 
       <div className="mt-4 flex flex-col gap-2">
         <SideButton onClick={() => showToast('已点赞 · 感谢支持')}>
-          👍 赞 <span className="text-dim float-right font-sans">312</span>
+          👍 赞{' '}
+          <span className="text-dim float-right font-sans">{likeCount}</span>
         </SideButton>
         <SideButton
           onClick={() => showToast('已加入收藏 · 可在「我的书架」查看')}
         >
-          ★ 收藏 <span className="text-dim float-right font-sans">186</span>
+          ★ 收藏{' '}
+          <span className="text-dim float-right font-sans">
+            {favoriteCount}
+          </span>
         </SideButton>
         <SideButton onClick={handleShare}>↗ 分享</SideButton>
       </div>

@@ -49,6 +49,19 @@ func setupArticleTestDB(t *testing.T) *gorm.DB {
 	require.NoError(t, err)
 
 	err = db.Exec(`
+		CREATE TABLE categories (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name VARCHAR(50) NOT NULL,
+			slug VARCHAR(50) NOT NULL UNIQUE,
+			description TEXT,
+			created_at DATETIME NOT NULL,
+			updated_at DATETIME NOT NULL,
+			deleted_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
 		CREATE TABLE articles (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			title VARCHAR(200) NOT NULL,
@@ -92,6 +105,22 @@ func setupArticleTestDB(t *testing.T) *gorm.DB {
 	err = db.Exec(`
 		INSERT INTO users (id, username, email, password_hash, created_at, updated_at)
 		VALUES (2, 'testuser2', 'test2@example.com', 'hashed_password', datetime('now'), datetime('now'))
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		INSERT INTO categories (id, name, slug, created_at, updated_at)
+		VALUES
+			(10, 'Go', 'go', datetime('now'), datetime('now')),
+			(20, 'Python', 'python', datetime('now'), datetime('now'))
+	`).Error
+	require.NoError(t, err)
+
+	err = db.Exec(`
+		INSERT INTO tags (id, name, slug, created_at, updated_at)
+		VALUES
+			(100, 'Backend', 'backend', datetime('now'), datetime('now')),
+			(200, 'Tutorial', 'tutorial', datetime('now'), datetime('now'))
 	`).Error
 	require.NoError(t, err)
 
@@ -437,6 +466,9 @@ func TestArticleRepository_List_WithMultipleFilters(t *testing.T) {
 	a3.CategoryID = 20
 	require.NoError(t, repo.Create(a3))
 
+	require.NoError(t, db.Exec("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", a1.ID, 100).Error)
+	require.NoError(t, db.Exec("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", a2.ID, 200).Error)
+
 	t.Run("filter by status and author", func(t *testing.T) {
 		articles, total, err := repo.List(&article.ListFilter{
 			Status:   article.StatusPublished,
@@ -459,6 +491,42 @@ func TestArticleRepository_List_WithMultipleFilters(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, int64(2), total)
 		assert.Len(t, articles, 2)
+	})
+
+	t.Run("filter by category slug", func(t *testing.T) {
+		articles, total, err := repo.List(&article.ListFilter{
+			Category: "python",
+			Page:     1,
+			Limit:    10,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), total)
+		assert.Len(t, articles, 1)
+		assert.Equal(t, "Python Basics", articles[0].Title)
+	})
+
+	t.Run("filter by tag id", func(t *testing.T) {
+		articles, total, err := repo.List(&article.ListFilter{
+			TagID: 100,
+			Page:  1,
+			Limit: 10,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), total)
+		assert.Len(t, articles, 1)
+		assert.Equal(t, "Go Tutorial", articles[0].Title)
+	})
+
+	t.Run("filter by tag slug", func(t *testing.T) {
+		articles, total, err := repo.List(&article.ListFilter{
+			Tag:   "tutorial",
+			Page:  1,
+			Limit: 10,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), total)
+		assert.Len(t, articles, 1)
+		assert.Equal(t, "Go Advanced", articles[0].Title)
 	})
 
 	t.Run("filter by author, category, and search", func(t *testing.T) {

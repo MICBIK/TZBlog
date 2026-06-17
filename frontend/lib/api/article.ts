@@ -6,6 +6,7 @@ import {
   apiPut,
 } from '@/lib/api/client';
 import type {
+  ArticleDetail,
   ArticleListParams,
   ArticleListResult,
   ArticleStatus,
@@ -29,8 +30,8 @@ export async function getArticles(
 }
 
 /** 获取文章详情（按 slug） */
-export async function getArticleBySlug(slug: string): Promise<ArticleSummary> {
-  return apiGet<ArticleSummary>(`/articles/${encodeURIComponent(slug)}`);
+export async function getArticleBySlug(slug: string): Promise<ArticleDetail> {
+  return apiGet<ArticleDetail>(`/articles/slug/${encodeURIComponent(slug)}`);
 }
 
 /** 创建文章 [需管理员] */

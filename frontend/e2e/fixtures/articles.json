@@ -1,5 +1,37 @@
 [
   {
+    "id": "spec-first",
+    "slug": "spec-first-workflow",
+    "title": "我用 spec-first 工作流让 Claude 连续写对 3000 行代码",
+    "excerpt": "规格驱动的 AI Coding 实战教程，含完整方法与代码示例。",
+    "content": "# 验收脚本先于实现存在——agent 的唯一目标是让它全绿\n\n## 为什么 prompt 越写越长反而越糟\n\n过去半年我让 agent 写过最长的一次，是一个 3000 行的支付对账模块。\n\n## spec-first：先写验收脚本\n\n```bash\nset -euo pipefail\n\npnpm tsc --noEmit\npnpm vitest run spec/checkout\nnode scripts/replay.js \"last-failure\"\necho \"✓ spec satisfied\"\n```\n\n## 最便宜的验证层放在哪\n\n类型 > 纯函数单测 > 契约测试 > e2e。\n\n## 失败轨迹回放\n\n每次失败都存成 trace，下次开工先 replay 一遍历史失败。",
+    "coverImage": "/images/spec-first.jpg",
+    "author": {
+      "id": "1",
+      "username": "haiden",
+      "email": "haiden@example.com",
+      "avatar": "/avatars/haiden.jpg"
+    },
+    "category": {
+      "id": "1",
+      "name": "AI Coding",
+      "slug": "ai-coding"
+    },
+    "tags": [
+      { "id": "1", "name": "AI Coding", "slug": "ai-coding" },
+      { "id": "2", "name": "prompt", "slug": "prompt" },
+      { "id": "3", "name": "agent", "slug": "agent" },
+      { "id": "4", "name": "工作流", "slug": "workflow" }
+    ],
+    "viewCount": 3200,
+    "likeCount": 312,
+    "commentCount": 12,
+    "readingTime": 22,
+    "publishedAt": "2026-05-28T08:00:00Z",
+    "createdAt": "2026-05-28T08:00:00Z",
+    "updatedAt": "2026-05-28T08:00:00Z"
+  },
+  {
     "id": "1",
     "slug": "getting-started-with-nextjs",
     "title": "Getting Started with Next.js 15",

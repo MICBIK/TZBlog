@@ -151,6 +151,15 @@ func main() {
 		authSvc.SetTokenBlacklist(tokenBlacklist)
 	}
 	articleService := service.NewArticleService(articleRepo, tagRepo)
+	if articleSvc, ok := articleService.(*service.ArticleService); ok {
+		articleSvc.SetArticleCache(
+			cache.NewArticleCache(
+				redisClient,
+				time.Duration(cfg.Timeout.Redis)*time.Second,
+				time.Duration(cfg.Cache.ArticleTTL)*time.Second,
+			),
+		)
+	}
 	commentService := service.NewCommentService(commentRepo)
 
 	// Initialize R2 storage

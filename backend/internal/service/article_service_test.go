@@ -1,9 +1,11 @@
 package service
 
 import (
+	"errors"
 	"testing"
 	"time"
 
+	internalcache "github.com/MICBIK/TZBlog/backend/internal/cache"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
 	"github.com/stretchr/testify/assert"
@@ -72,6 +74,31 @@ func (m *MockArticleRepository) DetachTags(articleID int64) error {
 // MockTagRepository is a mock implementation of tag.TagRepository
 type MockTagRepository struct {
 	mock.Mock
+}
+
+type MockArticleCache struct {
+	mock.Mock
+}
+
+func (m *MockArticleCache) GetArticleBySlug(slug string, dest interface{}) error {
+	args := m.Called(slug)
+	if cached, ok := args.Get(0).(*article.Article); ok && cached != nil {
+		switch target := dest.(type) {
+		case *article.Article:
+			*target = *cached
+		}
+	}
+	return args.Error(1)
+}
+
+func (m *MockArticleCache) SetArticle(slug string, art interface{}) error {
+	args := m.Called(slug, art)
+	return args.Error(0)
+}
+
+func (m *MockArticleCache) InvalidateArticleCache(slug string) error {
+	args := m.Called(slug)
+	return args.Error(0)
 }
 
 func (m *MockTagRepository) Create(t *tag.Tag) error {
@@ -251,6 +278,88 @@ func TestGetArticleBySlug_Success(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
+func TestGetArticleBySlug_CacheHit(t *testing.T) {
+	mockRepo := new(MockArticleRepository)
+	mockTagRepo := new(MockTagRepository)
+	mockCache := new(MockArticleCache)
+	service := NewArticleService(mockRepo, mockTagRepo).(*ArticleService)
+	service.SetArticleCache(mockCache)
+
+	cachedArticle := &article.Article{
+		ID:    10,
+		Title: "Cached Article",
+		Slug:  "cached-article",
+	}
+
+	mockCache.On("GetArticleBySlug", "cached-article").Return(cachedArticle, nil)
+	mockRepo.On("IncrementViewCount", int64(10)).Return(nil)
+	mockCache.On("InvalidateArticleCache", "cached-article").Return(nil)
+
+	result, err := service.GetArticleBySlug("cached-article")
+
+	assert.NoError(t, err)
+	assert.Equal(t, cachedArticle.Title, result.Title)
+	time.Sleep(10 * time.Millisecond)
+	mockCache.AssertExpectations(t)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestGetArticleBySlug_CacheMissFallsBackToRepo(t *testing.T) {
+	mockRepo := new(MockArticleRepository)
+	mockTagRepo := new(MockTagRepository)
+	mockCache := new(MockArticleCache)
+	service := NewArticleService(mockRepo, mockTagRepo).(*ArticleService)
+	service.SetArticleCache(mockCache)
+
+	expected := &article.Article{
+		ID:    11,
+		Title: "Repo Article",
+		Slug:  "repo-article",
+	}
+
+	mockCache.On("GetArticleBySlug", "repo-article").Return((*article.Article)(nil), internalcache.ErrCacheMiss)
+	mockRepo.On("FindBySlug", "repo-article").Return(expected, nil)
+	mockCache.On("SetArticle", "repo-article", expected).Return(nil)
+	mockRepo.On("IncrementViewCount", int64(11)).Return(nil)
+	mockCache.On("InvalidateArticleCache", "repo-article").Return(nil)
+
+	result, err := service.GetArticleBySlug("repo-article")
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	time.Sleep(10 * time.Millisecond)
+	mockCache.AssertExpectations(t)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestGetArticleBySlug_CacheReadErrorFallsBackToRepo(t *testing.T) {
+	mockRepo := new(MockArticleRepository)
+	mockTagRepo := new(MockTagRepository)
+	mockCache := new(MockArticleCache)
+	service := NewArticleService(mockRepo, mockTagRepo).(*ArticleService)
+	service.SetArticleCache(mockCache)
+
+	expected := &article.Article{
+		ID:    12,
+		Title: "Repo Article",
+		Slug:  "repo-article",
+	}
+
+	mockCache.On("GetArticleBySlug", "repo-article").Return((*article.Article)(nil), errors.New("redis down"))
+	mockRepo.On("FindBySlug", "repo-article").Return(expected, nil)
+	mockCache.On("SetArticle", "repo-article", expected).Return(nil)
+	mockRepo.On("IncrementViewCount", int64(12)).Return(nil)
+	mockCache.On("InvalidateArticleCache", "repo-article").Return(nil)
+
+	result, err := service.GetArticleBySlug("repo-article")
+
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
+	time.Sleep(10 * time.Millisecond)
+	mockCache.AssertExpectations(t)
+	mockRepo.AssertExpectations(t)
+}
+
 // TestListArticles_Success tests successful article listing
 func TestListArticles_Success(t *testing.T) {
 	// Arrange
@@ -308,7 +417,9 @@ func TestUpdateArticle_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
 	mockTagRepo := new(MockTagRepository)
-	service := NewArticleService(mockRepo, mockTagRepo)
+	service := NewArticleService(mockRepo, mockTagRepo).(*ArticleService)
+	mockCache := new(MockArticleCache)
+	service.SetArticleCache(mockCache)
 
 	existingArticle := &article.Article{
 		ID:       1,
@@ -316,6 +427,7 @@ func TestUpdateArticle_Success(t *testing.T) {
 		Title:    "Old Title",
 		Content:  "Old content",
 		Status:   article.StatusDraft,
+		Slug:     "old-title",
 	}
 
 	newTitle := "New Title"
@@ -325,6 +437,8 @@ func TestUpdateArticle_Success(t *testing.T) {
 
 	mockRepo.On("FindByID", int64(1)).Return(existingArticle, nil)
 	mockRepo.On("Update", mock.AnythingOfType("*article.Article")).Return(nil)
+	mockCache.On("InvalidateArticleCache", "old-title").Return(nil)
+	mockCache.On("InvalidateArticleCache", "new-title").Return(nil)
 
 	// Act
 	result, err := service.UpdateArticle(1, 1, dto)
@@ -333,6 +447,7 @@ func TestUpdateArticle_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "New Title", result.Title)
 	mockRepo.AssertExpectations(t)
+	mockCache.AssertExpectations(t)
 }
 
 // TestUpdateArticle_Unauthorized tests unauthorized update attempt
@@ -371,15 +486,19 @@ func TestDeleteArticle_Success(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockArticleRepository)
 	mockTagRepo := new(MockTagRepository)
-	service := NewArticleService(mockRepo, mockTagRepo)
+	service := NewArticleService(mockRepo, mockTagRepo).(*ArticleService)
+	mockCache := new(MockArticleCache)
+	service.SetArticleCache(mockCache)
 
 	existingArticle := &article.Article{
 		ID:       1,
 		AuthorID: 1,
+		Slug:     "test-article",
 	}
 
 	mockRepo.On("FindByID", int64(1)).Return(existingArticle, nil)
 	mockRepo.On("Delete", int64(1)).Return(nil)
+	mockCache.On("InvalidateArticleCache", "test-article").Return(nil)
 
 	// Act
 	err := service.DeleteArticle(1, 1)
@@ -387,6 +506,7 @@ func TestDeleteArticle_Success(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	mockRepo.AssertExpectations(t)
+	mockCache.AssertExpectations(t)
 }
 
 // TestDeleteArticle_Unauthorized tests unauthorized delete attempt

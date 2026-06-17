@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Lock, Eye, EyeOff } from 'lucide-react';
@@ -43,9 +43,9 @@ export function PasswordForm() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const {
+    control,
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
@@ -56,7 +56,11 @@ export function PasswordForm() {
     },
   });
 
-  const newPassword = watch('newPassword');
+  const newPassword = useWatch({
+    control,
+    name: 'newPassword',
+    defaultValue: '',
+  });
 
   // 密码强度计算
   function getPasswordStrength(password: string): {

@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 
+	internalcache "github.com/MICBIK/TZBlog/backend/internal/cache"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/article"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/tag"
 	"github.com/MICBIK/TZBlog/backend/pkg/logger"
@@ -11,10 +14,17 @@ import (
 	"go.uber.org/zap"
 )
 
+type articleDetailCache interface {
+	GetArticleBySlug(slug string, dest interface{}) error
+	SetArticle(slug string, article interface{}) error
+	InvalidateArticleCache(slug string) error
+}
+
 // ArticleService handles article business logic
 type ArticleService struct {
-	repo    article.Repository
-	tagRepo tag.TagRepository
+	repo         article.Repository
+	tagRepo      tag.TagRepository
+	articleCache articleDetailCache
 }
 
 // NewArticleService creates a new article service
@@ -23,6 +33,11 @@ func NewArticleService(repo article.Repository, tagRepo tag.TagRepository) artic
 		repo:    repo,
 		tagRepo: tagRepo,
 	}
+}
+
+// SetArticleCache wires article detail cache into the service.
+func (s *ArticleService) SetArticleCache(articleCache articleDetailCache) {
+	s.articleCache = articleCache
 }
 
 // CreateArticle creates a new article
@@ -84,6 +99,8 @@ func (s *ArticleService) CreateArticle(userID int64, dto *article.CreateArticleD
 		}
 	}
 
+	s.invalidateArticleCache(newArticle.Slug)
+
 	return newArticle, nil
 }
 
@@ -141,6 +158,21 @@ func (s *ArticleService) GetArticleByID(id int64) (*article.Article, error) {
 
 // GetArticleBySlug retrieves an article by slug and increments view count
 func (s *ArticleService) GetArticleBySlug(slug string) (*article.Article, error) {
+	if s.articleCache != nil {
+		var cached article.Article
+		err := s.articleCache.GetArticleBySlug(slug, &cached)
+		switch {
+		case err == nil:
+			s.incrementViewCountAsync(&cached)
+			return &cached, nil
+		case errors.Is(err, internalcache.ErrCacheMiss):
+		default:
+			logger.Warn("failed to read article from cache",
+				zap.String("slug", slug),
+				zap.Error(err))
+		}
+	}
+
 	art, err := s.repo.FindBySlug(slug)
 	if err != nil {
 		return nil, err
@@ -149,7 +181,20 @@ func (s *ArticleService) GetArticleBySlug(slug string) (*article.Article, error)
 		return nil, article.ErrArticleNotFound
 	}
 
-	// Increment view count asynchronously with timeout (CONTRACT-7-03 fix)
+	if s.articleCache != nil {
+		if err := s.articleCache.SetArticle(slug, art); err != nil {
+			logger.Warn("failed to populate article cache",
+				zap.String("slug", slug),
+				zap.Error(err))
+		}
+	}
+
+	s.incrementViewCountAsync(art)
+
+	return art, nil
+}
+
+func (s *ArticleService) incrementViewCountAsync(art *article.Article) {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -168,15 +213,15 @@ func (s *ArticleService) GetArticleBySlug(slug string) (*article.Article, error)
 					zap.Int64("article_id", art.ID),
 					zap.String("slug", art.Slug),
 					zap.Error(err))
+				return
 			}
+			s.invalidateArticleCache(art.Slug)
 		case <-ctx.Done():
 			logger.Warn("increment view count timed out",
 				zap.Int64("article_id", art.ID),
 				zap.String("slug", art.Slug))
 		}
 	}()
-
-	return art, nil
 }
 
 // ListArticles retrieves a list of articles based on filter
@@ -192,10 +237,29 @@ func (s *ArticleService) ListArticles(filter *article.ListFilter) ([]*article.Ar
 		filter.Page = 1
 	}
 	if filter.OrderBy == "" {
-		filter.OrderBy = "created_at DESC"
+		filter.OrderBy = "articles.created_at DESC"
+	} else {
+		filter.OrderBy = normalizeArticleOrderBy(filter.OrderBy)
 	}
 
 	return s.repo.List(filter)
+}
+
+func normalizeArticleOrderBy(sort string) string {
+	switch strings.TrimSpace(sort) {
+	case "created_at:asc", "publishedAt:asc":
+		return "articles.created_at ASC"
+	case "created_at:desc", "publishedAt:desc", "newest":
+		return "articles.created_at DESC"
+	case "view_count:desc", "viewCount:desc", "popular":
+		return "articles.view_count DESC"
+	case "title:asc":
+		return "articles.title ASC"
+	case "title:desc":
+		return "articles.title DESC"
+	default:
+		return "articles.created_at DESC"
+	}
 }
 
 // UpdateArticle updates an existing article
@@ -213,6 +277,8 @@ func (s *ArticleService) UpdateArticle(id, userID int64, dto *article.UpdateArti
 	if !art.CanBeEditedBy(userID) {
 		return nil, article.ErrUnauthorized
 	}
+
+	originalSlug := art.Slug
 
 	// Update fields
 	updated := false
@@ -263,6 +329,8 @@ func (s *ArticleService) UpdateArticle(id, userID int64, dto *article.UpdateArti
 		return nil, err
 	}
 
+	s.invalidateArticleCache(originalSlug, art.Slug)
+
 	return art, nil
 }
 
@@ -283,7 +351,13 @@ func (s *ArticleService) DeleteArticle(id, userID int64) error {
 	}
 
 	// Delete article
-	return s.repo.Delete(id)
+	if err := s.repo.Delete(id); err != nil {
+		return err
+	}
+
+	s.invalidateArticleCache(art.Slug)
+
+	return nil
 }
 
 // PatchArticle partially updates an article
@@ -301,6 +375,8 @@ func (s *ArticleService) PatchArticle(slug string, userID int64, updates map[str
 	if !art.CanBeEditedBy(userID) {
 		return nil, article.ErrUnauthorized
 	}
+
+	originalSlug := art.Slug
 
 	// Apply updates
 	updated := false
@@ -356,7 +432,32 @@ func (s *ArticleService) PatchArticle(slug string, userID int64, updates map[str
 		return nil, err
 	}
 
+	s.invalidateArticleCache(originalSlug, art.Slug)
+
 	return art, nil
+}
+
+func (s *ArticleService) invalidateArticleCache(slugs ...string) {
+	if s.articleCache == nil {
+		return
+	}
+
+	seen := make(map[string]struct{}, len(slugs))
+	for _, slug := range slugs {
+		if slug == "" {
+			continue
+		}
+		if _, ok := seen[slug]; ok {
+			continue
+		}
+		seen[slug] = struct{}{}
+
+		if err := s.articleCache.InvalidateArticleCache(slug); err != nil {
+			logger.Warn("failed to invalidate article cache",
+				zap.String("slug", slug),
+				zap.Error(err))
+		}
+	}
 }
 
 // BatchDelete deletes multiple articles

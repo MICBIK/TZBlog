@@ -30,13 +30,15 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock window.location
-delete (window as any).location;
-window.location = {
-  href: '',
-  pathname: '',
-  search: '',
-  hash: '',
-} as any;
+Object.defineProperty(window, 'location', {
+  value: {
+    href: '',
+    pathname: '',
+    search: '',
+    hash: '',
+  },
+  writable: true,
+});
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({

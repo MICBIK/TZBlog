@@ -6,11 +6,127 @@
 
 ## 当前状态
 
-- **阶段**: Phase 7: E2E 测试补充（已完成）✅
-- **分支**: `feature/frontend/e2e-tests`
-- **后端状态**: 生产就绪度 92%，测试覆盖率 68.0%
-- **前端状态**: 写功能 UI 100% 完成，E2E 测试 100% 完成
-- **综合评分**: 90/100
+- **阶段**: Phase 8: 2026-06-17 审计 P0/P1 修复（进行中）🟡
+- **分支**: `main`（工作区存在未提交修复）
+- **后端状态**: P0 生产配置链路、like 契约兼容、列表分页上限已修复，并通过相关测试
+- **前端状态**: 登录/注册已接真实 API；`lib/**` 逻辑层覆盖率 90.78%；文章详情页已从静态 hardcode 改为按 slug 动态拉取真实数据，并通过 Playwright 复核
+- **综合评分**: 以 2026-06-17 复审为准：核心 BLOCKER/HIGH 正在继续收口，待下一轮复审更新最终评分
+
+---
+
+## Phase 8A: 2026-06-17 审计继续修复（进行中）🟡
+
+**时间**: 2026-06-17
+**目标**: 继续收口 2026-06-17 复审中确认仍存在的真实问题
+
+### 已完成
+
+1. ✅ **LIKE 契约字段漂移**
+   - 前端 `frontend/lib/api/like.ts` 将后端 `count` / `likeCount` 归一为统一 `likeCount`
+   - 后端 `backend/internal/api/handlers/like_handler.go` 同时返回 `count` 与 `likeCount`
+   - 对应前后端测试已更新并通过
+
+2. ✅ **分类/标签分页上限**
+   - `backend/internal/api/handlers/category_handler.go` 与 `tag_handler.go` 对 `limit` 增加上限 100
+   - 补充 handler 回归测试，防止 `?limit=1000000` 放大查询
+
+3. ✅ **文章详情页从静态 hardcode 改为动态数据**
+   - 新增 `frontend/app/(public)/articles/[slug]/_components/ArticleDetailClient.tsx`
+   - `frontend/app/(public)/articles/[slug]/page.tsx` 改为按 slug 渲染动态详情页
+   - `frontend/lib/api/article.ts` 修正详情路由为 `/articles/slug/:slug`
+   - 复用现有 `MarkdownContent` / `ArticleSidebar` / `CommentBox`
+
+4. ✅ **文章详情 E2E / fixture 对齐**
+   - `frontend/e2e/mocks/handlers.ts` 拆分 article list/detail route，避免互相吞路由
+   - `frontend/e2e/fixtures/articles.json` 增加 `spec-first-workflow` 详情 fixture
+   - `frontend/e2e/pages/ArticlePage.ts` 修正 TOC hash 和 tag 定位器
+   - `frontend/e2e/tests/article.spec.ts` 调整断言，与动态详情页一致
+
+### 验证结果
+
+- ✅ `cd frontend && pnpm lint`
+- ✅ `cd frontend && pnpm typecheck`
+- ✅ `cd frontend && pnpm test`
+- ✅ `cd frontend && pnpm exec playwright test e2e/tests/article.spec.ts --project=chromium-desktop`
+- ✅ `cd frontend && pnpm exec playwright test e2e/tests/article.spec.ts e2e/tests/home.spec.ts --project=chromium-desktop`
+- ✅ `cd backend && go test ./internal/api/handlers -run 'TestCategoryHandler_List|TestTagHandler_List|TestLikeHandler'`
+
+### 仍开放
+
+- 文章详情页 `generateMetadata` 仍可进一步完善为基于后端/fixture 的静态 SSR metadata [unverified]
+- 其余审计项（例如前端 CI 门禁、后端/前端更大范围的集成欠账）仍待继续收口
+
+---
+
+## Phase 8: 2026-06-17 审计 P0/P1 修复（已完成）✅
+
+**时间**: 2026-06-17
+**目标**: 修复复审报告中确认存在的上线阻塞项和高优先级集成问题
+
+### 已完成
+
+1. ✅ **BLOCKER-1：生产 env 无法注入嵌套配置**
+   - `backend/config/config.go` 添加 `SetEnvKeyReplacer`、显式 `BindEnv`、默认值
+   - `backend/config/types.go` 添加 `mapstructure` 标签
+   - 支持无 `config.yaml` 的 env-only production 启动
+   - 新增 env override / env-only production 回归测试
+
+2. ✅ **BLOCKER-2：开发 config.yaml 被打进生产镜像**
+   - `backend/Dockerfile.prod` 移除 `config/config.yaml` 复制
+   - 生产镜像改为非 root 用户运行
+   - `backend/.dockerignore` 排除 `config/config.yaml` 和 `.env.production`
+
+3. ✅ **HIGH-6：docker-compose.prod.yml 路径/变量问题**
+   - build context 修为 backend 当前目录
+   - 生产环境变量改为 `SERVER_BASE_URL` / `CLOUDFLARE_*`
+   - Redis healthcheck 使用密码
+   - nginx/certbot 放入 `edge` profile，避免默认栈被缺失挂载路径拖死
+
+4. ✅ **HIGH-1：登录/注册 UI 假成功**
+   - `AuthTerminal` 改为调用 `login()` / `register()`
+   - 成功后写入 `authStore` 和 token，并跳转 `/admin`
+   - 失败显示后端错误信息
+
+5. ✅ **HIGH-2/HIGH-3：文章 tag/category/sort 过滤失效**
+   - `ListArticles` 读取 `category` / `tag` / `sort`
+   - repository 支持 `tag_id`、tag slug、category slug JOIN 过滤
+   - sort 改为白名单映射并加 `articles.` 前缀，避免 SQL 注入和 JOIN 歧义
+
+6. ✅ **HIGH-7/HIGH-8：CI 门禁问题**
+   - Frontend CI 加 `pnpm test`
+   - Backend CI Go 版本从 1.22 升到 1.25
+
+7. ✅ **MEDIUM：弱密码子串误拒**
+   - `isWeakPassword` 改为只拒绝完整弱密码词，不再误拒包含 `root` / `qwerty` 等子串的强随机密码
+
+8. ✅ **P1：Playwright E2E 假绿改成真实断言**
+   - 重写 `auth.spec.ts` / `home.spec.ts` / `search.spec.ts` / `article.spec.ts` / `error.spec.ts` / `visual.spec.ts`
+   - 去掉 `if (count > 0)`、`try/catch` 吞错、`waitForTimeout`、恒真 URL 断言
+   - Page Object 改为对齐真实 DOM、真实文案、真实登录态与静态内容
+   - `frontend/playwright.config.ts` 固定 `workers: 1`，避免本地 Next dev server + route mocking 并发抖动导致伪超时
+
+9. ✅ **P2：article detail Redis cache 读路径接线**
+   - `backend/internal/service/article_service.go` 增加可选 article cache 依赖
+   - `GetArticleBySlug` 支持 cache hit / miss / fallback to repo / 回填 cache
+   - `CreateArticle` / `UpdateArticle` / `PatchArticle` / `DeleteArticle` / view count 增量后触发缓存失效
+   - `backend/cmd/server/main.go` 注入 `ArticleCache`
+   - `backend/internal/cache/strategy.go` 将 `redis.Nil` 统一映射为 `ErrCacheMiss`
+
+### 验证结果
+
+- ✅ `cd backend && go test ./...`
+- ✅ `cd frontend && pnpm typecheck`
+- ✅ `cd frontend && pnpm test`（8 files / 66 tests）
+- ✅ `cd frontend && pnpm test:coverage`（统计 `lib/**`）: lines 80.88% / branches 64.91% / statements 77.7%
+- ✅ `cd frontend && pnpm exec playwright test e2e/tests/auth.spec.ts e2e/tests/home.spec.ts e2e/tests/search.spec.ts e2e/tests/article.spec.ts e2e/tests/error.spec.ts e2e/tests/visual.spec.ts --project=chromium-desktop`
+- ✅ `docker compose -f backend/docker-compose.prod.yml config`（使用 dummy production env，可解析）
+- ⚠️ `cd frontend && pnpm lint` 仍失败，主要为既有测试 `any`、e2e 未用变量、React Hook Form compiler warning 等
+
+### 仍开放
+
+- P1：将 coverage 边界从 `lib/**` 继续扩展到更多可稳定单测的模块（如 selected hooks / pure helpers）
+- P1：前端 lint 既有错误清理
+- P2：板块管理持久化、点赞字段统一、文章详情接数据层等集成欠账
 
 ---
 
@@ -959,4 +1075,41 @@ e2e/
 
 ---
 
-**下次更新**: Phase 4 前后端联调完成后
+## Phase 8: 全栈 5 轮复审（已完成）✅
+
+**时间**: 2026-06-17
+**方式**: 多代理并行 workflow（5 轮）+ 主流程证据复核
+**基线**: `main @ 9853c2a`（prod-config / db-indexes / E2E 三支已合并入 main）
+**报告**: `docs/audit/2026-06-17/`（README + SUMMARY + round-1..5）
+
+### 结果概览
+- 昨天(2026-06-16)26 个真实问题复核：**11 已修 / 8 部分 / 1 仍开放 / 1 假阳性**
+- 本轮新发现：**2 BLOCKER + 8 HIGH + 8 MEDIUM + 10 LOW**（所有 BLOCKER/HIGH 已亲自读真实代码/跑命令验证）
+
+### 评分（修正昨日声称值）
+| 维度 | 2026-06-16 | 2026-06-17 |
+|------|:---:|:---:|
+| 前端 1:1 复刻 | 78 | 82 |
+| 前后端集成 | 85 | 82 |
+| 性能 | 72 | 74 |
+| 测试 | 35 | 62 |
+| 生产就绪 | 45 | 52 |
+| **综合** | 63 | **70** |
+
+> 注：本轮证伪了部分早前乐观记录——前端"覆盖率 95%"实为 ~6%（v8 仅测 7/86 文件），"综合 90"实为 70。
+
+### 🔴 2 个真 BLOCKER（部署链路，最高优先级）
+1. **生产 env 无法注入配置** — `config.go:30` 仅 `AutomaticEnv()`，无 `SetEnvKeyReplacer`/`BindEnv`，嵌套键无法被 `DB_PASSWORD`/`SERVER_MODE` 覆盖 → 应用实读开发版 `config.yaml`，`IsProduction()=false`，整套 `validation.go` 校验被绕过。
+2. **config.yaml 烤进生产镜像** — `Dockerfile.prod:32` COPY 它，`.dockerignore` 未排除 → 开发弱密钥固化进镜像且无法用 env 纠正。
+
+### 三条贯穿性主题
+1. 生产配置：`validation.go` 代码到位且测试充分，但**部署链路断裂**使其失效。
+2. 前端是**高质量 1:1 静态原型，尚未接通后端**（登录假成功、板块 mock、文章硬编码、tag_id/category/sort 过滤失效）。
+3. **测试信号误导**：覆盖率假高、E2E 条件断言假绿、前端测试不在 CI。
+
+### 结论
+**仍不可上线**（综合 70 / 生产就绪 52）。欠账从"功能缺失"转为"集成接线 + 部署链路"。修复路径见 SUMMARY.md 第五节（P0：修 2 BLOCKER + compose 路径）。
+
+---
+
+**下次更新**: P0（部署链路）修复并验证后

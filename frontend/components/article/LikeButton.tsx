@@ -39,11 +39,11 @@ export function LikeButton({
     setLoading(true);
 
     try {
-      if (prevLiked) {
-        await unlikeArticle(articleId);
-      } else {
-        await likeArticle(articleId);
-      }
+      const result = prevLiked
+        ? await unlikeArticle(articleId)
+        : await likeArticle(articleId);
+      setLiked(result.liked);
+      setCount(result.likeCount);
     } catch (err) {
       // 回滚
       setLiked(prevLiked);

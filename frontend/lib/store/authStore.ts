@@ -64,7 +64,7 @@ export async function hydrateAuth(): Promise<void> {
     const { getCurrentUser } = await import('@/lib/api/auth');
     const user = await getCurrentUser();
     useAuthStore.setState({ user, hydrated: true });
-  } catch (error) {
+  } catch {
     // Token 无效或过期，清除
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
     useAuthStore.setState({ user: null, hydrated: true });
