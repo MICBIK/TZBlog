@@ -31,13 +31,15 @@ git pull origin main
 echo "Step 2: Building Docker images..."
 docker-compose -f docker-compose.prod.yml build --no-cache
 
-echo "Step 3: Running database migrations..."
-docker-compose -f docker-compose.prod.yml run --rm backend make migrate-up
+echo "Step 3: Starting database & cache (so migrations run against a live DB)..."
+docker-compose -f docker-compose.prod.yml up -d postgres redis
 
-echo "Step 4: Stopping existing containers..."
-docker-compose -f docker-compose.prod.yml down
+echo "Step 4: Running database migrations..."
+# 生产镜像不含 migrate 工具：用 golang-migrate 官方镜像（compose 的 migrate 服务，profiles=tools）
+# 对 migrations/ 下的 SQL 执行 up，经 compose 网络连接 postgres 服务。
+docker-compose -f docker-compose.prod.yml run --rm migrate up
 
-echo "Step 5: Starting new containers..."
+echo "Step 5: Starting application containers..."
 docker-compose -f docker-compose.prod.yml up -d
 
 echo "Step 6: Waiting for services to be healthy..."

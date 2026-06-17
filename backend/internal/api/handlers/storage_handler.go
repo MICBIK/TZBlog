@@ -96,8 +96,9 @@ func (h *StorageHandler) validateImageFile(file *multipart.FileHeader) error {
 		return fmt.Errorf("invalid file type: %s (allowed: jpg, jpeg, png, gif, webp)", ext)
 	}
 
-	// TODO: Add MIME type validation
-	// Open file and check actual content type to prevent extension spoofing
+	// 基于文件内容的 MIME 校验在 pkg/storage/r2.go 的 UploadImage 完成
+	//（读取前 512 字节经 http.DetectContentType 检测真实类型并要求 image/*，防扩展名伪造）。
+	// 此处仅做扩展名与大小的快速预校验。
 
 	return nil
 }

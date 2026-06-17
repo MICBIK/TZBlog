@@ -3,7 +3,7 @@
 # Database backup script for TZBlog
 # Usage: ./backup.sh [daily|weekly|monthly]
 
-set -e
+set -eo pipefail
 
 # Load environment variables
 source ../.env
@@ -28,7 +28,9 @@ echo "Starting ${BACKUP_TYPE} backup at $(date)"
 mkdir -p "$BACKUP_DIR"
 
 # Perform backup
-PGPASSWORD="$DB_PASSWORD" pg_dump \
+# pipefail 已开启：管道中 pg_dump 失败会被捕获（不再只看末端 gzip 的退出码）。
+# 用 if 包裹，避免 set -e 在管道失败时直接终止、跳过下面的错误提示与清理。
+if PGPASSWORD="$DB_PASSWORD" pg_dump \
     -h localhost \
     -p 5432 \
     -U "$DB_USER" \
@@ -37,15 +39,13 @@ PGPASSWORD="$DB_PASSWORD" pg_dump \
     --compress=9 \
     --no-owner \
     --no-acl \
-    | gzip > "$BACKUP_FILE"
-
-# Check if backup was successful
-if [ $? -eq 0 ]; then
+    | gzip > "$BACKUP_FILE"; then
     echo "Backup completed successfully: $BACKUP_FILE"
     BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
     echo "Backup size: $BACKUP_SIZE"
 else
     echo "Backup failed!" >&2
+    rm -f "$BACKUP_FILE"   # 清理可能写入的不完整备份文件
     exit 1
 fi
 

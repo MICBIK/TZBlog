@@ -58,9 +58,11 @@ check_fix "Comment creation sanitizes content" \
 
 echo ""
 echo "Checking SEC-002: CSRF Protection..."
-check_fix "CSRF middleware applied" \
-    "cmd/server/main.go" \
-    "OptionalCSRF()"
+# 认证为纯 JWT Bearer（Authorization header + localStorage，不使用 cookie），对 CSRF 天然免疫，
+# 故已移除 OptionalCSRF 中间件。此处校验认证确实采用 Bearer 方案（CSRF 豁免的前提）。
+check_fix "Auth uses Bearer token scheme (CSRF-exempt design)" \
+    "internal/api/middleware/auth.go" \
+    "Bearer"
 
 echo ""
 echo "Checking SEC-006: Strong Password Hashing..."
@@ -80,13 +82,10 @@ check_fix "Password reuse error defined" \
 
 echo ""
 echo "Checking SEC-005: Information Disclosure..."
-check_fix "Payment handler doesn't leak errors" \
-    "internal/api/handlers/payment_handler.go" \
-    "Webhook processing failed"
-
-check_fix "Health handler doesn't leak errors" \
-    "internal/api/handlers/health_handler.go" \
-    'checks\["database"\] = "unhealthy"'
+# 注：payment handler / webhook 当前未实现（无 payment_handler.go、无路由），原检查项已移除以保持脚本与现状一致。
+check_fix "Readiness check doesn't leak DB error details" \
+    "cmd/server/main.go" \
+    'healthStatus\["database"\] = "down"'
 
 echo ""
 echo "Checking SEC-007: Config File Security..."

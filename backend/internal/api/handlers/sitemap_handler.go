@@ -27,16 +27,30 @@ func NewSitemapHandler(articleRepo ArticleRepository, baseURL string) *SitemapHa
 // @Success 200 {string} string "XML content"
 // @Router       /api/v1/sitemap.xml [get]
 func (h *SitemapHandler) GenerateSitemap(c *gin.Context) {
-	// Fetch all published articles
-	filter := &article.ListFilter{
-		Status: "published",
-		Limit:  1000, // Get all articles
-	}
+	// 分页拉取全部已发布文章：避免硬编码 Limit 在文章数超过上限时静默截断 sitemap
+	const pageSize = 500
+	const maxPages = 1000 // 防御性上限（最多 50 万篇），避免异常情况下死循环
 
-	articles, _, err := h.articleRepo.List(filter)
-	if err != nil {
-		c.String(500, "Failed to generate sitemap")
-		return
+	var articles []*article.Article
+	for page := 1; page <= maxPages; page++ {
+		filter := &article.ListFilter{
+			Status: "published",
+			Page:   page,
+			Limit:  pageSize,
+		}
+
+		batch, total, err := h.articleRepo.List(filter)
+		if err != nil {
+			c.String(500, "Failed to generate sitemap")
+			return
+		}
+
+		articles = append(articles, batch...)
+
+		// 本页为空或已拉满全部则停止
+		if len(batch) == 0 || int64(len(articles)) >= total {
+			break
+		}
 	}
 
 	// Generate sitemap XML

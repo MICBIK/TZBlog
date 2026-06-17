@@ -3,7 +3,7 @@
 # Database restore script for TZBlog
 # Usage: ./restore.sh <backup_file>
 
-set -e
+set -eo pipefail
 
 # Load environment variables
 source ../.env
@@ -42,10 +42,15 @@ echo "Creating new database..."
 PGPASSWORD="$DB_PASSWORD" psql -h localhost -U "$DB_USER" -d postgres -c "CREATE DATABASE $DB_NAME;"
 
 # Restore backup
+# 备份由 pg_dump --format=custom 生成（外层再经 gzip 压缩），必须用 pg_restore 恢复——
+# psql 只能执行纯 SQL 文本，无法读取 custom 二进制格式。
 echo "Restoring backup..."
-gunzip -c "$BACKUP_FILE" | PGPASSWORD="$DB_PASSWORD" psql -h localhost -U "$DB_USER" -d "$DB_NAME"
-
-if [ $? -eq 0 ]; then
+if gunzip -c "$BACKUP_FILE" | PGPASSWORD="$DB_PASSWORD" pg_restore \
+    -h localhost \
+    -U "$DB_USER" \
+    -d "$DB_NAME" \
+    --no-owner \
+    --no-acl; then
     echo "Restore completed successfully at $(date)"
 
     # Verify restore
