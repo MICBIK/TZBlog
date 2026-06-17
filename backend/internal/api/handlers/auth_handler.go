@@ -3,7 +3,6 @@ package handlers
 import (
 	"github.com/MICBIK/TZBlog/backend/internal/api/response"
 	"github.com/MICBIK/TZBlog/backend/internal/domain/user"
-	"github.com/MICBIK/TZBlog/backend/pkg/auth"
 	"github.com/gin-gonic/gin"
 )
 
@@ -164,13 +163,8 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	// ✅ SEC-1-05: Extract JTI from claims to revoke current token
-	jti := ""
-	if claims, exists := c.Get("claims"); exists {
-		if jwtClaims, ok := claims.(*auth.Claims); ok {
-			jti = jwtClaims.JTI
-		}
-	}
+	// ✅ SEC-1-05: 取 AuthMiddleware 写入的 JTI 以撤销当前 token（见 middleware/auth.go:48-50）
+	jti := c.GetString("jti")
 
 	if err := h.service.ChangePassword(userID, jti, &req); err != nil {
 		response.HandleError(c, err)

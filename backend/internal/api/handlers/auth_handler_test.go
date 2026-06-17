@@ -585,6 +585,43 @@ func TestAuthHandler_ChangePassword(t *testing.T) {
 	}
 }
 
+// TestAuthHandler_ChangePassword_RevokesCurrentToken 锁定 SEC-1-05 回归：
+// handler 必须把 AuthMiddleware 写入 context 的 jti 透传给 service，否则
+// 改密码后的当前 token 撤销分支（AuthService.ChangePassword 中 jti != ""）
+// 永远不会执行。历史 bug：handler 从 c.Get("claims") 取 jti，而中间件
+// （internal/api/middleware/auth.go）只 c.Set("jti", ...)，导致 jti 恒为空。
+func TestAuthHandler_ChangePassword_RevokesCurrentToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	const currentJTI = "current-token-jti-abc"
+
+	mockService := new(MockUserService)
+	handler := NewAuthHandler(mockService)
+
+	// 精确匹配：service 必须收到中间件写入 context 的真实 jti，而非空字符串
+	mockService.On("ChangePassword", int64(123), currentJTI, mock.AnythingOfType("*user.ChangePasswordDTO")).
+		Return(nil)
+
+	body, _ := json.Marshal(user.ChangePasswordDTO{
+		CurrentPassword: "oldpass123",
+		NewPassword:     "newpass456",
+	})
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	// 复刻真实 AuthMiddleware 写入的 context key（见 middleware/auth.go:48-50）
+	c.Set("user_id", int64(123))
+	c.Set("jti", currentJTI)
+	c.Request = httptest.NewRequest(http.MethodPut, "/api/v1/auth/password", bytes.NewReader(body))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	handler.ChangePassword(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	// 关键断言：若 handler 传了空 jti，mock 因参数不匹配而 fail
+	mockService.AssertExpectations(t)
+}
+
 func TestAuthHandler_Logout(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
