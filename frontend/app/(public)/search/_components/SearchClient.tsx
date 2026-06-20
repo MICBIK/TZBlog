@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-import { getArticles } from '@/lib/api/article';
 import { getCategories } from '@/lib/api/category';
+import { searchArticles } from '@/lib/api/search';
 import type { ArticleSummary, Category } from '@/types/article';
 
 /** 分类 chip */
@@ -45,9 +46,18 @@ function formatDate(value?: string | null) {
  * 关键词 → GET /articles?search=...（后端按 title/content 检索），分类 → category slug 过滤。
  * 每条结果链接到自身真实 slug（此前原型把所有命中都指向同一篇文章）。
  */
-export function SearchClient() {
-  const [query, setQuery] = useState('');
-  const [cat, setCat] = useState('all');
+interface SearchClientProps {
+  initialQuery?: string;
+  initialCategory?: string;
+}
+
+export function SearchClient({
+  initialQuery = '',
+  initialCategory = 'all',
+}: SearchClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(initialQuery);
   const [focused, setFocused] = useState(false);
   const [ms, setMs] = useState('0.00');
   const [categories, setCategories] = useState<Category[]>([]);
@@ -57,6 +67,7 @@ export function SearchClient() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const kw = query.trim();
+  const cat = searchParams.get('category') ?? initialCategory;
 
   // 真实分类列表（拉取失败不阻塞搜索）
   useEffect(() => {
@@ -86,10 +97,9 @@ export function SearchClient() {
       setLoading(true);
       setError('');
       try {
-        const { items } = await getArticles({
-          search: kw || undefined,
+        const { items } = await searchArticles({
+          q: kw,
           category: cat === 'all' ? undefined : cat,
-          status: 'published',
           limit: 30,
         });
         if (!active) return;
@@ -111,6 +121,30 @@ export function SearchClient() {
     };
   }, [kw, cat]);
 
+  useEffect(() => {
+    const currentQuery = searchParams.get('q') ?? '';
+    const currentCategory = searchParams.get('category') ?? 'all';
+    if (currentQuery === kw && currentCategory === cat) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (kw) {
+      params.set('q', kw);
+    } else {
+      params.delete('q');
+    }
+
+    if (cat !== 'all') {
+      params.set('category', cat);
+    } else {
+      params.delete('category');
+    }
+
+    const next = params.toString();
+    router.replace(next ? `/search?${next}` : '/search', { scroll: false });
+  }, [cat, initialCategory, kw, router, searchParams]);
+
   // `/` 聚焦、`Esc` 失焦
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -125,6 +159,18 @@ export function SearchClient() {
   }, []);
 
   const showCaret = !focused && query === '';
+
+  function updateCategory(nextCategory: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextCategory !== 'all') {
+      params.set('category', nextCategory);
+    } else {
+      params.delete('category');
+    }
+
+    const next = params.toString();
+    router.replace(next ? `/search?${next}` : '/search', { scroll: false });
+  }
 
   return (
     <div className="relative z-[1] mx-auto max-w-[1080px] px-6">
@@ -169,7 +215,7 @@ export function SearchClient() {
               <button
                 key={slug}
                 type="button"
-                onClick={() => setCat(slug)}
+                onClick={() => updateCategory(slug)}
                 aria-pressed={pressed}
                 className={[
                   'rounded-full border px-[13px] py-[5px] font-mono text-[12px] transition-[.15s]',

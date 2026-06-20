@@ -15,7 +15,7 @@ export class SearchPage {
     this.page = page;
     this.searchInput = page.getByRole('textbox', { name: '搜索文章' });
     this.resultsSection = page.locator('main section').last();
-    this.resultItems = this.resultsSection.locator('a[href="/articles/spec-first-workflow"]');
+    this.resultItems = this.resultsSection.locator('a[href^="/articles/"]');
     this.emptyState = page.getByText(/没有匹配/);
   }
 
@@ -61,8 +61,9 @@ export class SearchPage {
    * 验证有搜索结果
    */
   async verifyHasResults() {
-    const count = await this.getResultCount();
-    expect(count).toBeGreaterThan(0);
+    await expect
+      .poll(async () => this.getResultCount())
+      .toBeGreaterThan(0);
   }
 
   /**
@@ -70,6 +71,18 @@ export class SearchPage {
    */
   async clickResult(index: number) {
     await this.resultItems.nth(index).click();
+  }
+
+  async getResultHrefs(): Promise<string[]> {
+    const hrefs: string[] = [];
+    const count = await this.getResultCount();
+
+    for (let i = 0; i < count; i++) {
+      const href = await this.resultItems.nth(i).getAttribute('href');
+      if (href) hrefs.push(href);
+    }
+
+    return hrefs;
   }
 
   /**
@@ -101,6 +114,9 @@ export class SearchPage {
    */
   async selectCategory(label: string) {
     await this.page.getByRole('button', { name: label }).click();
+    await expect
+      .poll(async () => this.page.url())
+      .toContain('/search?category=');
   }
 
   /**
@@ -108,6 +124,7 @@ export class SearchPage {
    */
   async clearSearch() {
     await this.searchInput.clear();
+    await expect(this.searchInput).toHaveValue('');
   }
 
   /**

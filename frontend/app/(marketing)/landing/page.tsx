@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { ROUTES } from '@/lib/constants';
+import { ROUTES, SITE_URL } from '@/lib/constants';
 import { HeroTerminal } from './_components/HeroTerminal';
 import { LandingClientBehaviors } from './_components/LandingClientBehaviors';
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'tzblog · 中文优先的技术与生活博客',
   description:
     'tzblog——把 AI Coding 与全栈工程的真实踩坑写成能反复查阅的笔记。中文优先的技术博客，by haiden。',
-  alternates: { canonical: 'https://tzcode.top/landing' },
+  alternates: { canonical: `${SITE_URL}/landing` },
   openGraph: {
     type: 'website',
     siteName: 'tzblog',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     title: 'tzblog · 中文优先的技术与生活博客',
     description:
       '把 AI Coding 与全栈工程的真实踩坑写成能反复查阅的笔记。by haiden。',
-    url: 'https://tzcode.top/landing',
+    url: `${SITE_URL}/landing`,
   },
   twitter: { card: 'summary' },
 };
@@ -291,7 +291,7 @@ export default function LandingPage() {
       {/* ── FOOTER ── */}
       <footer className="border-line mt-[20px] border-t py-[26px]">
         <div className="text-muted mx-auto flex max-w-[1080px] flex-wrap items-center justify-between gap-[12px] px-[26px] font-mono text-[12px]">
-          <span>tzblog · haiden · tzcode.top</span>
+          <span>tzblog · haiden · {SITE_URL.replace(/^https?:\/\//, '')}</span>
           <div className="flex gap-[18px]">
             <Link href={ROUTES.HOME} className="hover:text-acc">
               博客

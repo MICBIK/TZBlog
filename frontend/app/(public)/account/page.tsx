@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { AccountClient } from './_components/AccountClient';
+import { AccountSettingsClient } from './_components/AccountSettingsClient';
 
 export const metadata: Metadata = {
   title: '我的 · 个人中心 — tzblog',
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function AccountPage() {
   return (
     <main className="flex-1 pb-[60px] pt-9">
-      <AccountClient />
+      <AccountSettingsClient />
     </main>
   );
 }

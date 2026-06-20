@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import Link from 'next/link';
 
 import { MarkdownContent } from '@/components/article/MarkdownContent';
 import { getArticleBySlug } from '@/lib/api/article';
+import { getCommentsByArticle, type CommentItem } from '@/lib/api/comment';
 import type { ArticleDetail } from '@/types/article';
 
 import { ArticleProgress } from './ArticleProgress';
@@ -47,6 +47,7 @@ function formatDate(value?: string | null) {
 
 export function ArticleDetailClient({ slug }: ArticleDetailClientProps) {
   const [article, setArticle] = useState<ArticleDetail | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -61,9 +62,13 @@ export function ArticleDetailClient({ slug }: ArticleDetailClientProps) {
         const next = await getArticleBySlug(slug);
         if (!active) return;
         setArticle(next);
+        const commentResult = await getCommentsByArticle(next.id, { limit: 20 });
+        if (!active) return;
+        setComments(commentResult.items);
       } catch (err) {
         if (!active) return;
         setArticle(null);
+        setComments([]);
         setError(err instanceof Error ? err.message : 'Article not found');
       } finally {
         if (active) {
@@ -78,26 +83,16 @@ export function ArticleDetailClient({ slug }: ArticleDetailClientProps) {
     };
   }, [slug]);
 
-  useEffect(() => {
-    if (!article) return;
-    document.title = `${article.title} · tzblog`;
-    const description =
-      article.summary || '浏览 TZBlog 的文章详情。';
-    let meta = document.querySelector<HTMLMetaElement>(
-      'meta[name="description"]',
-    );
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.name = 'description';
-      document.head.appendChild(meta);
-    }
-    meta.content = description;
-  }, [article]);
-
   const tocItems = useMemo(
     () => buildTocItems(article?.content ?? ''),
     [article?.content],
   );
+
+  async function reloadComments() {
+    if (!article) return;
+    const commentResult = await getCommentsByArticle(article.id, { limit: 20 });
+    setComments(commentResult.items);
+  }
 
   if (loading) {
     return (
@@ -179,57 +174,35 @@ export function ArticleDetailClient({ slug }: ArticleDetailClientProps) {
             <div className="text-fg font-sans text-[16.5px] leading-[1.85]">
               <MarkdownContent content={article.content} />
 
-              <div className="mt-12 grid grid-cols-1 gap-3.5 md:grid-cols-2">
-                <Link
-                  href="/articles/rsc-cache-7-traps"
-                  className="border-line bg-panel hover:bg-panel2 rounded-lg border px-4 py-3.5 transition-colors duration-150 hover:border-[var(--acc-dim)]"
-                >
-                  <div className="text-[var(--acc-dim)] font-mono text-[11.5px]">
-                    ← prev
-                  </div>
-                  <div className="text-fg-strong mt-[5px] font-sans text-sm leading-[1.4]">
-                    Next.js 15 RSC 缓存的 7 个坑
-                  </div>
-                </Link>
-                <Link
-                  href="/articles/go-rewrite-p99"
-                  className="border-line bg-panel hover:bg-panel2 rounded-lg border px-4 py-3.5 text-right transition-colors duration-150 hover:border-[var(--acc-dim)]"
-                >
-                  <div className="text-[var(--acc-dim)] font-mono text-[11.5px]">
-                    next →
-                  </div>
-                  <div className="text-fg-strong mt-[5px] font-sans text-sm leading-[1.4]">
-                    把后端从 Node 重写成 Go
-                  </div>
-                </Link>
-              </div>
-
               <section className="border-line mt-12 border-t pt-7">
                 <div className="text-muted-foreground mb-[18px] font-mono text-[13px]">
                   <span className="text-acc">$</span> tail comments.log —{' '}
-                  {article.commentCount} 条评论
+                  {comments.length} 条评论
                 </div>
-                <CommentBox />
-                <Comment
-                  who="@林深"
-                  when="2 天前"
-                  text="spec 那段直接照搬到我们 CI 里了，agent 返工率肉眼可见下降。请问 replay 的 trace 格式方便开源一下吗？"
-                />
-                <Comment
-                  who="@coderwang"
-                  when="4 天前"
-                  text="“把最快的反馈给 agent”——这句点醒我了，之前一直只靠 e2e 兜底，循环慢得要死。"
-                />
-                <Comment
-                  who="@阿吉"
-                  when="5 天前"
-                  text="3000 行一次跑通有点夸张，但顺序倒过来这个思路确实成立，已经在小功能上验证了。"
-                />
+                <CommentBox articleId={article.id} onCreated={reloadComments} />
+                {comments.length > 0 ? (
+                  comments.map((comment) => (
+                    <Comment
+                      key={comment.id}
+                      who={`@user-${comment.userId}`}
+                      when={formatDate(comment.createdAt)}
+                      text={comment.content}
+                    />
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    还没有评论，来写下第一条想法。
+                  </p>
+                )}
               </section>
             </div>
           </article>
 
-          <ArticleSidebar items={tocItems} likeCount={article.likeCount} />
+          <ArticleSidebar
+            articleId={article.id}
+            items={tocItems}
+            likeCount={article.likeCount}
+          />
         </div>
       </main>
     </>

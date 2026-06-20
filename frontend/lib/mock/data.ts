@@ -14,10 +14,10 @@ export const MOCK_USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 
 /** Mock 分类 */
 export const mockCategories: Category[] = [
-  { id: 1, name: '前端', slug: 'frontend', description: '前端开发相关' },
-  { id: 2, name: '后端', slug: 'backend', description: '后端开发相关' },
-  { id: 3, name: 'DevOps', slug: 'devops', description: '运维与部署' },
-  { id: 4, name: '随笔', slug: 'essay', description: '技术随笔' },
+  { id: 1, name: '前端', slug: 'frontend' },
+  { id: 2, name: '后端', slug: 'backend' },
+  { id: 3, name: 'DevOps', slug: 'devops' },
+  { id: 4, name: '随笔', slug: 'essay' },
 ];
 
 /** Mock 标签 */
@@ -35,8 +35,6 @@ export const mockArticles: ArticleSummary[] = [
     id: 1,
     title: 'Next.js 16 App Router 实战指南',
     slug: 'nextjs-16-app-router-guide',
-    content:
-      '# Next.js 16 App Router\n\n本文介绍 Next.js 16 的 App Router 架构...\n\n## 服务端组件\n\n服务端组件默认...',
     summary:
       '深入理解 Next.js 16 的 App Router 架构、服务端组件与数据获取模式。',
     coverImage: '',
@@ -56,8 +54,6 @@ export const mockArticles: ArticleSummary[] = [
     id: 2,
     title: 'Go Gin 框架：构建高性能 REST API',
     slug: 'go-gin-rest-api',
-    content:
-      '# Go Gin 框架\n\nGin 是 Go 语言最流行的 Web 框架之一...\n\n## 路由分组\n\n```go\nrouter.Group("/api/v1")\n```',
     summary: '使用 Go Gin 框架构建高性能 RESTful API 的完整实践。',
     coverImage: '',
     authorId: 1,
@@ -76,8 +72,6 @@ export const mockArticles: ArticleSummary[] = [
     id: 3,
     title: 'Tailwind CSS v4：设计令牌驱动的样式系统',
     slug: 'tailwindcss-v4-design-tokens',
-    content:
-      '# Tailwind CSS v4\n\nTailwind v4 引入了基于 CSS 变量的设计令牌系统...\n\n## @theme 指令\n\n使用 `@theme` 定义自定义令牌。',
     summary: '探索 Tailwind CSS v4 的设计令牌系统与 @theme 指令。',
     coverImage: '',
     authorId: 1,

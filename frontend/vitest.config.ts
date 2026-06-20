@@ -12,7 +12,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['lib/**/*.{ts,tsx}'],
+      include: [
+        'lib/**/*.{ts,tsx}',
+        'components/article/LikeButton.tsx',
+        'components/shared/AdminGuard.tsx',
+        'app/(public)/search/_components/SearchClient.tsx',
+        'app/(public)/_components/HomeRealtime.tsx',
+      ],
       exclude: [
         'node_modules/',
         'tests/',
@@ -23,6 +29,7 @@ export default defineConfig({
         'app/layout.tsx',
         'app/not-found.tsx',
         'app/error.tsx',
+        'components/ui/**',
       ],
       thresholds: {
         lines: 60,

@@ -43,7 +43,10 @@ export class MockAPI {
   private page: Page;
   private baseURL: string;
 
-  constructor({ page, baseURL = 'http://localhost:8080/api/v1' }: MockAPIOptions) {
+  constructor({
+    page,
+    baseURL = 'http://localhost:8080/api/v1',
+  }: MockAPIOptions) {
     this.page = page;
     this.baseURL = baseURL;
   }
@@ -58,47 +61,68 @@ export class MockAPI {
     await this.mockAuth();
     await this.mockCategories();
     await this.mockTags();
+    await this.mockComments();
+    await this.mockLikes();
   }
 
   /**
    * Mock 文章列表 API
    */
   async mockArticlesList() {
-    await this.page.route(/\/api\/v1\/articles(\?.*)?$/, async (route: Route) => {
-      const url = new URL(route.request().url());
-      const page = parseInt(url.searchParams.get('page') || '1');
-      const limit = parseInt(url.searchParams.get('limit') || '10');
+    await this.page.route(
+      /\/api\/v1\/articles(\?.*)?$/,
+      async (route: Route) => {
+        const url = new URL(route.request().url());
+        const page = parseInt(url.searchParams.get('page') || '1');
+        const limit = parseInt(url.searchParams.get('limit') || '10');
+        const search = (url.searchParams.get('search') || '').toLowerCase();
+        const category = url.searchParams.get('category');
+        const tag = url.searchParams.get('tag');
 
-      const start = (page - 1) * limit;
-      const end = start + limit;
-      const paginatedArticles = articles.slice(start, end);
+        const filtered = articles.filter((article) => {
+          const matchesSearch =
+            !search ||
+            article.title.toLowerCase().includes(search) ||
+            article.excerpt.toLowerCase().includes(search) ||
+            article.content.toLowerCase().includes(search);
+          const matchesCategory =
+            !category || article.category?.slug === category;
+          const matchesTag =
+            !tag || article.tags?.some((item) => item.slug === tag);
+          return matchesSearch && matchesCategory && matchesTag;
+        });
 
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          data: paginatedArticles,
-          metadata: {
-            total: articles.length,
-            page,
-            limit,
-            totalPages: Math.ceil(articles.length / limit),
-          },
-        }),
-      });
-    });
+        const start = (page - 1) * limit;
+        const end = start + limit;
+        const paginatedArticles = filtered.slice(start, end);
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: paginatedArticles,
+            metadata: {
+              total: filtered.length,
+              page,
+              limit,
+              totalPages: Math.ceil(filtered.length / limit) || 1,
+            },
+          }),
+        });
+      },
+    );
   }
 
   /**
    * Mock 文章详情 API
    */
   async mockArticleDetail() {
-    await this.page.route('**/api/v1/articles/slug/*', async (route: Route) => {
+    await this.page.route('**/api/v1/articles/*', async (route: Route) => {
       const url = route.request().url();
       const slug = url.split('/').pop()?.split('?')[0];
 
-      const article = articles.find(a => a.slug === slug || a.id === slug);
+      const article = articles.find((a) => a.slug === slug || a.id === slug);
 
       if (article) {
         await route.fulfill({
@@ -132,21 +156,46 @@ export class MockAPI {
     await this.page.route('**/api/v1/search*', async (route: Route) => {
       const url = new URL(route.request().url());
       const query = url.searchParams.get('q') || '';
+      const category = url.searchParams.get('category');
+      const tag = url.searchParams.get('tag');
 
-      const results = articles.filter(article =>
-        article.title.toLowerCase().includes(query.toLowerCase()) ||
-        article.excerpt.toLowerCase().includes(query.toLowerCase())
-      );
+      const results = articles.filter((article) => {
+        const matchesQuery =
+          article.title.toLowerCase().includes(query.toLowerCase()) ||
+          article.excerpt.toLowerCase().includes(query.toLowerCase()) ||
+          article.content.toLowerCase().includes(query.toLowerCase());
+        const matchesCategory =
+          !category || article.category?.slug === category;
+        const matchesTag =
+          !tag || article.tags?.some((item) => item.slug === tag);
+        return matchesQuery && matchesCategory && matchesTag;
+      });
+
+      const hits = results.map((article) => ({
+        id: String(article.id),
+        slug: article.slug,
+        title: article.title,
+        summary: article.excerpt,
+        publishedAt: article.publishedAt
+          ? new Date(article.publishedAt).getTime()
+          : 0,
+        viewCount: article.viewCount,
+        readingTime: article.readingTime,
+        likeCount: article.likeCount,
+      }));
 
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          data: results,
-          metadata: {
-            total: results.length,
+          data: {
+            hits,
+            estimatedTotalHits: results.length,
             query,
+            limit: 20,
+            offset: 0,
+            processingTimeMs: 1,
           },
         }),
       });
@@ -162,7 +211,10 @@ export class MockAPI {
       const request = route.request();
       const postData = request.postDataJSON();
 
-      if (postData.email === 'test@example.com' && postData.password === 'password123') {
+      if (
+        postData.email === 'test@example.com' &&
+        postData.password === 'password123'
+      ) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -268,8 +320,9 @@ export class MockAPI {
         body: JSON.stringify({
           success: true,
           data: [
-            { id: '1', name: 'Frontend', slug: 'frontend', count: 2 },
-            { id: '2', name: 'Testing', slug: 'testing', count: 1 },
+            { id: 1, name: 'AI Coding', slug: 'ai-coding', count: 1 },
+            { id: 2, name: 'Frontend', slug: 'frontend', count: 2 },
+            { id: 3, name: 'Testing', slug: 'testing', count: 1 },
           ],
         }),
       });
@@ -296,5 +349,87 @@ export class MockAPI {
         }),
       });
     });
+  }
+
+  async mockComments() {
+    await this.page.route('**/api/v1/comments*', async (route: Route) => {
+      if (route.request().method() === 'POST') {
+        const payload = route.request().postDataJSON();
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: {
+              id: 999,
+              articleId: payload.article_id,
+              userId: 1,
+              content: payload.content,
+              status: 'published',
+              createdAt: '2026-06-19T00:00:00Z',
+              updatedAt: '2026-06-19T00:00:00Z',
+            },
+          }),
+        });
+        return;
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 101,
+              articleId: 1,
+              userId: 2,
+              content: 'spec 那段直接照搬到我们 CI 里了。',
+              status: 'published',
+              createdAt: '2026-06-17T00:00:00Z',
+              updatedAt: '2026-06-17T00:00:00Z',
+            },
+          ],
+          metadata: {
+            total: 1,
+            page: 1,
+            limit: 20,
+            totalPages: 1,
+          },
+        }),
+      });
+    });
+  }
+
+  async mockLikes() {
+    await this.page.route(
+      '**/api/v1/likes/articles/*',
+      async (route: Route) => {
+        const method = route.request().method();
+        if (method === 'GET') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              success: true,
+              data: { liked: false, count: 12 },
+            }),
+          });
+          return;
+        }
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: {
+              liked: method === 'POST',
+              count: method === 'POST' ? 13 : 12,
+            },
+          }),
+        });
+      },
+    );
   }
 }

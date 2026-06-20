@@ -1,16 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getArticles } from '@/lib/api/article';
 import { getCategories } from '@/lib/api/category';
+import { searchArticles } from '@/lib/api/search';
 import type { ArticleSummary } from '@/types/article';
 
 import { SearchClient } from './SearchClient';
 
-vi.mock('@/lib/api/article', () => ({ getArticles: vi.fn() }));
+vi.mock('@/lib/api/search', () => ({ searchArticles: vi.fn() }));
 vi.mock('@/lib/api/category', () => ({ getCategories: vi.fn() }));
 
-const mockGetArticles = vi.mocked(getArticles);
+const mockSearchArticles = vi.mocked(searchArticles);
 const mockGetCategories = vi.mocked(getCategories);
 
 function makeArticle(over: Partial<ArticleSummary>): ArticleSummary {
@@ -18,7 +18,6 @@ function makeArticle(over: Partial<ArticleSummary>): ArticleSummary {
     id: 1,
     title: 'title',
     slug: 'slug',
-    content: '',
     summary: '',
     coverImage: '',
     authorId: 1,
@@ -43,12 +42,12 @@ describe('SearchClient', () => {
   });
 
   it('每条搜索结果链接到各自真实 slug（不再全部指向同一篇）', async () => {
-    mockGetArticles.mockResolvedValue({
+    mockSearchArticles.mockResolvedValue({
       items: [
         makeArticle({ id: 1, title: 'RSC 缓存的坑', slug: 'rsc-cache-7-traps' }),
         makeArticle({ id: 2, title: 'Go 重写后端', slug: 'go-rewrite-p99' }),
       ],
-      metadata: { total: 2 },
+      total: 2,
     });
 
     render(<SearchClient />);
@@ -63,10 +62,10 @@ describe('SearchClient', () => {
   });
 
   it('从后端文章接口取数，而非内置静态数据', async () => {
-    mockGetArticles.mockResolvedValue({ items: [], metadata: { total: 0 } });
+    mockSearchArticles.mockResolvedValue({ items: [], total: 0 });
 
     render(<SearchClient />);
 
-    await waitFor(() => expect(mockGetArticles).toHaveBeenCalled());
+    await waitFor(() => expect(mockSearchArticles).toHaveBeenCalled());
   });
 });

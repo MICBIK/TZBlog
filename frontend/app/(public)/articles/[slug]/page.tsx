@@ -11,13 +11,13 @@ interface ArticlePageProps {
 
 /**
  * 服务端按 slug 拉取文章，用于生成动态 metadata。
- * 走公开接口 GET /articles/slug/:slug（无需鉴权）；失败时回退到通用文案，避免 SSR 报错。
+ * 走公开接口 GET /articles/:slug（无需鉴权）；失败时回退到通用文案，避免 SSR 报错。
  * 让 crawler / 分享预览能拿到真实标题、canonical 与 OG（此前为固定占位 metadata）。
  */
 async function fetchArticle(slug: string): Promise<ArticleDetail | null> {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/articles/slug/${encodeURIComponent(slug)}`,
+      `${API_BASE_URL}/articles/${encodeURIComponent(slug)}`,
       { next: { revalidate: 300 } },
     );
     if (!res.ok) return null;

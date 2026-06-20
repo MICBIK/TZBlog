@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { SITE_URL } from '@/lib/constants';
+
 /**
  * Canonical 页脚 — 全站单一数据源（single source of truth）。
  * 1:1 还原原型 assets/site-chrome.js 的 FOOTER 常量 + site-chrome.css 的 .sf-* 样式。
@@ -12,7 +14,7 @@ const SOCIAL = [
   { icon: '⌨', title: 'GitHub', href: 'https://github.com/haiden', external: true },
   { icon: '✕', title: 'X', href: 'https://x.com/haiden_dev', external: true },
   { icon: '⟳', title: 'RSS', href: '/rss.xml', external: false },
-  { icon: '✉', title: 'Email', href: 'mailto:hi@tzcode.top', external: false },
+  { icon: '✉', title: 'Email', href: 'mailto:hi@tzblog.dev', external: false },
 ] as const;
 
 /** 导航列 — 对照原型 FOOTER「导航」*/
@@ -113,7 +115,7 @@ export function Footer() {
           {CATEGORY_LINKS.map((c) => (
             <Link
               key={c}
-              href={`/search?cat=${encodeURIComponent(c)}`}
+              href={`/search?category=${encodeURIComponent(c)}`}
               className={colLink}
             >
               {c}
@@ -154,8 +156,10 @@ export function Footer() {
           </span>
           <span>
             Powered by <b className="text-fg font-normal">Next.js</b> ·{' '}
-            <b className="text-fg font-normal">Go</b> · 部署于{' '}
-            <b className="text-fg font-normal">Vercel</b>
+            <b className="text-fg font-normal">Go</b> ·{' '}
+            <a href={SITE_URL} className="text-fg hover:text-acc font-normal">
+              tzblog
+            </a>
           </span>
         </div>
       </div>

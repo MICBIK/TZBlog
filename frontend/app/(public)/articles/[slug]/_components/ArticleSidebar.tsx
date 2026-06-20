@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
-import { showToast } from './toast';
+import { LikeButton } from '@/components/article/LikeButton';
 
 interface TocItem {
   id: string;
@@ -10,9 +11,9 @@ interface TocItem {
 }
 
 interface ArticleSidebarProps {
+  articleId: number;
   items: TocItem[];
   likeCount: number;
-  favoriteCount?: number;
 }
 
 /**
@@ -20,9 +21,9 @@ interface ArticleSidebarProps {
  * scroll-spy 用 IntersectionObserver（rootMargin -72px / -65%）高亮当前章节。
  */
 export function ArticleSidebar({
+  articleId,
   items,
   likeCount,
-  favoriteCount = Math.max(0, Math.round(likeCount * 0.6)),
 }: ArticleSidebarProps) {
   const [active, setActive] = useState('');
 
@@ -46,9 +47,9 @@ export function ArticleSidebar({
 
   function handleShare() {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(location.href);
+      void navigator.clipboard.writeText(location.href);
     }
-    showToast('链接已复制到剪贴板');
+    toast.success('链接已复制到剪贴板');
   }
 
   return (
@@ -75,19 +76,11 @@ export function ArticleSidebar({
       </nav>
 
       <div className="mt-4 flex flex-col gap-2">
-        <SideButton onClick={() => showToast('已点赞 · 感谢支持')}>
-          👍 赞{' '}
-          <span className="text-dim float-right font-sans">{likeCount}</span>
-        </SideButton>
-        <SideButton
-          onClick={() => showToast('已加入收藏 · 可在「我的书架」查看')}
-        >
-          ★ 收藏{' '}
-          <span className="text-dim float-right font-sans">
-            {favoriteCount}
-          </span>
-        </SideButton>
+        <LikeButton articleId={articleId} initialCount={likeCount} />
         <SideButton onClick={handleShare}>↗ 分享</SideButton>
+        <p className="px-1 font-mono text-[11px] text-dim">
+          收藏功能暂未接线，当前已移除伪交互入口。
+        </p>
       </div>
     </aside>
   );

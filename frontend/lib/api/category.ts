@@ -15,7 +15,6 @@ export async function getCategoryById(id: number): Promise<Category> {
 export async function createCategory(body: {
   name: string;
   slug: string;
-  description?: string;
 }): Promise<Category> {
   return apiPost<Category>('/categories', body);
 }

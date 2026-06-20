@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+import { SITE_URL } from '@/lib/constants';
 import { TypedLine } from './_components/TypedLine';
 
 /** hero 统计 —— [data-count] 计数上滚（含 386k 的 data-suffix） */
@@ -44,8 +45,8 @@ const PROJECTS = [
 
 const CONTACTS = [
   { icon: '⌨', label: 'GitHub', value: 'github.com/haiden', msg: 'GitHub: github.com/haiden' },
-  { icon: '✉', label: 'Email', value: 'hi@tzcode.top', msg: '邮箱已复制：hi@tzcode.top' },
-  { icon: '⟳', label: 'RSS', value: 'tzcode.top/rss.xml', msg: 'RSS: tzcode.top/rss.xml' },
+  { icon: '✉', label: 'Email', value: 'hi@tzblog.dev', msg: '邮箱已复制：hi@tzblog.dev' },
+  { icon: '⟳', label: 'RSS', value: `${SITE_URL.replace(/^https?:\/\//, '')}/rss.xml`, msg: `RSS: ${SITE_URL}/rss.xml` },
   { icon: '✕', label: 'X', value: '@haiden_dev', msg: 'X / Twitter: @haiden_dev' },
 ] as const;
 

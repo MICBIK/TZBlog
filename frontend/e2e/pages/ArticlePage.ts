@@ -20,6 +20,7 @@ export class ArticlePage {
   readonly commentInput: Locator;
   readonly publishButton: Locator;
   readonly relatedArticles: Locator;
+  readonly commentItems: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -39,6 +40,7 @@ export class ArticlePage {
     this.commentInput = page.getByPlaceholder('// 写下你的想法… 登录后发布');
     this.publishButton = page.getByRole('button', { name: '发布' });
     this.relatedArticles = page.locator('article a[href^="/articles/"]').filter({ hasText: /Next\.js 15 RSC 缓存的 7 个坑|把后端从 Node 重写成 Go/ });
+    this.commentItems = this.commentSection.locator('.border-line.bg-panel');
   }
 
   /**

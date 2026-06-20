@@ -1,19 +1,20 @@
 import type { Metadata } from 'next';
 
 import { LibraryTabs } from '@/components/front-library/LibraryTabs';
+import { SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: '归档与书架',
   description:
     'tzblog 文章归档与技术书架：按年份浏览全部文章，以及 haiden 在读与推荐的技术书单。',
-  alternates: { canonical: '/library' },
+  alternates: { canonical: `${SITE_URL}/library` },
   openGraph: {
     type: 'website',
     siteName: 'tzblog',
     locale: 'zh_CN',
     title: '归档与书架 · tzblog',
     description: '按年份浏览全部文章，以及 haiden 在读与推荐的技术书单。',
-    url: '/library',
+    url: `${SITE_URL}/library`,
   },
   twitter: { card: 'summary' },
 };
