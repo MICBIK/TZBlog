@@ -1,6 +1,10 @@
 allowBuilds:
+  electron: true
+  electron-winstaller: true
   sharp: true
 onlyBuiltDependencies:
+  - electron
+  - electron-winstaller
   - sharp
   - unrs-resolver
 overrides:

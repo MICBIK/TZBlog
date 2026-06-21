@@ -57,21 +57,14 @@ test.describe('文章详情页测试', () => {
     expect(tags).toContain('工作流');
   });
 
-  test('上一篇下一篇导航渲染', async () => {
-    expect(await articlePage.getRelatedArticleCount()).toBe(2);
-    await expect(articlePage.relatedArticles.first()).toBeVisible();
-    await expect(articlePage.page.getByText('Next.js 15 RSC 缓存的 7 个坑')).toBeVisible();
-    await expect(articlePage.page.getByText('把后端从 Node 重写成 Go')).toBeVisible();
+  test('未实现上下篇时不展示硬编码导航', async () => {
+    expect(await articlePage.getRelatedArticleCount()).toBe(0);
   });
 
-  test('评论区发布按钮显示登录提示', async () => {
+  test('评论区展示真实列表并可见发布框', async () => {
     await articlePage.scrollToComments();
     await expect(articlePage.commentInput).toBeVisible();
-
-    await articlePage.publishButton.click();
-    await expect(
-      articlePage.page.getByText('登录后即可发布评论（GitHub / Google / 邮箱）'),
-    ).toBeVisible();
+    await expect(articlePage.commentItems.first()).toBeVisible();
   });
 
   test('页面标题与摘要可见', async () => {
@@ -94,5 +87,44 @@ test.describe('文章详情页测试', () => {
 
       await expect(articlePage.toc).toBeVisible();
     });
+  });
+});
+
+// R34: 路由契约 smoke —— 不依赖宽松 mock，直接监听前端真实发出的详情请求 URL，
+// 断言其命中后端 canonical 路由 `/api/v1/articles/<slug>`，绝不能回到已废弃的
+// `/api/v1/articles/slug/<slug>`（R04 漂移 bug 类）。这样即便 mock 写得很宽松，
+// 前后端路径再次漂移时此用例也会立即失败。
+test.describe('文章详情 API 路由契约 (R34)', () => {
+  test('详情请求命中 /api/v1/articles/<slug> 而非 /articles/slug/<slug>', async ({
+    page,
+  }) => {
+    const slug = 'spec-first-workflow';
+    const articleRequests: string[] = [];
+
+    // 监听所有命中 /api/v1/articles 的请求 URL（spy，不改变响应）
+    page.on('request', (req) => {
+      const url = req.url();
+      if (url.includes('/api/v1/articles')) {
+        articleRequests.push(url);
+      }
+    });
+
+    const mockAPI = new MockAPI({ page });
+    await mockAPI.setupAll();
+
+    const articlePage = new ArticlePage(page);
+    await articlePage.goto(slug);
+
+    // 至少有一条 canonical 详情请求
+    const canonical = articleRequests.filter((u) =>
+      new RegExp(`/api/v1/articles/${slug}(\\?.*)?$`).test(u),
+    );
+    expect(canonical.length).toBeGreaterThan(0);
+
+    // 绝不能出现已漂移的 /articles/slug/<slug> 路径
+    const drifted = articleRequests.filter((u) =>
+      u.includes(`/api/v1/articles/slug/`),
+    );
+    expect(drifted).toEqual([]);
   });
 });

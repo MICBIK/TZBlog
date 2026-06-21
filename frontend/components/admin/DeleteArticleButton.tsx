@@ -24,11 +24,13 @@ import { Button } from '@/components/ui/button';
 interface DeleteArticleButtonProps {
   articleId: number;
   title: string;
+  onDeleted?: () => void;
 }
 
 export function DeleteArticleButton({
   articleId,
   title,
+  onDeleted,
 }: DeleteArticleButtonProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
@@ -38,6 +40,7 @@ export function DeleteArticleButton({
     try {
       await deleteArticle(articleId);
       toast.success('文章已删除');
+      onDeleted?.();
       router.refresh();
     } catch (err) {
       const message = err instanceof ApiRequestError ? err.message : '删除失败';

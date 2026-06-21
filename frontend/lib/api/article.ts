@@ -31,7 +31,12 @@ export async function getArticles(
 
 /** 获取文章详情（按 slug） */
 export async function getArticleBySlug(slug: string): Promise<ArticleDetail> {
-  return apiGet<ArticleDetail>(`/articles/slug/${encodeURIComponent(slug)}`);
+  return apiGet<ArticleDetail>(`/articles/${encodeURIComponent(slug)}`);
+}
+
+/** 获取文章详情（按 id，需管理员） */
+export async function getArticleById(id: number): Promise<ArticleDetail> {
+  return apiGet<ArticleDetail>(`/articles/by-id/${id}`);
 }
 
 /** 创建文章 [需管理员] */

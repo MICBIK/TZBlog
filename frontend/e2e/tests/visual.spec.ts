@@ -33,7 +33,7 @@ test.describe('视觉回归测试', () => {
     const homePage = new HomePage(page);
     await homePage.goto();
 
-    const firstArticle = homePage.articleCards.first();
+    const firstArticle = homePage.articleTitles.first();
     await firstArticle.scrollIntoViewIfNeeded();
 
     await expect(firstArticle).toHaveScreenshot('article-card.png', {
@@ -45,7 +45,7 @@ test.describe('视觉回归测试', () => {
     const homePage = new HomePage(page);
     await homePage.goto();
 
-    const firstArticle = homePage.articleCards.first();
+    const firstArticle = homePage.articleTitles.first();
     await firstArticle.scrollIntoViewIfNeeded();
     await firstArticle.hover();
 

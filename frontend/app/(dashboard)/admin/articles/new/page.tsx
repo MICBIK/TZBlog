@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
-import { EditorClient } from './EditorClient';
+import { ArticleEditor } from '@/components/editor/ArticleEditor';
+import { getCategories } from '@/lib/api/category';
 
 export const metadata: Metadata = {
   title: '写文章 · tzblog 控制台',
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function NewArticlePage() {
-  return <EditorClient />;
+export default async function NewArticlePage() {
+  const categories = await getCategories().catch(() => []);
+  return <ArticleEditor mode="create" categories={categories} />;
 }

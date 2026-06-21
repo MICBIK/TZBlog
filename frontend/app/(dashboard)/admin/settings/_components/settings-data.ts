@@ -49,7 +49,7 @@ export const SECTIONS: SectionDef[] = [
       {
         k: '主域名',
         h: '已绑定 HTTPS，含 www 跳转',
-        ctl: { kind: 'pre', prefix: 'https://', em: 'tzcode.top' },
+        ctl: { kind: 'pre', prefix: 'https://', em: 'tzblog.dev' },
       },
       { k: '作者署名', ctl: { kind: 'text', value: 'haiden' } },
       {
@@ -193,7 +193,7 @@ export const SECTIONS: SectionDef[] = [
         k: 'X / Twitter',
         ctl: { kind: 'text', value: 'https://x.com/haiden_dev' },
       },
-      { k: '联系邮箱', ctl: { kind: 'text', value: 'hi@tzcode.top' } },
+      { k: '联系邮箱', ctl: { kind: 'text', value: 'hi@tzblog.dev' } },
       {
         k: '输出 RSS / Atom',
         h: '/rss.xml',

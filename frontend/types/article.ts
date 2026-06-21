@@ -17,19 +17,25 @@ export interface ArticleAuthor extends Partial<Author> {
   avatar?: string;
 }
 
-/** 标签 */
+/** 标签（完整对齐后端 tag.Tag） */
 export interface Tag {
   id: number;
   name: string;
   slug: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
 }
 
-/** 分类 */
+/** 分类（完整对齐后端 category.Category） */
 export interface Category {
   id: number;
   name: string;
   slug: string;
   description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
 }
 
 /** 文章状态 */
@@ -40,7 +46,6 @@ export interface ArticleSummary {
   id: number;
   title: string;
   slug: string;
-  content: string;
   summary: string;
   coverImage: string;
   authorId: number;
@@ -57,6 +62,7 @@ export interface ArticleSummary {
 }
 
 export interface ArticleDetail extends ArticleSummary {
+  content: string;
   author?: ArticleAuthor;
   category?: Category;
   tags?: Tag[];

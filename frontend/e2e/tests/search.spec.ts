@@ -17,7 +17,7 @@ test.describe('搜索功能测试', () => {
   test('搜索页加载固定文案', async () => {
     await expect(searchPage.searchInput).toBeVisible();
     await expect(searchPage.page.locator('h1')).toContainText('全站搜索');
-    await expect(searchPage.page.getByText('128 篇文章，38.6 万字。')).toBeVisible();
+    await expect(searchPage.page.getByText(/命中/)).toBeVisible();
   });
 
   test('输入 spec-first 后只保留匹配结果', async () => {
@@ -26,7 +26,7 @@ test.describe('搜索功能测试', () => {
     await searchPage.verifyHasResults();
     expect(await searchPage.getResultCount()).toBe(1);
     await expect(searchPage.resultItems.first()).toContainText(
-      'spec-first：让 Claude 连续写对 3000 行代码',
+      '我用 spec-first 工作流让 Claude 连续写对 3000 行代码',
     );
   });
 
@@ -41,27 +41,30 @@ test.describe('搜索功能测试', () => {
   });
 
   test('关键词会被 mark 高亮', async () => {
-    await searchPage.search('缓存');
+    await searchPage.search('spec');
 
     await searchPage.verifyHasResults();
-    await searchPage.verifyHighlight('缓存');
+    await searchPage.verifyHighlight('spec');
   });
 
   test('分类 chip 会收窄结果范围', async () => {
-    await searchPage.selectCategory('工具效率');
+    await searchPage.selectCategory('Frontend');
+    await searchPage.verifyHasResults();
 
     const titles = await searchPage.getResultTitles();
-    expect(await searchPage.getResultCount()).toBe(3);
-    expect(titles).toContain('2026 我的终端配置：zsh + tmux + neovim');
-    expect(titles).not.toContain('Go 重写后端：P99 从 120ms 砍到 18ms');
+    expect(await searchPage.getResultCount()).toBe(2);
+    expect(titles).toContain('Getting Started with Next.js 15');
+    expect(titles).toContain('TypeScript Best Practices 2026');
   });
 
-  test('点击结果进入固定文章页', async ({ page }) => {
-    await searchPage.search('Go');
+  test('点击结果进入真实 slug 页面', async ({ page }) => {
+    await searchPage.search('TypeScript');
+    await searchPage.verifyHasResults();
+    const targetHref = await searchPage.resultItems.first().getAttribute('href');
     await searchPage.clickResult(0);
 
-    await expect(page).toHaveURL(/\/articles\/spec-first-workflow$/);
-    await expect(page.locator('h1').first()).toContainText('spec-first 工作流');
+    expect(targetHref).toMatch(/^\/articles\//);
+    await expect(page).toHaveURL(new RegExp(`${targetHref}$`));
   });
 
   test('清空搜索框会恢复为空字符串', async () => {
@@ -77,6 +80,7 @@ test.describe('搜索功能测试', () => {
 
     for (const query of ['next.js', 'Next.js', 'NEXT.JS']) {
       await searchPage.search(query);
+      await searchPage.verifyHasResults();
       counts.push(await searchPage.getResultCount());
       await searchPage.clearSearch();
     }

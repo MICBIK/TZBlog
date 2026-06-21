@@ -22,14 +22,14 @@ export function CodeBlock({ language, code }: CodeBlockProps) {
   }
 
   return (
-    <div className="my-6 overflow-hidden rounded-[8px] border border-line bg-[#080c11]">
+    <div className="border-line my-6 overflow-hidden rounded-[8px] border bg-[#080c11]">
       {/* code-head */}
-      <div className="flex items-center gap-2.5 border-b border-line bg-panel2 px-[13px] py-2 font-mono text-[12px]">
-        <span className="font-semibold text-acc">{language}</span>
+      <div className="border-line bg-panel2 flex items-center gap-2.5 border-b px-[13px] py-2 font-mono text-[12px]">
+        <span className="text-acc font-semibold">{language}</span>
         <span className="text-dim">snippet</span>
         <button
           onClick={handleCopy}
-          className="ml-auto rounded-[5px] border border-line2 px-2.5 py-1 font-mono text-[11.5px] text-muted transition-[.15s] hover:border-acc-dim hover:text-acc data-[copied=true]:border-acc-dim data-[copied=true]:text-acc"
+          className="border-line2 text-muted hover:border-acc-dim hover:text-acc data-[copied=true]:border-acc-dim data-[copied=true]:text-acc ml-auto rounded-[5px] border px-2.5 py-1 font-mono text-[11.5px] transition-[.15s]"
           data-copied={copied}
         >
           {copied ? '✓ copied' : 'copy'}
@@ -39,23 +39,39 @@ export function CodeBlock({ language, code }: CodeBlockProps) {
       <Highlight code={code} language={language} theme={themes.vsDark}>
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <div className="flex overflow-x-auto font-mono text-[13.5px] leading-[1.75]">
-            <div className="select-none border-r border-line px-3.5 py-3.5 text-right text-dim">
+            <div className="border-line text-dim select-none border-r px-3.5 py-3.5 text-right">
               {tokens.map((_, i) => (
                 <div key={i}>{i + 1}</div>
               ))}
             </div>
             <pre
-              className={`${className} overflow-x-auto px-4 py-3.5 text-fg`}
+              className={`${className} text-fg overflow-x-auto px-4 py-3.5`}
               style={style}
             >
               <code>
                 {tokens.map((line, i) => {
-                  const lineProps = getLineProps({ line, key: i });
+                  const { key: lineKey, ...lineProps } = getLineProps({
+                    line,
+                    key: i,
+                  });
+                  const resolvedLineKey =
+                    typeof lineKey === 'string' || typeof lineKey === 'number'
+                      ? lineKey
+                      : i;
                   return (
-                    <div key={i} {...lineProps}>
-                      {line.map((token, key) => (
-                        <span key={key} {...getTokenProps({ token, key })} />
-                      ))}
+                    <div key={resolvedLineKey} {...lineProps}>
+                      {line.map((token, tokenIndex) => {
+                        const { key: tokenKey, ...tokenProps } = getTokenProps({
+                          token,
+                          key: tokenIndex,
+                        });
+                        const resolvedTokenKey =
+                          typeof tokenKey === 'string' ||
+                          typeof tokenKey === 'number'
+                            ? tokenKey
+                            : tokenIndex;
+                        return <span key={resolvedTokenKey} {...tokenProps} />;
+                      })}
                     </div>
                   );
                 })}

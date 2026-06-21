@@ -1,108 +1,29 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-/** 文章命中数据（1:1 照搬原型 front-search.html 内联 POSTS）*/
-interface SearchPost {
-  readonly t: string;
-  readonly c: string;
-  readonly d: string;
-  readonly x: string;
-  readonly read: string;
-  readonly like: number;
+import { getCategories } from '@/lib/api/category';
+import { searchArticles } from '@/lib/api/search';
+import type { ArticleSummary, Category } from '@/types/article';
+
+/** 分类 chip */
+interface CatChip {
+  readonly slug: string;
+  readonly label: string;
 }
 
-const POSTS: readonly SearchPost[] = [
-  {
-    t: 'spec-first：让 Claude 连续写对 3000 行代码',
-    c: 'AI Coding',
-    d: '2026-05-28',
-    x: '先写规格再写代码，把 AI 的发挥空间收敛进可验证的边界里。',
-    read: '14 分钟',
-    like: 312,
-  },
-  {
-    t: 'Next.js 15 RSC 缓存的 7 个坑',
-    c: '全栈',
-    d: '2026-05-19',
-    x: 'fetch 缓存、Router Cache、生产与开发行为分叉，逐个拆解。',
-    read: '11 分钟',
-    like: 208,
-  },
-  {
-    t: 'Go 重写后端：P99 从 120ms 砍到 18ms',
-    c: '全栈',
-    d: '2026-05-09',
-    x: '连接池、零拷贝序列化、pprof 火焰图定位三处真实瓶颈。',
-    read: '16 分钟',
-    like: 421,
-  },
-  {
-    t: '2026 我的终端配置：zsh + tmux + neovim',
-    c: '工具',
-    d: '2026-04-30',
-    x: '一套用了三年仍在迭代的命令行工作流与 dotfiles。',
-    read: '9 分钟',
-    like: 176,
-  },
-  {
-    t: '用 Meilisearch 给博客加全文搜索',
-    c: '全栈',
-    d: '2026-04-21',
-    x: '中文分词、拼写容错、毫秒级响应，自托管搜索方案落地。',
-    read: '10 分钟',
-    like: 154,
-  },
-  {
-    t: 'Shiki + KaTeX：博客的代码与公式渲染',
-    c: '工具',
-    d: '2026-04-12',
-    x: '构建期高亮、零运行时 JS，公式服务端渲染的取舍。',
-    read: '8 分钟',
-    like: 131,
-  },
-  {
-    t: 'Docker 多阶段构建把镜像砍到 40MB',
-    c: '工具',
-    d: '2026-03-30',
-    x: 'distroless 基镜像、依赖分层缓存、构建提速 6 倍。',
-    read: '7 分钟',
-    like: 142,
-  },
-  {
-    t: '写完 100 篇博客后，我对写作的重新理解',
-    c: '随笔',
-    d: '2026-03-18',
-    x: '流量不是目的，把模糊的想法逼到清晰才是写作的回报。',
-    read: '6 分钟',
-    like: 389,
-  },
-] as const;
+const ALL_CAT: CatChip = { slug: 'all', label: '全部' };
 
-/** 分类 chip（对照原型 data-cat）*/
-const CATS: readonly { readonly cat: string; readonly label: string }[] = [
-  { cat: 'all', label: '全部' },
-  { cat: 'AI Coding', label: 'AI Coding' },
-  { cat: '全栈', label: '全栈工程' },
-  { cat: '工具', label: '工具效率' },
-  { cat: '随笔', label: '思考随笔' },
-] as const;
-
-/** 命中文章目标（原型所有 hit 指向同一篇教程文章）*/
-const HIT_HREF = '/articles/spec-first-workflow';
-
-/** 关键词高亮 — 还原原型 hl()，React 自动转义，仅需切分包裹 <mark> */
+/** 关键词高亮 — React 自动转义，仅切分包裹 <mark> */
 function highlight(text: string, kw: string) {
   if (!kw) return text;
   const safe = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const parts = text.split(new RegExp(`(${safe})`, 'gi'));
   return parts.map((part, i) =>
     part.toLowerCase() === kw.toLowerCase() ? (
-      <mark
-        key={i}
-        className="rounded-[2px] bg-acc/[0.16] px-0.5 text-acc"
-      >
+      <mark key={i} className="rounded-[2px] bg-acc/[0.16] px-0.5 text-acc">
         {part}
       </mark>
     ) : (
@@ -111,44 +32,120 @@ function highlight(text: string, kw: string) {
   );
 }
 
-/** 关键词 ∩ 当前分类过滤（纯函数，还原原型 render() 过滤逻辑）*/
-function filterPosts(kw: string, cat: string): SearchPost[] {
-  return POSTS.filter(
-    (p) =>
-      (cat === 'all' || p.c === cat) &&
-      (!kw || (p.t + p.x + p.c).toLowerCase().includes(kw.toLowerCase())),
-  );
+function formatDate(value?: string | null) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
 }
 
-export function SearchClient() {
-  const [query, setQuery] = useState('');
-  const [cat, setCat] = useState('all');
+/**
+ * 全站搜索（接后端真实数据）。
+ * 关键词 → GET /articles?search=...（后端按 title/content 检索），分类 → category slug 过滤。
+ * 每条结果链接到自身真实 slug（此前原型把所有命中都指向同一篇文章）。
+ */
+interface SearchClientProps {
+  initialQuery?: string;
+  initialCategory?: string;
+}
+
+export function SearchClient({
+  initialQuery = '',
+  initialCategory = 'all',
+}: SearchClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(initialQuery);
   const [focused, setFocused] = useState(false);
   const [ms, setMs] = useState('0.00');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [results, setResults] = useState<ArticleSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const kw = query.trim();
+  const cat = searchParams.get('category') ?? initialCategory;
 
-  const list = useMemo(() => filterPosts(kw, cat), [kw, cat]);
-
-  /** 测量本次检索耗时（仅在事件中调用 performance.now，保持 render 纯净）*/
-  const measure = useCallback((nextKw: string, nextCat: string) => {
-    const t0 = performance.now();
-    filterPosts(nextKw, nextCat);
-    setMs((performance.now() - t0).toFixed(2));
+  // 真实分类列表（拉取失败不阻塞搜索）
+  useEffect(() => {
+    let active = true;
+    getCategories()
+      .then((cats) => {
+        if (active) setCategories(cats);
+      })
+      .catch(() => {
+        /* 忽略：分类不可用时仅保留“全部” */
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const onQueryChange = (value: string) => {
-    setQuery(value);
-    measure(value.trim(), cat);
-  };
+  const cats = useMemo<CatChip[]>(
+    () => [ALL_CAT, ...categories.map((c) => ({ slug: c.slug, label: c.name }))],
+    [categories],
+  );
 
-  const onCatChange = (next: string) => {
-    setCat(next);
-    measure(kw, next);
-  };
+  // 关键词 + 分类 → 后端真实检索（debounce 250ms）
+  useEffect(() => {
+    let active = true;
+    const handle = setTimeout(async () => {
+      const t0 = performance.now();
+      setLoading(true);
+      setError('');
+      try {
+        const { items } = await searchArticles({
+          q: kw,
+          category: cat === 'all' ? undefined : cat,
+          limit: 30,
+        });
+        if (!active) return;
+        setResults(items);
+      } catch (err) {
+        if (!active) return;
+        setResults([]);
+        setError(err instanceof Error ? err.message : '搜索失败，请稍后重试');
+      } finally {
+        if (active) {
+          setLoading(false);
+          setMs((performance.now() - t0).toFixed(2));
+        }
+      }
+    }, 250);
+    return () => {
+      active = false;
+      clearTimeout(handle);
+    };
+  }, [kw, cat]);
 
-  /** `/` 聚焦、`Esc` 失焦（还原原型 keydown）*/
+  useEffect(() => {
+    const currentQuery = searchParams.get('q') ?? '';
+    const currentCategory = searchParams.get('category') ?? 'all';
+    if (currentQuery === kw && currentCategory === cat) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (kw) {
+      params.set('q', kw);
+    } else {
+      params.delete('q');
+    }
+
+    if (cat !== 'all') {
+      params.set('category', cat);
+    } else {
+      params.delete('category');
+    }
+
+    const next = params.toString();
+    router.replace(next ? `/search?${next}` : '/search', { scroll: false });
+  }, [cat, initialCategory, kw, router, searchParams]);
+
+  // `/` 聚焦、`Esc` 失焦
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === '/' && document.activeElement !== inputRef.current) {
@@ -161,8 +158,19 @@ export function SearchClient() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  // 光标可见性：未聚焦且关键词为空时显示（还原原型 focus/blur 行为）
   const showCaret = !focused && query === '';
+
+  function updateCategory(nextCategory: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextCategory !== 'all') {
+      params.set('category', nextCategory);
+    } else {
+      params.delete('category');
+    }
+
+    const next = params.toString();
+    router.replace(next ? `/search?${next}` : '/search', { scroll: false });
+  }
 
   return (
     <div className="relative z-[1] mx-auto max-w-[1080px] px-6">
@@ -175,7 +183,7 @@ export function SearchClient() {
           全站搜索
         </h1>
         <p className="mb-[22px] text-[15px] text-fg">
-          128 篇文章，38.6 万字。按标题、正文、标签实时检索。
+          按标题、正文、标签实时检索。
         </p>
 
         <label className="flex items-center gap-2.5 rounded-[10px] border border-line bg-panel px-4 py-3.5 font-mono transition-[.18s] focus-within:border-acc-dim focus-within:shadow-[0_0_0_3px_rgba(63,224,143,0.08)]">
@@ -184,7 +192,7 @@ export function SearchClient() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="试试 spec-first、缓存、Go、终端…"
@@ -201,13 +209,13 @@ export function SearchClient() {
 
         {/* filters */}
         <div className="mb-2 mt-[18px] flex flex-wrap gap-2">
-          {CATS.map(({ cat: c, label }) => {
-            const pressed = cat === c;
+          {cats.map(({ slug, label }) => {
+            const pressed = cat === slug;
             return (
               <button
-                key={c}
+                key={slug}
                 type="button"
-                onClick={() => onCatChange(c)}
+                onClick={() => updateCategory(slug)}
                 aria-pressed={pressed}
                 className={[
                   'rounded-full border px-[13px] py-[5px] font-mono text-[12px] transition-[.15s]',
@@ -228,34 +236,45 @@ export function SearchClient() {
         className="mb-1.5 mt-3.5 font-mono text-[12px] text-muted-foreground"
         suppressHydrationWarning
       >
-        &gt; 命中 <b className="text-acc">{list.length}</b> 篇 · {ms}ms
+        &gt; 命中 <b className="text-acc">{results.length}</b> 篇 · {ms}ms
         {kw && ` · 关键词 "${kw}"`}
       </div>
 
       {/* results */}
       <section className="flex flex-col gap-0.5 pb-[60px]">
-        {list.length ? (
-          list.map((p, i) => (
+        {loading ? (
+          <div className="px-4 py-10 text-center font-mono text-muted-foreground">
+            检索中…
+          </div>
+        ) : error ? (
+          <div className="px-4 py-10 text-center font-mono text-muted-foreground">
+            {error}
+          </div>
+        ) : results.length ? (
+          results.map((p) => (
             <Link
-              key={`${p.t}-${i}`}
-              href={HIT_HREF}
+              key={p.id}
+              href={`/articles/${p.slug}`}
               className="group block rounded-[10px] border border-transparent px-4 py-[18px] transition-[.15s] hover:border-line hover:bg-panel"
             >
               <div className="mb-[5px] flex flex-wrap items-center gap-2.5">
-                <span className="rounded-[5px] border border-acc-dim px-[7px] py-0.5 font-mono text-[11px] text-acc">
-                  {p.c}
-                </span>
-                <span className="font-mono text-[11px] text-muted-foreground">
-                  {p.d}
-                </span>
+                {p.publishedAt && (
+                  <span className="font-mono text-[11px] text-muted-foreground">
+                    {formatDate(p.publishedAt)}
+                  </span>
+                )}
               </div>
               <h3 className="text-[17px] font-semibold tracking-[-0.01em] transition-[.15s] group-hover:text-acc">
-                {highlight(p.t, kw)}
+                {highlight(p.title, kw)}
               </h3>
-              <p className="mt-1 text-[14px] text-fg">{highlight(p.x, kw)}</p>
+              {p.summary && (
+                <p className="mt-1 text-[14px] text-fg">
+                  {highlight(p.summary, kw)}
+                </p>
+              )}
               <div className="mt-2 flex gap-4 font-mono text-[11px] text-muted-foreground">
-                <span>↗ {p.read}</span>
-                <span>♥ {p.like}</span>
+                <span>↗ {p.readingTime} min</span>
+                <span>♥ {p.likeCount}</span>
               </div>
             </Link>
           ))

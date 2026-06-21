@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { TOKEN_STORAGE_KEY } from '@/lib/constants';
+import { uploadImage } from '@/lib/api/upload';
+import { ApiRequestError } from '@/types/api';
 import { Button } from '@/components/ui/button';
 
 interface AvatarUploadProps {
@@ -34,30 +35,14 @@ export function AvatarUpload({ currentUrl, onUploaded }: AvatarUploadProps) {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const result = await uploadImage(file);
 
-      const response = await fetch('/api/v1/uploads/avatar', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem(TOKEN_STORAGE_KEY)}`,
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || '上传失败');
-      }
-
-      const data = await response.json();
-      const uploadedUrl = data.data?.url || data.url;
-
-      setPreview(uploadedUrl);
-      onUploaded(uploadedUrl);
+      setPreview(result.url);
+      onUploaded(result.url);
       toast.success('头像上传成功');
     } catch (err) {
-      const message = err instanceof Error ? err.message : '上传失败，请重试';
+      const message =
+        err instanceof ApiRequestError ? err.message : '上传失败，请重试';
       toast.error(message);
     } finally {
       setUploading(false);

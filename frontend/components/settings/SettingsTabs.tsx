@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Lock } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
 import type { AuthUser } from '@/types/auth';
 import {

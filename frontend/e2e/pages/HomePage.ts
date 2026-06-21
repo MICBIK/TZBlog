@@ -10,7 +10,7 @@ export class HomePage {
   readonly heroTitle: Locator;
   readonly navigation: Locator;
   readonly heroReadLink: Locator;
-  readonly articleCards: Locator;
+  readonly articleTitles: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -18,9 +18,7 @@ export class HomePage {
     this.heroTitle = page.locator('h1').first();
     this.navigation = page.locator('header nav').first();
     this.heroReadLink = page.getByRole('link', { name: 'read' });
-    this.articleCards = page
-      .locator('main a[href^="/articles/"]')
-      .filter({ has: page.locator('h3') });
+    this.articleTitles = page.locator('main a[href^="/articles/"] h3');
   }
 
   /**
@@ -42,14 +40,14 @@ export class HomePage {
    * 获取文章卡片数量
    */
   async getArticleCount(): Promise<number> {
-    return await this.articleCards.count();
+    return await this.articleTitles.count();
   }
 
   /**
    * 点击第 N 篇文章
    */
   async clickArticle(index: number) {
-    await this.articleCards.nth(index).click();
+    await this.articleTitles.nth(index).click();
   }
 
   /**
@@ -72,11 +70,15 @@ export class HomePage {
    * 获取文章标题列表
    */
   async getArticleTitles(): Promise<string[]> {
+    await expect
+      .poll(async () => this.articleTitles.count())
+      .toBeGreaterThanOrEqual(1);
+
     const titles: string[] = [];
     const count = await this.getArticleCount();
 
     for (let i = 0; i < count; i++) {
-      const title = await this.articleCards.nth(i).locator('h2, h3').first().textContent();
+      const title = await this.articleTitles.nth(i).textContent();
       if (title) titles.push(title.trim());
     }
 

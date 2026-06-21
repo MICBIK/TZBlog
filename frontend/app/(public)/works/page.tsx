@@ -1,19 +1,20 @@
 import type { Metadata } from 'next';
 
 import { WorksGallery } from '@/components/front-works/WorksGallery';
+import { SITE_URL } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: '作品集',
   description:
     'haiden 的开源作品与项目：全栈应用、开发者工具与实验项目，含技术栈与仓库链接。',
-  alternates: { canonical: '/works' },
+  alternates: { canonical: `${SITE_URL}/works` },
   openGraph: {
     type: 'website',
     siteName: 'tzblog',
     locale: 'zh_CN',
     title: '作品集 · tzblog',
     description: 'haiden 的开源作品与项目：全栈应用、开发者工具与实验项目。',
-    url: '/works',
+    url: `${SITE_URL}/works`,
   },
   twitter: { card: 'summary' },
 };
